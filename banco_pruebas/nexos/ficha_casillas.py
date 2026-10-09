@@ -49,6 +49,54 @@ CASILLAS = """LA FICHA DE LA CHARLA. Estas son TODAS las casillas que puede llen
 - preguntar: el dato del cliente que falta y no se puede deducir. [dato]
 - humano: true si pide hablar con una persona."""
 
+# LA FICHA 2 (10-oct): las definiciones corregidas con lo que Gemini dijo en las dos vueltas de "por que no marcaste la
+# casilla" —fc1_porque y fc0b_porque—. Cinco de las siete causas eran de como estaba definida la casilla. La ficha 1
+# queda tal cual para comparar con la misma vara.
+CASILLAS_2 = """LA FICHA DE LA CHARLA. Estas son TODAS las casillas que puede llenar un mensaje del cliente:
+- jerga: lo que el cliente nombra con sus palabras y lo que es en la tienda. [{"dijo", "es"}]
+- referencias: lo que el cliente senala de la charla —"ese", "el segundo", "de esos", "lo de Rosario", "uno igual"— y a
+  que producto o parte del pedido apunta, con el nombre concreto. [{"dijo", "es"}]
+- productos: productos concretos de los que quiere saber algo —precio, stock, color, garantia, peso, un dato tecnico—.
+  Si pregunta por un color o variante que no se mostro, va igual con ese color: el codigo verifica si existe.
+  [{"producto", "quiere_saber"}]
+- busquedas: lo que hay que buscar en el catalogo. TODO producto que el cliente pide sin un modelo concreto es una
+  busqueda, aunque este dentro de un pedido, un presupuesto o una lista con destinos. rubro de la lista o "toda la
+  tienda"; cantidad de articulos distintos; orden "mas barato", "mas caro" o "nada" —si pide economico, ajustado o
+  "de acuerdo a la crisis", es "mas barato"—; condiciones en palabras —marca, color, conexion, tope de precio, que no sea
+  tal marca—. Las exclusiones que siguen valiendo, de la ficha, van en cada busqueda nueva, de cualquier rubro.
+  [{"rubro", "cantidad", "orden", "condiciones": [..]}]
+- no_vende: lo que pide y la tienda no vende. Si pide "algo parecido", va ademas la busqueda de la alternativa de la
+  tabla de abajo. [texto]
+- compatibilidad: si un producto anda con un equipo u otro producto. [{"producto", "con"}]
+- politicas: reglas de la tienda que pregunta, por tema de la lista de abajo, eligiendo por lo que abarca cada tema.
+  [tema]
+- envios: destinos cuyo envio hay que cotizar. [destino]
+- pedido: lo que compra o arma. "cambia" es true si este mensaje agrega, saca, mueve o confirma algo, AUNQUE dependa de
+  una condicion; "articulos" es el pedido ENTERO como queda despues de este mensaje, lo de antes que sigue y lo nuevo,
+  cada uno con la cantidad, el color o variante que pidio y su destino; "reparto_pago" es con que medio paga: un medio
+  solo es ese medio al 100 por ciento, y si reparte, cada medio con su porcentaje; "pide_total" si pide sumar.
+  {"cambia", "articulos": [{"producto", "cantidad", "destino"}], "reparto_pago": [{"medio", "porcentaje"}], "pide_total"}
+- condiciones: TODA compra o accion que depende de algo que hay que averiguar —que ande, que haya stock, que haya en
+  ese color, que el precio no pase de tanto— va aca como si y entonces, ADEMAS de ir en el pedido. [{"si", "entonces"}]
+- preguntar: el dato del cliente que falta y no se puede deducir. [dato]
+- humano: true si pide hablar con una persona."""
+
+
+def datos_de_la_tienda() -> str:
+    """Lo que la tienda ya tiene escrito y el modelo no puede adivinar: lo que no vende con su alternativa, y que
+    abarca cada tema de politica. Sale de la fuente, no de una lista de aca."""
+    raiz = os.path.dirname(os.path.dirname(AQUI))
+    nv = json.load(open(os.path.join(raiz, "data/clientes/verifika_prod/no_vendidas.json"), encoding="utf-8"))["no_vendidas"]
+    faq = json.load(open(os.path.join(raiz, "data/clientes/verifika_prod/faq.json"), encoding="utf-8"))
+    return ("LO QUE LA TIENDA NO VENDE, y lo mas parecido que si: "
+            + "; ".join(f"{k} -> {v or 'nada parecido'}" for k, v in nv.items())
+            + "\nTEMAS DE POLITICA, con lo que abarca cada uno:\n"
+            + "\n".join(f"- {t['tema']}: {', '.join(t['keywords'][:6])}" for t in faq))
+
+
+FICHA = {"version": 1}
+
+
 CONSIGNA = """Sos el interprete de una tienda online de tecnologia de Argentina. NO le contestas al cliente.
 Tu unico trabajo: leer su ULTIMO mensaje y decir que casillas de la ficha llena, con que, y cuales quedan vacias.
 Traduci la jerga a lo que vende la tienda. Razona solo cuando haga falta para saber que pide. Usa lo que la ficha ya
@@ -80,6 +128,9 @@ def lo_que_ya_sabe(ctx) -> str:
         r.append("- ultimo presupuesto: " + ctx["presupuesto"])
     if ctx.get("criterio"):
         r.append("- lo que busco el cliente: " + ctx["criterio"])
+    if ctx.get("excluye") and FICHA["version"] >= 2:
+        r.append("- exclusiones que siguen valiendo, para cualquier rubro hasta que el cliente las saque: que no sea "
+                 + ", ".join(ctx["excluye"]))
     for c, v in ctx.get("antes") or []:
         r.append(f"- CLIENTE dijo: {c}\n  VENDEDOR contesto: {v}")
     return "\n".join(r)
@@ -89,6 +140,9 @@ def consigna(procedimiento: str = "") -> str:
     from app.core import tablero as T
     rubros, temas, _ = T._vocabulario(D.TIENDA)
     proc = ("\nPROCEDIMIENTO para descifrar el mensaje, seguilo paso por paso:\n" + procedimiento + "\n") if procedimiento else ""
+    if FICHA["version"] >= 2:
+        return CONSIGNA.format(casillas=CASILLAS_2, rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
+                               procedimiento=proc) + "\n\n" + datos_de_la_tienda()
     return CONSIGNA.format(casillas=CASILLAS, rubros=", ".join(rubros), temas=", ".join(temas), procedimiento=proc)
 
 
@@ -184,7 +238,7 @@ def uno(caso, etiqueta, procedimiento):
     except Exception as e:  # noqa: BLE001
         crudo, uso, salida = f"ERROR {type(e).__name__}: {str(e)[:200]}", (0, 0), {}
         nota = {"partes": 0, "bien": 0, "ok": False, "faltan": ["ERROR"], "carrito_ok": False, "prohibidos": []}
-    fila = {"etiqueta": etiqueta, "modelo": MODELO, "id": cid, "reserva": cid in D.RESERVA,
+    fila = {"etiqueta": etiqueta, "modelo": MODELO, "id": cid, "reserva": cid in D.RESERVA, "ficha": FICHA["version"],
             "partes_esperadas": len(esp["partes"]) + (1 if esp.get("carrito") else 0),
             "tokens": list(uso), "crudo": crudo[:6000], "pasos": salida.get("pasos"), **nota}
     with _lock:
@@ -336,7 +390,9 @@ def main():
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--informe")
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
+    ap.add_argument("--ficha", type=int, default=1, help="1 la ficha original, 2 con las definiciones corregidas")
     a = ap.parse_args()
+    FICHA["version"] = a.ficha
     D.preparar()
     if a.ronda:
         ronda(a.ronda, a.con)
