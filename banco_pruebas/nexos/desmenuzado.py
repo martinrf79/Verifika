@@ -362,8 +362,10 @@ CASOS_P = [
      {"partes": [{"t": "cuenta"}], "carrito": [("archer c6", 1, "tucuman"), ("archer c6", 1, "jujuy")]}),
 ]
 RESERVA |= {c[0] for i, c in enumerate(CASOS_P) if i % 2 == 1}
-NUEVOS = {c[0] for c in CASOS_Y + CASOS_Z + CASOS_W + CASOS_P}
-CASOS = CASOS + CASOS_Y + CASOS_Z + CASOS_W + CASOS_P
+from casos_cien import CASOS_C, RESERVA_C  # noqa: E402 — los cien primeros mensajes, 10-oct
+RESERVA |= RESERVA_C
+NUEVOS = {c[0] for c in CASOS_Y + CASOS_Z + CASOS_W + CASOS_P + CASOS_C}
+CASOS = CASOS + CASOS_Y + CASOS_Z + CASOS_W + CASOS_P + CASOS_C
 
 # ══ EL CATALOGO, para leer lo que llega ══════════════════════════════════════
 
