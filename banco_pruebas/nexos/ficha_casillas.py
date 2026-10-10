@@ -142,6 +142,40 @@ CASILLAS_6 = CASILLAS_5.replace(
     'aunque pregunte si lo hay: va en productos y el codigo verifica si existe.')
 assert 'TIPO de producto' in CASILLAS_6
 
+# LA FICHA 7, LA ABARCATIVA (10-oct, pedido de Martin): una casilla para cada clase de las 58 de `vara_58.json` y de
+# las K, para que el modelo siempre tenga donde poner lo que leyo. Los tres que faltaban en q6, todos de forma:
+#   C30, Q074  la compatibilidad trae adentro que hacer si anda y si no anda: la consecuencia queda con la pregunta.
+#   C38, Q024  la compatibilidad con un equipo del cliente sin modelo lo marca, y el codigo pregunta cual es.
+#   K03, Q088  el total es su propia casilla: se pide aunque no haya compra.
+# Y las clases sin casilla: C04 C12 C39 C40 K14 dar algo por cierto, C13 C41 C47 quien es el cliente y que tiene,
+# C14 saber general, C33 corregirse en el mismo mensaje, C31 K15 un tope sobre el total, K19 el catalogo, C57 fuera
+# de tema.
+CASILLAS_7 = CASILLAS_6.replace(
+    'aunque veas el dato en la ficha: la respuesta la verifica el codigo, no vos. [{"producto", "con"}]',
+    'aunque veas el dato en la ficha: la respuesta la verifica el codigo, no vos. "con" es el equipo o producto; si es '
+    'un equipo DEL CLIENTE y no dijo cual —"mi pc", "mi mother", "mi celu"— "falta_modelo" es true. "si_anda" y '
+    '"si_no" son lo que el cliente hace segun el resultado, si lo dijo.\n'
+    '  [{"producto", "con", "falta_modelo", "si_anda", "si_no"}]').replace(
+    '; "pide_total" si pide sumar.', '.').replace(
+    ', "reparto_pago": [{"medio", "porcentaje"}], "pide_total"}', ', "reparto_pago": [{"medio", "porcentaje"}]}').replace(
+    '- humano: true si pide hablar con una persona.',
+    '- total: si pide sumar —"cuanto es todo", "cuanto sale con envio", "me alcanza"—, haya compra o no, sobre lo que '
+    'compra o lo que hay que buscar. "tope" es el monto que pone el cliente; "si_pasa" lo que hace si el total lo '
+    'pasa. {"pide", "tope", "si_pasa"}\n'
+    '- afirma: lo que el cliente da por cierto de un producto o de la tienda —"el K120 es inalambrico, no?", "me dijeron '
+    'que hay 50 off", "tu jefe me prometio un descuento"—. El codigo lo verifica. [{"dice", "sobre"}]\n'
+    '- cliente: lo que el cliente dice de si mismo —quien es (revendedor, empresa, jubilado, escuela), su nombre, su '
+    'localidad, el equipo que tiene—. {"es", "nombre", "localidad", "equipo"}\n'
+    '- explicar: preguntas de saber general de tecnologia, que no son de la tienda —"que conviene, DDR4 o DDR5?"—. '
+    '[pregunta]\n'
+    '- corrige: lo que el cliente dijo y retiro en el MISMO mensaje —"un Razer, ah no, mejor Logitech"—: lo retirado '
+    'no va en ninguna otra casilla. [lo retirado]\n'
+    '- catalogo: true si pide ver que vende la tienda en general.\n'
+    '- fuera_de_tema: true si pregunta algo que no es de la tienda ni de tecnologia.\n'
+    '- humano: true si pide hablar con una persona.')
+assert all(x in CASILLAS_7 for x in ('falta_modelo', '- total:', '- afirma:', '- cliente:', '- explicar:',
+                                     '- corrige:', '- catalogo:', '- fuera_de_tema:')) and 'pide_total' not in CASILLAS_7
+
 
 def datos_de_la_tienda() -> str:
     """Lo que la tienda ya tiene escrito y el modelo no puede adivinar: lo que no vende con su alternativa, y que
@@ -265,7 +299,7 @@ def consigna(procedimiento: str = "") -> str:
     rubros, temas, _ = T._vocabulario(D.TIENDA)
     proc = ("\nPROCEDIMIENTO para descifrar el mensaje, seguilo paso por paso:\n" + procedimiento + "\n") if procedimiento else ""
     if FICHA["version"] >= 2:
-        return CONSIGNA.format(casillas={6: CASILLAS_6, 5: CASILLAS_5, 4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
+        return CONSIGNA.format(casillas={7: CASILLAS_7, 6: CASILLAS_6, 5: CASILLAS_5, 4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
                                procedimiento=proc) + "\n\n" + datos_de_la_tienda()
     return CONSIGNA.format(casillas=CASILLAS, rubros=", ".join(rubros), temas=", ".join(temas), procedimiento=proc)
 
@@ -297,6 +331,12 @@ def atomos(llena: dict) -> list:
     for c in _lista(llena.get("compatibilidad")):
         if isinstance(c, dict):
             out.append({"t": "compat", "prod": str(c.get("producto") or ""), "con": str(c.get("con") or "")})
+            # Ficha 7: lo que hace segun el resultado viaja con la compatibilidad (C30), y el equipo del cliente sin
+            # modelo lo pregunta el codigo (C38).
+            if any(c.get(k) not in (None, "", False) and D.n(str(c.get(k))) not in _SIN_DESTINO for k in ("si_anda", "si_no")):
+                out.append({"t": "condicion"})
+            if c.get("falta_modelo") is True:
+                out.append({"t": "preguntar"})
     for t in _lista(llena.get("politicas")):
         tema = D.n(str(t)).replace(" ", "_")
         out.append({"t": "politica", "tema": [tema] if tema in D.TEMAS else D.tema_de(str(t))})
@@ -317,7 +357,10 @@ def atomos(llena: dict) -> list:
         out.append({"t": "pago", "medios": {f"{D.n(str(x.get('medio')))} {k}": x.get("porcentaje")
                                             for k, x in enumerate(repartos)}})
     # Un cambio del pedido lo recalcula el codigo (ficha 68): el total esta implicito.
-    if ped.get("pide_total") or ped.get("reparto_pago") or ped.get("cambia"):
+    tot = llena.get("total") if isinstance(llena.get("total"), dict) else {}
+    if tot.get("tope") or tot.get("si_pasa"):
+        out.append({"t": "condicion"})
+    if ped.get("pide_total") or tot.get("pide") is True or ped.get("reparto_pago") or ped.get("cambia"):
         out.append({"t": "cuenta"})
     if ped.get("cambia"):
         for a in _lista(ped.get("articulos")):
@@ -347,7 +390,8 @@ def carrito(llena: dict, ctx) -> list:
 
 
 CASILLAS_DE_LA_FICHA = ("jerga", "referencias", "productos", "busquedas", "no_vende", "compatibilidad", "politicas",
-                        "envios", "pedido", "condiciones", "preguntar", "humano")
+                        "envios", "pedido", "condiciones", "preguntar", "humano", "total", "afirma", "cliente",
+                        "explicar", "corrige", "catalogo", "fuera_de_tema")
 
 
 def atar_ficha(llena: dict) -> dict:
@@ -654,7 +698,7 @@ def main():
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--informe")
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
-    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 6 con las definiciones corregidas")
+    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 7 con las definiciones corregidas")
     ap.add_argument("--casos", default="", help="solo estos casos, separados por coma")
     ap.add_argument("--info-v", type=int, default=1, help="1 la informacion de la charla original, 2 con los datos de cada producto")
     ap.add_argument("--info", help="etiqueta de la ronda sobre la que se entrevista la informacion, con --casos")
