@@ -337,6 +337,14 @@ def atomos(llena: dict) -> list:
                 out.append({"t": "condicion"})
             if c.get("falta_modelo") is True:
                 out.append({"t": "preguntar"})
+    # Ficha 7: lo que el cliente da por cierto lo verifica el codigo contra su fuente —la ficha del producto o la
+    # politica de la tienda—: es una consulta de ese producto o de ese tema.
+    for a in _lista(llena.get("afirma")):
+        if isinstance(a, dict):
+            txt = f"{a.get('sobre') or ''} {a.get('dice') or ''}"
+            out.append({"t": "prod", "prod": txt})
+            if D.tema_de(txt):
+                out.append({"t": "politica", "tema": D.tema_de(txt)})
     for t in _lista(llena.get("politicas")):
         tema = D.n(str(t)).replace(" ", "_")
         out.append({"t": "politica", "tema": [tema] if tema in D.TEMAS else D.tema_de(str(t))})
