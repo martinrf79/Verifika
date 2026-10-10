@@ -104,6 +104,33 @@ CASILLAS_4 = CASILLAS_3.replace(
     '[{"producto", "con"}]')
 assert CASILLAS_4 != CASILLAS_3
 
+# LA FICHA 5 (10-oct): cinco clases, de las fallas de AJUSTE de los cien primeros mensajes, q4_1. La reserva no se miro
+# para escribirlas.
+#   Q065  "tinta" no esta en la tabla de lo que no se vende y el modelo la pidio como producto: lo que no entra en
+#         ningun rubro de la lista tampoco se vende.
+#   Q067  "3 G203, 2 a Parana y 1 a Santa Fe" quedo en un renglon con destino "Parana y Santa Fe".
+#   Q073  "se puede pagar en efectivo al recibir?" quedo como condicion y no como politica.
+#   Q087  Montevideo quedo como un envio mas: un destino de otro pais es la politica de envio al exterior.
+#   Q095  "el mas pesado" no tenia donde ir: el orden era solo por precio.
+CASILLAS_5 = CASILLAS_4.replace(
+    'orden "mas barato", "mas caro" o "nada" —si pide economico, ajustado o\n  "de acuerdo a la crisis", es "mas barato"—;',
+    'orden "mas barato", "mas caro", "mas <dato>" —"mas liviano", "mas pesado", "mas rapido"— o "nada" —si pide\n'
+    '  economico, ajustado o "de acuerdo a la crisis", es "mas barato"—;').replace(
+    '- no_vende: lo que pide y la tienda no vende.',
+    '- no_vende: lo que pide y la tienda no vende: todo lo que no entra en NINGUN rubro de la lista, este o no en la tabla '
+    'de abajo.').replace(
+    '- politicas: reglas de la tienda que pregunta, por tema de la lista de abajo, eligiendo por lo que abarca cada tema.',
+    '- politicas: reglas de la tienda que pregunta, por tema de la lista de abajo, eligiendo por lo que abarca cada tema. '
+    'Toda pregunta de si la tienda acepta, hace o permite algo va aca, aunque ademas vaya en el pedido o en condiciones.').replace(
+    '- envios: destinos cuyo envio hay que cotizar. [destino]',
+    '- envios: destinos cuyo envio hay que cotizar. Un destino de otro pais va ademas en politicas como envio al '
+    'exterior. [destino]').replace(
+    'cada uno con la cantidad, el color o variante que pidio y su destino',
+    'un renglon por producto y destino —si un producto va a dos destinos son dos renglones, cada uno con su cantidad—, '
+    'cada uno con la cantidad, el color o variante que pidio y su destino')
+assert CASILLAS_5.count("\n") >= CASILLAS_4.count("\n") and all(x in CASILLAS_5 for x in (
+    '"mas pesado"', 'NINGUN rubro', 'acepta, hace o permite', 'envio al exterior', 'dos renglones'))
+
 
 def datos_de_la_tienda() -> str:
     """Lo que la tienda ya tiene escrito y el modelo no puede adivinar: lo que no vende con su alternativa, y que
@@ -227,7 +254,7 @@ def consigna(procedimiento: str = "") -> str:
     rubros, temas, _ = T._vocabulario(D.TIENDA)
     proc = ("\nPROCEDIMIENTO para descifrar el mensaje, seguilo paso por paso:\n" + procedimiento + "\n") if procedimiento else ""
     if FICHA["version"] >= 2:
-        return CONSIGNA.format(casillas={4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
+        return CONSIGNA.format(casillas={5: CASILLAS_5, 4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
                                procedimiento=proc) + "\n\n" + datos_de_la_tienda()
     return CONSIGNA.format(casillas=CASILLAS, rubros=", ".join(rubros), temas=", ".join(temas), procedimiento=proc)
 
@@ -247,7 +274,9 @@ def atomos(llena: dict) -> list:
         out.append({"t": "buscar", "rubro": "" if "toda" in D.n(rub) else rub,
                     "cant": b.get("cantidad") if isinstance(b.get("cantidad"), int) else None,
                     "orden": "min" if "barat" in o else "max" if "car" in o else None,
-                    "cond": " ".join(str(c) for c in _lista(b.get("condiciones"))) + " " + rub})
+                    # Un orden por otro dato que el precio —"mas pesado", "mas rapido"— lo aplica el codigo como una
+                    # condicion sobre ese dato (ficha 5, Q095): viaja con las condiciones.
+                    "cond": " ".join(str(c) for c in _lista(b.get("condiciones"))) + " " + rub + " " + o})
     for p in _lista(llena.get("productos")):
         if isinstance(p, dict):
             out.append({"t": "prod", "prod": f"{p.get('producto') or ''} {p.get('quiere_saber') or ''}"})
@@ -537,7 +566,7 @@ def main():
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--informe")
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
-    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 4 con las definiciones corregidas")
+    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 5 con las definiciones corregidas")
     ap.add_argument("--casos", default="", help="solo estos casos, separados por coma")
     ap.add_argument("--info-v", type=int, default=1, help="1 la informacion de la charla original, 2 con los datos de cada producto")
     ap.add_argument("--info", help="etiqueta de la ronda sobre la que se entrevista la informacion, con --casos")
