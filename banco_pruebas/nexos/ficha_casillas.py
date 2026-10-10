@@ -359,7 +359,36 @@ def atar_ficha(llena: dict) -> dict:
         tema = D.n(str(k)).replace(" ", "_")
         if k not in CASILLAS_DE_LA_FICHA and tema in D.TEMAS and v not in (None, False, "", []):
             out["politicas"] = _lista(out.get("politicas")) + [tema]
-    return _sin_buscar_al_pedido(out)
+    return _sin_buscar_al_pedido(_rubros_de_la_lista(out))
+
+
+def _rubros_de_la_lista(llena: dict) -> dict:
+    """EL RUBRO DE UNA BUSQUEDA ES UNO DE LA LISTA, Y LO GARANTIZA EL CODIGO (10-oct, Q075). El modelo puso "toda la
+    tienda" con la condicion "monitor": si una condicion es un rubro, ese es el rubro. Y un rubro que la tienda no
+    tiene —"mousepad"— no es una busqueda: es algo que no vende, `not_found`, regla 10.0."""
+    from app.core import tablero as T
+    busq, no_vende = [], _lista(llena.get("no_vende"))
+    for b in _lista(llena.get("busquedas")):
+        if not isinstance(b, dict):
+            continue
+        rub = str(b.get("rubro") or "")
+        conds = [str(c) for c in _lista(b.get("condiciones"))]
+        if not rub or "toda" in D.n(rub):
+            de_cond = [(c, T._es_rubro(c, D.TIENDA)) for c in conds]
+            hit = next(((c, r) for c, r in de_cond if r), None)
+            if hit:
+                b = {**b, "rubro": hit[1], "condiciones": [c for c in conds if c != hit[0]]}
+            busq.append(b)
+            continue
+        real = T._es_rubro(rub, D.TIENDA) or rubro_generico(rub)[0]
+        if real:
+            busq.append({**b, "rubro": real})
+        else:
+            no_vende.append(rub)
+    out = {**llena, "busquedas": busq}
+    if no_vende:
+        out["no_vende"] = no_vende
+    return out
 
 
 _UNIDAD = re.compile(r"^(\d+(w|gb|tb|hz|mah|mm|pulgadas|gramos|g)?|ddr\d)$")
