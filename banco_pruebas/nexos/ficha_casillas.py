@@ -15,7 +15,7 @@ Y el ciclo para que el modelo diga una y otra vez como descifrar una pregunta co
   python3 banco_pruebas/nexos/ficha_casillas.py --procedimiento fc0 --version 1
   python3 banco_pruebas/nexos/ficha_casillas.py --ronda fc1 --con 1
 """
-import argparse, csv, json, os, sys, threading
+import argparse, csv, json, os, re, sys, threading
 from concurrent.futures import ThreadPoolExecutor
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -130,6 +130,17 @@ CASILLAS_5 = CASILLAS_4.replace(
     'cada uno con la cantidad, el color o variante que pidio y su destino')
 assert CASILLAS_5.count("\n") >= CASILLAS_4.count("\n") and all(x in CASILLAS_5 for x in (
     '"mas pesado"', 'NINGUN rubro', 'acepta, hace o permite', 'envio al exterior', 'dos renglones'))
+
+# LA FICHA 6 (10-oct): Q019, de ajuste, en q5_1. Con la ficha 5 "si no tienen la Epson L3250" salio como algo que la
+# tienda no vende: no_vende es un TIPO de producto fuera de los rubros, nunca un modelo concreto de un rubro de la
+# lista, que va en productos y lo verifica el codigo. Q065, la tinta, seguia como producto: los insumos y accesorios
+# de un producto son otro tipo de producto.
+CASILLAS_6 = CASILLAS_5.replace(
+    'todo lo que no entra en NINGUN rubro de la lista, este o no en la tabla de abajo.',
+    'un TIPO de producto que no entra en NINGUN rubro de la lista, este o no en la tabla de abajo; los insumos y '
+    'accesorios de un producto son otro tipo de producto. Un modelo concreto de un rubro de la lista NUNCA va aca, '
+    'aunque pregunte si lo hay: va en productos y el codigo verifica si existe.')
+assert 'TIPO de producto' in CASILLAS_6
 
 
 def datos_de_la_tienda() -> str:
@@ -254,7 +265,7 @@ def consigna(procedimiento: str = "") -> str:
     rubros, temas, _ = T._vocabulario(D.TIENDA)
     proc = ("\nPROCEDIMIENTO para descifrar el mensaje, seguilo paso por paso:\n" + procedimiento + "\n") if procedimiento else ""
     if FICHA["version"] >= 2:
-        return CONSIGNA.format(casillas={5: CASILLAS_5, 4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
+        return CONSIGNA.format(casillas={6: CASILLAS_6, 5: CASILLAS_5, 4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
                                procedimiento=proc) + "\n\n" + datos_de_la_tienda()
     return CONSIGNA.format(casillas=CASILLAS, rubros=", ".join(rubros), temas=", ".join(temas), procedimiento=proc)
 
@@ -348,7 +359,55 @@ def atar_ficha(llena: dict) -> dict:
         tema = D.n(str(k)).replace(" ", "_")
         if k not in CASILLAS_DE_LA_FICHA and tema in D.TEMAS and v not in (None, False, "", []):
             out["politicas"] = _lista(out.get("politicas")) + [tema]
-    return out
+    return _sin_buscar_al_pedido(out)
+
+
+_UNIDAD = re.compile(r"^(\d+(w|gb|tb|hz|mah|mm|pulgadas|gramos|g)?|ddr\d)$")
+_MARCAS = None
+
+
+def _marcas() -> set:
+    global _MARCAS
+    if _MARCAS is None:
+        _MARCAS = {D.n(p.get("marca") or "") for p in D.POR_ID.values()} - {""}
+    return _MARCAS
+
+
+def rubro_generico(producto: str) -> tuple:
+    """(rubro, resto) si el articulo es un rubro sin marca ni modelo —"cargador 25W", "auriculares con microfono"—;
+    ("", "") si nombra un producto concreto. Un modelo es una palabra con letras y numeros que no es una unidad."""
+    from app.core import tablero as T
+    w = D.n(producto).split()
+    for largo in (3, 2, 1):
+        cabeza, resto = " ".join(w[:largo]), w[largo:]
+        rub = T._es_rubro(cabeza, D.TIENDA) if cabeza else ""
+        if not rub:
+            continue
+        if any(x in _marcas() for x in resto) or any(
+                re.search(r"[a-z]", x) and re.search(r"\d", x) and not _UNIDAD.match(x) for x in resto):
+            return "", ""
+        return rub, " ".join(resto)
+    return "", ""
+
+
+def _sin_buscar_al_pedido(llena: dict) -> dict:
+    """EL ARTICULO GENERICO DE UN PEDIDO ES UNA BUSQUEDA, Y LA AGREGA EL CODIGO (10-oct, Q053). El modelo anota
+    "cargador 25W" o "notebook" en el pedido sin buscarlo. Es la misma lectura que la revision del tablero vivo —"la
+    cuenta lleva rubros que ninguna pieza busca"—, pero sin otra llamada: el codigo suma la busqueda."""
+    ped = llena.get("pedido") if isinstance(llena.get("pedido"), dict) else {}
+    buscados = {D.n(str(b.get("rubro") or "")) for b in _lista(llena.get("busquedas")) if isinstance(b, dict)}
+    nuevas = []
+    for a in _lista(ped.get("articulos")):
+        if not isinstance(a, dict):
+            continue
+        rub, resto = rubro_generico(str(a.get("producto") or ""))
+        if rub and D.n(rub) not in buscados:
+            buscados.add(D.n(rub))
+            cond = [x for x in (resto, str(a.get("color") or "")) if x and D.n(x) not in _SIN_DESTINO]
+            nuevas.append({"rubro": rub, "cantidad": 1, "orden": "nada", "condiciones": cond})
+    if nuevas:
+        llena = {**llena, "busquedas": _lista(llena.get("busquedas")) + nuevas}
+    return llena
 
 
 def corregir(caso, llena: dict) -> dict:
@@ -566,7 +625,7 @@ def main():
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--informe")
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
-    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 5 con las definiciones corregidas")
+    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 6 con las definiciones corregidas")
     ap.add_argument("--casos", default="", help="solo estos casos, separados por coma")
     ap.add_argument("--info-v", type=int, default=1, help="1 la informacion de la charla original, 2 con los datos de cada producto")
     ap.add_argument("--info", help="etiqueta de la ronda sobre la que se entrevista la informacion, con --casos")
