@@ -177,6 +177,112 @@ assert all(x in CASILLAS_7 for x in ('falta_modelo', '- total:', '- afirma:', '-
                                      '- corrige:', '- catalogo:', '- fuera_de_tema:')) and 'pide_total' not in CASILLAS_7
 
 
+# LA FICHA 8, CORTAR Y CITAR (14-oct, pedido de Martin): las casillas son las de la 7. Cambia como se llena: primero
+# el modelo corta el mensaje en renglones con las palabras literales del cliente, cada uno con la casilla a la que va;
+# despues llena. El codigo no interpreta nada: solo mira que todo el mensaje quedo citado y que cada casilla nombrada
+# quedo llena. Si sobra algo, se le devuelve al modelo una sola vez. En la tanda chica de OpenRouter Haiku dejaba
+# afuera el reparto del pago en Q059 y Q075: un pedazo del mensaje que no fue a ninguna casilla.
+CASILLAS_8 = CASILLAS_7
+
+# LA FICHA 9 (14-oct): la 8 con cuatro definiciones corregidas, leidas de lo que lleno el modelo en cc_h8 y cc_g8.
+# Ninguna era no ver una parte del mensaje: el modelo la veia y no sabia donde ponerla.
+#   Q059 Q075 X10  "dividilo 50 y 50" sin medio: Haiku dejaba el reparto vacio y lo mandaba a preguntar.
+#   Q052 Q088      total.pide salia como texto, no true.
+#   Q078           el modelo de la alternativa —"si no, los Cloud III"— quedaba solo en condiciones.
+#   Q098           Gemini juntaba los siete componentes de la pc en una sola busqueda de toda la tienda.
+CASILLAS_9 = CASILLAS_8.replace(
+    '  [{"producto", "quiere_saber"}]',
+    '  Todo modelo concreto que el cliente nombra va aca, tambien si aparece en una condicion o como alternativa —"si '
+    'no, los X"—.\n  [{"producto", "quiere_saber"}]').replace(
+    'busqueda, aunque este dentro de un pedido, un presupuesto o una lista con destinos.',
+    'busqueda, aunque este dentro de un pedido, un presupuesto o una lista con destinos. Una busqueda por cada tipo de '
+    'producto, aunque sean partes de una sola cosa —una pc, un setup—: nunca varios rubros en una sola busqueda.').replace(
+    'solo es ese medio al 100 por ciento, y si reparte, cada medio con su porcentaje.',
+    'solo es ese medio al 100 por ciento, y si reparte, cada medio con su porcentaje. Si reparte sin decir el medio '
+    '—"dividilo 50 y 50"— va igual, cada parte con medio "sin decir" y su porcentaje: el codigo pregunta el medio. '
+    'Nunca lo dejes vacio por eso.').replace(
+    '{"pide", "tope", "si_pasa"}', '"pide" es true o false, nunca un texto. {"pide", "tope", "si_pasa"}')
+assert all(x in CASILLAS_9 for x in ('como alternativa', 'Una busqueda por cada tipo', '"sin decir"', 'nunca un texto'))
+
+CONSIGNA_8 = """Sos el interprete de una tienda online de tecnologia de Argentina. NO le contestas al cliente.
+Tu unico trabajo: leer su ULTIMO mensaje, cortarlo en pedidos sueltos y decir en que casillas de la ficha va cada uno.
+Traduci la jerga a lo que vende la tienda. Usa lo que la ficha ya sabe de la charla para resolver referencias. No
+escribas precios.
+{casillas}
+
+RUBROS DE LA TIENDA: {rubros}
+TEMAS DE POLITICA: {temas}
+{procedimiento}
+COMO SE HACE, en dos pasos:
+1. RENGLONES: corta el mensaje ENTERO en pedazos, cada uno con las palabras LITERALES del cliente, copiadas tal cual.
+   Un pedazo por cada cosa que pide, pregunta, dice o condiciona. Todo el mensaje tiene que quedar en algun renglon,
+   tambien los saludos. A cada renglon le pones la casilla o casillas donde va, con el subcampo si lo tiene
+   —"pedido.reparto_pago", "total.tope"—, o "nada" si no pide nada, como un saludo.
+2. LLENA: con los renglones, llena la ficha. Cada casilla que nombraste en un renglon tiene que quedar llena.
+
+Devolve SOLO un JSON:
+{{"renglones": [{{"cita": "las palabras literales del cliente", "casillas": ["casilla o casilla.subcampo"]}}],
+  "llena": {{solo las casillas que este mensaje llena, con la forma de arriba}},
+  "vacias": ["las casillas que este mensaje no llena"]}}"""
+
+_VACIAS = set("a al algo con de del el en es esta este la las lo los me mi o para pero por que se si su te tu un una "
+              "uno unos unas y ya ah eh bueno che hola buenas gracias porfa favor dale ok".split())
+
+
+def _palabras(t: str) -> list:
+    import unicodedata
+    t = unicodedata.normalize("NFD", (t or "").lower())
+    t = "".join(ch for ch in t if unicodedata.category(ch) != "Mn")
+    return re.findall(r"[a-z0-9]+", t)
+
+
+def sin_citar(msg: str, renglones: list) -> list:
+    """Los pedazos del mensaje que no quedaron en ningun renglon: tiras seguidas de palabras no citadas, con al menos
+    una que diga algo. Es una cuenta de palabras, no una lectura."""
+    citadas = set()
+    for r in renglones or []:
+        citadas |= set(_palabras(r.get("cita", "") if isinstance(r, dict) else str(r)))
+    sueltos, tira = [], []
+    for p in _palabras(msg) + [""]:
+        if p and p not in citadas:
+            tira.append(p)
+            continue
+        if any(x not in _VACIAS for x in tira):
+            sueltos.append(" ".join(tira))
+        tira = []
+    return sueltos
+
+
+def _vacio(v) -> bool:
+    return v in (None, "", [], {}, False)
+
+
+def casillas_sin_llenar(renglones: list, llena: dict) -> list:
+    """Las casillas que el modelo nombro en un renglon y despues no lleno."""
+    faltan = []
+    for r in renglones or []:
+        for c in (r.get("casillas") or []) if isinstance(r, dict) else []:
+            c = str(c).strip()
+            if not c or c == "nada":
+                continue
+            cas, _, sub = c.partition(".")
+            v = llena.get(cas)
+            if sub and isinstance(v, dict):
+                v = v.get(sub)
+            elif sub and isinstance(v, list):
+                # "politicas.factura": la casilla es una lista de temas y el subcampo es el tema.
+                v = [x for x in v if (isinstance(x, dict) and not _vacio(x.get(sub))) or
+                     (not isinstance(x, dict) and _palabras(str(x)) == _palabras(sub))] or (v if cas == "politicas" else [])
+            if _vacio(v) and c not in faltan:
+                faltan.append(c)
+    return faltan
+
+
+DEVUELTA = """Revisa tu ficha antes de que la use el codigo:
+{faltas}
+Si un pedazo no pide nada, ponelo en un renglon con "nada". Devolve el JSON entero de nuevo, con la misma forma."""
+
+
 def datos_de_la_tienda() -> str:
     """Lo que la tienda ya tiene escrito y el modelo no puede adivinar: lo que no vende con su alternativa, y que
     abarca cada tema de politica. Sale de la fuente, no de una lista de aca."""
@@ -298,6 +404,9 @@ def consigna(procedimiento: str = "") -> str:
     from app.core import tablero as T
     rubros, temas, _ = T._vocabulario(D.TIENDA)
     proc = ("\nPROCEDIMIENTO para descifrar el mensaje, seguilo paso por paso:\n" + procedimiento + "\n") if procedimiento else ""
+    if FICHA["version"] >= 8:
+        return CONSIGNA_8.format(casillas=CASILLAS_9 if FICHA["version"] >= 9 else CASILLAS_8, rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
+                                 procedimiento=proc) + "\n\n" + datos_de_la_tienda()
     if FICHA["version"] >= 2:
         return CONSIGNA.format(casillas={7: CASILLAS_7, 6: CASILLAS_6, 5: CASILLAS_5, 4: CASILLAS_4, 3: CASILLAS_3}.get(FICHA["version"], CASILLAS_2), rubros=", ".join(rubros), temas="(abajo, con lo que abarca cada uno)",
                                procedimiento=proc) + "\n\n" + datos_de_la_tienda()
@@ -511,17 +620,33 @@ def uno(caso, etiqueta, procedimiento):
     set_current_tienda(D.TIENDA)
     msgs = [{"role": "system", "content": consigna(procedimiento)},
             {"role": "user", "content": lo_que_ya_sabe(ctx) + f"\n\nULTIMO MENSAJE DEL CLIENTE: {msg}"}]
+    devuelta = None
     try:
         crudo, uso = D._crear(MODELO, msgs, {"type": "json_object"})
         from app.core.tablero import _json
         salida = _json(crudo)
+        if FICHA["version"] >= 8:
+            # El control de la ficha 8: lo que no se cito y lo que se nombro sin llenar vuelve al modelo una vez.
+            sueltos = sin_citar(msg, salida.get("renglones"))
+            vacias = casillas_sin_llenar(salida.get("renglones"), salida.get("llena") or {})
+            if sueltos or vacias:
+                devuelta = {"sin_citar": sueltos, "sin_llenar": vacias, "primera": crudo[:6000]}
+                faltas = [f'- Este pedazo del mensaje no esta en ningun renglon: "{s}". Decime a que casilla va.' for s in sueltos] \
+                    + [f"- Nombraste la casilla {c} en un renglon y no la llenaste." for c in vacias]
+                crudo, uso2 = D._crear(MODELO, msgs + [{"role": "assistant", "content": crudo},
+                                                       {"role": "user", "content": DEVUELTA.format(faltas="\n".join(faltas))}],
+                                       {"type": "json_object"})
+                uso = (uso[0] + uso2[0], uso[1] + uso2[1])
+                salida = _json(crudo)
+                devuelta["quedan"] = sin_citar(msg, salida.get("renglones")) + casillas_sin_llenar(
+                    salida.get("renglones"), salida.get("llena") or {})
         nota = corregir(caso, salida.get("llena") or {})
     except Exception as e:  # noqa: BLE001
         crudo, uso, salida = f"ERROR {type(e).__name__}: {str(e)[:200]}", (0, 0), {}
         nota = {"partes": 0, "bien": 0, "ok": False, "faltan": ["ERROR"], "carrito_ok": False, "prohibidos": []}
     fila = {"etiqueta": etiqueta, "modelo": MODELO, "id": cid, "reserva": cid in D.RESERVA, "ficha": FICHA["version"], "info": INFO["version"],
             "partes_esperadas": len(esp["partes"]) + (1 if esp.get("carrito") else 0),
-            "tokens": list(uso), "crudo": crudo[:6000], "pasos": salida.get("pasos"), **nota}
+            "tokens": list(uso), "crudo": crudo[:6000], "pasos": salida.get("pasos"), "devuelta": devuelta, **nota}
     with _lock:
         with open(SALIDA, "a", encoding="utf-8") as f:
             f.write(json.dumps(fila, ensure_ascii=False, default=str) + "\n")
@@ -699,6 +824,7 @@ def info(etiqueta, casos):
 
 
 def main():
+    global MODELO
     ap = argparse.ArgumentParser()
     ap.add_argument("--ronda")
     ap.add_argument("--con", type=int, default=0, help="version del procedimiento a usar en la ronda")
@@ -706,11 +832,13 @@ def main():
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--informe")
     ap.add_argument("--reglas", help="etiqueta de la ronda de la que salen las reglas por casilla")
-    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 7 con las definiciones corregidas")
+    ap.add_argument("--ficha", type=int, default=1, help="1 la original, 2 a 7 con las definiciones corregidas, 8 cortar y citar")
+    ap.add_argument("--modelo", default=MODELO, help="con barra, por OpenRouter: anthropic/claude-haiku-5.5")
     ap.add_argument("--casos", default="", help="solo estos casos, separados por coma")
     ap.add_argument("--info-v", type=int, default=1, help="1 la informacion de la charla original, 2 con los datos de cada producto")
     ap.add_argument("--info", help="etiqueta de la ronda sobre la que se entrevista la informacion, con --casos")
     a = ap.parse_args()
+    MODELO = a.modelo
     FICHA["version"] = a.ficha
     INFO["version"] = a.info_v
     D.preparar()

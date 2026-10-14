@@ -11,6 +11,10 @@ CASOS = [("K01","grab_1",1),("K02","grab_1",1),("K07","grab_1",1),("K08","grab_1
 lock = threading.Lock()
 
 def cli(m):
+    if "/" in m:  # OpenRouter, paga: se anota en el libro como la paga de Gemini, 14-oct
+        from banco_pruebas import libro_paga
+        libro_paga.puede()
+        return libro_paga.envolver(OpenAI(api_key=os.environ["OPENROUTER_API_KEY"].strip(), base_url="https://openrouter.ai/api/v1"))
     if "deepseek" in m:
         from banco_pruebas import libro_paga
         libro_paga.puede()
