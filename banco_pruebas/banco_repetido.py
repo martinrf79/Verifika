@@ -52,7 +52,8 @@ GUIONES = Path(__file__).resolve().parent / "guiones"
 CORRIDAS = Path(__file__).resolve().parent / "corridas"
 PAUSA_S = float(os.getenv("BANCO_PAUSA_S", "2"))
 
-# Candados que TODAVIA emite el camino vivo (`app.core.turno`). Si alguno
+# Candados que TODAVIA emite el camino vivo, `respuesta.procesar_turno` y
+# `tablero.turno`. Si alguno
 # dispara, el codigo tuvo que intervenir: no es un fallo del cliente, pero SI
 # es una senal de que el modelo se salio del carril. Se cuentan aparte de los
 # errores duros. Los cinco que vivian en las puertas de salida
@@ -60,41 +61,51 @@ PAUSA_S = float(os.getenv("BANCO_PAUSA_S", "2"))
 # repuesto) no tienen equivalente: el modelo ya no escribe prosa libre ni
 # numeros de plata. Un mapa honesto y corto, no eventos inventados.
 _CANDADOS = {
-    "turno_pedidos_recortados": "herramientas recortadas",
-    "turno_respuesta_no_es_la_mesa": "respuesta no es la mesa",
+    "turno_sin_buscar": "contesto sin buscar",
+    "respuesta_sin_modelo": "sin modelo",
+    "tablero_modelo_error": "error del modelo en el tablero",
 }
+
+# Los modulos del turno vivo cuyo `log` escucha el espia. Si el turno se muda
+# de modulo, se cambia aca y en ningun otro lado.
+_MODULOS_TURNO = ("app.core.respuesta", "app.core.tablero")
 
 
 class _Espia:
     """Escucha los eventos del turno sin tocar el codigo vivo. Los candados no
-    se deducen del texto: se leen del log que ya emite `turno.py`."""
+    se deducen del texto: se leen del log que ya emiten los modulos del turno."""
 
     def __init__(self):
         self.eventos: list[str] = []
-        self._mod = None
-        self._log = None
+        self._reales: list[tuple] = []
 
     def __enter__(self):
-        from app.core import turno as T
-        self._mod = T
-        self._log = T.log
+        import importlib
         espia = self
 
         class _Proxy:
-            def __getattr__(self, nivel):
-                real = getattr(espia._log, nivel)
+            def __init__(self, real_log):
+                self._real = real_log
 
-                def _cap(evento=None, **kw):
+            def __getattr__(self, nivel):
+                real = getattr(self._real, nivel)
+
+                def _cap(evento=None, *a, **kw):
                     if evento:
                         espia.eventos.append(str(evento))
-                    return real(evento, **kw) if evento else real(**kw)
+                    return real(evento, *a, **kw) if evento else real(*a, **kw)
                 return _cap
-        T.log = _Proxy()
+
+        for nombre in _MODULOS_TURNO:
+            mod = importlib.import_module(nombre)
+            self._reales.append((mod, mod.log))
+            mod.log = _Proxy(mod.log)
         return self
 
     def __exit__(self, *a):
-        if self._mod is not None:
-            self._mod.log = self._log
+        for mod, real in self._reales:
+            mod.log = real
+        self._reales = []
         return False
 
     def candados(self) -> list[str]:

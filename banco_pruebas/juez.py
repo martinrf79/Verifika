@@ -246,8 +246,9 @@ def juzgar(respuesta: str, tienda_id: str = "verifika_prod",
     #     presupuesto cobra menos envios ("tres destinos" -> "2 envios").
     #     Solo con presupuesto sobre la mesa, para no acusar charla previa.
     if mensaje and re.search(r"(?im)^\s*total\s*:", respuesta):
-        from app.core.guia_pedido import _hitos_destinos, _norm as _gnorm
-        n_decl = len(_hitos_destinos(_gnorm(mensaje)))
+        # Los destinos los cuenta la misma funcion que usa el turno vivo.
+        from app.core.agente import _destinos_del_mensaje
+        n_decl = len(_destinos_del_mensaje(mensaje))
         if n_decl >= 2:
             m_env = re.search(r"\((\d+)\s+env[ií]os\)", respuesta)
             n_resp = (int(m_env.group(1)) if m_env
