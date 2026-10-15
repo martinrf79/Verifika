@@ -103,3 +103,33 @@ Vara: las 17 de las 58 que dependen de la charla y K10, K11, K21, tres corridas 
 - **Falta:** la misma medición con Gemini, que es el modelo de producción y el más débil. Si ahí tampoco
   mejora, la ficha se juzga por lo que da de más —datos de cada producto, destino por artículo, sin
   recortes— contra lo que cuesta.
+
+## 15-oct, lo visto en WhatsApp después del deploy, y el paso que sigue
+
+La charla K21 de Martín, dos mensajes con el código nuevo:
+- El primero salió bien: tres presupuestos, total general y 70/30. Repitió que todo es chino.
+- En el segundo, "el teclado va a Posadas", el modelo entendió bien y la calculadora contó bien:
+  Córdoba 170.500, Posadas 651.500 con envío gratis, Concordia 76.500. El redactor escribió Posadas
+  con los 10.000 de envío del presupuesto anterior y armó con eso el total y el 70/30. La guarda
+  vio cinco montos sin origen y tiró la respuesta entera.
+
+**Lo frágil no fue la interpretación: es que el redactor escribe la plata a mano.**
+
+### El paso que sigue: ningún monto lo escribe el modelo
+
+1. Cada cálculo de la calculadora del turno lleva un id. El redactor escribe una marca que apunta al
+   cálculo —el presupuesto de un destino, el total general, el reparto— y el código la reemplaza
+   por el bloque exacto. Los huecos de `numeros.py` existen pero son opcionales: pasan a ser la
+   única forma de escribir plata.
+2. Sólo vale lo calculado en este turno. El presupuesto anterior deja de ser fuente del redactor:
+   si el pedido cambió, se recalcula o no se nombra. Cierra la clase "monto viejo mezclado con nuevo".
+3. Un monto suelto sin marca no tumba la respuesta: el código lo saca y pone el bloque si lo tiene,
+   o dice que no tiene el dato. Queda un renglón en el log; la guarda pasa a ser una alarma.
+4. Auditable: cada monto que sale queda en el log con el `trace_id` y el cálculo del que viene.
+   Tests por propiedad sobre pedidos generados al azar, y un modelo de mentira que inventa montos:
+   ninguno llega al cliente. Se borra la búsqueda del origen del número en el texto.
+5. Se mide con K21, C56 y las K, y en producción con las respuestas que tira la guarda por semana,
+   que tiene que ir a cero.
+
+Toca `tablero.py` —el redactor y su prompt—, `numeros.py` y `respuesta.py`. Una sesión.
+Después: el pedido como dato y el modelo diciendo sólo qué cambia, la FICHA 68.
