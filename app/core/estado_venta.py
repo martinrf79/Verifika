@@ -125,25 +125,6 @@ def get_envio_localidades() -> list[str]:
     return list(_envio_localidades.get() or [])
 
 
-def certificar_ids_de_resultado(result):
-    """Registra los product_id que una tool devolvio este turno. Lo llama el
-    loop del agente despues de CADA tool: un solo lugar cubre search, details,
-    catalogo y calculadora (mismas claves que lee productos_de_meta)."""
-    if not isinstance(result, dict):
-        return
-    ids = _ids_certificados.get()
-    if ids is None:
-        ids = set()
-        _ids_certificados.set(ids)
-    cands = list(result.get("productos") or [])
-    if isinstance(result.get("producto"), dict):
-        cands.append(result["producto"])
-    cands += list(result.get("detalle") or [])
-    for p in cands:
-        if isinstance(p, dict) and p.get("id"):
-            ids.add(str(p["id"]).upper())
-
-
 def get_ids_certificados() -> set:
     """Los product_id certificados por tools en este turno (copia)."""
     return set(_ids_certificados.get() or set())

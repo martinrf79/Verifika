@@ -95,8 +95,8 @@ uno solo y es `app/core/turno.py:962 procesar_turno`.
 ### T3 · EJECUTAR — determinista
 - **T3.1** `turno._ejecutar_en_paralelo:370` — cada herramienta a un hilo, tope 10.
 - **T3.2** `herramientas.ejecutar` — corre la función real contra la fuente.
-- **T3.3** `estado_venta.certificar_ids_de_resultado` — los ids que volvieron
-  quedan certificados en el hilo del turno.
+- **T3.3** BORRADA el 15-oct: `estado_venta.certificar_ids_de_resultado` no
+  tenia llamador. La identidad la certifica `tablero._certificado`.
 
 ### T4 · COMPLETAR LO DECLARADO — determinista
 - **T4.1** `turno._restricciones_de_los_filtros:689` — lo que el modelo aplicó
@@ -139,7 +139,7 @@ uno solo y es `app/core/turno.py:962 procesar_turno`.
 - **T8.4** el bloque sellado se pega al final, entero.
 
 ### T9 · OBLIGACIONES — determinista
-- **T9.1** `guardas_salida.asegurar_honestidad_bot`.
+- **T9.1** BORRADA el 15-oct: `guardas_salida.asegurar_honestidad_bot` no tenia llamador.
 - **T9.2** `guardas_salida.con_saludo_inicial` / `sin_saludo_del_modelo`.
 - **T9.3** `camino_cobro.linea_de_cobro`.
 

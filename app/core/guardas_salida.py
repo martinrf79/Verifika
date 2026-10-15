@@ -74,23 +74,6 @@ _RE_PREGUNTA_BOT = re.compile(
     re.IGNORECASE)
 
 
-def asegurar_honestidad_bot(mensaje: str, respuesta: str,
-                            business_name: str) -> str:
-    """Si preguntan si es un bot y la respuesta no lo dice, se antepone la
-    verdad. No toca las respuestas que ya la dicen."""
-    if not _RE_PREGUNTA_BOT.search(_norm(mensaje)):
-        return respuesta
-    r = _norm(respuesta)
-    if ("asistente automatico" in r or "asistente virtual" in r
-            or "soy un bot" in r or "soy un robot" in r):
-        return respuesta
-    from app.core.guia_venta_prosa import mensaje
-    linea = mensaje("honestidad_bot",
-                    "Sí, te lo digo derecho: soy el asistente automático de "
-                    "{negocio}.").format(negocio=business_name)
-    return (linea + "\n\n" + (respuesta or "").strip()).strip()
-
-
 # ── 2. SALUDO Y AVISO DEL PRIMER MENSAJE ────────────────────────────────────
 # Saludo que el modelo escribe al arranque de SU texto: se recorta cuando el
 # codigo antepone el oficial. Solo saludos inequivocos; "buenas" pelado NO

@@ -212,6 +212,9 @@ def atomos(r, ctx) -> list:
         elif h == "envio":
             for f in v.get("filas") or []:
                 out.append({"t": "envio", "destino": str(f.get("destino") or "")})
+        elif h == "total_general" and a.get("reparto_pago"):
+            out.append({"t": "pago", "medios": {f"{_n(m.get('medio'))} {k}": m.get("porcentaje")
+                                                for k, m in enumerate(_lista(a["reparto_pago"])) if isinstance(m, dict)}})
         elif h == "cuenta":
             cu = v.get("cuenta") or {}
             out.append({"t": "cuenta"} if cu.get("total_ars") is not None else {"t": "cuenta_sin_total"})

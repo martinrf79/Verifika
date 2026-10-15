@@ -528,14 +528,19 @@ def _certificado(nombre: str, tienda_id: str, llamadas: list, vistos: list = Non
     return hits[0] if len(hits) == 1 else nombre
 
 
+_ANTES_DE_LUGAR = {"de", "en", "a", "para", "desde", "hacia"}
+
+
 def _lugar_en(texto: str) -> str:
-    """Una localidad o provincia nombrada en texto libre: "soy de Mendoza"."""
+    """Una localidad o provincia nombrada en texto libre: "soy de Mendoza". Solo la que viene despues de una
+    preposicion de lugar: la tabla tiene "El Segundo", y "el segundo me gusta" era un destino (15-oct, Z08)."""
     from app.core.geo_cp import es_lugar_conocido
     palabras = re.findall(r"[^\W\d_]+", texto or "")
     for largo in (3, 2, 1):
-        for i in range(len(palabras) - largo + 1):
+        for i in range(1, len(palabras) - largo + 1):
             span = " ".join(palabras[i:i + largo])
-            if len(span) > 3 and span.lower() not in A._NO_ES_LUGAR and es_lugar_conocido(span):
+            if A._n(palabras[i - 1]) in _ANTES_DE_LUGAR and len(span) > 3 and span.lower() not in A._NO_ES_LUGAR \
+                    and es_lugar_conocido(span):
                 return span
     return ""
 
