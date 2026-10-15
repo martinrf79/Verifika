@@ -25,7 +25,7 @@ charla, en la ficha abierta, en una sección con la fecha. Martín no repite nad
 
 ## El plan de Martín — se sigue en este orden, sin volver a preguntarlo
 
-- **PLAN 1, AHORA** · Mejorar la interpretación: lo que recibe el modelo y cómo lo lee. FICHA 69. No se reduce ni se toca el cableado.
+- **PLAN 1, AHORA** · Mejorar la interpretación: lo que recibe el modelo y cómo lo lee. FICHA 69. No se reduce ni se toca el cableado. 15-oct: la ficha de la charla entró; con DeepSeek empata con la base, 52 de 60. Falta medirla con Gemini gratis, el modelo de producción.
 - **PLAN 2** · Reducir el código drásticamente, sin tocar la interpretación. Lo que no pisa ningún caso va a `archivo/`.
 - **PLAN 3** · Recién al último, el cableado y la ayuda de afuera: Rasa CALM, una revisión de arquitectura.
 - **PLAN, LA REGLA** · No se escribe ninguna herramienta de medición nueva. Se mide con la vara de las 58 y las K, que ya existen.

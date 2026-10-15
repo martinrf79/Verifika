@@ -86,3 +86,20 @@ Sin código nuevo ni medición nueva: leído del repo.
 renderizador para el modelo, que reemplaza a `_memoria_texto`. Medido con las 19 de memoria
 de la vara de las 58. Los lectores por expresión regular se reemplazan en la etapa del
 cableado, el plan 3, salvo los que haya que tocar para que el estado llegue.
+
+## 15-oct, la ficha de la charla en el camino vivo — medida
+
+`app/core/ficha_charla.py` es lo que lee el modelo; `_memoria_texto` queda para los lectores del cableado.
+Vara: las 17 de las 58 que dependen de la charla y K10, K11, K21, tres corridas por lado con DeepSeek,
+`ds_mem_base_` contra `ds_mem_ficha_`. Gemini gratis se agotó a mitad de la base.
+
+- **Empate exacto:** 52 de 60 charlas y 171 casillas de cada lado. No rompe nada y no arregla nada.
+- **Cuesta 12 por ciento más de entrada** en los turnos con charla previa: 10.934 tokens contra 9.736.
+- **Con DeepSeek la interpretación de esta vara está resuelta.** Las tres que fallan son del código:
+  - C35: el modelo saca la marca y deja "gamer" bien, pero el buscador no filtra por esa condición y
+    vuelve sólo Logitech.
+  - C56: el modelo pide política, producto y reservar bien; la guarda de plata tira la respuesta entera.
+  - K21: el 70 por ciento sale sin el otro medio, y las casillas de 237.000 fallan a sabiendas.
+- **Falta:** la misma medición con Gemini, que es el modelo de producción y el más débil. Si ahí tampoco
+  mejora, la ficha se juzga por lo que da de más —datos de cada producto, destino por artículo, sin
+  recortes— contra lo que cuesta.
