@@ -229,7 +229,9 @@ def _instalar_grabador():
 
     async def _turno(*a, **k):
         r = await turno(*a, **k)
-        _TURNO["hechos"] = r.get("hechos")
+        # Desde la FICHA 69 el detalle de cada cuenta no esta en los hechos —el
+        # redactor ve su marca—: vive en `calculos`, y es lo que pone el codigo.
+        _TURNO["hechos"] = [r.get("hechos"), [c.get("detalle") for c in (r.get("calculos") or {}).values()]]
         return r
     _pedir._grabador = True
     T._pedir, T.turno = _pedir, _turno
