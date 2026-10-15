@@ -58,34 +58,28 @@ def test_la_cantidad_del_pedido_no_se_pierde():
     assert [i["cantidad"] for i in c["items"]] == [2, 2]
 
 
-def test_el_turno_siguiente_ve_el_presupuesto_y_el_carrito():
-    """El otro eslabon: guardado no alcanza si no se muestra. Y se muestra CON
-    el id, que es lo unico con lo que el modelo puede volver a pedir la misma
-    cuenta."""
+def test_el_turno_siguiente_ve_el_carrito_y_no_el_presupuesto_viejo():
+    """El carrito se muestra CON el id, que es con lo que el modelo vuelve a
+    pedir la misma cuenta. El presupuesto viejo ya no viaja desde la FICHA 69:
+    copiarlo es como salio Posadas con un envio que ya no se cobraba."""
     conv = {"ultimo_presupuesto": "Presupuesto:\n- 2x Mouse: $37.500 c/u = "
                                   "$75.000\nTotal: $75.000",
             "carrito_vigente": [{"id": "MOU0001", "cantidad": 2,
                                  "nombre": "Mouse Logitech G203"}]}
-    # Desde el 15-oct el modelo lee la ficha de la charla, no `_memoria_texto` (FICHA 69).
     t = __import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod")
-    assert "$75.000" in t
     assert "2x MOU0001" in t
-    # LA REGLA DE FRESCURA VA PEGADA AL DATO: sin ella el modelo corrige el
-    # total a mano cuando el pedido cambia, que es como vuelve a aparecer una
-    # cifra sin procedencia.
-    assert "pedi la cuenta de nuevo" in t.lower()
+    assert "$75.000" not in t
+    assert "pedi la cuenta" in t.lower()
 
 
-def test_el_presupuesto_viaja_como_FUENTE_y_no_como_invento():
-    """La otra mitad del arreglo, y es la que hizo que el cliente se quedara
-    sin respuesta: el modelo copia el total del turno anterior y la guarda de
-    procedencia tiene que encontrarlo. Si este test se cae, el bot vuelve a
-    contestar con el mensaje de sobrecarga."""
+def test_el_presupuesto_viejo_no_es_fuente():
+    """La otra mitad: un total de antes copiado a mano no llega al cliente. Si
+    el cliente lo pide, la cuenta se hace de nuevo en este turno."""
     from app.core import numeros as N
     conv = {"ultimo_presupuesto": "Total: $395.000"}
     texto, informe = N.llenar("Te confirmo el pedido por $395.000.", [], "t",
                               fuente_texto=__import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod"))
-    assert not informe["inventada"], informe
+    assert informe["inventada"] and "395.000" not in texto
 
 
 def test_una_cuenta_que_no_se_pudo_hacer_no_pisa_la_anterior():

@@ -24,8 +24,8 @@ from app.logger import get_logger
 log = get_logger(__name__)
 
 COMO_LEERLA = (
-    "Datos del sistema, no los escribio el cliente. Los precios y totales de aca son fuente: se copian tal cual; "
-    "si el pedido cambio, pedi la cuenta de nuevo con la herramienta cuenta en vez de corregirlos a mano. 'El segundo' es el 2 de LO MOSTRADO; 'ese', 'lo', 'esos' "
+    "Datos del sistema, no los escribio el cliente. Los precios de aca son fuente. Los totales y envios de antes no: "
+    "si el cliente pide un total, pedi la cuenta con la herramienta cuenta. 'El segundo' es el 2 de LO MOSTRADO; 'ese', 'lo', 'esos' "
     "o 'el mismo' es lo mostrado, y 'de esos' se elige entre lo mostrado, con sobre_lo_buscado. Un producto "
     "nombrado antes se resuelve por su id de aca.")
 
@@ -142,9 +142,6 @@ def texto(conv: dict, tienda_id: str) -> str:
                 f"{q}x {pid} {nombre or _producto(pid, tienda_id).get('nombre') or ''}".strip()
                 for pid, q, nombre in items))
             en_pedido += [pid for pid, _, _ in items]
-    presu = (conv.get("ultimo_presupuesto") or "").strip()
-    if presu:
-        r.append("ULTIMO PRESUPUESTO que ya le pasaste: " + presu)
     guardado = PD.pendiente(conv.get("pedido_pendiente"))
     if guardado:
         import json

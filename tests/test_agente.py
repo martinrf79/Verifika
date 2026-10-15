@@ -106,17 +106,16 @@ def test_exclusion_dura_o_blanda_devuelven_los_mismos_hechos_del_rubro():
         assert a["filas"] and m["filas"], op
 
 
-def test_las_fichas_del_turno_traen_el_precio_en_numero_para_la_suma_verificada():
-    """"los dos $49.500" es una suma correcta de dos precios que volvieron. Sin
-    `precio_ars` en las fichas la guarda no podia comprobarla y tiraba la
-    respuesta entera."""
+def test_las_fichas_del_turno_traen_el_precio_en_numero():
+    """El precio en numero es como la guarda compara. La suma a mano ya no es
+    fuente desde la FICHA 69: se va su oracion y los precios quedan."""
     fichas, _, _ = R._lo_que_volvio([{"herramienta": "buscar", "vuelve": {"filas": [
         {"id": "MOU0001", "nombre": "G203", "precio": "$37.500"},
         {"id": "MOU0009", "nombre": "M170", "precio": "$12.000"}]}}])
     assert [f["precio_ars"] for f in fichas] == [37500, 12000]
     from app.core import numeros as N
-    _, inf = N.llenar("El G203 sale $37.500 y el M170 $12.000, los dos $49.500.", fichas)
-    assert not inf["inventada"]
+    salida, _ = N.llenar("El G203 sale $37.500 y el M170 $12.000. Los dos, $49.500.", fichas)
+    assert "$37.500" in salida and "$12.000" in salida and "49.500" not in salida
 
 
 def test_un_modelo_en_dos_colores_es_un_renglon_y_lo_sin_stock_baja():
@@ -379,12 +378,14 @@ def _procesar(uid, msg):
 
 
 def test_la_plata_que_ninguna_herramienta_devolvio_no_sale(monkeypatch):
-    _agente_fijo(monkeypatch, "El K120 sale $99.999.",
+    """Desde la FICHA 69 se va la oracion, no la respuesta entera."""
+    _agente_fijo(monkeypatch, "El K120 sale $99.999. Lo tenemos en negro.",
                  [{"herramienta": "producto", "args": {}, "vuelve": {"filas": [
                      {"id": "TEC0029", "nombre": "Teclado Logitech K120 Negro", "precio": "$14.500"}]}}])
     from app.config import get_settings
     texto = _procesar("t_agente_plata", "cuanto sale el k120?")
-    assert get_settings().VERIFIKA_FALLBACK_MESSAGE in texto and "99.999" not in texto
+    assert "99.999" not in texto and "Lo tenemos en negro." in texto
+    assert get_settings().VERIFIKA_FALLBACK_MESSAGE not in texto
 
 
 def test_sin_texto_del_modelo_el_bot_no_queda_mudo(monkeypatch):

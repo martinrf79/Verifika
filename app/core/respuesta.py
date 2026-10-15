@@ -359,22 +359,22 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         log.warning("respuesta_sin_modelo", trace_id=trace_id)
     else:
         # ── 2. NUMEROS ──────────────────────────────────────────────────
-        # LA PROCEDENCIA SE MIDE CONTRA TODO LO QUE VIO EL MODELO: la memoria,
-        # lo que el bot ya dijo en la charla —que paso por esta misma guarda— y
-        # cada cosa que devolvio una herramienta, tal cual viajo.
+        # SOLO VALE LO DE ESTE TURNO: lo que devolvio cada herramienta y la
+        # ficha de la charla. La charla escrita no es fuente: ahi viven los
+        # presupuestos viejos (FICHA 69). Un monto sin fuente se saca con su
+        # renglon y el resto sale; la cuenta la pone el codigo por su marca.
         t = time.time()
-        dicho = "\n".join(str(m.get("content") or "") for m in history if m.get("role") == "assistant")
-        fuente = memoria + "\n" + ficha + "\n" + dicho + "\n" + json.dumps([x.get("vuelve") for x in llamadas],
-                                              ensure_ascii=False, default=str)
+        fuente = ficha + "\n" + json.dumps([x.get("vuelve") for x in llamadas], ensure_ascii=False, default=str)
+        # EL PRESUPUESTO ANTERIOR VALE MIENTRAS EL PEDIDO NO CAMBIO: sin calculo en este turno, o con uno que da el
+        # mismo total. Si el total cambio, mezclarlo es como salio Posadas con el envio viejo (K21, 15-oct).
+        previo = str(conv.get("ultimo_presupuesto") or "")
+        nuevos = {str((c.get("vuelve") or {}).get("total_ars")) for c in (r.get("calculos") or {}).values()}
+        fuente += "\n" + previo if not nuevos or nuevos & N._digitos(previo) else ""
         texto, informe = N.llenar(
             texto, fichas, trace_id, fuente_texto=fuente,
             envio_monto=(list(envios.values())[0] if len(envios) == 1 else None),
-            envios=envios, cuenta=cuenta)
+            envios=envios, cuenta=cuenta, calculos=r.get("calculos"))
         etapas["numeros"] = int((time.time() - t) * 1000)
-        if informe.get("inventada"):
-            # LA RESPUESTA CON PLATA INVENTADA NO SALE: el numero ya contamino
-            # la frase y no hay forma honesta de corregirla renglon por renglon.
-            texto = settings.VERIFIKA_FALLBACK_MESSAGE
         texto = gs.con_saludo_inicial(gs.sin_saludo_del_modelo(texto), negocio) \
             if not history else gs.sin_saludo_del_modelo(texto)
 

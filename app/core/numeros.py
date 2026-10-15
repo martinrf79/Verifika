@@ -1,26 +1,22 @@
-"""LOS DOS NUMEROS QUE EXISTEN — el precio de un producto y el costo de un envio.
+"""LOS NUMEROS QUE SALEN — ningun monto calculado lo escribe el modelo (FICHA 69, 15-oct-2026).
 
-EL MODELO ESCRIBE EL PRECIO, copiado de la ficha que el codigo le puso
-delante. Lo que NO puede escribir es un numero que la fuente no tenga, y eso lo
-decide este modulo, no el prompt.
+EL MODELO ESCRIBE EL PRECIO de un producto, copiado del hecho que el codigo
+le puso delante. LA CUENTA NO LA ESCRIBE: cada calculo del turno lleva un id y
+el redactor pone su marca, `{{cuenta:C1}}`; el codigo la cambia por el bloque
+exacto de la calculadora. Los otros huecos siguen: `{{precio}}`,
+`{{precio:ID}}`, `{{envio}}`, `{{envio:destino}}` y `{{total}}`.
 
-Los dos numeros que ninguna ficha tiene van como hueco y los pone el codigo:
+Tres reglas y ninguna excepcion:
 
-    {{envio}}       la tarifa del destino, ya cotizada por el motor
-    {{total}}       la suma, que el modelo no puede hacer de cabeza
-
-(y siguen andando `{{precio}}` y `{{precio:ID}}`, por si el modelo no tiene el
-numero a mano)
-
-Dos reglas y ninguna excepcion:
-
-  1. UN HUECO QUE NO RESUELVE NO SE INVENTA. Se dice que no se tiene el dato y
-     queda el renglon `hueco_sin_dato` en el log. Es la misma regla de la FAQ
-     curada: una respuesta a medias es mejor que una inventada.
-  2. UN NUMERO QUE NO ESTA EN LA FUENTE NO SALE, y se lleva puesta la
-     respuesta entera. No importa si es un precio, un plazo o una spec: si el
-     modelo lo escribio y la fuente no lo tiene, lo invento. El codigo siempre
-     puede invalidar lo que dijo el modelo.
+  1. UN HUECO QUE NO RESUELVE NO SE INVENTA: se dice que no se tiene el dato y
+     queda el renglon `hueco_sin_dato` en el log.
+  2. SOLO VALE LO DE ESTE TURNO. La fuente es lo que devolvieron las
+     herramientas ahora y la ficha de la charla, que no trae totales viejos.
+     Un presupuesto anterior no es fuente: si el pedido cambio, se recalcula.
+  3. UN NUMERO SIN FUENTE NO SALE, Y NO SE LLEVA LA RESPUESTA. Se saca su
+     renglon; si el turno tiene un calculo que no quedo escrito, va su bloque.
+     Queda `monto_suelto` en el log con el `trace_id`: es una alarma, y en
+     produccion tiene que ir a cero.
 """
 import re
 
@@ -28,7 +24,7 @@ from app.logger import get_logger
 
 log = get_logger(__name__)
 
-_HUECO = re.compile(r"\{\{\s*(precio|envio|total)\s*(?::\s*([^}]*))?\s*\}\}")
+_HUECO = re.compile(r"\{\{\s*(precio|envio|total|cuenta)\s*(?::\s*([^}]*))?\s*\}\}")
 
 # UNA CIFRA GRANDE: con signo pesos, con puntos de mil, o cuatro digitos para
 # arriba. No es solo plata a proposito: `1920x1080` y `3200 MHz` tambien caen
@@ -107,28 +103,6 @@ def _envio_de(envios: dict, referencia: str):
     return parecidos[0] if len(parecidos) == 1 else None
 
 
-def _suma_verificada(objetivo: int, sumandos: list, veces: int = 5) -> bool:
-    """¿Sale `objetivo` sumando al menos DOS montos de la fuente, cada uno
-    hasta `veces` unidades? Dos como minimo: un monto solo ya estaria entre
-    los permitidos, y una cifra que es un multiplo de uno solo —"$75.000"
-    por dos G203— tambien se acepta porque es cantidad por precio."""
-    vals = sorted({v for v in sumandos if 0 < v <= objetivo})[:12]
-    if not vals or objetivo <= 0:
-        return False
-    # (suma, cuantos) alcanzables; se corta en el objetivo, que es chico.
-    alcanzables = {(0, 0)}
-    for v in vals:
-        nuevos = set()
-        for suma, n in alcanzables:
-            for k in range(1, veces + 1):
-                t = suma + v * k
-                if t > objetivo:
-                    break
-                nuevos.add((t, n + k))
-        alcanzables |= nuevos
-    return any(suma == objetivo and n >= 2 for suma, n in alcanzables)
-
-
 def _norm_destino(s) -> str:
     import unicodedata
     t = unicodedata.normalize("NFKD", str(s or "").lower().strip())
@@ -137,185 +111,137 @@ def _norm_destino(s) -> str:
 
 def llenar(texto: str, fichas: list, trace_id: str = "",
            fuente_texto: str = "", envio_monto: int | None = None,
-           envios: dict | None = None, cuenta: dict | None = None) -> tuple:
+           envios: dict | None = None, cuenta: dict | None = None,
+           calculos: dict | None = None) -> tuple:
     """(texto con los numeros puestos, informe). El informe dice que huecos se
-    llenaron, cuales quedaron sin dato y si hubo plata inventada.
+    llenaron, cuales quedaron sin dato, que montos se sacaron y que bloques
+    puso el codigo.
 
-    `fuente_texto` es TODO lo que se le puso delante al modelo, tal cual viajo:
-    inventario, politicas y envio. La guarda compara contra eso y no contra una
-    lista de piezas, asi una fuente nueva no se olvida de sumarse a la
-    procedencia -paso el 11-sep con el inventario y tiro una respuesta
-    correcta-.
+    `fuente_texto` es lo que vio el modelo EN ESTE TURNO: lo que devolvieron
+    las herramientas y la ficha de la charla. No la charla escrita: ahi estan
+    los presupuestos viejos, y copiar uno es como salio Posadas con el envio
+    que ya no se cobraba (15-oct, K21 en WhatsApp).
 
-    `envio_monto` es la tarifa cuando volvio UNA sola del motor. None cuando
-    no volvio ninguna o volvieron varias: entonces el hueco pelado dice que no
-    se tiene el dato, nunca un numero, porque con dos tarifas delante elegir
-    seria adivinar.
+    `envio_monto` es la tarifa cuando volvio UNA sola del motor; con varias el
+    hueco pelado no elige. `envios` es {destino: tarifa} y resuelve
+    `{{envio:cordoba}}`. `cuenta` es el ultimo total calculado: llena
+    `{{total}}`, con `total_final_ars` si hay reparto de pago.
 
-    `envios` es {destino: tarifa}, lo que el modelo pidio por la boca de envio,
-    y resuelve `{{envio:cordoba}}`. Con un solo destino los dos caminos son el
-    mismo: la lista trae uno.
-
-    `cuenta` es el TOTAL que `calculadora` ya calculo en el retorno, antes de
-    que el modelo redactara. Hace dos cosas, y las dos son la misma regla de
-    procedencia: el modelo PUEDE escribir ese total -y entonces esto es lo que
-    impide que la guarda lo llame invento-, y si igual deja el hueco,
-    `{{total}}` se llena con ESE total y no con una suma del texto. Con un
-    reparto de pago manda `total_final_ars`, que es el unico numero que el
-    cliente va a pagar de verdad.
+    `calculos` es {id: {"detalle": bloque, "vuelve": lo que devolvio}}, cada
+    calculo del turno con el id que vio el redactor. `{{cuenta:C1}}` pone el
+    bloque; un calculo sin marca y sin su total escrito va al final.
     """
-    informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": []}
-    usados: list = []
+    informe = {"llenos": [], "sin_dato": [], "montos": [], "inventada": [], "bloques": []}
+    calculos = calculos or {}
 
     def _pone(m):
-        clase, ref = m.group(1), (m.group(2) or "")
+        clase, ref = m.group(1), (m.group(2) or "").strip()
+        if clase == "cuenta":
+            if ref in calculos:
+                informe["bloques"].append(ref)
+                return f"\x00C:{ref}\x00"
+            informe["sin_dato"].append(f"cuenta:{ref}")
+            return SIN_DATO
         if clase == "precio":
             f = _precio_de(fichas, ref)
             if not f:
                 informe["sin_dato"].append("precio" + (f":{ref}" if ref else ""))
                 return SIN_DATO
             monto = int(f["precio_ars"])
-            usados.append(monto)
-            informe["llenos"].append("precio")
-            informe["montos"].append(monto)
-            return _money(monto)
-        if clase == "envio":
-            # EL HUECO CON DESTINO, `{{envio:cordoba}}` (12-sep-2026). Con
-            # varios destinos en un mensaje, un `{{envio}}` pelado no dice a
-            # cual de las tarifas se refiere el renglon, asi que el codigo
-            # escribia la misma dos veces. El destino que el modelo nombra en
-            # el hueco es el que `fuente` ya cotizo y le puso delante.
+        elif clase == "envio":
+            # Con varios destinos, el que nombra el hueco; con uno, el unico.
             monto = _envio_de(envios, ref) if ref else envio_monto
             if monto is None:
                 informe["sin_dato"].append("envio" + (f":{ref}" if ref else ""))
                 return SIN_DATO
-            usados.append(monto)
-            informe["llenos"].append("envio")
-            informe["montos"].append(monto)
-            return _money(monto)
-        # El total se resuelve en la SEGUNDA pasada, cuando ya estan puestos
-        # los precios y el envio: sumar antes daria la mitad de la cuenta.
-        return "\x00TOTAL\x00"
+        else:
+            # El total va en la segunda pasada, con los precios ya puestos.
+            return "\x00TOTAL\x00"
+        informe["llenos"].append(clase)
+        informe["montos"].append(int(monto))
+        return _money(monto)
 
     salida = _HUECO.sub(_pone, texto or "")
 
-    # EL HUECO QUE EL MODELO COPIO DEL MOLDE. `{{producto}}` y los demas no son
-    # de plata: ahi tenia que escribir la palabra de la ficha. Si quedo crudo,
-    # sale el aviso y el hueco no viaja al cliente con las llaves puestas.
+    # EL HUECO QUE EL MODELO COPIO DEL MOLDE —`{{producto}}`— no viaja crudo.
     crudos = re.findall(r"\{\{[^}]*\}\}", salida)
     if crudos:
         informe["crudos"] = crudos
         log.warning("hueco_crudo", trace_id=trace_id, huecos=crudos[:5])
         salida = re.sub(r"\s*\{\{[^}]*\}\}", " " + SIN_DATO, salida)
 
-    # ── LA GUARDA: TODO NUMERO SALE DE LA FUENTE ────────────────────────
+    # ── LA GUARDA: UN NUMERO SIN FUENTE SE SACA, CON SU RENGLON ─────────
     #
-    # Desde el 11-sep el modelo SI escribe el precio, copiado de la ficha. Esto
-    # es lo que hace que esa licencia no sea un agujero: un numero que no esta
-    # en las fichas, ni en las politicas que se le pusieron delante, ni lo puso
-    # el codigo, NO PUEDE haber salido de la fuente. Salio de la cabeza del
-    # modelo, y la respuesta entera no sale.
-    #
-    # LA FUENTE SON LAS TRES COSAS QUE VIAJARON, y el inventario es una de
-    # ellas. Medido el 11-sep 18:40: a "que producto mas caro tenes" el modelo
-    # contesto "$3.100.500", que es el tope que el inventario le habia dicho, y
-    # la guarda lo llamo invento porque solo miraba fichas y politicas. Se tiro
-    # una respuesta CORRECTA. Lo que se le pone delante al modelo es fuente,
-    # todo, o la guarda castiga por hacerle caso al prompt.
-    #
-    # Y por eso la comparacion es contra el texto ENTERO de la fuente y no solo
-    # contra los precios: `1000 dpi` y `3200 MHz` son numeros de la ficha, y
-    # una guarda que solo conociera precios los llamaria invento y tiraria una
-    # respuesta correcta. La regla es de PROCEDENCIA, no de tema.
+    # La regla es de PROCEDENCIA, no de tema: `1000 dpi` y `3200 MHz` son de la
+    # ficha y pasan; un monto que no esta en nada de lo que vio el modelo en
+    # este turno no pudo salir de la fuente. Antes tiraba la respuesta entera y
+    # el cliente leia el aviso de demanda por un renglon; ahora se va el renglon
+    # y lo demas sale.
     import json as _json
     permitidos = {str(m) for m in informe["montos"]}
-    permitidos |= _digitos(_json.dumps(fichas or [], ensure_ascii=False,
-                                       default=str))
+    permitidos |= _digitos(_json.dumps([fichas or [], envios or {}, cuenta or {}, envio_monto],
+                                       ensure_ascii=False, default=str))
     permitidos |= _digitos(fuente_texto or "")
-    # LA TARIFA DEL MOTOR TAMBIEN ES FUENTE, y hasta hoy no. El 13-sep el
-    # envio salio del bloque que viaja siempre y paso a pedirse por el motor:
-    # la tarifa vive en `envios`, que el modelo ve en el retorno, y la guarda
-    # no la miraba. Medido el 13-sep 22:35, charla 5493547504287: "el que me
-    # dijiste recien" —el Genius de $12.000— el modelo copio los $7.500 que
-    # el motor acaba de cotizar a Cordoba, huecos_llenos=0, y la guarda tiro
-    # la respuesta entera. El cliente leyo el fallback. Copiar la tarifa que
-    # volvio no es inventar; inventar sigue cayendo, porque lo que no esta
-    # en `envios` no entra aca.
-    if envio_monto is not None:
-        permitidos |= _digitos(str(int(envio_monto)))
-    if envios:
-        permitidos |= _digitos(_json.dumps(envios, ensure_ascii=False,
-                                           default=str))
-    # EL TOTAL CALCULADO TAMBIEN ES FUENTE. Es la misma leccion que este modulo
-    # ya aprendio dos veces -con el inventario el 11-sep, con la tarifa del
-    # motor el 13-sep-: lo que se le pone delante al modelo es fuente, TODO, o
-    # la guarda castiga por hacerle caso. El detalle entra entero porque ahi
-    # viven los subtotales y el descuento, que son los renglones que el modelo
-    # copia cuando desglosa la cuenta.
-    if cuenta:
-        permitidos |= _digitos(_json.dumps(cuenta, ensure_ascii=False,
-                                           default=str))
-    # LA SUMA QUE EL CODIGO PUEDE COMPROBAR NO ES INVENTO (22-sep-2026).
-    # Medido 2 de 3 en la tanda de charlas: a "precio del K120 y del G203" el
-    # modelo contesto los dos precios Y "$52.000 los dos", la guarda no
-    # encontro 52.000 en ninguna fuente y el cliente leyo "no tengo esa
-    # informacion". La suma estaba BIEN. Lo que la regla protege es que la
-    # plata sea correcta, no que el modelo no sume: si el codigo reconstruye la
-    # cifra EXACTA con precios y tarifas que si son fuente, esta verificada.
-    # Si no la reconstruye, sigue cayendo igual que antes.
-    sumandos = [int(f["precio_ars"]) for f in (fichas or [])
-                if str(f.get("precio_ars") or "").isdigit()]
-    sumandos += [int(v) for v in (envios or {}).values()
-                 if str(v).isdigit()]
-    for bruto in _CIFRA.findall(salida):
-        limpio = re.sub(r"\D", "", bruto)
-        if limpio and limpio not in permitidos:
-            if _suma_verificada(int(limpio), sumandos):
-                informe.setdefault("sumas", []).append(int(limpio))
-                continue
-            informe["inventada"].append(bruto.strip())
-    if informe.get("sumas"):
-        log.info("suma_verificada", trace_id=trace_id,
-                 montos=informe["sumas"][:5])
+    for c in calculos.values():
+        permitidos |= _digitos(_json.dumps(c.get("vuelve") or {}, ensure_ascii=False, default=str))
+    renglones = []
+    for renglon in salida.split("\n"):
+        # Se va la ORACION que lo lleva: un parrafo de WhatsApp es un renglon.
+        oraciones = []
+        for o in re.split(r"(?<=[.!?])\s+", renglon):
+            malos = [b.strip() for b in _CIFRA.findall(o) if re.sub(r"\D", "", b) not in permitidos]
+            informe["inventada"] += malos
+            if not malos:
+                oraciones.append(o)
+        if oraciones or not renglon.strip():
+            renglones.append(" ".join(oraciones))
+    salida = "\n".join(renglones)
+    informe["bloques"] = [c for c in informe["bloques"] if f"\x00C:{c}\x00" in salida]
+
+    # ── LOS BLOQUES DE LA CALCULADORA, tal cual ─────────────────────────
+    for cid in informe["bloques"]:
+        salida = salida.replace(f"\x00C:{cid}\x00", "\n" + str(calculos[cid].get("detalle") or SIN_DATO) + "\n")
+    # SIN MARCA Y SIN SU TOTAL ESCRITO, el bloque va al final; se van los
+    # renglones del modelo que solo repetian montos de esos bloques.
+    faltan = [cid for cid, c in calculos.items() if cid not in informe["bloques"] and not (
+        str(int((c.get("vuelve") or {}).get("total_final_ars") or (c.get("vuelve") or {}).get("total_ars") or 0))
+        in _digitos(salida))]
+    if faltan:
+        suyos = _digitos(_json.dumps([calculos[c].get("vuelve") for c in faltan], ensure_ascii=False, default=str))
+        plata = lambda r: {re.sub(r"\D", "", m) for m in re.findall(r"\$\s?\d[\d.]*", r)}  # noqa: E731
+        salida = "\n".join(r for r in salida.split("\n") if not (plata(r) and plata(r) <= suyos))
+        salida = salida.rstrip() + "\n\n" + "\n\n".join(str(calculos[c].get("detalle") or "") for c in faltan)
+        informe["bloques"] += faltan
 
     # ── EL TOTAL, RECIEN AHORA ──────────────────────────────────────────
-    #
-    # Suma TODO monto que quedo escrito en el mensaje, venga del modelo o del
-    # codigo: los del modelo ya pasaron por la guarda de arriba, asi que a esta
-    # altura no hay una sola cifra sin respaldo en la fuente. Sumar solo lo que
-    # puso el codigo daba la mitad de la cuenta -el precio lo escribe el modelo
-    # desde la ficha-, que es peor que no dar ninguna.
+    # El calculado gana: la suma del texto no conoce el descuento ni el
+    # reparto. Sin cuenta, suma lo que quedo escrito antes del hueco, que ya
+    # paso por la guarda.
     if "\x00TOTAL\x00" in salida:
-        # EL TOTAL CALCULADO GANA SOBRE LA SUMA DEL TEXTO (14-sep-2026), y no
-        # es una preferencia: son dos numeros distintos. La suma del texto no
-        # puede conocer el descuento por transferencia ni el reparto entre
-        # medios, asi que con un 70/30 daba el total SIN descuento. Con la
-        # cuenta hecha, el hueco se llena con lo que el cliente va a pagar.
         _calc = (cuenta or {}).get("total_final_ars")
         if _calc is None:
             _calc = (cuenta or {}).get("total_ars")
+        if _calc is None:
+            partes = [int(re.sub(r"\D", "", m)) for m in
+                      re.findall(r"\$\s?\d[\d.]*", salida.split("\x00TOTAL\x00")[0])]
+            _calc = sum(partes) if partes else None
         if _calc is not None:
             informe["llenos"].append("total")
             informe["montos"].append(int(_calc))
             salida = salida.replace("\x00TOTAL\x00", _money(_calc))
-            partes = []
         else:
-            partes = [int(re.sub(r"\D", "", m)) for m in
-                      re.findall(r"\$\s?\d[\d.]*",
-                                 salida.split("\x00TOTAL\x00")[0])]
-        if partes:
-            total = sum(partes)
-            informe["llenos"].append("total")
-            informe["montos"].append(total)
-            salida = salida.replace("\x00TOTAL\x00", _money(total))
-        elif "\x00TOTAL\x00" in salida:
             informe["sin_dato"].append("total")
             salida = salida.replace("\x00TOTAL\x00", SIN_DATO)
 
+    salida = re.sub(r"\n{3,}", "\n\n", salida).strip()
+    if not salida:
+        salida = SIN_DATO.capitalize() + "."
     if informe["sin_dato"]:
-        log.warning("hueco_sin_dato", trace_id=trace_id,
-                    huecos=informe["sin_dato"])
+        log.warning("hueco_sin_dato", trace_id=trace_id, huecos=informe["sin_dato"])
     if informe["inventada"]:
-        log.warning("plata_inventada", trace_id=trace_id,
-                    montos=informe["inventada"][:5])
+        log.warning("monto_suelto", trace_id=trace_id, montos=informe["inventada"][:5])
+    if calculos:
+        log.info("montos_del_codigo", trace_id=trace_id, bloques=informe["bloques"],
+                 calculos={k: (v.get("vuelve") or {}).get("total_final_ars") or (v.get("vuelve") or {}).get("total_ars")
+                           for k, v in calculos.items()})
     return salida, informe

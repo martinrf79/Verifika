@@ -133,3 +133,22 @@ La charla K21 de Martín, dos mensajes con el código nuevo:
 
 Toca `tablero.py` —el redactor y su prompt—, `numeros.py` y `respuesta.py`. Una sesión.
 Después: el pedido como dato y el modelo diciendo sólo qué cambia, la FICHA 68.
+
+## 15-oct, tercera sesión — ningún monto lo escribe el modelo, hecho
+
+- **La marca.** `tablero._calculos` le da un id a cada cuenta y total general del turno y en los HECHOS cambia
+  el detalle por `{{cuenta:C1}}`. `numeros.llenar` pone el bloque exacto. Un cálculo sin marca y sin su total
+  escrito va al final, y se van los renglones del modelo que solo repetían su plata.
+- **Sólo vale lo de este turno.** La fuente de la guarda es lo que devolvieron las herramientas y la ficha de la
+  charla, que ya no trae el presupuesto anterior. El presupuesto anterior vale sólo si el pedido no cambió: sin
+  cálculo en el turno, o con uno del mismo total.
+- **El monto suelto no tumba la respuesta.** Se va su oración y queda `monto_suelto` en el log; `montos_del_codigo`
+  anota cada bloque con su total y el `trace_id`. Se borró la suma verificada sobre el texto.
+- **Dos causas de paso:** la cuenta de una reserva perdía la cantidad, K11; y un reparto con un solo medio no
+  cerraba y el redactor arrastraba un 70/30 viejo sin descuento, K21. El resto ahora es otra parte, sin medio.
+- **Medido sin modelo**, reproduciendo `ds_mem_ficha_1` a `_3` con el código de antes, `rep_basemontos_`, y el de
+  ahora, `rep_montosf_`. La puerta pasa sin romper nada. Lo que recibe el cliente, con la vara: 52 a 54 charlas de
+  60 y 171 a 175 casillas. C56 deja de caer al aviso; K21 da el reparto con el descuento.
+- **El medidor:** al reproducir califica los hechos, y el detalle ahora vive en `calculos`; `sonda_charlas` lo suma.
+- **Falta:** medirlo en vivo con Gemini gratis, que ya usa el prompt nuevo del redactor; hoy la cuota diaria se
+  agotó. En producción, `monto_suelto` por semana tiene que ir a cero.

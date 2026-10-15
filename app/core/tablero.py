@@ -110,7 +110,7 @@ Te paso el ultimo mensaje del cliente y los HECHOS que consulto el sistema para 
 9. No escribas codigos internos de producto: nombralos por su nombre.
 4. Si una parte dependia de otra, decidi con lo que dicen los HECHOS y explicalo en una linea.
 5. Si el cliente da algo por cierto y los HECHOS dicen otra cosa, corregilo con amabilidad.
-6. Si hay una cuenta, copia su detalle tal cual, renglon por renglon: cada producto, el envio, cada parte del reparto y el total. Si hay un total_general, va al final y una sola vez, con su reparto.
+6. Los montos de una cuenta o de un total_general NO los escribis: pone su marca, por ejemplo {{{{cuenta:C1}}}}, sola en un renglon donde va el presupuesto, y el sistema pone el detalle exacto. Una marca por cada cuenta; la del total_general al final y una sola vez. Un total o un envio que no tiene marca en los HECHOS de este mensaje no lo das, aunque este en la charla.
 11. Si hay un hecho confirmar_pedido, NO des precios ni totales: deci en pocas lineas que entendiste que va a cada destino, lo que no cierra con sus palabras, y pregunta una vez si esta bien para pasarle los presupuestos. Contesta igual las otras partes del mensaje.
 10. Si hay un hecho de articulos, decilo en una linea antes de los presupuestos, con sus palabras: lo que no estaba en la lista y que se tomo en su lugar, lo que el cliente nombro fuera de la lista, o que articulo quedo sin destino; y pregunta una vez si esta bien. No le agregues motivos ni nombres al sistema.
 7. El saber general de tecnologia lo explicas vos.
@@ -813,6 +813,11 @@ def _reparto(rep):
             else f"parte {i}"} for i, r in enumerate(rep, 1)]
     if rep and all(float(r.get("porcentaje") or 0) <= 1 for r in rep):
         rep = [{**r, "porcentaje": round(float(r.get("porcentaje") or 0) * 100, 2)} for r in rep]
+    # LO QUE FALTA PARA EL CIEN ES OTRA PARTE (15-oct, K21): "70 por ciento transferencia" no cerraba el reparto y el
+    # redactor arrastraba un 70/30 viejo. El resto va sin medio, y por eso sin descuento.
+    falta = 100 - sum(float(r.get("porcentaje") or 0) for r in rep)
+    if rep and 1 < falta < 100:
+        rep.append({"medio": "el resto", "porcentaje": round(falta, 2)})
     return rep or None
 
 
@@ -1334,6 +1339,7 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
     el codigo: lo certificado en este turno o, si no hay, lo que el bot nombro
     en su ultimo mensaje. El modelo lo detecta siempre; armarla no."""
     ids = []
+    cant = {str(i.get("producto")): i.get("cantidad") or 1 for p in piezas for i in p.get("items") or []}
     for x in llamadas:
         v = x.get("vuelve") or {}
         filas = v.get("filas") or []
@@ -1341,7 +1347,8 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
             ids.append(str(filas[0]["id"]))
         if x["herramienta"] == "reservar" and v.get("id"):
             ids.append(str(v["id"]))
-    cant = {str(i.get("producto")): i.get("cantidad") or 1 for p in piezas for i in p.get("items") or []}
+            # LA CANTIDAD RESERVADA ES LA DE LA CUENTA (15-oct, K11): "sumame 3" reservaba 3 y contaba 1.
+            cant[str(v["id"])] = int((x.get("args") or {}).get("cantidad") or v.get("cantidad") or 1)
     # LA SEGUNDA VUELTA TAMBIEN ACA: si este turno solo busco —"dos auriculares
     # y dos mouse, los mas baratos, sumame todo"—, la cuenta sale de lo que
     # encontro cada busqueda, con la cantidad que pidio el cliente.
@@ -1380,6 +1387,31 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
     out = ejecutar("cuenta", args, tienda_id)
     llamadas.append({"vuelta": vuelta, "herramienta": "cuenta", "args": args, "vuelve": out})
     return {"parte": "el total que pidio el cliente", "tipo": "cuenta", "resultado": _para_redactar(out)}
+
+
+def _calculos(hechos: list, llamadas: list) -> dict:
+    """NINGUN MONTO CALCULADO LO ESCRIBE EL MODELO (15-oct, FICHA 69). Cada
+    cuenta y total general del turno lleva un id; en los HECHOS su detalle se
+    cambia por la marca, y `numeros` pone el bloque exacto donde va la marca."""
+    calc, ids = {}, {}
+    for x in llamadas:
+        v = x.get("vuelve") or {}
+        c = v.get("cuenta") if x["herramienta"] == "cuenta" else v if x["herramienta"] == "total_general" else None
+        if isinstance(c, dict) and c.get("total_ars") is not None and c.get("detalle") and c["detalle"] not in ids:
+            ids[c["detalle"]] = f"C{len(ids) + 1}"
+            calc[ids[c["detalle"]]] = {"detalle": c["detalle"], "vuelve": c}
+
+    def marcar(o):
+        if isinstance(o, list):
+            return [marcar(i) for i in o]
+        if not isinstance(o, dict):
+            return o
+        o = {k: marcar(v) for k, v in o.items()}
+        if o.get("detalle") in ids:
+            o["marca"] = "{{cuenta:" + ids[o.pop("detalle")] + "}}"
+        return o
+    hechos[:] = marcar(hechos)
+    return calc
 
 
 def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, historial: list,
@@ -1559,6 +1591,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
             and not any(p.get("tipo") == "repreguntar" or p.get("falta") for p in piezas):
         hechos.append({"pregunta_al_cliente": "falta un dato del cliente o no se sabe a cual se refiere: "
                                               "preguntale eso solo"})
+    calculos = _calculos(hechos, llamadas)
     sis_r = REDACTOR.format(negocio=gs.business_name(tienda_id))
     pedido = ("HECHOS del sistema para este mensaje, no los escribio el cliente:\n"
               + json.dumps(hechos, ensure_ascii=False, default=str))
@@ -1579,7 +1612,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
              revision=bool(revision), largo=len(texto),
              tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
              salida=sum(x["salida"] for x in uso), ms=int((time.time() - t0) * 1000))
-    return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos,
+    return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos, "calculos": calculos,
             "busqueda": busqueda_vigente((ctx.get("busquedas") or []) + (ctx.get("no_vende") or [])),
             "bloques": ctx.get("bloques"),
             "respondidos": respondidos(ctx.get("busquedas")),
