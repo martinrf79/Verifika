@@ -183,19 +183,6 @@ def _modelos_del_catalogo(tienda_id: str) -> set:
     return {_clave(f) for f in _filas(tienda_id, "productos.csv")}
 
 
-def cobertura_compatibilidad(tienda_id: str | None = None) -> tuple:
-    """(cubiertos, total). La celda vacia sale honesta, asi que un hueco no es un
-    error; pero un hueco GRANDE tiene que ser una decision y no un descuido."""
-    from app.core.compatibilidad import tabla
-    tienda_id = tienda_id or tienda_por_defecto()
-    catalogo = _modelos_del_catalogo(tienda_id)
-    t = tabla(tienda_id)
-    con_dato = {k for k, v in t.items()
-                if any(v.get(c) for c in ("conecta_por", "plataformas",
-                                          "requiere", "provee", "no_compatible"))}
-    return len(catalogo & con_dato), len(catalogo)
-
-
 def filas_huerfanas(tienda_id: str | None = None) -> list:
     """Filas de las planillas cuyo modelo ya no esta en el catalogo: dato que
     nadie va a leer, y que al mirar la planilla hace creer que esta cargado."""

@@ -73,7 +73,3 @@ def resumen(tienda_id: str | None = None) -> list[dict]:
             d["ejemplos"].append(f["pidio"])
     return sorted(cuenta.values(), key=lambda d: -d["veces"])
 
-
-def limpiar() -> None:
-    """Para los tests y los bancos."""
-    _vistos.clear()

@@ -47,22 +47,6 @@ _CRITERIO_LIBRE_RE = re.compile(
     re.IGNORECASE)
 
 
-def libera_criterio(mensaje: str) -> bool:
-    """True si el cliente solto el criterio de precio que habia dejado dicho."""
-    return bool(_CRITERIO_LIBRE_RE.search(mensaje or ""))
-
-
-def detectar_criterio(mensaje: str) -> str:
-    """Criterio de precio que el cliente dejo dicho en el mensaje: 'más barato'
-    o 'intermedio'. Devuelve '' si el mensaje no trae ninguno. Determinista: el
-    mismo texto siempre da el mismo criterio, sin llamar a ningun modelo."""
-    if _CRITERIO_INTERMEDIO_RE.search(mensaje or ""):
-        return "intermedio"
-    if _CRITERIO_BARATO_RE.search(mensaje or ""):
-        return "más barato"
-    return ""
-
-
 # EL CLIENTE PIDIENDO SUMAR ALGO A LO QUE YA ARMO. Se lee del MENSAJE y con
 # codigo, por el mismo motivo que el criterio de precio: tiene que ser
 # determinista y no depender de que el modelo lo entienda ese dia.
@@ -86,25 +70,6 @@ _RE_NO_AGREGAR = re.compile(
     r"\bno\s+(?:me\s+)?(?:agregues|agregue|sumes|a[ñn]adas|incorpores)\b"
     r"|\b(?:sac[aá]\w*|quit[aá]\w*|elimin[aá]\w*|borr[aá]\w*)\b",
     re.IGNORECASE)
-
-
-def pide_agregar_al_pedido(mensaje: str) -> bool:
-    """True si el cliente pide SUMAR algo a lo que ya venia armado, en vez de
-    declarar un pedido nuevo. Determinista: el mismo texto da siempre lo mismo.
-
-    Conservador a proposito. Ante una frase que ademas saca algo, devuelve
-    False y el pedido se lee como declaracion completa, que es el
-    comportamiento de siempre: sumar de mas le cobraria al cliente algo que
-    saco, y eso es peor que hacerle repetir el pedido."""
-    m = mensaje or ""
-    if _RE_NO_AGREGAR.search(m):
-        return False
-    return bool(_RE_AGREGAR_AL_PEDIDO.search(m))
-
-
-
-
-
 
 
 _current_estado: ContextVar[dict | None] = ContextVar("current_estado", default=None)
@@ -190,24 +155,6 @@ def get_current_estado() -> dict:
     return _current_estado.get() or {}
 
 
-def anotar_grupos_envio(grupos: list | None) -> None:
-    """Deja el reparto de envios YA resuelto en el estado del turno, para que
-    el hub lo persista y el turno siguiente no lo vuelva a pedir.
-
-    ESCRIBE POR ACA Y NO A MANO, y el motivo es una trampa real: quien anotaba
-    `get_current_estado()['grupos_envio'] = g` perdia la anotacion cuando el
-    estado estaba vacio, porque el getter devuelve `_current_estado.get() or
-    {}` y un dict vacio es falso — o sea que devolvia OTRO dict, y el reparto
-    se escribia en un objeto que nadie volvia a leer."""
-    if not grupos:
-        return
-    est = _current_estado.get()
-    if not isinstance(est, dict):
-        est = {}
-        _current_estado.set(est)
-    est["grupos_envio"] = list(grupos)
-
-
 def _money(n: Any) -> str:
     """Entero a formato argentino con separador de miles: 48000 -> '48.000'."""
     try:
@@ -220,23 +167,6 @@ def _money(n: Any) -> str:
 
 
 
-
-
-def merge_productos(memoria: list[dict], turno: list[dict],
-                    tope: int = 60) -> list[dict]:
-    """Une los productos vistos en memoria con los del turno, deduplicando por id (el
-    dato del turno pisa al viejo) y dejando los ultimos `tope`.
-
-    Tope 60 (era 20): un solo turno de tres busquedas trae 30 productos y el tope
-    viejo TIRABA la primera categoria entera (visto 8-jul: las notebooks caian de
-    la memoria y el enum del interprete no podia referenciarlas, asi que el pedido
-    extraido salia sin notebook y con el mouse duplicado)."""
-    por_id: dict[str, dict] = {}
-    for p in (memoria or []) + (turno or []):
-        pid = str(p.get("id") or "").upper()
-        if pid:
-            por_id[pid] = p
-    return list(por_id.values())[-tope:]
 
 
 def construir_estado(conv: dict | None, lead: dict | None) -> dict:
@@ -351,52 +281,6 @@ def _nombre_en_mensaje(nombre: str, mensaje: str) -> bool:
         if any(v in m for v in _variantes_singular(tok)):
             return True
     return False
-
-
-def ancla_al_dia(previo: dict | None, mensaje: str, candidatos: list) -> dict:
-    """EL ANCLA DEL PRODUCTO ELEGIDO, contra el contrato de HOY.
-
-    QUE RESUELVE. "El que te dije al principio", "el anotado", "el de antes":
-    la referencia lejana que la prioridad 3 nombra con todas las letras. El
-    campo `producto_anotado` existia en la conversacion, el estado lo levantaba
-    en cada turno y la version vieja de esta pieza dependia del INTERPRETE, que
-    el hub reemplazo el 1-ago: desde entonces no lo escribia nadie, o sea que
-    el ancla nunca existio en produccion. El banco de turno largo la daba por
-    buena porque llamaba a la funcion vieja directo, no al camino vivo.
-
-    LA REGLA, y es deliberadamente conservadora:
-      - el cliente ELIGE ("me quedo con", "anotalo", "me gusta") y el turno
-        dejo UN solo producto sobre la mesa -el pedido vigente de un item, o un
-        unico producto mostrado-: ese es el ancla;
-      - el cliente lo SACA y nombra algo del ancla: se limpia;
-      - cualquier otra cosa: queda la de antes. Un ancla que se mueve sola es
-        peor que no tener ancla.
-
-    `candidatos` son {id, nombre, precio} del turno, en orden de preferencia.
-    No resuelve nombres contra el catalogo: recibe productos que ya salieron de
-    una herramienta, asi que no puede anclar algo que no existe."""
-    previo = previo if isinstance(previo, dict) else {}
-    m = _norm_ancla(mensaje)
-    if previo.get("nombre") and _RE_QUITAR_ANOTADO.search(m) \
-            and _nombre_en_mensaje(previo["nombre"], mensaje):
-        return {}
-    if not _RE_ANOTAR.search(m):
-        return previo
-    utiles = [c for c in (candidatos or [])
-              if isinstance(c, dict) and c.get("id") and c.get("nombre")]
-    if len(utiles) != 1:
-        return previo
-    c = utiles[0]
-    try:
-        precio = int(c.get("precio") or c.get("precio_ars") or 0)
-    except (TypeError, ValueError):
-        precio = 0
-    return {"id": str(c["id"]).upper(), "nombre": str(c["nombre"]),
-            "precio": precio}
-
-
-
-
 
 
 # ── RECHAZO / EDICION DE PEDIDO (11-jul, banco: guiones 09 y 28) ─────────────

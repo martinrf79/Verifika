@@ -1560,25 +1560,6 @@ def dato_que_falla(prod: dict, filtros: list, tienda_id: str) -> str:
     return ""
 
 
-def incumplidos(prod: dict, filtros: list, tienda_id: str) -> list[str]:
-    """Que condiciones NO cumple este producto, en castellano, para que el
-    modelo diga cual falla en vez de decir que no hay nada."""
-    registro = campos_filtrables(tienda_id)
-    fuera = []
-    for f in (filtros or []):
-        campo = _norm(getattr(f, "campo", ""))
-        tipo = registro.get(campo)
-        if tipo is None:
-            continue
-        r = evaluar(prod, campo, _norm(getattr(f, "operador", "")),
-                    getattr(f, "valor", ""), tipo)
-        if r is True:
-            continue
-        que = f"{campo} {_norm(getattr(f, 'operador', ''))} {getattr(f, 'valor', '')}"
-        fuera.append(que if r is False else f"{que} (la ficha no lo dice)")
-    return fuera
-
-
 # COMO LO ESCRIBE EL CLIENTE REAL -> el rubro del catalogo. Sale de los
 # mensajes de Martin y de las charlas de WhatsApp, no de una lista imaginada.
 # Si el codigo no reconoce el rubro, la busqueda vuelve sin un solo producto.
@@ -1711,16 +1692,3 @@ def cantidades_por_categoria(mensaje: str, tienda_id: str) -> list:
             out.append((n, cat))
     return out
 
-
-def opciones_por_categoria(categoria: str, tienda_id: str,
-                           k: int = 3) -> list[dict]:
-    """Las k opciones mas baratas CON stock de una categoria, del catalogo
-    real. Determinista: mismo orden siempre. Mudada de guia_pedido."""
-    from app.storage.firestore_client import get_all_products
-    cat = _norm(categoria)
-    prods = [p for p in get_all_products(tienda_id=tienda_id)
-             if _norm(p.get("categoria", "")) == cat
-             and p.get("stock", 0) > 0
-             and isinstance(p.get("precio_ars"), (int, float))]
-    prods.sort(key=lambda p: p["precio_ars"])
-    return prods[:k]
