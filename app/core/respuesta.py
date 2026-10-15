@@ -37,137 +37,50 @@ settings = get_settings()
 
 
 def _memoria_texto(conv: dict) -> str:
-    """Lo que el modelo tiene que recordar de la charla, en pocas lineas.
-
-    LA MEMORIA NO SE APAGO Y NO SE APAGA. Es el objetivo 3 del proyecto: una
-    referencia lejana tiene que resolver. Lo que se apago es la maquinaria que
-    la rodeaba, no lo que el sistema recuerda.
-    """
+    """LO QUE RELEEN LOS LECTORES DEL TABLERO, no el modelo. Desde el 15-oct el
+    modelo lee `ficha_charla` (FICHA 69). Cada renglon tiene la forma que busca
+    su lector —`_mostrados`, `bloques_en_memoria`, `pedido_vigente`,
+    `busquedas_vigentes`, `respondidos_en`, el destino y `_ID`— con los mismos
+    recortes de antes, para no cambiar el cableado. Que lean el documento y no
+    este texto es el plan 3."""
     partes = []
-    resumen = (conv.get("summary") or "").strip()
-    if resumen:
-        partes.append("De lo que ya hablaron: " + resumen)
     vistos = conv.get("productos_vistos") or []
     ultimo = max((int(p.get("turno") or 0) for p in vistos), default=0)
     recien = [p for p in vistos if ultimo and int(p.get("turno") or 0) == ultimo]
+
+    def renglon(p):
+        return (f"{p.get('id')}: {p.get('nombre')}" + (f", {p['precio']}" if p.get("precio") else "")
+                + (RESPUESTA if p.get("respuesta") else ""))
     if recien:
-        # "EL SEGUNDO", "EL MAS BARATO DE ESOS", "ESE". Es lo que nombro tu
-        # ultimo mensaje, numerado en el orden en que el cliente lo leyo, que
-        # es el unico orden al que el cliente se puede referir.
-        #
-        # UN MODELO EN DOS COLORES ES UN RENGLON, porque asi lo lee el cliente:
-        # "el G203 en negro o blanco" es UNA opcion. Numerados por separado,
-        # "el segundo" caia en el G203 blanco y no en el G502 —medido en la
-        # tanda de charlas del 22-sep, CH2—.
+        # Un modelo en dos colores es UN renglon, como lo leyo el cliente.
         grupos: list = []
         for p in recien:
             clave = p.get("grupo") or p.get("modelo") or p.get("id")
-            if grupos and grupos[-1][0] == clave:
-                grupos[-1][1].append(p)
-            elif any(g[0] == clave for g in grupos):
-                next(g for g in grupos if g[0] == clave)[1].append(p)
+            g = next((g for g in grupos if g[0] == clave), None)
+            if g:
+                g[1].append(p)
             else:
                 grupos.append((clave, [p]))
-        partes.append(
-            "LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden en que el "
-            "cliente lo leyo. 'El segundo' es el 2; 'ese', 'lo', 'el mismo' "
-            "o 'esos' es esto, y 'de esos' se elige ENTRE ESTOS, no en el "
-            "catalogo; si pide el mas barato o el mas caro de esos, es dentro "
-            "de lo que busco, con sobre_lo_buscado:\n"
-            + "\n".join(
-                f"{n}. " + " / ".join(
-                    f"{p.get('id')}: {p.get('nombre')}"
-                    + (f", {p['precio']}" if p.get("precio") else "")
-                    + (RESPUESTA if p.get("respuesta") else "")
-                    for p in ps)
-                for n, (_c, ps) in enumerate(grupos[:8], 1)))
+        partes.append("LO QUE NOMBRASTE EN TU ULTIMO MENSAJE:\n" + "\n".join(
+            f"{n}. " + " / ".join(renglon(p) for p in ps) for n, (_c, ps) in enumerate(grupos[:8], 1)))
         vistos = [p for p in vistos if p not in recien]
     if vistos:
-        # CON ID Y CON PRECIO, y las dos cosas por un caso medido.
-        #
-        # EL 12-SEP A LAS 00:06 y a las 00:08 el bot le contesto DOS VECES
-        # seguidas "no tengo esa informacion confirmada" a un cliente que estaba
-        # armando un presupuesto. Lo que paso adentro: el modelo escribio los
-        # precios de lo que ya habia mostrado SACANDOLOS DE SU CABEZA -algunos
-        # acertados, otros sumados a mano- y la guarda de procedencia tiro la
-        # respuesta entera, con razon.
-        #
-        # No podia hacer otra cosa: este bloque le mandaba los NOMBRES pelados.
-        # Sin el precio no tenia de donde copiarlo; sin el id no podia ni volver
-        # a buscarlo, aunque `buscar` acepta ids y su descripcion dice, textual,
-        # "para volver a un producto que ya le mostraste". La capacidad estaba
-        # escrita y el modelo no tenia con que usarla.
-        #
-        # El precio aca ES fuente -viaja en el prompt, igual que el inventario-
-        # asi que copiarlo de aca ya no es inventar.
-        partes.append(
-            "Productos que le mostraste ANTES, con su id y su precio, del "
-            "mas viejo al mas reciente"
-            + ("" if recien else
-               "; si dice 'ese' o 'el que me dijiste', es el ultimo")
-            + ":\n"
-            + "\n".join(
-                f"- {p.get('id')}: {p.get('nombre')}"
-                + (f", {p['precio']}" if p.get("precio") else "")
-                + (RESPUESTA if p.get("respuesta") else "")
-                for p in vistos[-8:]))
-    # EL ULTIMO PRESUPUESTO, Y ES FUENTE COMO EL PRECIO DE ARRIBA (15-sep-2026).
-    #
-    # MEDIDO EN WHATSAPP ESE MISMO DIA, cuatro turnos sobre UN pedido: el total
-    # salio 207.500, despues 284.000 y despues 395.000, y el cuarto turno no
-    # llego al cliente porque el modelo escribio $250.000 y la guarda tiro la
-    # respuesta entera. Ninguna de las tres cuentas estaba mal sumada: cada
-    # turno ELIGIO productos y cantidades distintas, porque lo unico que
-    # sobrevivia al turno eran los nombres de lo mostrado.
-    #
-    # Con el presupuesto delante el modelo no rearma el carrito: lo copia. Y al
-    # viajar en el prompt es FUENTE, asi que copiar ese total ya no es inventar
-    # y la guarda de procedencia deja de matar la respuesta.
-    #
-    # LA REGLA DE FRESCURA VA PEGADA AL DATO, que es donde se usa: si el pedido
-    # cambio, se pide la cuenta de nuevo. Corregir un total a mano es la unica
-    # forma de que vuelva a aparecer una cifra sin procedencia.
-    presu = (conv.get("ultimo_presupuesto") or "").strip()
-    if presu:
-        partes.append(
-            "EL ULTIMO PRESUPUESTO que ya le pasaste. Estos numeros son "
-            "fuente: copialos tal cual. Si el pedido cambio, pedi la cuenta de "
-            "nuevo con la herramienta cuenta en vez de corregirlos a mano:\n" + presu[:700])
+        partes.append("Productos que le mostraste ANTES:\n" + "\n".join(f"- {renglon(p)}" for p in vistos[-8:]))
     grupos = [g for g in (conv.get("grupos_envio") or []) if isinstance(g, dict) and g.get("items")]
     if len(grupos) > 1:
-        # UN PRESUPUESTO POR DESTINO, y el reparto que pida despues es sobre
-        # todos (1-oct, K07). El presupuesto de arriba es solo el ultimo bloque.
-        from app.storage.firestore_client import get_product_by_id as _gp
-        partes.append("LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n" + "\n".join(
-            f"- {g.get('destino')}: " + ", ".join(
-                f"{i.get('cantidad') or 1}x {i.get('producto')} "
-                f"{(_gp(str(i.get('producto'))) or {}).get('nombre') or ''}".strip() for i in g["items"])
+        partes.append("LOS PRESUPUESTOS POR DESTINO:\n" + "\n".join(
+            f"- {g.get('destino')}: " + ", ".join(f"{i.get('cantidad') or 1}x {i.get('producto')}" for i in g["items"])
             for g in grupos[:4]))
     carrito = conv.get("carrito_vigente") or []
     if carrito:
-        # CON ID Y CON CANTIDAD, por lo mismo que los productos vistos: sin el
-        # id el modelo no puede volver a pedir la cuenta de lo mismo, y sin la
-        # cantidad la vuelve a elegir -medido: el cliente pidio dos de cada uno
-        # y el turno siguiente cotizo uno-.
         partes.append("EN EL PEDIDO, tal como se conto: " + " · ".join(
-            f"{p.get('cantidad') or 1}x {p.get('id')} {p.get('nombre') or ''}".strip()
-            for p in carrito[:8]))
+            f"{p.get('cantidad') or 1}x {p.get('id')} {p.get('nombre') or ''}".strip() for p in carrito[:8]))
     busco = (conv.get("criterio_cliente") or "").strip()
     if busco:
-        # LO QUE EL CLIENTE BUSCO, no lo que el bot mostro (1-oct): "y teclados?"
-        # o "y el mas barato?" heredan de aca el alcance y las condiciones.
-        partes.append("LO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto. Un mensaje que sigue la busqueda "
-                      "—'y teclados?', 'y el mas barato?'— hereda de aca el alcance y las condiciones que no "
-                      "cambio; 'toda la tienda' es sin rubro:\n" + busco[:400])
-    descartados = [str(x) for x in (conv.get("descartados") or [])]
-    if descartados:
-        partes.append("Ya dijo que NO a: " + ", ".join(descartados[:6]))
+        partes.append("LO ULTIMO QUE BUSCO EL CLIENTE:\n" + busco[:400])
     loc = (conv.get("ultima_localidad") or "").strip()
     if loc:
         partes.append("Envia a: " + loc)
-    datos = conv.get("datos_cliente_parciales") or {}
-    if datos.get("nombre"):
-        partes.append("Se llama: " + str(datos["nombre"]))
     return "\n".join(partes)
 
 
@@ -419,11 +332,14 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 1. AGENTE ───────────────────────────────────────────────────────
     t = time.time()
+    # El modelo lee la ficha; el codigo del tablero, la memoria (FICHA 69).
+    from app.core.ficha_charla import texto as _ficha
     memoria = _memoria_texto(conv)
+    ficha = _ficha(conv, tienda_id)
     r = await tablero.turno([{"role": m.get("role"), "content": m.get("content") or ""}
                             for m in history if m.get("role") in ("user", "assistant")],
                            raw_message, tienda_id, trace_id=trace_id, memoria=memoria,
-                           pedido=conv.get("pedido_pendiente"))
+                           pedido=conv.get("pedido_pendiente"), ficha=ficha)
     llamadas = r.get("llamadas") or []
     fichas, envios, cuenta = _lo_que_volvio(llamadas)
     etapas["turno"] = int((time.time() - t) * 1000)
@@ -448,7 +364,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         # cada cosa que devolvio una herramienta, tal cual viajo.
         t = time.time()
         dicho = "\n".join(str(m.get("content") or "") for m in history if m.get("role") == "assistant")
-        fuente = memoria + "\n" + dicho + "\n" + json.dumps([x.get("vuelve") for x in llamadas],
+        fuente = memoria + "\n" + ficha + "\n" + dicho + "\n" + json.dumps([x.get("vuelve") for x in llamadas],
                                               ensure_ascii=False, default=str)
         texto, informe = N.llenar(
             texto, fichas, trace_id, fuente_texto=fuente,

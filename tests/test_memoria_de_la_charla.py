@@ -73,7 +73,8 @@ def test_la_memoria_numera_lo_ultimo_que_nombro():
     conv = {"productos_vistos": [
         dict(M170, turno=1),
         dict(G502, turno=2), dict(G203, turno=2), dict(SUPER, turno=2)]}
-    m = R._memoria_texto(conv)
+    # Lo que lee el modelo es la ficha de la charla desde el 15-oct (FICHA 69).
+    m = __import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod")
     assert "1. MOU0003" in m and "2. MOU0001" in m and "3. MOU0005" in m
     assert "el segundo" in m.lower()
     assert "MOU0009" in m, "lo de antes tambien se recuerda"

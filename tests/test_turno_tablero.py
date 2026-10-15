@@ -113,7 +113,7 @@ def test_si_falta_un_dato_del_cliente_el_codigo_pide_la_repregunta(monkeypatch):
 
 
 def test_procesar_turno_llama_al_tablero(monkeypatch):
-    async def falso(historial, mensaje, tienda_id, trace_id="", memoria="", pedido=None):
+    async def falso(historial, mensaje, tienda_id, trace_id="", memoria="", pedido=None, ficha=""):
         return {"texto": "desde el tablero", "llamadas": [], "uso": []}
     monkeypatch.setattr(T, "turno", falso)
     assert "desde el tablero" in asyncio.run(R.procesar_turno("t_tab", "hola", TIENDA, "whatsapp", "t")).lower()

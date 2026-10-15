@@ -66,7 +66,8 @@ def test_el_turno_siguiente_ve_el_presupuesto_y_el_carrito():
                                   "$75.000\nTotal: $75.000",
             "carrito_vigente": [{"id": "MOU0001", "cantidad": 2,
                                  "nombre": "Mouse Logitech G203"}]}
-    t = R._memoria_texto(conv)
+    # Desde el 15-oct el modelo lee la ficha de la charla, no `_memoria_texto` (FICHA 69).
+    t = __import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod")
     assert "$75.000" in t
     assert "2x MOU0001" in t
     # LA REGLA DE FRESCURA VA PEGADA AL DATO: sin ella el modelo corrige el
@@ -83,7 +84,7 @@ def test_el_presupuesto_viaja_como_FUENTE_y_no_como_invento():
     from app.core import numeros as N
     conv = {"ultimo_presupuesto": "Total: $395.000"}
     texto, informe = N.llenar("Te confirmo el pedido por $395.000.", [], "t",
-                              fuente_texto=R._memoria_texto(conv))
+                              fuente_texto=__import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod"))
     assert not informe["inventada"], informe
 
 

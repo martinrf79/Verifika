@@ -413,10 +413,10 @@ def _json(texto: str) -> dict:
             return {}
 
 
-def _charla(historial: list, memoria: str, mensaje: str) -> list:
+def _charla(historial: list, ficha: str, mensaje: str) -> list:
     msgs = []
-    if memoria.strip():
-        msgs.append({"role": "system", "content": "MEMORIA DE LA CHARLA:\n" + memoria.strip()})
+    if ficha.strip():
+        msgs.append({"role": "system", "content": "FICHA DE LA CHARLA:\n" + ficha.strip()})
     return msgs + list(historial or []) + [{"role": "user", "content": mensaje}]
 
 
@@ -1451,8 +1451,9 @@ def busqueda_vigente(busquedas: list) -> str:
 # ══ EL TURNO ════════════════════════════════════════════════════════════════
 
 async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "",
-                memoria: str = "", pedido: dict = None) -> dict:
-    """Un turno con el tablero. Misma firma y misma salida que `agente.turno`. No lanza."""
+                memoria: str = "", pedido: dict = None, ficha: str = "") -> dict:
+    """Un turno con el tablero. No lanza. El modelo lee `ficha`, de `ficha_charla`; los lectores del codigo leen
+    `memoria`, de `respuesta._memoria_texto`, hasta el plan 3."""
     from app.core import guardas_salida as gs
     from app.core.contexto_turno import set_current_tienda
     from app.core.llm_reintento import _cliente
@@ -1465,7 +1466,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
         return {"texto": "", "llamadas": [], "uso": [], "error": "sin clave"}
     t0 = time.time()
     uso, llamadas = [], []
-    charla = _charla(historial, memoria, mensaje)
+    charla = _charla(historial, ficha, mensaje)
     sis_i = INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in ACCIONES.items()), no_lo_vende=NO_LO_VENDE)
     esquema = esquema_piezas(tienda_id)
     esq = _formato("piezas", esquema)

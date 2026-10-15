@@ -650,7 +650,8 @@ def test_la_memoria_dice_cual_es_el_ultimo_que_mostro():
         {"id": "MOU2", "nombre": "Mouse Logitech G203", "precio": "$37.500"},
         {"id": "TEC9", "nombre": "Teclado Genius KB-110X Blanco",
          "precio": "$12.000"}]}
-    m = R._memoria_texto(conv)
+    # Lo que lee el modelo es la ficha de la charla desde el 15-oct (FICHA 69).
+    m = __import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod")
     assert "el que me dijiste" in m.lower()
     assert m.rfind("TEC9") > m.rfind("MOU2")
 
