@@ -1,25 +1,13 @@
-"""EL AGENTE — el modelo busca solo, con herramientas chicas sobre el motor (26-sep-2026).
+"""LAS HERRAMIENTAS DEL TURNO —buscar, producto, envio, politica, compatibilidad,
+cuenta y reservar— y la completitud, sobre el motor (26-sep-2026).
 
-REEMPLAZA al interprete de la ficha 58, que traducia el mensaje a una ficha
-contra un tablero y despues el codigo compilaba. Medido en el banco, fichas 59
-a 61: el modelo parte y resuelve la memoria de cabeza; donde se equivoca es al
-escribir un esquema grande o cuando el buscador le devuelve vacio. Por eso:
+Las corre `tablero.turno`, el turno vivo desde el 30-sep. El turno agentico
+que vivia aca, con su prompt y su esquema de herramientas, se borro el 15-oct:
+nadie lo llamaba desde el camino vivo.
 
-  - BUSQUEDA AGENTICA. El modelo llama herramientas con sus propias palabras,
-    mira lo que vuelve y decide el paso siguiente. Una dependencia —"si no
-    hay, el otro"— se resuelve sola: consulta, lee, sigue.
-  - HERRAMIENTAS CHICAS, una por boca: buscar, producto, envio, politica,
-    compatibilidad, cuenta y reservar. Por adentro son el MISMO motor
-    (`motor.buscar`); lo que cambia es que el modelo no tiene que escribir el
-    esquema entero de una vez.
-  - EL TABLERO EN TRES CAPAS, generado de la fuente: lo universal —reglas y
-    herramientas—, lo de la tienda que no crece con las filas —rubros y
-    campos—, y todo lo demas lo encuentra el indice. El prompt queda igual
-    con 900 productos o con 90.000.
-  - EL INDICE SE ENRIQUECE UNA VEZ con los alias que escribe el modelo al
-    cargar la tienda (`scripts/generar_alias.py`, `alias.json` al lado del
-    catalogo): "el coso de internet" cae en router sin un modelo ni un vector
-    en cada consulta.
+EL INDICE SE ENRIQUECE UNA VEZ con los alias que escribe el modelo al cargar la
+tienda (`scripts/generar_alias.py`, `alias.json` al lado del catalogo): "el
+coso de internet" cae en router sin un modelo ni un vector en cada consulta.
 
 LO QUE NO CAMBIA: la identidad la certifica el motor con exists, ambiguous y
 not_found; la plata la escribe la calculadora; la tienda la fija el backend.
@@ -27,15 +15,12 @@ not_found; la plata la escribe la calculadora; la tienda la fija el backend.
 import contextvars
 import json
 import re
-import time
 import unicodedata
 
 from app.logger import get_logger
 
 log = get_logger(__name__)
 
-MAX_VUELTAS = 5
-TEMPERATURA = 0.2
 FILAS = 5
 
 # EL TRACE DEL TURNO LLEGA HASTA EL MOTOR. Las herramientas le pasaban el texto
@@ -507,76 +492,15 @@ HERRAMIENTAS = {"buscar": h_buscar, "producto": h_producto, "envio": h_envio, "p
                 "compatibilidad": h_compatibilidad, "cuenta": h_cuenta, "reservar": h_reservar}
 
 
-def _f(nombre, desc, props, req):
-    return {"type": "function", "function": {"name": nombre, "description": desc,
-                                             "parameters": {"type": "object", "properties": props,
-                                                            "required": req}}}
 
 
-def esquema(tienda_id: str) -> list:
-    """Las herramientas como viajan al modelo. Siempre iguales y en el mismo
-    orden: van adelante del prompt y es lo que el proveedor cachea."""
-    from app.core.filtros_catalogo import campos_filtrables
-    S = {"type": "string"}
-    campos = sorted(campos_filtrables(tienda_id))
-    return [
-        _f("buscar", "Busca productos de la tienda. Para opciones, rubros y condiciones.",
-           {"que": {"type": "string", "description": "palabras de lo que busca, si hacen falta"},
-            "rubro": {"type": "string", "description": "el tipo de producto, en tus palabras"},
-            "condiciones": {"type": "array", "items": {"type": "object", "properties": {
-                "campo": {"type": "string", "enum": campos},
-                "operador": {"type": "string", "enum": ["contiene", "no_contiene", "igual", "mayor", "menor",
-                                                        "prefiere", "evita"]},
-                "valor": S}, "required": ["campo", "operador", "valor"]}},
-            "orden": {"type": "object", "properties": {"campo": {"type": "string", "enum": campos},
-                                                       "direccion": {"type": "string", "enum": ["min", "max"]}}},
-            "cuantos": {"type": "integer"}}, []),
-        _f("producto", "La ficha de UN producto por su nombre o id: precio, stock, variantes y datos. "
-                       "Dice exists, ambiguo o no_existe.", {"nombre": S}, ["nombre"]),
-        _f("envio", "Costo y plazo del envio a una o varias localidades.",
-           {"destinos": {"type": "array", "items": S}}, ["destinos"]),
-        _f("politica", "Lo que dice la tienda sobre pagos, cuotas, descuentos, factura, garantia, cambios, "
-                       "envios en general, mayoristas y cualquier otra pregunta de la casa.",
-           {"pregunta": S}, ["pregunta"]),
-        _f("compatibilidad", "Si un producto anda con un equipo o con otro producto.",
-           {"producto": S, "con": S}, ["producto", "con"]),
-        _f("cuenta", "El total de un pedido: productos por nombre o id con su cantidad, el envio si hay "
-                     "destino, y el reparto entre medios de pago con sus descuentos. TODA la plata sale de aca.",
-           {"items": {"type": "array", "items": {"type": "object", "properties": {
-               "producto": S, "cantidad": {"type": "integer"}}, "required": ["producto", "cantidad"]}},
-            "destino": S,
-            "reparto_pago": {"type": "array", "items": {"type": "object", "properties": {
-                "medio": S, "porcentaje": {"type": "number"}}, "required": ["medio", "porcentaje"]}}},
-           ["items"]),
-        _f("reservar", "Cuando el cliente dice que lo compra: certifica el producto y el stock.",
-           {"producto": S, "cantidad": {"type": "integer"}}, ["producto", "cantidad"]),
-    ]
 
 
 # ══ EL TABLERO: lo universal y lo de la tienda que no crece ═══════════════
 
-UNIVERSAL = """Sos el vendedor de una tienda online de tecnologia de Argentina. Hablas en espanol argentino, con voseo, corto y claro, sin repetir.
-
-COMO TRABAJAS
-1. Parti el mensaje en partes: una por cada cosa que pregunta, pide o cuenta. Contesta todas, en orden.
-2. Cada dato de la tienda —productos, precios, stock, envios, politicas— sale SOLO de una herramienta. Podes llamar varias a la vez.
-3. Si una parte depende de otra ("si no hay", "si anda", "si pasa de", "el que tenga mas"), consulta la primera, mira el resultado y segui.
-4. "Ese", "el otro", "el segundo", "lo mismo", "todo" y los datos que el cliente dio antes estan en la charla: usalos. Una condicion que el cliente puso antes sigue valiendo hasta que la cambie.
-5. Si no sabes a que producto se refiere entre varios, o falta un dato del cliente para contestar, hace UNA pregunta corta.
-6. Lo que el cliente da por cierto de la tienda o de un producto, verificalo antes de aceptarlo.
-7. Si pide sumar, un total, un reparto de pago o un monto tope, llama a cuenta: nunca hagas la cuenta vos.
-8. Si dice que lo compra, llama a reservar y pedile el nombre. No pidas DNI, tarjeta ni CBU.
-9. Si una busqueda vuelve con un motivo o una nota, leela: cero resultados no siempre es "no tenemos".
-10. El saber general de tecnologia lo explicas vos, sin herramienta."""
-
-REGLA_FINAL = ("ULTIMA REGLA, LA MAS IMPORTANTE: un dato de un producto que la herramienta no trae NO LO SABES, "
-               "aunque lo conozcas de antes. Deci que no figura en la ficha. Nunca escribas un precio ni un "
-               "costo que no haya salido de una herramienta.")
 
 
-def sistema(tienda_id: str) -> str:
-    rubros = ", ".join(indice(tienda_id)["rubros"])
-    return f"{UNIVERSAL}\n\nLA TIENDA vende estos rubros: {rubros}.\n\n{REGLA_FINAL}"
+
 
 
 # ══ LA COMPLETITUD: lo que el mensaje pidio y nadie consulto ═══════════════
@@ -772,24 +696,6 @@ def faltantes(mensaje: str, llamadas: list, historial: list = None, tienda_id: s
     return out
 
 
-def _anticipo(f: dict) -> str:
-    """Lo que la completitud lee en el mensaje, dicho ANTES de la primera
-    vuelta (28-sep). Medido en produccion: la pregunta compleja costaba cinco
-    vueltas, 17.000 tokens y 10 segundos porque los destinos y el reparto se
-    marcaban recien cuando el modelo ya habia contestado, y cada vuelta vuelve
-    a mandar todo. Es la MISMA lectura de `faltantes`, no otra: el aviso de
-    despues queda como red para lo que igual no se consulte."""
-    partes = []
-    if f.get("destinos"):
-        partes.append("nombra estos destinos, cotiza el envio a cada uno: " + ", ".join(f["destinos"]))
-    if f.get("reparto"):
-        partes.append("pide repartir el pago en porcentajes: la cuenta va con reparto_pago")
-    if f.get("compra"):
-        partes.append("dice que compra: llama a reservar con el producto; si la compra depende de una "
-                      "condicion, primero verificala")
-    return ("LECTURA DEL SISTEMA, no es un mensaje del cliente y no la menciones. En el mensaje de arriba "
-            "el cliente " + "; ".join(partes) + ". Consultalo con las herramientas junto con todo lo demas "
-            "que pide.")
 
 
 def _aviso(f: dict) -> str:
@@ -828,91 +734,3 @@ def ejecutar(nombre: str, args: dict, tienda_id: str) -> dict:
         return {"error": "la consulta fallo; proba con otras palabras"}
 
 
-async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "",
-                memoria: str = "") -> dict:
-    """Un turno: el historial de la charla (roles user y assistant), la memoria
-    larga que arma `respuesta` y el mensaje nuevo. Vuelve el texto con lo que
-    se consulto. No lanza.
-
-    LO FIJO ADELANTE, LO QUE CAMBIA ATRAS: el sistema y las herramientas son
-    siempre iguales y el proveedor los cachea; la memoria, la charla y el
-    mensaje van despues."""
-    from app.config import get_settings
-    from app.core.contexto_turno import set_current_tienda
-    from app.core.llm_reintento import _cliente, _modelo, llamar_con_reintento
-    set_current_tienda(tienda_id)
-    _TRACE.set(trace_id or "agente")
-    CLIENTE_DIJO.set("\n".join([m.get("content") or "" for m in historial or [] if m.get("role") == "user"]
-                                + [mensaje or ""]))
-    tope_s = float(get_settings().LLM_TIMEOUT_SECONDS)
-    cli = _cliente()
-    if cli is None:
-        return {"texto": "", "llamadas": [], "uso": [], "error": "sin clave"}
-    tools = esquema(tienda_id)
-    msgs = [{"role": "system", "content": sistema(tienda_id)}]
-    if memoria.strip():
-        msgs.append({"role": "system", "content": "MEMORIA DE LA CHARLA:\n" + memoria.strip()})
-    msgs += list(historial or []) + [{"role": "user", "content": mensaje}]
-    anticipado = faltantes(mensaje, [], historial, tienda_id)
-    if anticipado:
-        msgs.append({"role": "user", "content": _anticipo(anticipado)})
-    llamadas, uso, vistas, texto, t0 = [], [], {}, "", time.time()
-    avisado: dict = {}
-    borrador = ""
-    for vuelta in range(MAX_VUELTAS + 1):
-        ultima = vuelta == MAX_VUELTAS
-
-        def _call(_m=list(msgs), _ultima=ultima):
-            kw = {"tools": tools, "tool_choice": "none" if _ultima else "auto"}
-            return cli.chat.completions.create(model=_modelo(), messages=_m, temperature=TEMPERATURA, **kw)
-        try:
-            r = await llamar_con_reintento(_call, timeout_s=tope_s, trace_id=trace_id)
-        except Exception as e:  # noqa: BLE001 — el turno no se rompe por el modelo
-            # El texto que quedo es el de ANTES de buscar —"dejame ver..."—:
-            # no es una respuesta. Sale el borrador que el modelo ya habia
-            # terminado antes del aviso de completitud, o vacio y el turno cae
-            # al aviso honesto.
-            texto = borrador
-            log.warning("agente_modelo_error", trace_id=trace_id, vuelta=vuelta + 1,
-                        error=f"{type(e).__name__}: {str(e)[:150]}")
-            break
-        u = r.usage
-        det = getattr(u, "prompt_tokens_details", None) if u else None
-        uso.append({"entrada": u.prompt_tokens if u else 0,
-                    "cache": (getattr(det, "cached_tokens", 0) or 0) if det else 0})
-        m = r.choices[0].message
-        texto = m.content or ""
-        if not m.tool_calls:
-            falta = {} if (avisado or ultima) else faltantes(mensaje, llamadas, historial, tienda_id)
-            if not falta:
-                break
-            # El borrador NO se agrega: el modelo contesta de nuevo, entero.
-            avisado, borrador = falta, texto
-            msgs.append({"role": "user", "content": _aviso(falta)})
-            continue
-        msgs.append({"role": "assistant", "content": texto,
-                     "tool_calls": [c.model_dump() for c in m.tool_calls]})
-        for c in m.tool_calls:
-            try:
-                args = json.loads(c.function.arguments or "{}")
-            except ValueError:
-                args = {}
-            clave = c.function.name + json.dumps(args, sort_keys=True, ensure_ascii=False)
-            if clave in vistas:  # la misma consulta dos veces: el resultado ya esta arriba
-                out = {"aviso": "esta consulta ya la hiciste; usa ese resultado y contesta"}
-            else:
-                out = ejecutar(c.function.name, args, tienda_id)
-                vistas[clave] = True
-            llamadas.append({"vuelta": vuelta + 1, "herramienta": c.function.name, "args": args, "vuelve": out})
-            msgs.append({"role": "tool", "tool_call_id": c.id,
-                         "content": json.dumps(out, ensure_ascii=False, default=str)})
-    log.info("agente_turno", trace_id=trace_id, vueltas=len(uso), llamadas=len(llamadas),
-             herramientas=[x["herramienta"] for x in llamadas], largo=len(texto),
-             # LO QUE EL MODELO LE PIDIO AL CODIGO, tal cual: sin esto el
-             # informe del issue 31 no puede decir si fallo el pedido o la boca.
-             pedidos=[f"{x['herramienta']} {json.dumps(x['args'], ensure_ascii=False)}"[:240] for x in llamadas][:10],
-             anticipo=anticipado or None,
-             aviso_completitud=avisado or None,
-             tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
-             ms=int((time.time() - t0) * 1000))
-    return {"texto": texto, "llamadas": llamadas, "uso": uso}

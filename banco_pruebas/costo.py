@@ -6,16 +6,13 @@ ANTES de correr y se mide DESPUES, con los tokens que devolvio el proveedor.
 
 No esta en el camino del mensaje: no la importa nada de `app/`, no deploya.
 
-TRES COSAS:
+DOS COSAS:
 
   estimar   cuanto va a costar una tanda, con los promedios medidos en las
             corridas guardadas: llamadas por turno y tokens por llamada.
   real      cuanto costaron las corridas guardadas, por etiqueta, al precio
             de la paga. La gratis no se cobra, pero si hubiera sido paga
             costaba eso: es la cuenta que importa para saber que se gasta.
-  medir     el peso fijo de cada llamada del bot —prompt y herramientas—
-            contado por el tokenizador del proveedor, con una llamada de un
-            token de salida. Casi gratis.
 
 LO QUE NO SABE, dicho adelante. Las corridas del agente guardan solo los
 tokens de ENTRADA: la salida se estima con SALIDA_POR_LLAMADA, medida en el
@@ -25,7 +22,6 @@ laboratorio. La entrada es mas del noventa por ciento de la factura.
   python3 -m banco_pruebas.costo estimar --modo sala --charlas 58 --modelo deepseek-chat
   python3 -m banco_pruebas.costo estimar --modo interpretar --charlas 68 --reps 3 --entrada 900
   python3 -m banco_pruebas.costo real
-  python3 -m banco_pruebas.costo medir --modelo deepseek-chat
 """
 import datetime
 import json
@@ -156,22 +152,6 @@ def real() -> dict:
 
 # ══ MEDIR ═══════════════════════════════════════════════════════════════════
 
-def medir(modelo: str) -> dict:
-    """El prompt del agente y sus herramientas, contados por el proveedor."""
-    from banco_pruebas.laboratorio import cliente, llamar
-    from banco_pruebas.peso_del_turno import TIENDA, _preparar
-    _preparar()
-    from app.core import agente
-    cli, nombre = cliente(modelo)
-    sistema = agente.sistema(TIENDA)
-    tools = agente.esquema(TIENDA)
-    solo = llamar(cli, nombre, [{"role": "user", "content": "hola"}], max_tokens=1)
-    con_sis = llamar(cli, nombre, [{"role": "system", "content": sistema}, {"role": "user", "content": "hola"}],
-                     max_tokens=1)
-    todo = llamar(cli, nombre, [{"role": "system", "content": sistema}, {"role": "user", "content": "hola"}],
-                  tools=tools, max_tokens=1)
-    return {"modelo": nombre, "mensaje": solo["entrada"], "prompt": con_sis["entrada"] - solo["entrada"],
-            "herramientas": todo["entrada"] - con_sis["entrada"], "fijo": todo["entrada"]}
 
 
 # ══ LA SALIDA ═══════════════════════════════════════════════════════════════
@@ -205,10 +185,6 @@ def main():
         print(f"CORRIDAS GUARDADAS · {tok:,} tokens de entrada · {total:.2f} dolares al precio de la paga")
         for (arch, et), v in filas[:_opt(a, "--primeras", 20, int)]:
             print(f"  {v['dolares']:7.3f}  {v['entrada']:>11,}  {v['llamadas']:>6} llamadas  {arch} · {et}")
-    elif que == "medir":
-        r = medir(modelo)
-        print(f"{r['modelo']}: fijo por llamada {r['fijo']} tokens = prompt {r['prompt']}"
-              f" + herramientas {r['herramientas']} + mensaje {r['mensaje']}")
     else:
         sys.exit(__doc__)
 

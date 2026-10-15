@@ -18,7 +18,7 @@ base. El README de esta carpeta dice el procedimiento entero.
   python3 -m banco_pruebas.sonda_charlas --etiqueta v58_algo_1       las 68 por el clon
   python3 -m banco_pruebas.sonda_charlas C27 C46 --etiqueta prueba   solo esas
   python3 -m banco_pruebas.sonda_charlas --informe --etiqueta v58_algo_1
-  opciones: --vara compleja (la de todos los dias)  --vara todas (todo, antes de un deploy)  --camino agente (el turno viejo, sin el webhook)
+  opciones: --vara compleja (la de todos los dias)  --vara todas (todo, antes de un deploy)
             --interprete <modelo>: el interprete, las preguntas de si o no y la revision con otro modelo; el
             redactor sigue con el de config. Para medir si el techo es el modelo (1-oct). No toca app/.
 
@@ -312,26 +312,6 @@ def correr_clon(charla, n_corrida=0, grabado=None):
     return turnos
 
 
-def correr_agente(charla):
-    """El camino nuevo, llamando al codigo de app/ tal cual."""
-    import asyncio
-    from app.core import agente
-    from banco_pruebas import clon_produccion as C
-    historial, respuestas, turnos, historia = [], [], [], []
-    for i, t in enumerate(charla["turnos"], 1):
-        r = asyncio.run(agente.turno(historial, t["texto"], C.TIENDA, trace_id=f"sonda_{charla['id']}"))
-        texto = r["texto"]
-        historial += [{"role": "user", "content": t["texto"]}, {"role": "assistant", "content": texto}]
-        respuestas.append(texto)
-        vistos = json.dumps([x["vuelve"] for x in r["llamadas"]], ensure_ascii=False, default=str)
-        casillas = _casillas(charla, t, r["llamadas"], texto, respuestas, historia)
-        visto = set(re.sub(r"\D+", " ", _plata(vistos)).split())
-        plata_mala = [c for c in re.findall(r"\$\s?(\d{4,})", _plata(texto)) if c not in visto]
-        crudas, vueltas = _guardadas(r["llamadas"])
-        turnos.append({"turno": i, "texto": t["texto"], "casillas": casillas, "plata_no_vista": plata_mala,
-                       "vacia": not texto.strip(), "llamadas": crudas, "vueltas": vueltas,
-                       "respuesta": texto, "uso": r["uso"]})
-    return turnos
 
 
 def _recalificar(f):
@@ -495,8 +475,8 @@ def main():
     tope = opt("--tope", TOPE_DOLARES, float)
     reproducir = opt("--reproducir", "", str)
     PAUSA["seg"] = opt("--pausa", 0.0, float)
-    if camino not in ("clon", "agente", "tablero"):
-        sys.exit(f"camino {camino}: solo hay clon, agente y tablero")
+    if camino not in ("clon", "tablero"):
+        sys.exit(f"camino {camino}: solo hay clon y tablero; el turno viejo del agente se borro el 15-oct")
     if etiqueta == "base":
         etiqueta = f"v58_{camino}"
     if "--informe" in a:
@@ -536,7 +516,7 @@ def main():
 
     def una(c):
         t0 = time.time()
-        turnos = correr_agente(c) if camino == "agente" else correr_clon(c, grabado=grabadas.get(c["id"]))
+        turnos = correr_clon(c, grabado=grabadas.get(c["id"]))
         # SIN MODELO NO SE GUARDA (2-oct): un turno que salio con el aviso de
         # demanda es la cuota, no el bot. La charla no se escribe y la tanda
         # para; la proxima corrida con la misma etiqueta sigue desde aca.
