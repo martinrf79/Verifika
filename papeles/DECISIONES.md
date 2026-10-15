@@ -132,3 +132,12 @@ Todas salen de lo medido en `PASO0_CENSO.md`. Ninguna es una preferencia.
     corto poco.
 40. **`banco_pruebas/` y `reserva/` NO deployan.** Estan en `.gcloudignore`, no
     entran a la imagen y no pueden afectar produccion.
+
+## 15-oct-2026 — El orden del trabajo, dicho por Martín
+
+41. **Primero la interpretación, después reducir, al último el cableado.** Reducir el código
+    se hace sin tocar la interpretación. El cableado y la ayuda de afuera van al final.
+42. **No más herramientas de medición.** Se mide con lo que ya existe. Medir sin mejorar no
+    hizo avanzar el proyecto.
+43. **Lo que dice Martín no se repite sesión a sesión.** El orden va al plan de `PENDIENTE.md`,
+    lo decidido acá, y lo concluido en la ficha abierta. Lo escribe la sesión al cerrar.

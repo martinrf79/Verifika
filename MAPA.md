@@ -7,14 +7,13 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 
 1. El bloque 0 de `CLAUDE.md`, que son las reglas.
 2. Esta página.
-3. `arquitectura/FICHA_65_el_tablero_y_la_biblioteca.md`, la unidad de trabajo desde el 29-sep;
-   el método de cada mejora es la `FICHA_63`.
+3. `PENDIENTE.md`, arriba: el plan de Martín y la ficha abierta. Sólo ahí se nombra.
 
 **Arranque corto:**
 
 1. El camino vivo es `orchestrator` → `respuesta.procesar_turno` → `tablero.turno`, que usa las herramientas de `agente`.
    El motor busca. Lo viejo está en `archivo/` y NO se reenchufa.
-2. Se leen `FICHA_65` y `FICHA_63` enteras antes de tocar una mejora. La 64 es la medición de antes. El agente vive en la 62.
+2. Se lee entera la ficha abierta que nombra `PENDIENTE.md` antes de tocar una mejora.
 3. No se crea una función sin mirar si ya existe. La identidad la certifica
    `motor.lo_nombra`; la plata, `calculadora`.
 4. No se cambia el diseño sin preguntarle a Martín.

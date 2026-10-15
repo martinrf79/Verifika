@@ -12,16 +12,28 @@ python3 -m pytest -q          la batería offline
 ```
 
 Camino vivo: `orchestrator` → `respuesta.procesar_turno` → `tablero.turno` sobre
-`motor.buscar`. Unidad de trabajo: `arquitectura/FICHA_65_el_tablero_y_la_biblioteca.md`.
+`motor.buscar`. Unidad de trabajo: `arquitectura/FICHA_69_lo_que_recibe_el_interprete.md`.
 Dónde está cada cosa: `MAPA.md`.
 
+CÓMO NO SE PIERDE LO QUE DICE MARTÍN, sesión a sesión. Al cerrar, la sesión escribe:
+el ORDEN que dio, en el bloque del plan de acá abajo, que el hook imprime al arrancar;
+lo que DECIDIÓ para siempre, en `papeles/DECISIONES.md`; y lo que se CONCLUYÓ en la
+charla, en la ficha abierta, en una sección con la fecha. Martín no repite nada: dice
+"seguí el plan" y la sesión lee esos tres lugares.
+
 ---
+
+## El plan de Martín — se sigue en este orden, sin volver a preguntarlo
+
+- **PLAN 1, AHORA** · Mejorar la interpretación: lo que recibe el modelo y cómo lo lee. FICHA 69. No se reduce ni se toca el cableado.
+- **PLAN 2** · Reducir el código drásticamente, sin tocar la interpretación. Lo que no pisa ningún caso va a `archivo/`.
+- **PLAN 3** · Recién al último, el cableado y la ayuda de afuera: Rasa CALM, una revisión de arquitectura.
+- **PLAN, LA REGLA** · No se escribe ninguna herramienta de medición nueva. Se mide con la vara de las 58 y las K, que ya existen.
 
 ## Abierto
 
 - **ABIERTO** · 9-oct, FICHA 68, LA FICHA DE LA CHARLA. La primera interpretacion, sobre los cien primeros mensajes de `casos_cien.py`: ficha 6 con la informacion 2 y la atadura de casillas y rubros, 96 de 100 en `q6_1`, ajuste 50 de 50. En reserva fallan Q024, Q048, Q074 y Q088. Despues, pasarla al camino vivo. Visto de paso: la identidad de `producto` da "tinta para L3250" como la impresora y "mousepad XL" como un mouse.
 - **ABIERTO** · 8-oct, EL PEDIDO LO PONE EL CODIGO: K21 en la vara; el nombre y el si cierran con link, el reparto del mensaje lo lee el codigo y "armalo con esos" usa lo mostrado. K21 en vivo: 6 casillas mal contra 12. DECIDIDO por Martin el 8-oct: "dos auriculares" a dos destinos sigue dando dos modelos distintos; las casillas de 237000 de K21 fallan a sabiendas hasta que se vuelva al tema. Sigue el paso C.
-- **ABIERTO** · 15-oct, EL PLAN, cambiado por Martin: primero LO QUE RECIBE EL INTERPRETE, `arquitectura/FICHA_69_lo_que_recibe_el_interprete.md`. La ficha 9 da 167 de 174 con el contexto de la charla escrito a mano; en produccion lo arma el codigo y ahi se cae. Paso uno: la vara encadenada, sin cuota. Despues la ficha de la charla de la 68, constancia en tres corridas, y recien ahi reducir con `coverage`, archivando sin borrar. Jev descartado.
 - **ESPERA A MARTIN** · K18: un modelo sin color que el bot no mostro sigue preguntando el color. Martin: esta bien que pregunte o que nombre los colores que hay; se ve despues.
 - **ESPERA A MARTIN** · 9-oct, DOS LECTURAS DESCARTADAS, desmenuzado `dosl_1`: Gemini 41, DeepSeek 44 de 54; discrepan en 28, y en 20 las dos estaban bien; tomar la otra al discrepar da 43. Lo que fallan los dos es editar un pedido existente: propuesto que esas operaciones las aplique el codigo sobre el pedido guardado.
 - **ABIERTO** · 4-oct, LA SESION SIGUIENTE: los NEXOS, `banco_pruebas/nexos/`. El modelo pide en lineas con un indice fijo, frases genericas y la memoria como estado del codigo; el codigo resuelve, suma y reparte. Sobre las charlas reales de WhatsApp, `reales_vara.py`, con DeepSeek: 24 y 22 de 28 turnos bien en dos repeticiones y 0 datos falsos en las dos, contra 21 y 2 del bot de hoy y 18 y 9 de lo que salio en WhatsApp. Falta, en orden: la guarda de montos del redactor, DeepSeek escribe montos sin origen en 12 de 481 turnos y Gemini en 2 de 374; la misma vara con Gemini; mas charlas reales; recien ahi pasarlo a `app/`. Elegir modelo es decision de Martin. Incluye la FICHA 66.

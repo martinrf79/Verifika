@@ -61,3 +61,28 @@ Solo entran mejoras medidas en la práctica. Una por vez, por la puerta.
   pisa ningún caso.
 
 Se suman como dependencias de desarrollo, nunca a `requirements.txt`.
+
+## 15-oct, segunda sesión — lo que se concluyó con Martín
+
+Sin código nuevo ni medición nueva: leído del repo.
+
+- **El 167 de 174 casi no mide la charla.** Sólo 36 casos traen charla previa, todos de un solo
+  intercambio, y pasan los 36. Los 7 que fallan son primeros mensajes.
+- **De las 58, 39 son de un solo mensaje** y ya andan. **Las 19 que dependen de la charla** son
+  los grupos E, G y H y la C21: referencias, correcciones, pedido anterior, destino dicho antes.
+  Son la vara de esta ficha, con las K10, K11 y K21.
+- **Lo que recibe hoy el modelo, contra el contexto que da 167:** pierde el destino por artículo,
+  da sólo nombre y precio sin stock, colores ni datos técnicos, entierra las exclusiones en el
+  texto de la búsqueda, no describe lo pedido que ya no se muestra, y mezcla instrucciones con
+  datos en cada bloque.
+- **La causa de fondo:** la memoria no es un estado, es un texto. `respuesta._memoria_texto` lo
+  escribe recortado —ocho productos, cuatro destinos, 700 caracteres— y `tablero.py` lo relee con
+  expresiones regulares en diez lugares. Lo que se corta deja de existir: el pedido se pierde a
+  los pocos turnos. El pedido vive repartido en cuatro campos que pueden contradecirse.
+- **Haiku contra Gemini es casi un empate:** 13 contra 12 de las 14 limpias, 22 contra 19 de las
+  33 complejas. No es motivo para cambiar de modelo.
+
+**Lo que sigue en esta ficha:** un estado de la charla guardado como datos, con un solo
+renderizador para el modelo, que reemplaza a `_memoria_texto`. Medido con las 19 de memoria
+de la vara de las 58. Los lectores por expresión regular se reemplazan en la etapa del
+cableado, el plan 3, salvo los que haya que tocar para que el estado llegue.

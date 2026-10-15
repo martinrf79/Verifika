@@ -50,8 +50,8 @@ entera; lo que se comprimió es el cuento. Si algo hace falta, `git log` lo tien
 
 **Qué NO va acá:** el estado (`PENDIENTE.md` y `git log`), lo decidido
 (`papeles/DECISIONES.md`), cómo se ordena el sistema (`MAPA.md`), y la
-unidad de trabajo abierta (`arquitectura/FICHA_65_el_tablero_y_la_biblioteca.md`, con el método
-de la `FICHA_63`).
+unidad de trabajo abierta, que la nombra SOLO `PENDIENTE.md`, arriba, junto al plan de
+Martín. Ningún otro archivo nombra la ficha abierta: así no quedan tres apuntando a tres.
 
 ---
 
