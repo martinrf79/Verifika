@@ -66,7 +66,33 @@ def test_el_resto_conserva_su_nombre_al_normalizar_de_nuevo():
     assert [r["medio"] for r in rep] == ["transferencia", "el resto"]
 
 
-def test_siete_casos_corridos():
+def test_nueve_casos_corridos():
     """Cuantos, no solo que pasaron."""
-    nombres = [n for n in globals() if n.startswith("test_") and n != "test_siete_casos_corridos"]
-    assert len(nombres) == 7
+    nombres = [n for n in globals() if n.startswith("test_") and n != "test_nueve_casos_corridos"]
+    assert len(nombres) == 9
+
+
+def test_el_reparto_vigente_va_a_las_cuentas_del_pedido(firestore_doble):
+    """K21: el 70/30 se dijo en el turno 1; en el turno 4, sobre el pedido, va igual."""
+    from app.core.agente import CLIENTE_DIJO
+    CLIENTE_DIJO.set("divide el presupuesto en setenta treinta")
+    piezas = [{"n": 1001, "tipo": "cuenta", "del_pedido": True, "destinos": [b["destino"]],
+               "items": [dict(i, destino=b["destino"]) for i in b["items"]]} for b in TRES]
+    llamadas = []
+    ctx = {"mensaje": "sip", "historial": [], "memoria": "", "pide_total": True, "puede_confirmar": False,
+           "reparto_vigente": [{"medio": "parte 1", "porcentaje": 70}, {"medio": "parte 2", "porcentaje": 30}]}
+    T.correr_piezas(piezas, T_, llamadas, 1, ctx)
+    tg = next(x for x in llamadas if x["herramienta"] == "total_general")
+    assert [r["porcentaje"] for r in tg["args"]["reparto_pago"]] == [70, 30]
+    assert tg["vuelve"]["total_ars"] == sum(x["vuelve"]["cuenta"]["total_ars"] for x in llamadas
+                                            if x["herramienta"] == "cuenta")
+
+
+def test_una_cuenta_nueva_no_hereda_el_reparto(firestore_doble):
+    """El reparto es del pedido: una cuenta que no es del pedido no lo lleva."""
+    piezas = [{"n": 1, "tipo": "cuenta", "items": [{"producto": "TEC0020", "cantidad": 1}]}]
+    llamadas = []
+    ctx = {"mensaje": "cuanto sale el teclado", "historial": [], "memoria": "", "pide_total": True,
+           "puede_confirmar": False, "reparto_vigente": [{"medio": "parte 1", "porcentaje": 70}]}
+    T.correr_piezas(piezas, T_, llamadas, 1, ctx)
+    assert next(x for x in llamadas if x["herramienta"] == "cuenta")["args"]["reparto_pago"] is None

@@ -367,7 +367,7 @@ def test_la_condicion_categoria_no_llega_al_motor_aunque_venga_el_rubro():
 
 def _agente_fijo(monkeypatch, texto, llamadas):
     # Desde el 30-sep `respuesta` llama al tablero: el turno fijo va ahi.
-    async def falso(historial, mensaje, tienda_id, trace_id="", memoria="", pedido=None, ficha=""):
+    async def falso(historial, mensaje, tienda_id, trace_id="", memoria="", pedido=None, ficha="", reparto=None):
         return {"texto": texto, "llamadas": llamadas, "uso": []}
     from app.core import tablero
     monkeypatch.setattr(tablero, "turno", falso)

@@ -24,10 +24,9 @@ import pytest
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GRABACIONES = {"gp_montos_1": 20, "gp_pedido_1": 2}
 FALTA = {
-    ("gp_montos_1", "C35"): "PLAN: el buscador no filtra por una condicion de uso. HOY ante 'ya no importa la marca, "
-                            "pasame otras' vuelve solo Logitech. OBJETIVO nombrar otras marcas gamer.",
-    ("gp_pedido_1", "K21"): "A MEDIAS: el reparto no se guarda con el pedido; el 70/30 del turno 1 se pierde cuando "
-                            "el pedido cambia en el turno 3, y con el nombre no avanza al cobro.",
+    ("gp_montos_1", "C35"): "PLAN: 'pasame otras opciones' no excluye lo ya mostrado, y el interprete pierde la "
+                            "condicion gamer. HOY vuelven los mismos cuatro Logitech. OBJETIVO mostrar otros mouse "
+                            "gamer que no se mostraron.",
 }
 
 

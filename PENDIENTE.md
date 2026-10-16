@@ -25,7 +25,9 @@ charla, en la ficha abierta, en una sección con la fecha. Martín no repite nad
 
 ## El plan de Martín — se sigue en este orden, sin volver a preguntarlo
 
-- **PLAN 1, AHORA** · Mejorar la interpretación: lo que recibe el modelo y cómo lo lee. FICHA 69. No se reduce ni se toca el cableado. 16-oct: ningún monto lo escribe el modelo; con Gemini pago 59 contra 55 de 64 casillas; K11 y el bloque doble de K21 arreglados en el código. SIGUE: el pedido como dato, FICHA 68: el reparto de K21 se pierde cuando cambia el pedido.
+- **LA VARA FIJA, la primera que se mira** · `pytest tests/test_casos_grabados.py`: 22 charlas grabadas con Gemini, reproducidas sin modelo por el código de hoy. 16-oct: 21 bien y 1 marcada, C35. Avanzar es bajar `tests/grabadas_techo.json`; ninguna sesión cambia la vara para que pase.
+- **PLAN 1, AHORA** · Mejorar la interpretación. FICHA 69. 16-oct: ningún monto lo escribe el modelo; el pedido aplica los cambios del cliente; el reparto se guarda con el pedido y K21 pasa entero. SIGUE: C35, "pasame otras opciones" no excluye lo mostrado y se pierde "gamer"; después el pedido como dato, FICHA 68.
+- **ABIERTO, PARCHES A REEMPLAZAR** · Del 16-oct, dichos como parche: un bloque igual no suma dos veces, sin saber por qué la memoria tenía el destino repetido; el renglón corto, de 8 palabras o menos, que repite plata de un bloque se borra; "el resto" del reparto no se renombra. Cada uno se reemplaza por el arreglo en su causa.
 - **PLAN 2** · Reducir el código drásticamente, sin tocar la interpretación. Lo que no pisa ningún caso va a `archivo/`.
 - **PLAN 3** · Recién al último, el cableado y la ayuda de afuera: Rasa CALM, una revisión de arquitectura.
 - **PLAN, LA REGLA** · No se escribe ninguna herramienta de medición nueva. Se mide con la vara de las 58 y las K, que ya existen.

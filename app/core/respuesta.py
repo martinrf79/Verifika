@@ -339,7 +339,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     r = await tablero.turno([{"role": m.get("role"), "content": m.get("content") or ""}
                             for m in history if m.get("role") in ("user", "assistant")],
                            raw_message, tienda_id, trace_id=trace_id, memoria=memoria,
-                           pedido=conv.get("pedido_pendiente"), ficha=ficha)
+                           pedido=conv.get("pedido_pendiente"), ficha=ficha, reparto=conv.get("reparto_pago"))
     llamadas = r.get("llamadas") or []
     fichas, envios, cuenta = _lo_que_volvio(llamadas)
     etapas["turno"] = int((time.time() - t) * 1000)
@@ -440,6 +440,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
                           # Una cuenta de un solo destino borra los bloques viejos.
                           grupos_envio=r.get("bloques") or ([] if presupuesto else None),
                           pedido_pendiente=r.get("pedido"),
+                          reparto_pago=r.get("reparto"),
                           pregunta_cierre_hecha=cierre_hecho)
     except Exception as e:  # noqa: BLE001
         log.warning("respuesta_save_error", trace_id=trace_id, error=str(e)[:150])

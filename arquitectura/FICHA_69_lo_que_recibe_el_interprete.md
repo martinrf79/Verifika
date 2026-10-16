@@ -173,3 +173,15 @@ Con eso, `gp_pedido_1`: K11 bien; K21 da el 237.000 y el 70/30 con descuento. Ga
 **Lo que sigue, FICHA 68:** en K21 el 70/30 del turno 1 se pierde cuando el pedido cambia en el turno 3, porque
 el reparto no se guarda como dato con el pedido. Y C35 sigue igual en los dos lados: el buscador no filtra por
 "gamer".
+
+## 16-oct, cierre — la vara fija y lo que es parche
+
+- **La vara fija:** `tests/test_casos_grabados.py` reproduce 22 charlas grabadas con Gemini por el código de hoy,
+  sin modelo ni red, y califica lo que recibe el cliente. Lo que falla es del código. Lo pendiente es un xfail
+  estricto y `grabadas_techo.json` sólo baja. Hoy: 21 bien, C35 marcada.
+- **El reparto es del pedido:** se guarda en la charla, `reparto_pago`, y va a las cuentas del pedido guardado
+  si el cliente no dice otro; una cuenta nueva no lo hereda. K21 pasa entero.
+- **Se intentó y se deshizo:** repartir por marca la búsqueda sin orden hacía pasar C35, pero era cambiar cómo se
+  muestra toda búsqueda para que pase una casilla. C35 es otra cosa: "otras opciones" tiene que excluir lo
+  mostrado, y el intérprete perdió "gamer".
+- **Parches dichos como tales**, a reemplazar por el arreglo en su causa: ver PENDIENTE.

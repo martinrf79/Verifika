@@ -360,138 +360,33 @@ def get_conversation(user_id: str, tienda_id: str | None = None) -> dict:
 def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       tienda_id: str | None = None,
                       estado_conversacion: str | None = None,
-                      ultima_compra: str | None = None,
-                      proofs_recientes: list | None = None,
                       ultimo_presupuesto: str | None = None,
+                      # Lo mostrado con su id, para que el turno siguiente lo resuelva por id y no por prosa.
                       productos_vistos: list | None = None,
                       ultima_localidad: str | None = None,
-                      ultimas_localidades: list | None = None,
                       grupos_envio: list | None = None,
+                      # Los items de la ultima cuenta: que el pedido no mute de identidad entre turnos.
                       carrito_vigente: list | None = None,
-                      # MEMORIA NEGATIVA: lo que el cliente saco del pedido.
-                      # Los otros doce campos guardan lo que quiere; este es el
-                      # unico que guarda lo que dijo que NO, para que un
-                      # producto retractado no vuelva cuando la charla se
-                      # comprime.
-                      descartados: list | None = None,
-                      # La ultima declaracion completa del pedido. Comparar dos
-                      # declaraciones seguidas es lo unico que detecta que el
-                      # cliente saco algo que NUNCA llego al carrito, como un
-                      # producto que solo se nombro y se mostro.
-                      ultimo_declarado: list | None = None,
+                      # El pedido esperando el si del cliente. {} = limpiar.
                       pedido_pendiente: dict | None = None,
                       criterio_cliente: str | None = None,
-                      provincia_envio: str | None = None,
-                      destino_unico: bool | None = None,
-                      pedido_categorias_pendiente: list | None = None,
                       pregunta_cierre_hecha: bool | None = None,
+                      # Nombre y datos del cliente, aunque todavia no haya lead: no se vuelven a pedir.
                       datos_cliente_parciales: dict | None = None,
-                      producto_anotado: dict | None = None,
-                      preferencias_cliente: dict | None = None,
-                      criterio_confirmar_pendiente: bool | None = None,
-                      # LA OFERTA QUE EL TURNO DIFIRIO: los productos que tenia
-                      # para proponer y no propuso porque cedio -herramienta
-                      # ambigua, o una pregunta propia abierta-. El turno
-                      # siguiente reabre el punto desde aca aunque no llame
-                      # ninguna herramienta. Lista vacia = no hay nada pendiente,
-                      # y ese es el dato que la apaga.
-                      oferta_diferida: list | None = None,
-                      # LA MEMORIA DEL INTERPRETE: lo mostrado, el foco, la
-                      # busqueda y la propuesta. None no la pisa.
-                      interprete: dict | None = None,
+                      # EL REPARTO DEL PAGO ES DEL PEDIDO (16-oct, K21): "setenta treinta" dicho una vez vale
+                      # hasta que el cliente diga otro. [] = sin reparto.
+                      reparto_pago: list | None = None,
                       **extras):
-    # RED CONTRA LA DERIVA sim/prod (bug REAL 8-jul): el doble del banco acepta
-    # cualquier kwarg y esta firma enumeraba los suyos; un campo nuevo pasado
-    # desde interprete_libre (destino_unico) tiraba TypeError EN PRODUCCION en
-    # cada turno, el save fallaba en silencio (solo un warning) y el bot
-    # arrancaba de cero en cada mensaje (visto en WhatsApp real: re-saludo y
-    # perdida total del contexto). Un kwarg desconocido ahora se loguea y se
-    # persiste igual: perder un campo nuevo es infinitamente mejor que perder
-    # la conversacion entera.
+    """None no pisa lo guardado. Los campos que escribian los caminos viejos
+    se sacaron el 16-oct: nadie los pasaba.
+
+    RED CONTRA LA DERIVA sim/prod (8-jul): un kwarg desconocido se loguea y se
+    guarda igual; un TypeError aca perdia la conversacion entera en silencio."""
     if extras:
-        log.warning("save_conversation_kwargs_desconocidos",
-                    campos=sorted(extras.keys()))
-    datos = {
-        "history": history,
-        "summary": summary,
-        "updated_at": firestore.SERVER_TIMESTAMP,
-    }
-    for _k, _v in extras.items():
-        if _v is not None:
-            datos[_k] = _v
-    if interprete is not None:
-        datos["interprete"] = interprete
-    if destino_unico is not None:
-        datos["destino_unico"] = destino_unico
-    if pedido_categorias_pendiente is not None:
-        datos["pedido_categorias_pendiente"] = pedido_categorias_pendiente
-    if estado_conversacion is not None:
-        datos["estado_conversacion"] = estado_conversacion
-    if ultima_compra is not None:
-        datos["ultima_compra"] = ultima_compra
-    # PROOF de calculos recientes, para verificar totales repetidos en la
-    # confirmacion sin recalcular. Lista, ya viene capada por el orchestrator.
-    if proofs_recientes is not None:
-        datos["proofs_recientes"] = proofs_recientes
-    if ultimo_presupuesto is not None:
-        datos["ultimo_presupuesto"] = ultimo_presupuesto
-    # REGISTRO DE SESION: productos mostrados con su product_id, para que en el
-    # turno siguiente el Solver tenga el ID real (la prosa solo guarda nombre y
-    # precio). Lista {id, nombre, precio}, ya viene capada por el orchestrator.
-    if productos_vistos is not None:
-        datos["productos_vistos"] = productos_vistos
-    # Ultima localidad de envio mencionada, para cotizar el envio en turnos
-    # siguientes cuando el cliente dice "el envio ahi" sin repetir la ciudad.
-    if ultima_localidad is not None:
-        datos["ultima_localidad"] = ultima_localidad
-    # TODAS las localidades cotizadas del pedido (multi-destino), en orden: las
-    # lee calculate_total en turnos siguientes para cobrar cada destino con su
-    # tarifa sin volver a pedir el CP que el cliente ya dio.
-    if ultimas_localidades is not None:
-        datos["ultimas_localidades"] = ultimas_localidades
-    if grupos_envio is not None:
-        datos["grupos_envio"] = grupos_envio
-    # CARRITO VIGENTE: items del ultimo calculate_total ok {id, nombre,
-    # cantidad}, para que el pedido no mute de identidad entre turnos.
-    if carrito_vigente is not None:
-        datos["carrito_vigente"] = carrito_vigente
-    if descartados is not None:
-        datos["descartados"] = descartados
-    if ultimo_declarado is not None:
-        datos["ultimo_declarado"] = ultimo_declarado
-    # PEDIDO PENDIENTE: el pedido a medio armar (items resueltos + terminos
-    # ambiguos con cantidad) esperando el criterio del cliente. {} = limpiar.
-    if pedido_pendiente is not None:
-        datos["pedido_pendiente"] = pedido_pendiente
-    # CRITERIO del cliente ("lo mas barato"): decision vigente que persiste entre
-    # turnos para que el solver no repregunte modelo ni color (arreglo B).
-    if criterio_cliente is not None:
-        datos["criterio_cliente"] = criterio_cliente
-    # PROVINCIA del cliente: una vez dada se aplica a todos los destinos, para no
-    # repedir el CP de cada pueblo (arreglo C).
-    if provincia_envio is not None:
-        datos["provincia_envio"] = provincia_envio
-    # Flag one-shot del gatillo de cierre (D): marca que el turno pasado se hizo la
-    # pregunta de cierre, para que la respuesta del cliente dispare el lead fuerte.
-    if pregunta_cierre_hecha is not None:
-        datos["pregunta_cierre_hecha"] = pregunta_cierre_hecha
-    # PRODUCTO ANOTADO: el que el cliente eligio y pidio guardar ("me gusta X,
-    # anotalo"). Ancla de memoria para "el que te dije al principio". {id,
-    # nombre, precio}; {} = limpiar el ancla.
-    if producto_anotado is not None:
-        datos["producto_anotado"] = producto_anotado
-    if preferencias_cliente is not None:
-        datos["preferencias_cliente"] = preferencias_cliente
-    if criterio_confirmar_pendiente is not None:
-        datos["criterio_confirmar_pendiente"] = criterio_confirmar_pendiente
-    if oferta_diferida is not None:
-        datos["oferta_diferida"] = oferta_diferida
-    # DATOS DEL CLIENTE ACUMULADOS turno a turno (nombre, telefono, direccion,
-    # forma de pago), aunque todavia no exista un lead. Asi un dato dado ANTES de
-    # la decision de compra no se pierde y el lead se siembra completo, sin volver
-    # a pedir la direccion que el cliente ya dio.
-    if datos_cliente_parciales is not None:
-        datos["datos_cliente_parciales"] = datos_cliente_parciales
+        log.warning("save_conversation_kwargs_desconocidos", campos=sorted(extras.keys()))
+    campos = {k: v for k, v in locals().items() if k not in ("user_id", "history", "summary", "tienda_id", "extras")}
+    datos = {"history": history, "summary": summary, "updated_at": firestore.SERVER_TIMESTAMP,
+             **{k: v for k, v in {**campos, **extras}.items() if v is not None}}
     _tienda_ref(tienda_id).collection("conversaciones").document(user_id).set(
         datos, merge=True)
 

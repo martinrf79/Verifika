@@ -1100,8 +1100,10 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
     # suyo, y el total general lo lleva una vez.
     varias = [p for p in piezas if p.get("tipo") == "cuenta"]
     reparto_total = None
+    # EL REPARTO DEL PEDIDO SIGUE VALIENDO (16-oct, K21): sobre el pedido guardado, sin reparto nuevo, va el vigente.
+    vigente = ctx.get("reparto_vigente") if any(p.get("del_pedido") for p in varias) else None
     if len(varias) > 1:
-        reparto_total = next((p.get("reparto_pago") for p in varias if p.get("reparto_pago")), None)
+        reparto_total = next((p.get("reparto_pago") for p in varias if p.get("reparto_pago")), None) or vigente
         for p in varias:
             p["reparto_pago"] = None
     bloques = []
@@ -1129,7 +1131,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                 args["destinos"] = _destinos_del_turno(pz, piezas) or ([args["destino"]] if args["destino"] else [])
                 if args["destinos"]:
                     args["destino"] = args["destinos"][0]
-                args["reparto_pago"] = _reparto(args.get("reparto_pago"))
+                args["reparto_pago"] = _reparto(args.get("reparto_pago") or (vigente if len(varias) == 1 else None))
             else:
                 args["producto"] = _certificado(args["producto"], tienda_id, llamadas)
                 if not _ID.fullmatch(str(args["producto"])):
@@ -1358,7 +1360,8 @@ def _sobre_el_pedido(piezas: list, memoria: str, tienda_id: str = "") -> list:
                             "del_pedido": True})
         for k, b in enumerate(pedido):
             n += 1
-            out.append({"n": n, "tipo": "cuenta", "texto": f"cuenta para {b['destino']}" if b["destino"] else p.get("texto"),
+            out.append({"n": n, "tipo": "cuenta", "del_pedido": True,
+                        "texto": f"cuenta para {b['destino']}" if b["destino"] else p.get("texto"),
                         "items": [dict(i, destino=b["destino"]) for i in b["items"]],
                         "destinos": [b["destino"]] if b["destino"] else [],
                         **({"reparto_pago": rep} if rep and k == 0 else {})})
@@ -1416,7 +1419,8 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
             if (out.get("cuenta") or {}).get("total_ars") is not None:
                 bloques.append((args, out["cuenta"]))
         if len(bloques) > 1:
-            return _hecho_total_general(bloques, _reparto(rep), tienda_id, llamadas, vuelta, ctx)
+            return _hecho_total_general(bloques, _reparto(rep or ctx.get("reparto_vigente")), tienda_id, llamadas,
+                                        vuelta, ctx)
     if not ids:
         ids = _ids_recientes(ctx["memoria"])
     ids = list(dict.fromkeys(ids))
@@ -1526,7 +1530,7 @@ def busqueda_vigente(busquedas: list) -> str:
 # ══ EL TURNO ════════════════════════════════════════════════════════════════
 
 async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "",
-                memoria: str = "", pedido: dict = None, ficha: str = "") -> dict:
+                memoria: str = "", pedido: dict = None, ficha: str = "", reparto: list = None) -> dict:
     """Un turno con el tablero. No lanza. El modelo lee `ficha`, de `ficha_charla`; los lectores del codigo leen
     `memoria`, de `respuesta._memoria_texto`, hasta el plan 3."""
     from app.core import guardas_salida as gs
@@ -1583,6 +1587,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     from app.core import pedido as PD
     guardado = PD.pendiente(pedido)
     ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria, "tienda_id": tienda_id,
+           "reparto_vigente": reparto or None,
            # EL TOTAL PEDIDO LO DICEN LAS PIEZAS (7-oct, K01). Habia una
            # pregunta de si o no aparte, y cuando no coincidia con las piezas
            # mandaba ella: la revision agregaba una cuenta y el bot se
@@ -1656,6 +1661,8 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
              tokens=sum(x["entrada"] for x in uso), cache=sum(x["cache"] for x in uso),
              salida=sum(x["salida"] for x in uso), ms=int((time.time() - t0) * 1000))
     return {"texto": texto, "llamadas": llamadas, "uso": uso, "hechos": hechos, "calculos": calculos,
+            "reparto": next((x["args"].get("reparto_pago") for x in reversed(llamadas) if x["herramienta"] in
+                             ("cuenta", "total_general") and (x.get("args") or {}).get("reparto_pago")), None),
             "busqueda": busqueda_vigente((ctx.get("busquedas") or []) + (ctx.get("no_vende") or [])),
             "bloques": ctx.get("bloques"),
             "respondidos": respondidos(ctx.get("busquedas")),
