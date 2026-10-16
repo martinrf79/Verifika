@@ -38,28 +38,8 @@ def _una(consulta: dict) -> dict:
     return MT.buscar([consulta], TIENDA)["resultados"][0]
 
 
-# ── EL ESQUEMA SALE DE LA FUENTE VIVA ───────────────────────────────────────
-
-def test_el_enum_de_campos_y_categorias_sale_del_catalogo_no_de_una_lista():
-    """La misma regla de siempre: el modelo no puede nombrar un campo que la
-    fuente no tiene. Si el enum se escribiera a mano, el dia que cambie una
-    columna el filtro deja de filtrar EN SILENCIO."""
-    from app.core.filtros_catalogo import campos_filtrables, recorrida
-    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-    q = props["consultas"]["items"]["properties"]
-    campos = set(q["condiciones"]["items"]["properties"]["campo"]["enum"])
-    assert set(campos_filtrables(TIENDA)) <= campos
-    assert "sin_campo_en_la_fuente" in campos, "falta la escapatoria"
-    cats = set(q["categoria"]["enum"])
-    assert cats == {c for c, _ in recorrida(TIENDA)["categorias"]}
-    assert len(cats) > 5
 
 
-def test_la_herramienta_tiene_UN_nombre_y_es_el_mismo_que_ejecuta_el_codigo():
-    """No son tres motores. Es uno, y el nombre del esquema tiene que ser el
-    que el turno despacha: con dos nombres, el modelo llama a uno y el codigo
-    escucha el otro, y el turno sale sin fichas sin que nadie se entere."""
-    assert MT.esquema(TIENDA)["function"]["name"] == MT.NOMBRE
 
 
 # ── EL CONTRATO: NUNCA VUELVE VACIA SIN MOTIVO ──────────────────────────────
@@ -1091,13 +1071,3 @@ def test_un_destino_en_TEXTO_PELADO_sigue_valiendo():
     filas = (r.get("envios") or {}).get("filas") or []
     assert filas and filas[0].get("monto_ars"), f"{filas}"
 
-
-def test_el_tablero_tiene_la_casilla_del_vinculo(firestore_doble):
-    """Sin esto en el esquema, el modelo no puede declararlo aunque quiera."""
-    envios = (MT.esquema(TIENDA)["function"]["parameters"]
-              ["properties"]["envios"]["items"])
-    assert envios["type"] == "object", "`envios` volvio a ser texto pelado"
-    assert "destino" in envios["properties"] and "va" in envios["properties"]
-    assert envios["required"] == ["destino"], (
-        "el vinculo no puede ser obligatorio: el 16-sep un campo obligatorio "
-        "degrado el comportamiento de llamada de dos vueltas a cinco")

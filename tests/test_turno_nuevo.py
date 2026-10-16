@@ -43,8 +43,6 @@ def test_el_prompt_lleva_los_veinte_tipos_y_ninguno_menos():
     assert len(bloque.splitlines()) == 20
 
 
-
-
 # ── LA FUENTE QUE EL CODIGO PONE DELANTE ────────────────────────────────────
 
 def test_el_motor_encuentra_el_producto_que_el_modelo_nombra(firestore_doble):
@@ -85,33 +83,6 @@ def test_un_tema_que_la_casa_NO_TIENE_se_dice_y_no_se_inventa(firestore_doble):
     assert r["sin_resolver"], "no dejo rastro del tema que no resolvio"
 
 
-def test_el_tema_se_nombra_CORTO_y_el_esquema_lo_pide(firestore_doble):
-    """MEDIDO AL ESCRIBIR ESTO, y por eso el esquema pide pocas palabras.
-    `certificar_tema` pega por raiz de cuatro letras y no tiene umbral: un tema
-    corto y al punto —"futbol", "bailar tango"— resuelve `not_found` como
-    corresponde, pero una frase larga con palabras genericas se engancha con
-    cualquiera ("si viajan a marte con el pedido" resolvia a `embalaje_envio`
-    por "pedido" y "viajan").
-
-    Es exactamente la falla que este cambio saca del camino vivo: antes el que
-    nombraba el tema era el MENSAJE ENTERO del cliente, o sea siempre el caso
-    largo. Pedirle al modelo el tema pelado es lo que hace que el certificador
-    trabaje en el rango donde anda bien.
-
-    LO QUE CAMBIA EL 20-sep: ya no se le pide al modelo que nombre CORTO, se
-    le da la lista cerrada. Es la misma proteccion un escalon mas arriba —el
-    certificador sigue trabajando sobre un tema pelado y no sobre la frase del
-    cliente— pero ahora el nombre no se escribe, se elige. La mitad que no
-    cambia es la de abajo: lo que la casa no tiene escrito no vuelve como
-    politica, lo nombre quien lo nombre."""
-    from app.core import fuente as F
-    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-    enum = props["temas"]["items"]["enum"]
-    assert "garantia" in enum and "cuotas" in enum
-    assert F.SIN_TEMA in enum, "sin valvula de escape el modelo elige el mas parecido"
-    assert F.politicas_de(["bailar tango"], TIENDA)["politicas"] == []
-
-
 def test_el_modelo_puede_pedir_PRODUCTOS_Y_POLITICAS_en_una_llamada(firestore_doble):
     """Una puerta sola: no hay herramienta nueva. El mecanismo de buscar en la
     fuente es el mismo, cambia QUE se busca."""
@@ -119,28 +90,6 @@ def test_el_modelo_puede_pedir_PRODUCTOS_Y_POLITICAS_en_una_llamada(firestore_do
                   TIENDA, "t", temas=["garantia"])
     assert r["resultados"] and r["resultados"][0]["filas"]
     assert r["politicas"] and r["politicas"][0]["texto"]
-
-
-def test_el_esquema_del_motor_OFRECE_temas(firestore_doble):
-    """El campo viaja como parte del MISMO esquema de `buscar`.
-
-    Y SI LLEVA ENUM, que da vuelta la decision de la FICHA 06 del 23-ago con
-    la cuenta al lado. Entonces eran 129 nombres y 2.299 bytes y salio por
-    peso; hoy, sin los dos pilares de conducta, son 104 y 1.821, y la leyenda
-    devolvio 1.087 caracteres bajando su techo el mismo dia.
-
-    LA ATADURA PASA DE BLANDA A DURA: antes el modelo escribia las palabras
-    del cliente y se enteraba DESPUES, por el certificador, si la casa tenia
-    eso escrito. Ahora un tema que la fuente no tiene no se puede ni nombrar.
-
-    Y `criterio` YA NO ES UN CAMPO: era la misma puerta con otro nombre —la
-    misma certificacion y el mismo reparto por area— asi que pedirlo aparte
-    era hacerle elegir al modelo nuestro archivero. La boca sigue viva y
-    sigue devolviendo su caja."""
-    props = (MT.esquema(TIENDA)["function"]["parameters"]["properties"])
-    assert "temas" in props and "consultas" in props
-    assert props["temas"]["items"]["enum"], "el enum de temas no viaja"
-    assert "criterio" not in props, "volvio la segunda puerta para lo mismo"
 
 
 # ── LOS DOS NUMEROS ─────────────────────────────────────────────────────────
@@ -320,12 +269,6 @@ def test_SIN_TARIFA_la_politica_del_rango_SI_se_sirve(firestore_doble):
         "sin tarifa exacta no hay nada que apagar"
 
 
-
-
-
-
-
-
 # ── VARIOS DESTINOS EN UN MENSAJE ───────────────────────────────────────────
 
 def test_dos_destinos_se_cotizan_LOS_DOS(firestore_doble):
@@ -419,8 +362,6 @@ def test_dos_localidades_de_la_MISMA_provincia_son_DOS_envios(firestore_doble):
     assert [f["destino"] for f in filas] == ["Posadas", "Obera"], filas
 
 
-
-
 def test_ningun_molde_pide_un_hueco_que_el_codigo_NO_LLENA():
     """La falla exacta del 11-sep: el molde de envio decia `{{costo_envio}}`,
     que `numeros` no llena, asi que el hueco quedaba crudo y el cliente leia
@@ -451,15 +392,7 @@ def test_un_hueco_del_molde_que_el_modelo_copio_no_sale_con_llaves():
 # ── EL TURNO ────────────────────────────────────────────────────────────────
 
 
-
-
-
-
-
 # ── EL CIERRE, QUE SOBREVIVIO AL APAGON ─────────────────────────────────────
-
-
-
 
 
 # ── EL MODELO ESCRIBE EL PRECIO, Y LA GUARDA ES DE PROCEDENCIA ──────────────
@@ -526,8 +459,6 @@ def test_el_inventario_dice_el_catalogo_entero(firestore_doble):
     assert inv["productos"] > 100, f"solo {inv['productos']} productos"
     assert len(inv["categorias"]) > 5
     assert inv["precio_min"] and inv["precio_max"] > inv["precio_min"]
-
-
 
 
 def test_el_extremo_se_ordena_no_se_busca_por_parecido(firestore_doble):
@@ -644,8 +575,6 @@ def test_la_tarifa_del_motor_NO_es_plata_inventada():
     assert mal["inventada"], "la guarda no puede aflojarse para toda tarifa"
 
 
-
-
 def test_la_memoria_dice_cual_es_el_ultimo_que_mostro():
     """'El que me dijiste recien' no puede adivinar: el ultimo de la lista
     tiene que estar marcado como el mas reciente."""
@@ -658,14 +587,6 @@ def test_la_memoria_dice_cual_es_el_ultimo_que_mostro():
     m = F.texto(F.estado(conv), "verifika_prod")
     assert "el que me dijiste" in m.lower()
     assert m.rfind("TEC9") > m.rfind("MOU2")
-
-
-
-
-
-
-
-
 
 
 def test_un_pedido_de_varios_rubros_son_VARIAS_CONSULTAS(firestore_doble):
@@ -792,25 +713,10 @@ def _parametros(mensaje="cuanto pesa el teclado K120"):
     return espia.kw
 
 
-
-
-
-
-
-
-
-
 # ── EL FORMATO SE OBLIGA, NO SE PIDE (12-sep-2026) ──────────────────────────
 
 
-
-
-
-
 # ── EL RECORTE DEL RETORNO (13-sep-2026) ────────────────────────────────────
-
-
-
 
 
 # ── EL RAMAL A COMPATIBILIDAD LLEGA AL TURNO (13-sep-2026) ──────────────────

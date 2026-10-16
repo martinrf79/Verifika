@@ -79,12 +79,6 @@ _CATEGORIAS_META: dict[str, dict] = {}
 _ORDEN_TEMAS: list[str] = []
 
 
-def meta_categoria(cat_id: str) -> dict:
-    """Grupo y pilar de una categoria, para enrutar sin decidir. {} si no existe."""
-    corpus = _corpus_de(_tienda_actual())
-    return dict(corpus["categorias_meta"].get(str(cat_id).strip(), {}))
-
-
 def temas() -> list[str]:
     """Todo lo que se puede consultar: los temas con criterio Y los que solo
     tienen movida. Entra al enum de `consultar_temas`. Una situacion sin

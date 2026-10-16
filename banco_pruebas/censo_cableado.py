@@ -44,7 +44,7 @@ LAS CINCO CLASES, cada una con su caso real:
      cliente leia "ese dato no lo tengo a mano" justo donde iba la tarifa.
 
   5. CAPACIDAD OFRECIDA AL MODELO QUE EL CODIGO NO CONSUME.  Un campo del
-     esquema de `buscar` que `motor._una` no lee: el modelo lo manda y cae al
+     esquema de las piezas que `tablero` no lee: el modelo lo manda y cae al
      vacio, sin error y sin rastro.
 
 EL TECHO SOLO BAJA. `banco_pruebas/cableado_techo.json`, con candado en
@@ -233,18 +233,17 @@ def huecos_sin_relleno() -> list:
 # ── 5. CAPACIDAD OFRECIDA Y NO CONSUMIDA ───────────────────────────────────
 
 def esquema_sin_consumidor() -> list:
-    """Un campo que el esquema de `buscar` le ofrece al modelo y que
-    `motor._una` no lee nunca. El modelo lo manda y cae al vacio: sin error,
-    sin rastro y sin efecto, que es la peor de las tres cosas."""
+    """Un campo que el esquema de las piezas le ofrece al interprete y que
+    `tablero` no lee nunca. El modelo lo manda y cae al vacio: sin error,
+    sin rastro y sin efecto, que es la peor de las tres cosas. Desde el 16-oct
+    mira el esquema vivo, `tablero.esquema_piezas`: el de `motor` se borro."""
     from banco_pruebas import sim_firestore
     sim_firestore.install()
-    from app.core import motor as MT
-    esq = MT.esquema(TIENDA)
-    props = ((esq.get("function", {}).get("parameters", {})
-              .get("properties", {}).get("consultas", {})
-              .get("items", {}).get("properties")) or {})
+    from app.core import tablero as T
+    props = (T.esquema_piezas(TIENDA)["properties"]["piezas"]["items"]
+             .get("properties")) or {}
     leidas = set()
-    arbol = ast.parse((_RAIZ / "app" / "core" / "motor.py").read_text())
+    arbol = ast.parse((_RAIZ / "app" / "core" / "tablero.py").read_text())
     for n in ast.walk(arbol):
         if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                 and n.func.attr == "get" and n.args
@@ -253,7 +252,7 @@ def esquema_sin_consumidor() -> list:
         if isinstance(n, ast.Subscript) and isinstance(n.slice, ast.Constant):
             leidas.add(str(n.slice.value))
     return [{"clase": "esquema_sin_consumidor", "nombre": c,
-             "donde": "app/core/motor.py:esquema",
+             "donde": "app/core/tablero.py:esquema_piezas",
              "detalle": "se le ofrece al modelo y el codigo no lo lee"}
             for c in sorted(props) if c not in leidas]
 

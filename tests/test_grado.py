@@ -123,52 +123,6 @@ def test_una_preferencia_no_cuenta_como_condicion_incumplida(firestore_doble):
         f"la preferencia se conto como condicion dura: {r['motivo']}")
 
 
-def test_el_ejemplo_del_tablero_dice_CUAL_de_los_dos(firestore_doble):
-    """MEDIDO VIVO EL 20-sep, y el defecto era del texto que escribi yo.
-
-    Con el grado ya deployado, las tres corridas declararon `pais_fabricacion
-    prefiere china` a un cliente que pidio las MENOS chinas. Es el operador al
-    reves: `prefiere` pide justo las que mas tienen.
-
-    LA CAUSA: el renglon ponia el ejemplo del cliente —"las menos partes
-    chinas posibles"— pegado a los dos operadores y sin decir a cual
-    correspondia. El modelo lo leyo al lado de `prefiere` y ato eso. Un
-    ejemplo que no dice cual es peor que no tener ejemplo: ancla al primero.
-    """
-    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-    d = props["consultas"]["items"]["properties"]["condiciones"]["description"]
-    bajo = d.lower()
-    i_evita, i_pref = bajo.find("evita"), bajo.find("prefiere")
-    assert i_evita > 0 and i_pref > 0
-    menos = bajo.find("las menos partes chinas")
-    assert menos > 0, "se fue el ejemplo del caso medido"
-    # el ejemplo tiene que nombrar `evita` ANTES que al proximo `prefiere`
-    assert 0 < bajo.find("evita", menos) < bajo.find("prefiere", menos), (
-        "el ejemplo no dice que 'las menos chinas' es `evita`")
-
-
-def test_el_reparto_NO_espera_a_la_cuenta(firestore_doble):
-    """SE DA VUELTA EL MISMO DIA QUE SE ESCRIBIO, y la medicion es la causa.
-
-    A las 02:48 esta descripcion decia "mandá tambien `cuenta` con los ids, o
-    no hay total que repartir". El modelo la obedecio: como en la vuelta 1
-    todavia no tiene ids, difirio LAS DOS cosas. Medido en la revision 00555,
-    tres corridas: el reparto en la vuelta 1 cayo de 3 de 3 a 0 de 3 y las
-    vueltas por turno subieron de 3,3 a 5,0.
-
-    ERA DOS DECISIONES ENCADENADAS OTRA VEZ, que es exactamente lo que el
-    campo plano habia desarmado, reintroducido con una frase. Ahora el
-    acoplamiento lo resuelve el CODIGO —el turno acumula el reparto entre
-    vueltas— y el tablero pide lo contrario: anotalo ya.
-    """
-    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-    d = props["reparto_pago"]["description"].lower()
-    assert "misma" in d and "no tengas los ids" in d, (
-        "el reparto no dice que se anota sin esperar a la cuenta")
-    assert "o no hay total que repartir" not in d, (
-        "volvio el acoplamiento que midio 0 de 3")
-
-
 def test_el_grado_sobre_un_NUMERO_ordena_por_cercania(firestore_doble):
     """EL AGUJERO DEL OPERADOR, medido en produccion el 20-sep.
 

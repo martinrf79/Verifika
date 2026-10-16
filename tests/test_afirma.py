@@ -134,15 +134,6 @@ def test_cuando_las_fichas_difieren_se_pregunta():
 
 # ── EL CABLE: LA BOCA ESTA ENCHUFADA A LA PUERTA ────────────────────────────
 
-def test_la_boca_viaja_en_el_tablero_y_vuelve_en_el_retorno():
-    esquema = MT.esquema(TIENDA)
-    props = esquema["function"]["parameters"]["properties"]
-    assert "afirma" in props, "el campo no esta en el tablero"
-    r = MT.buscar([], TIENDA, afirma=[{"sobre": "teclado K120",
-                                       "dice": "inalambrico"}])
-    assert r.get("afirma"), "la caja no vuelve en el retorno"
-    assert r["afirma"][0]["veredicto"] == "contradice"
-
 
 def test_sin_afirmaciones_la_caja_no_viaja():
     """Una clave vacia en cada turno es ruido adentro de la caja donde todo lo

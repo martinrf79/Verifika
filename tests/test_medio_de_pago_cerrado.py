@@ -20,27 +20,6 @@ TIENDA = "verifika_prod"
 UN_ITEM = [{"id": "TEC0001", "cantidad": 1}]
 
 
-def _props():
-    return (MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-            ["reparto_pago"]["items"]["properties"])
-
-
-def test_el_medio_ya_no_es_texto_libre(firestore_doble):
-    enum = _props()["medio"].get("enum")
-    assert enum, "el medio volvio a ser texto libre: se puede inventar de nuevo"
-    assert set(enum) == {"transferencia", "mercado_pago", "tarjeta",
-                         "medio_no_disponible"}
-
-
-def test_hay_UNA_SALIDA_y_no_un_relleno(firestore_doble):
-    """`medio_no_disponible` es el SIN_CAMPO del pago. Sin el, un cliente que
-    dice 'mitad en efectivo' obliga al modelo a acomodarlo al mas parecido, y
-    acomodar en silencio es exactamente lo que se estaba tapando."""
-    assert "medio_no_disponible" in _props()["medio"]["enum"]
-    d = _props()["medio"]["description"].lower()
-    assert "parecido" in d, "el tablero no dice que NO se acomode"
-
-
 def test_un_medio_que_no_se_toma_NO_ENTRA_AL_TOTAL(firestore_doble):
     r = MT.buscar([], TIENDA, "t", cuenta={"items": UN_ITEM},
                   reparto_pago=[{"medio": "medio_no_disponible",
@@ -71,3 +50,4 @@ def test_un_reparto_NORMAL_sigue_saliendo_igual(firestore_doble):
     c = r.get("cuenta") or {}
     assert c.get("total_ars"), "un reparto valido dejo de dar total"
     assert not c.get("medio_no_disponible")
+

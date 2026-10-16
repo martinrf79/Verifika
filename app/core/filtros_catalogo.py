@@ -664,19 +664,6 @@ def _rango(campo: str, d: dict, r: dict):
     return int(min(nums)), int(max(nums))
 
 
-def campos_ordenables(tienda_id: str) -> list[str]:
-    """LOS CAMPOS POR LOS QUE ORDENAR SIGNIFICA ALGO: los numericos.
-
-    El esquema ofrecia los 41, y era caro y ademas estaba mal. Sobre una
-    etiqueta -`bluetooth`, `color`- el orden es alfabetico y no contesta
-    ninguna pregunta que un cliente pueda hacer; `orden_tiene_sentido` ya lo
-    rechazaba DESPUES, o sea que el modelo gastaba una consulta para que el
-    motor le dijera que no. Ofrecer solo los tres numericos lo dice ANTES.
-    """
-    campos = recorrida(tienda_id).get("campos") or {}
-    return sorted(c for c, tipo in campos.items() if tipo == "numero")
-
-
 def condicion_sin_vocabulario(campo: str, operador: str, valor,
                               tienda_id: str) -> list | None:
     """EL HUECO DE VALOR. Si NINGUN valor de la fuente puede cumplir esta

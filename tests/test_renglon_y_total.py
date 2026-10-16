@@ -75,56 +75,6 @@ def _texto_de(kw) -> str:
 
 # ── LA FORMA ────────────────────────────────────────────────────────────────
 
-def test_los_dos_campos_van_PRIMEROS_en_el_esquema(firestore_doble):
-    """EL MODELO ESCRIBE EN ORDEN, campo por campo. Hasta el 21-sep lo primero
-    que escribia eran las `consultas` -que ya es traducir y repartir a la vez-
-    y lo ultimo de todo, seis campos despues, la `cuenta`.
-
-    Que el orden del esquema mande el orden de escritura es una APUESTA y no
-    una ley; lo que este test ata es que la apuesta este hecha.
-    """
-    props = list(MT.esquema(TIENDA)["function"]["parameters"]["properties"])
-    assert props[:2] == ["renglones", "pedir_total"], (
-        f"el orden del tablero arranca con {props[:3]}")
-
-
-def test_son_los_dos_UNICOS_obligatorios(firestore_doble):
-    """UN CAMPO OPCIONAL SE OLVIDA GRATIS Y SIN DEJAR RASTRO, y hasta hoy los
-    seis lo eran: `required` estaba vacio.
-
-    Y SON SOLO ESTOS DOS porque son los unicos que SIEMPRE tienen respuesta.
-    Obligar `envios` o `temas` seria pedirle al modelo que llene con ruido lo
-    que el cliente no dijo, que es el defecto que el enum de temas ya trajo
-    una vez y que `temas_limpios` mide en la vara.
-    """
-    req = MT.esquema(TIENDA)["function"]["parameters"]["required"]
-    assert sorted(req) == ["pedir_total", "renglones"], f"obligatorios: {req}"
-
-
-def test_el_renglon_es_PLANO_y_es_texto_del_cliente(firestore_doble):
-    """Una lista de textos, no de objetos. Si el renglon pidiera campos, el
-    modelo tendria que interpretar justo donde le pedimos que copie, y
-    volveriamos al anidado que mide cero."""
-    campo = (MT.esquema(TIENDA)["function"]["parameters"]
-             ["properties"]["renglones"])
-    assert campo["type"] == "array"
-    assert campo["items"] == {"type": "string"}
-
-
-def test_el_pedido_de_total_NO_vive_adentro_de_la_cuenta(firestore_doble):
-    """Es la misma mudanza que el reparto del pago el 20-sep, y por el mismo
-    motivo: adentro de `cuenta` el modelo tiene que tomar DOS decisiones para
-    una cosa que el cliente dijo una vez.
-
-    Y ACA ERA PEOR, PORQUE ERA IMPOSIBLE. `cuenta.items` pide un ID por
-    producto y en la vuelta 1 el cliente nombro RUBROS -"dos notebooks"-: el
-    modelo todavia no miro el catalogo y no tiene un solo id que escribir.
-    """
-    props = MT.esquema(TIENDA)["function"]["parameters"]["properties"]
-    assert "pedir_total" in props
-    assert "pedir_total" not in props["cuenta"]["properties"], (
-        "el si o no del presupuesto volvio adentro del objeto anidado")
-
 
 # ── EL CABLE, Y NACE MUDO ───────────────────────────────────────────────────
 
