@@ -141,3 +141,11 @@ Todas salen de lo medido en `PASO0_CENSO.md`. Ninguna es una preferencia.
     hizo avanzar el proyecto.
 43. **Lo que dice Martín no se repite sesión a sesión.** El orden va al plan de `PENDIENTE.md`,
     lo decidido acá, y lo concluido en la ficha abierta. Lo escribe la sesión al cerrar.
+
+## 16-oct-2026 — Lo que el modelo falla seguido, se le achica
+
+44. **Si el modelo falla seguido en una tarea, se le hace mas facil, no se le insiste.** Se le
+    pide una pregunta de si o no en vez de una estructura, y el codigo arma el resto. Motivo:
+    en K21 el codigo ya resuelve bien todo lo que el modelo interpreta bien; lo que falla es
+    el modelo armando a mano lo que el codigo ya sabe.
+45. **El 8-oct no va mas: K21 se arregla.** Las casillas de 237000 no fallan a sabiendas.
