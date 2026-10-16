@@ -109,8 +109,10 @@ banderas y GUIAS        tercera llamada con preguntas de sí o no
   con `A MEDIAS:` o `PLAN:`. Los techos de `tests/*_techo.json` sólo bajan.
 - **Un umbral se cambia en su propio commit, antes del trabajo que lo hace pasar**, con las cuentas escritas.
 - **El que implementa no reescribe la vara.** Un test se edita sólo si el requisito cambió, y el commit lo dice.
-- **Al cerrar** se actualiza `PENDIENTE.md`: máximo veinte líneas, una por ítem. Lo hecho no se escribe en
-  ningún lado: lo cuenta `git log`, así que los commits se escriben para entenderse solos.
+- **Al arrancar, se sigue el primer ítem SIGUE de `PENDIENTE.md`**, sin volver a preguntarlo.
+- **Al cerrar** se reescribe en `PENDIENTE.md` el ítem DONDE VA, se reordenan los SIGUE y se borra lo hecho u
+  obsoleto: máximo veinte ítems, con candado en `tests/test_pendiente.py`. Lo hecho no se escribe en ningún
+  otro lado: lo cuenta `git log`, así que los commits se escriben para entenderse solos.
 - **Una sesión no termina con trabajo sin mergear.** O está en `main`, o está descartado por escrito.
 - **Un parche no puede tocar `.github/workflows/`:** un cambio de workflow va en su propio commit por la
   integración de GitHub.
@@ -133,6 +135,8 @@ banderas y GUIAS        tercera llamada con preguntas de sí o no
 
 - **La gratis es el default para probar**, y se prueba. Ante 429 se reintenta; si se agota la cuota del día,
   se sigue al día siguiente. No se cambia a la paga.
+- **OpenRouter con un modelo gratis**, cuando esté su clave, es para medir el código y lo que recibe el modelo:
+  1.000 pedidos por día. Antes de deployar, una corrida con Gemini, que es el modelo de producción, confirma.
 - **La paga sólo si Martín la pide en esa sesión.** El hook `scripts/guard_clave.sh` la frena salvo que el
   comando lleve `MARTIN_AUTORIZO_LA_PAGA=<fecha>`. Nunca `GEMINI_API_KEY=$GEMINI_API_KEY_PROD`.
 - **Tope diario de la paga** para todas las corridas, en `banco_pruebas/libro_paga.py`. Lo gastado:

@@ -1,59 +1,35 @@
-# PENDIENTE — lo que quedó abierto
+# PENDIENTE — dónde va el trabajo y lo que queda abierto
 
-Corto a propósito: el hook lo imprime entero. Lo hecho lo cuenta `git log`.
-La historia hasta el 27-sep está en `archivo/documentacion/PENDIENTE_hasta_27sep.md`.
+El hook del arranque imprime el titular de cada ítem de abajo de la raya. Por eso cada titular dice solo lo
+esencial, y el orden importa: **la sesión nueva arranca por el primer ítem SIGUE, sin preguntar.**
 
-Estados: **ABIERTO** · **ESPERA A MARTIN**.
+- El objetivo, el plan y las reglas: `CLAUDE.md`. No se copian acá.
+- Lo hecho: `git log`. Lo concluido en detalle: la ficha abierta, hoy la FICHA 69.
+- Lo que Martín decidió para siempre: `papeles/DECISIONES.md`.
 
-## Dónde está el proyecto
+**Al cerrar cada sesión:** se reescribe el ítem DONDE VA, se reordenan los SIGUE y se borra lo que quedó hecho u
+obsoleto. Máximo veinte ítems, lo controla `tests/test_pendiente.py`. Lo pendiente de código va además como un
+test que falla, `xfail(strict=True)`, con motivo `PLAN:` o `A MEDIAS:`.
 
-```
-python3 -m pytest -q          la batería offline
-```
-
-Camino vivo: `orchestrator` → `respuesta.procesar_turno` → `tablero.turno` sobre
-`motor.buscar`. El plan: `CLAUDE.md`, sección 1; lo medido que lo sostiene, FICHA 67 y FICHA 69.
-Dónde está cada cosa: `MAPA.md`.
-
-CÓMO NO SE PIERDE LO QUE DICE MARTÍN, sesión a sesión. Al cerrar, la sesión escribe:
-el ORDEN que dio, en el bloque del plan de acá abajo, que el hook imprime al arrancar;
-lo que DECIDIÓ para siempre, en `papeles/DECISIONES.md`; y lo que se CONCLUYÓ en la
-charla, en la ficha abierta, en una sección con la fecha. Martín no repite nada: dice
-"seguí el plan" y la sesión lee esos tres lugares.
+Estados: **DONDE VA** · **SIGUE** · **ABIERTO** · **ESPERA A MARTIN**.
 
 ---
 
-## El plan de Martín — se sigue en este orden, sin volver a preguntarlo
-
-- **LA VARA FIJA, la primera que se mira** · `pytest tests/test_casos_grabados.py`: 24 charlas grabadas con Gemini, reproducidas sin modelo por el código de hoy. 16-oct: 23 bien y 1 marcada, C35 de `gp_montos_1`, grabada antes de la marca de otras opciones; C35 en vivo con la marca sale entera, `gp_c35_1`. Reemplazar la grabación vieja por la nueva baja el techo: lo decide Martín. Fuera de la vara, todas las grabaciones del repo: 459 bien. Avanzar es bajar `tests/grabadas_techo.json`; ninguna sesión cambia la vara para que pase.
-- **EL PLAN, AHORA** · Está en `CLAUDE.md`, sección 1, y no se copia acá. 16-oct, segunda sesión: el código ya lee el estado de la charla como datos, `ficha_charla.estado`, y la ficha del modelo sale de ahí; se borró `_memoria_texto`. Sigue del plan 1: que el documento guarde el pedido como uno solo y lo buscado como datos. Medido sin modelo sobre las 511 grabadas. Falta en vivo: las 20 de memoria con la gratis, `gg_estado_1` contra `gp_montos_1`; hoy la cuota estaba agotada.
-- **ABIERTO, PARCHES A REEMPLAZAR** · Del 16-oct, dichos como parche: un bloque igual no suma dos veces, sin saber por qué la memoria tenía el destino repetido; el renglón corto, de 8 palabras o menos, que repite plata de un bloque se borra; "el resto" del reparto no se renombra. Cada uno se reemplaza por el arreglo en su causa.
-- **PLAN, LA REGLA** · No se escribe ninguna herramienta de medición nueva. Se mide con la vara de las 58 y las K, que ya existen.
-
-## Abierto
-
-- **ABIERTO** · 16-oct: los lectores del estado conservan los recortes del texto viejo, ocho renglones, cuatro destinos y 400 caracteres, en `tablero._HASTA`. Sacarlos rompe G06 de `grab_ds_g1`: sin recorte la notebook certifica por su id y `_elegidos` la descarta porque el cliente no dijo "16gb". Sale con `_elegidos`, plan 3.
-- **ABIERTO** · 9-oct, FICHA 68, LA FICHA DE LA CHARLA. La primera interpretacion, sobre los cien primeros mensajes de `casos_cien.py`: ficha 6 con la informacion 2 y la atadura de casillas y rubros, 96 de 100 en `q6_1`, ajuste 50 de 50. En reserva fallan Q024, Q048, Q074 y Q088. Despues, pasarla al camino vivo. Visto de paso: la identidad de `producto` da "tinta para L3250" como la impresora y "mousepad XL" como un mouse.
-- **ABIERTO** · 8-oct, EL PEDIDO LO PONE EL CODIGO: el nombre y el si cierran con link, el reparto del mensaje lo lee el codigo y "armalo con esos" usa lo mostrado. 16-oct, Martín: lo del 8-oct no va más, K21 se arregla; las casillas de 237000 pasan en vivo. "Dos auriculares" a dos destinos sigue dando dos modelos distintos en el primer presupuesto.
-- **ESPERA A MARTIN** · K18: un modelo sin color que el bot no mostro sigue preguntando el color. Martin: esta bien que pregunte o que nombre los colores que hay; se ve despues.
-- **ESPERA A MARTIN** · 9-oct, DOS LECTURAS DESCARTADAS, desmenuzado `dosl_1`: Gemini 41, DeepSeek 44 de 54; discrepan en 28, y en 20 las dos estaban bien; tomar la otra al discrepar da 43. Lo que fallan los dos es editar un pedido existente: propuesto que esas operaciones las aplique el codigo sobre el pedido guardado.
-- **ABIERTO** · 4-oct, LA SESION SIGUIENTE: los NEXOS, `banco_pruebas/nexos/`. El modelo pide en lineas con un indice fijo, frases genericas y la memoria como estado del codigo; el codigo resuelve, suma y reparte. Sobre las charlas reales de WhatsApp, `reales_vara.py`, con DeepSeek: 24 y 22 de 28 turnos bien en dos repeticiones y 0 datos falsos en las dos, contra 21 y 2 del bot de hoy y 18 y 9 de lo que salio en WhatsApp. Falta, en orden: la guarda de montos del redactor, DeepSeek escribe montos sin origen en 12 de 481 turnos y Gemini en 2 de 374; la misma vara con Gemini; mas charlas reales; recien ahi pasarlo a `app/`. Elegir modelo es decision de Martin. Incluye la FICHA 66.
-- **ABIERTO** · 2-oct: `grab_1` reproducida sin modelo da 40 de 41, `rep_lo_grabado_1`: el id que resuelve el interprete es la identidad en `producto` y `buscar`; la exclusion sigue valiendo en otro rubro y no se pierde en la revision; saber general y lo que no se vende llevan lo que vende la tienda; la memoria marca lo que respondio cada pedido por criterio y la cuenta suma eso. La que queda, K12 "dice no vendemos", es casilla de redaccion: el hecho ya dice que no se vende. Falta verlo en vivo con la gratis y `--pausa 20`.
-- **ABIERTO** · 2-oct, LOS GUIONES: `--vara guiones`, diez guiones de memoria con casillas del catalogo real, grabados con DeepSeek, `grab_ds_g1`, 18 centavos. Reproducidos sin modelo: de 3 a 5 de 10 charlas, de 79 a 87 de 95 casillas, `rep_g_5`. Lo que queda es del interprete: G01 olvida el SSD del carrito, G04 pone tres unidades por destino, G06 lista alternativas como pedido; y del codigo, G05 sin color en un item no muestra los demas del bloque, y G07 ante "me habias dicho otro precio" no vuelve a dar el presupuesto.
-- **ABIERTO** · 1-oct: el pedido como estado, `app/core/pedido.py`. Si lo repartido no cierra, el bot confirma antes de calcular y con el si corre lo guardado. Probado sin modelo; SIN MEDIR EN VIVO, la gratis llego a su tope diario. Medir K20 y `--vara compleja` contra tabL con la gratis antes de deployar.
-- **ESPERA A MARTIN** · 1-oct, 23 hs: la clave paga devuelve 402, creditos prepagos agotados. Produccion usa esa clave: hasta recargar en AI Studio el bot contesta el aviso de demanda. La prueba del interprete con `gemini-3.8-flash`, tabX, quedo sin medir por eso: 31 de 42 charlas sin modelo.
-- **ABIERTO** · La compra por `reservar` entra al cierre; falta verla cerrar un pedido real con nombre y link.
-- **ABIERTO** · `motor.esquema` ya no lo usa el turno: lo usan tests y banco. Se borra con sus tests en su propio commit; su campo `orden` ya no lo lee nadie.
-- **ABIERTO** · El cache da cero: el prompt fijo no llega al mínimo del proveedor. Medir el umbral.
-- **ABIERTO** · 27-sep, FICHA 63: C46 contesta "de los que te mencioné" sin buscar el resto; el 70/30 a veces sale como total. Desde el 28-sep el reparto se anticipa en la primera vuelta. Toda mejora pasa por `banco_pruebas/puerta.py`.
-- **ABIERTO** · El modelo sigue diciendo "todo es chino" aunque las memorias son Taiwan o China; a veces pregunta en vez de armar el 70/30.
-- **ABIERTO** · 1-oct: el tablero conserva los articulos, da total general con el reparto sobre el, y la memoria guarda lo que busco el cliente y los presupuestos por destino. `vara compleja` tabL: 31 de 42 en las tres, contra 29 o 30 de tabH. Falta probarlo por WhatsApp despues del deploy y leer `produccion.py`.
-- **ABIERTO** · Complejas que siguen mal en vivo, a medir de nuevo: K13 reserva en vez de contestar por mayorista; K10 y K11, el pedido anotado se pierde a los varios turnos; K08, rubros sin buscar.
-- **ESPERA A MARTIN** · K20 conserva los seis articulos y da total general y 70/30, pero su casilla pide el envio de 6.500 a Concordia y cuando ese bloque pasa los 250 mil el envio sale gratis, que es correcto. Cambiar la casilla es cambiar la vara: lo decide Martin.
-- **ABIERTO** · `agente.turno`, `agente.sistema` y `agente.esquema` ya no los usa el turno: se borran con sus tests en su propio commit, como `motor.esquema`.
-- **ESPERA A MARTIN** · El catalogo dice que los auriculares bluetooth son con cable: `specs_por_modelo.csv` no trae bluetooth y cae el valor del rubro. Es `data/clientes/`: pide su permiso.
-- **ABIERTO** · El arranque de sesión muestra la interpretación "sin medir": su piso se archivó. Arreglar la línea toca `scripts/`, que deploya.
-- **ESPERA A MARTIN** · Ante un tema `ambiguous` el código sirve todos los candidatos. Si Martín quiere la repregunta, es una línea.
-- **ESPERA A MARTIN** · Alerta de presupuesto y tope de cuota para la clave paga, en la consola de Google Cloud: el banco gastó unos diez dólares en un día el 28 y 29-sep.
-- **ESPERA A MARTIN** · Retención de charlas: cuánto tiempo y con qué criterio se borran.
-- **ESPERA A MARTIN** · Restricción de origen: el campo del catálogo es prosa; hace falta un campo normalizado, no un arreglo de código.
+- **DONDE VA** · 16-oct: el plan 1 de CLAUDE.md está a medias. El código lee el estado de la charla como datos, `ficha_charla.estado`, y no un texto. Se arregló el precio cortado de la ficha, "$37.500" llegaba como "$37" en 244 de 511 charlas, y el lector viejo que sumaba todo lo mostrado. Deployado y verde. Mediciones: 511 grabadas sin modelo, sin casillas rotas; el código entrega bien 138 de los 167 casos bien interpretados. Falta medir en vivo.
+- **SIGUE 1** · El banco tiene que frenar al primer "cuota excedida" del día. El 16-oct, `sonda_charlas` mandó 334 pedidos en 10 minutos y 327 eran reintentos: la cuota de 500 de la gratis se fue en eso. Es `banco_pruebas/`, no deploya.
+- **SIGUE 2** · Medir con OpenRouter. Martín crea la cuenta, carga 10 dólares y pone `OPENROUTER_API_KEY` en el entorno. Da 1.000 pedidos por día a modelos gratis, a 20 por minuto. Se suma como proveedor en `config.py`, que es config operativa, y se elige un modelo gratis con salida estructurada. Mide el código y lo que recibe el modelo; antes de deployar, Gemini confirma con una corrida.
+- **SIGUE 3** · Las 29 fallas del código con la traducción ya buena: `python3 banco_pruebas/nexos/por_el_codigo.py --de f9_g174` da 138 de 167. Por clase, y un caso puede caer en varias: identidad por nombre dentro de una cuenta, 11; total del pedido que no sale, 9; condiciones "si pasa X, hacé Y", 8; búsquedas con la condición en palabras, 8. Se empieza por identidad y total: el pedido llega con nombres en vez de ids.
+- **SIGUE 4** · El plan 1, la otra mitad: que el documento de la charla guarde el pedido como un solo dato. Hoy vive en `grupos_envio`, `carrito_vigente`, `pedido_pendiente` y `reparto_pago`, y lo buscado es texto en `criterio_cliente`. Lo leen también el cierre y el cobro: medir con las 511 grabadas.
+- **SIGUE 5** · Las once capas de corrección, plan 3: una por commit, por `puerta.py`. Cada una es un xfail en `tests/test_once_capas.py`. Con ellas baja `app/`: 16.760 líneas, meta la mitad. Incluye los recortes de `tablero._HASTA`: sacarlos rompe G06, porque `_elegidos` descarta la notebook si el cliente no dijo "16gb".
+- **SIGUE 6** · La medición en vivo de lo del 16-oct: las 20 de memoria, `gg_estado_1` contra `gp_montos_1`. Con la gratis de Gemini, o con OpenRouter cuando esté.
+- **ABIERTO** · LA VARA FIJA, `pytest tests/test_casos_grabados.py`: 23 de 24 charlas grabadas bien; C35 marcada, porque "otras opciones" no deja afuera lo mostrado y el intérprete pierde "gamer". `tests/grabadas_techo.json` sólo baja.
+- **ABIERTO** · Tres parches del 16-oct, a reemplazar por el arreglo en su causa: un bloque igual no suma dos veces, sin saber por qué la memoria tenía el destino repetido; se borra el renglón corto que repite plata de un bloque; "el resto" del reparto no se renombra.
+- **ABIERTO** · Complejas que siguen mal en vivo: K13 reserva en vez de contestar por mayorista; K10 y K11 pierden el pedido anotado a los varios turnos; K08 deja rubros sin buscar; C46 contesta "de los que te mencioné" sin buscar el resto; "dos auriculares" a dos destinos da dos modelos distintos.
+- **ABIERTO** · El redactor dice "todo es chino" aunque el origen sea Taiwán o China, y a veces pregunta en vez de armar el 70/30.
+- **ABIERTO** · La compra por `reservar` entra al cierre, pero falta verla cerrar un pedido real con nombre y link.
+- **ABIERTO** · `motor.esquema` ya no lo usa el turno, sólo tests y banco: se borra con sus tests en su propio commit. Baja líneas.
+- **ABIERTO** · El cache de la clave da cero: el prompt fijo no llega al mínimo del proveedor. Medir el umbral.
+- **ABIERTO** · El arranque muestra la interpretación "sin medir" porque su piso se archivó. Arreglarlo toca `scripts/`, que deploya.
+- **ESPERA A MARTIN** · Decisiones de conducta. K18: un modelo sin color que no se mostró, ¿se pregunta el color o se nombran los que hay? K20: la casilla pide el envío de 6.500 a Concordia y el bloque sale gratis por pasar los 250 mil, que es correcto. Ante un tema ambiguo, ¿se repregunta?
+- **ESPERA A MARTIN** · Catálogo, que pide su permiso: los auriculares bluetooth figuran con cable porque `specs_por_modelo.csv` no trae bluetooth, y el origen es prosa, sin un campo normalizado.
+- **ESPERA A MARTIN** · Consola y política: alerta de presupuesto y tope de cuota de la clave paga en Google Cloud, y cuánto tiempo se guardan las charlas.
