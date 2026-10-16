@@ -398,6 +398,17 @@ def _certificar_id(nombre: str, catalogo: list, tienda_id: str) -> dict:
     lista = [f"{c.get('nombre')} ({c.get('id')}"
              + (f", ${precios[str(c.get('id'))]:,}".replace(",", ".") if precios.get(str(c.get("id"))) else "")
              + ")" for c in candidatos]
+    # EL MISMO PRECIO NO ES "CADA UNO SALE DISTINTO" (16-oct): la Galaxy Tab A9
+    # en tres colores vale lo mismo, y el motivo le decia al redactor que no.
+    # Elegir sigue siendo del cliente; lo que cambia es que el precio se sabe.
+    # Solo si todos nombran entero lo pedido: "el G203 o el G305" no es uno.
+    mismos = {precios.get(str(c.get("id"))) for c in candidatos}
+    if exactos and len(candidatos) > 1 and len(mismos) == 1 and None not in mismos:
+        return {"sin_total": f"'{nombre}' es uno de estos y todos salen lo "
+                             f"mismo, asi que el precio es ese pero no lo "
+                             f"cuento sin saber cual: no elijas, pregunta cual "
+                             f"de estos y volve a pedirme la cuenta con ese id. "
+                             + " | ".join(lista)}
     return {"sin_total": f"'{nombre}' puede ser mas de uno y cada uno sale "
                          f"distinto, asi que no lo cuento: no elijas, "
                          f"pregunta cual de estos y volve a pedirme la cuenta "

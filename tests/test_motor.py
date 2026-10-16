@@ -1071,3 +1071,22 @@ def test_un_destino_en_TEXTO_PELADO_sigue_valiendo():
     filas = (r.get("envios") or {}).get("filas") or []
     assert filas and filas[0].get("monto_ars"), f"{filas}"
 
+
+
+# ── EL MISMO PRECIO NO ES "CADA UNO SALE DISTINTO" (16-oct) ─────────────────
+
+@pytest.mark.parametrize("nombre,mismo", [
+    ("Galaxy Tab A9", True),        # tres colores, un precio
+    ("MX Master 3S", True),
+    ("RTX 4080", False),            # dos placas, dos precios
+    ("Mouse Logitech G203 Lightsync o Mouse Logitech G305 Lightspeed", False)])
+def test_el_motivo_de_no_contar_dice_si_el_precio_es_el_mismo(firestore_doble, nombre, mismo):
+    """Sin color no se cuenta, porque elegir es del cliente. Pero si todos los
+    que se llaman asi valen lo mismo, decir que cada uno sale distinto es falso.
+    Y "el G203 o el G305" no es uno solo aunque la lista traiga dos colores."""
+    from app.core import tablero as T
+    r = T.ejecutar("cuenta", {"items": [{"producto": nombre, "cantidad": 1}], "destino": "", "destinos": [],
+                              "reparto_pago": None}, TIENDA)
+    motivo = (r.get("cuenta") or {}).get("sin_total") or ""
+    assert motivo, f"{nombre}: se conto sin saber cual"
+    assert ("todos salen lo mismo" in motivo) is mismo, motivo[:160]
