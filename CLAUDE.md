@@ -16,8 +16,9 @@ anterior, con las historias de cada regla, está en `archivo/documentacion/CLAUD
 4. **Producción se lee sin issue:** `python3 banco_pruebas/produccion.py --desde 6h` da los logs y la charla
    literal; `--usuario <numero>` una sola. El entorno trae la cuenta de solo lectura. Sin `gcloud`, comentando
    `/logs` en el issue 31.
-5. **Los nombres de cada parte** —estaciones `T`, juntas `J`, puntos del modelo `L`— los define
-   `arquitectura/MAPA_CABLEADO.md`, y sólo ése.
+5. **Dónde está cada parte del camino vivo lo dice `MAPA.md`, y sólo ése.** El camino es `orchestrator`,
+   `respuesta.procesar_turno`, `tablero.turno`. `arquitectura/MAPA_CABLEADO.md` es histórico: describe un
+   camino apagado el 26-sep y sólo valen sus números de desconexión `D`, que el código cita.
 
 ---
 
@@ -135,7 +136,7 @@ banderas y GUIAS        tercera llamada con preguntas de sí o no
 
 - **La gratis es el default para probar**, y se prueba. Ante 429 se reintenta; si se agota la cuota del día,
   se sigue al día siguiente. No se cambia a la paga.
-- **OpenRouter con un modelo gratis**, cuando esté su clave, es para medir el código y lo que recibe el modelo:
+- **OpenRouter con un modelo gratis**, su clave ya está en el entorno, es para medir el código y lo que recibe el modelo:
   1.000 pedidos por día. Antes de deployar, una corrida con Gemini, que es el modelo de producción, confirma.
 - **La paga sólo si Martín la pide en esa sesión.** El hook `scripts/guard_clave.sh` la frena salvo que el
   comando lleve `MARTIN_AUTORIZO_LA_PAGA=<fecha>`. Nunca `GEMINI_API_KEY=$GEMINI_API_KEY_PROD`.

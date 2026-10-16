@@ -1,20 +1,18 @@
 # MAPA DEL CABLEADO — nomenclatura, numeración y dónde se corta
 
-> **27-sep-2026. ESTE ARCHIVO NOMBRA EL CAMINO DEL INTÉRPRETE, APAGADO EL
-> 26-sep.** Las estaciones `T`, las juntas `J` y los puntos `L` de abajo
-> describen `turno.py` / `tabla.py` / `interprete.py`. Ese camino no corre.
-> El camino vivo es `orchestrator` → `respuesta.procesar_turno` →
-> `agente.turno` sobre `motor.buscar`. Los números `D` se conservan: son
-> el único vocabulario estable de las fallas. Reescribir las `T` es ficha
-> propia; hasta entonces gana el código y `MAPA.md`.
+> **HISTÓRICO. 16-oct-2026: ESTE ARCHIVO NO NOMBRA EL CAMINO VIVO.** Las
+> estaciones `T`, las juntas `J` y los puntos `L` de abajo describen
+> `turno.py`, `tabla.py` e `interprete.py`, un camino apagado el 26-sep que
+> ya no está en `app/`. El camino vivo es `orchestrator` →
+> `respuesta.procesar_turno` → `tablero.turno`, y dónde está cada parte lo
+> dice `MAPA.md`. De acá sólo valen los números `D`, que el código cita como
+> vocabulario de las fallas.
 >
 > Las fichas 52 y 53 que este texto cita viven en
 > `archivo/fichas_cerradas/`.
 
-**ÉSTE ES EL ÚNICO LUGAR DONDE SE NOMBRA EL CABLEADO HISTÓRICO.** Las
-estaciones `T`, las juntas `J`, los puntos de modelo `L` y las desconexiones
-`D` se definen acá y en ningún otro archivo. Si otro `.md` necesita hablar de
-una parte vieja, la nombra por su número y remite acá.
+Las desconexiones `D` se definen acá y en ningún otro archivo. Si otro texto
+necesita hablar de una, la nombra por su número y remite acá.
 
 Leído del código de `main` el 6-sep-2026. Si algo acá contradice al código
 de hoy, gana el código.

@@ -7,7 +7,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 
 1. El bloque 0 de `CLAUDE.md`, que son las reglas.
 2. Esta página.
-3. `PENDIENTE.md`, arriba: el plan de Martín y la ficha abierta. Sólo ahí se nombra.
+3. `PENDIENTE.md`: dónde va el trabajo y la ficha abierta. Sólo ahí se nombra. El plan está en `CLAUDE.md`.
 
 **Arranque corto:**
 
@@ -27,6 +27,8 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Entrada de WhatsApp y Telegram, webhooks | `app/main.py` |
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
 | El turno: agente, guarda de plata, cierre, memoria | `app/core/respuesta.py` |
+| El tablero: intérprete, las once capas, redactor | `app/core/tablero.py` |
+| El estado de la charla que escribe el código | `app/core/ficha_charla.py` |
 | El agente: herramientas chicas, índice, alias | `app/core/agente.py` |
 | El motor: buscar, identidad, filtros, cuenta | `app/core/motor.py` |
 | Precio y envío que el modelo no puede inventar | `app/core/numeros.py` |
@@ -51,6 +53,7 @@ permiso.
 | Qué querés medir | Archivo |
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
+| Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | La vara de las 58 | `banco_pruebas/vara_58.py` |
 | Un turno por dentro | `banco_pruebas/sonda_turno.py` |
 | El censo del cableado | `banco_pruebas/censo_cableado.py` |
@@ -71,8 +74,8 @@ Corre sola en cada push a main, antes del deploy. Sin modelo y sin credenciales.
 
 ## Papeles — `papeles/` y `arquitectura/`
 
-`arquitectura/` es la orden de trabajo viva: fichas 59 a 62 y el mapa de
-nombres. Las fichas cerradas (30 a 58) y los planes viejos están en
+`arquitectura/` guarda las fichas de diseño, de la 59 en adelante; cuál está
+abierta lo dice `PENDIENTE.md`. `MAPA_CABLEADO.md` es histórico. Las fichas cerradas (30 a 58) y los planes viejos están en
 `archivo/fichas_cerradas/`. `papeles/` guarda decisiones, objetivo, deploy y
 el inventario de la fuente.
 

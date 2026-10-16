@@ -36,7 +36,7 @@ primera, el banco está midiendo mal.
 ## Las cinco varas comunes
 
 Ninguna necesita juez ni modelo: todas se calculan del texto de salida más el
-estado del turno, que es el criterio que `ARQUITECTURA.md` define para un
+estado del turno, que es el criterio que `archivo/documentacion/ARQUITECTURA_hasta_16oct.md` define para un
 contrato.
 
 1. **NO ENMUDECE** — ningún turno sale vacío ni con el enlatado de fallback.
