@@ -141,3 +141,9 @@ def test_un_reparto_con_un_solo_medio_se_completa_con_el_resto():
     CLIENTE_DIJO.set("70 por ciento transferencia")
     rep = T._reparto([{"medio": "transferencia", "porcentaje": 70}])
     assert rep == [{"medio": "transferencia", "porcentaje": 70}, {"medio": "el resto", "porcentaje": 30}]
+
+
+def test_un_renglon_corto_que_repite_plata_del_bloque_marcado_se_va():
+    """K21 con Gemini: despues de cada presupuesto quedaba un "$7.500" suelto."""
+    salida, _ = N.llenar("A Posadas:\n{{cuenta:C1}}\n$651.500\nTe sirve?", [], "t", calculos=CALC)
+    assert salida.count("651.500") == POSADAS["detalle"].count("651.500") and "Te sirve?" in salida

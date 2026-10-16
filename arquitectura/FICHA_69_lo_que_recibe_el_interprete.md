@@ -152,3 +152,24 @@ Después: el pedido como dato y el modelo diciendo sólo qué cambia, la FICHA 6
 - **El medidor:** al reproducir califica los hechos, y el detalle ahora vive en `calculos`; `sonda_charlas` lo suma.
 - **Falta:** medirlo en vivo con Gemini gratis, que ya usa el prompt nuevo del redactor; hoy la cuota diaria se
   agotó. En producción, `monto_suelto` por semana tiene que ir a cero.
+
+## 16-oct — medido con Gemini pago, y la parte determinista
+
+Martín autorizó la paga en la sesión. Las 20 de memoria, una corrida por lado, `gp_basemontos_1` contra
+`gp_montos_1`: 17 y 17 de 20 charlas, 55 contra 59 de 64 casillas, cero turnos con plata no vista. Con el
+prompt nuevo el redactor usa la marca: K21 dejó de dar 237.000 mal en los turnos 4 y 6.
+
+Lo que fallaba era del código, y se arregló en la causa:
+- **K11, "mejor 2, y mandalos a Rosario":** el intérprete lo leía bien y el pedido guardado lo pisaba.
+  `tablero._cambios_al_pedido` aplica sobre el pedido sólo lo certificable: cantidad y destino de lo que ya está,
+  por id o por un nombre que da uno solo. Lo que no está en el pedido no entra por ahí.
+- **K21, un bloque repetido sumaba dos veces:** 4 bloques para 3 destinos, 310.500. La misma cuenta es un bloque.
+- **"El resto" se renombraba** al normalizar el reparto por segunda vez; y un renglón corto que repite plata de
+  un bloque marcado se va.
+
+Con eso, `gp_pedido_1`: K11 bien; K21 da el 237.000 y el 70/30 con descuento. Gasto de las tres corridas: unos
+0,28 dólares anotados.
+
+**Lo que sigue, FICHA 68:** en K21 el 70/30 del turno 1 se pierde cuando el pedido cambia en el turno 3, porque
+el reparto no se guarda como dato con el pedido. Y C35 sigue igual en los dos lados: el buscador no filtra por
+"gamer".

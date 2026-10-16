@@ -27,24 +27,14 @@ log = get_logger(__name__)
 _HUECO = re.compile(r"\{\{\s*(precio|envio|total|cuenta)\s*(?::\s*([^}]*))?\s*\}\}")
 
 # UNA CIFRA GRANDE: con signo pesos, con puntos de mil, o cuatro digitos para
-# arriba. No es solo plata a proposito: `1920x1080` y `3200 MHz` tambien caen
-# aca, y esta bien que caigan. La regla no es "de donde sale la plata" sino
-# "de donde sale el numero", y la respuesta es siempre la misma: de la fuente.
-# Lo corto -"24 meses", "2 unidades", "16GB"- no entra: no hay nada que
-# inventar en un numero que el cliente puede verificar de un vistazo.
-#
-# EL PISO DEL NUMERO PELADO ES CUATRO DIGITOS, y se probo en tres. Con tres,
-# "100% original" y "en 3 a 5 dias, zona 100" se llevaban puesta la respuesta
-# entera por un numero que no es un dato. Con cuatro no se pierde nada que
-# importe: el precio mas barato del catalogo tiene cuatro digitos, y un monto
-# de tres escrito como plata igual cae por el signo pesos o por los puntos.
-# El borde se mira por DIGITO y no por palabra: con `\b`, "2560x1440" no era
-# dos numeros sino ninguno, porque entre el 0 y la x no hay borde de palabra.
-# Una resolucion inventada pasaba entera.
+# arriba. No es solo plata a proposito: `3200 MHz` tambien cae, porque la regla
+# es de donde sale el numero. Lo corto -"24 meses", "16GB"- no entra.
+# EL PISO ES CUATRO DIGITOS: con tres, "100% original" se llevaba la respuesta;
+# el precio mas barato tiene cuatro, y un monto de tres cae por el signo pesos.
+# El borde es por DIGITO y no `\b`: con `\b`, "2560x1440" no era ningun numero.
 _CIFRA = re.compile(r"\$\s?\d[\d.]*"
                     r"|(?<!\d)\d{1,3}(?:\.\d{3})+(?!\d)"
                     r"|(?<!\d)\d{4,}(?!\d)")
-_PLATA = _CIFRA  # nombre viejo, por si algo lo importa
 
 SIN_DATO = "ese dato no lo tengo a mano"
 
@@ -199,6 +189,13 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
     informe["bloques"] = [c for c in informe["bloques"] if f"\x00C:{c}\x00" in salida]
 
     # ── LOS BLOQUES DE LA CALCULADORA, tal cual ─────────────────────────
+    # Un renglon corto que solo repite plata de un bloque marcado —"$7.500"
+    # despues del presupuesto— se va: el bloque ya la dice.
+    def plata(r):
+        return {re.sub(r"\D", "", m) for m in re.findall(r"\$\s?\d[\d.]*", r)}
+    marcados = _digitos(_json.dumps([calculos[c].get("vuelve") for c in informe["bloques"]], default=str))
+    salida = "\n".join(r for r in salida.split("\n")
+                        if not (plata(r) and plata(r) <= marcados and len(r.split()) <= 8))
     for cid in informe["bloques"]:
         salida = salida.replace(f"\x00C:{cid}\x00", "\n" + str(calculos[cid].get("detalle") or SIN_DATO) + "\n")
     # SIN MARCA Y SIN SU TOTAL ESCRITO, el bloque va al final; se van los
@@ -208,7 +205,6 @@ def llenar(texto: str, fichas: list, trace_id: str = "",
         in _digitos(salida))]
     if faltan:
         suyos = _digitos(_json.dumps([calculos[c].get("vuelve") for c in faltan], ensure_ascii=False, default=str))
-        plata = lambda r: {re.sub(r"\D", "", m) for m in re.findall(r"\$\s?\d[\d.]*", r)}  # noqa: E731
         salida = "\n".join(r for r in salida.split("\n") if not (plata(r) and plata(r) <= suyos))
         salida = salida.rstrip() + "\n\n" + "\n\n".join(str(calculos[c].get("detalle") or "") for c in faltan)
         informe["bloques"] += faltan

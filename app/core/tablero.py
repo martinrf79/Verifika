@@ -810,7 +810,7 @@ def _reparto(rep):
     # tarjeta, y el cliente leyo medios que nunca dijo.
     dijo = A._n(CLIENTE_DIJO.get())
     rep = [{**r, "medio": r.get("medio") if _palabras(str(r.get("medio") or "")) & _palabras(dijo)
-            else f"parte {i}"} for i, r in enumerate(rep, 1)]
+            or r.get("medio") == "el resto" else f"parte {i}"} for i, r in enumerate(rep, 1)]
     if rep and all(float(r.get("porcentaje") or 0) <= 1 for r in rep):
         rep = [{**r, "porcentaje": round(float(r.get("porcentaje") or 0) * 100, 2)} for r in rep]
     # LO QUE FALTA PARA EL CIEN ES OTRA PARTE (15-oct, K21): "70 por ciento transferencia" no cerraba el reparto y el
@@ -1175,7 +1175,9 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
             hecho["resultado"] = _para_redactar(vistas[clave])
             if h == "buscar":
                 ctx["busquedas"].append((pz, vistas[clave]))
-            if h == "cuenta" and ((vistas[clave] or {}).get("cuenta") or {}).get("total_ars") is not None:
+            # LA MISMA CUENTA DOS VECES ES UN BLOQUE (16-oct, K21): un destino repetido sumaba dos veces al total.
+            if h == "cuenta" and ((vistas[clave] or {}).get("cuenta") or {}).get("total_ars") is not None \
+                    and clave not in {json.dumps(["cuenta", a], sort_keys=True, default=str) for a, _ in bloques}:
                 bloques.append((args, vistas[clave]["cuenta"]))
         hechos.append(hecho)
     if len(bloques) > 1:
@@ -1283,6 +1285,44 @@ def _reparto_leido(piezas: list, mensaje: str) -> list:
     return [dict(p, reparto_pago=rep) if p is destino else p for p in piezas]
 
 
+def _cambios_al_pedido(pedido: list, items: list, tienda_id: str) -> list:
+    """LO QUE EL CLIENTE CAMBIA DEL PEDIDO LO APLICA EL CODIGO (16-oct, K11). "Mejor 2, y mandalos a Rosario": el
+    interprete lo leia bien y el pedido guardado lo pisaba. Solo cambia cantidad y destino de lo que YA esta en el
+    pedido, nombrado por su id o por un nombre que da uno solo del pedido. Lo que no esta no entra por aca: el
+    interprete a veces repite el pedido con otro producto (K21, 9-oct)."""
+    from app.storage.firestore_client import get_product_by_id
+    out = [{"destino": b["destino"], "items": [dict(i) for i in b["items"]]} for b in pedido]
+    ids = {i["producto"] for b in out for i in b["items"]}
+
+    def cual(nombre) -> str:
+        n = str(nombre or "").strip()
+        pal = [w for w in re.findall(r"[a-z0-9]+", A._n(n)) if len(w) > 1 and w not in _GENERICAS]
+        hits = [pid for pid in ids if pid == n or pal and all(
+            w in A._n((get_product_by_id(pid, tienda_id=tienda_id) or {}).get("nombre") or "") for w in pal)]
+        return hits[0] if len(hits) == 1 else ""
+    for it in (i for i in items or [] if isinstance(i, dict)):
+        pid = cual(it.get("producto"))
+        donde = [b for b in out if any(i["producto"] == pid for i in b["items"])]
+        if not pid or len(donde) != 1:  # en dos destinos no se sabe cual cambia
+            continue
+        b = donde[0]
+        i = next(i for i in b["items"] if i["producto"] == pid)
+        i["cantidad"] = int(it.get("cantidad") or i["cantidad"])
+        nuevo = str(it.get("destino") or "").strip()
+        if not nuevo or A._n(nuevo) == A._n(b["destino"]):
+            continue
+        if not b["destino"]:
+            b["destino"] = nuevo  # el pedido no tenia lugar: ahora lo tiene
+            continue
+        b["items"].remove(i)
+        dest = next((x for x in out if A._n(x["destino"]) == A._n(nuevo)), None)
+        if dest is None:
+            dest = {"destino": nuevo, "items": []}
+            out.append(dest)
+        dest["items"].append(i)
+    return [b for b in out if b["items"]]
+
+
 def _sobre_el_pedido(piezas: list, memoria: str, tienda_id: str = "") -> list:
     """EL PEDIDO LO PONE EL CODIGO, NO EL INTERPRETE (7-oct, K21). Con el
     pedido ya presupuestado, "si", "me llamo Julio" o "70 por ciento
@@ -1296,6 +1336,9 @@ def _sobre_el_pedido(piezas: list, memoria: str, tienda_id: str = "") -> list:
         return piezas
     if any(p.get("sobre_el_pedido") and p.get("con_lo_mostrado") for p in piezas):
         pedido = _con_lo_mostrado(pedido, memoria, tienda_id)
+    for p in piezas:
+        if p.get("sobre_el_pedido") and p.get("items"):
+            pedido = _cambios_al_pedido(pedido, p["items"], tienda_id)
     out, n = [], 1000
     for p in piezas:
         if not p.get("sobre_el_pedido") or p.get("tipo") not in ("cuenta", "comprar"):

@@ -25,7 +25,7 @@ charla, en la ficha abierta, en una sección con la fecha. Martín no repite nad
 
 ## El plan de Martín — se sigue en este orden, sin volver a preguntarlo
 
-- **PLAN 1, AHORA** · Mejorar la interpretación: lo que recibe el modelo y cómo lo lee. FICHA 69. No se reduce ni se toca el cableado. 15-oct: ningún monto lo escribe el modelo, hecho y medido reproduciendo, 52 a 54 de 60. Falta medirlo en vivo con Gemini gratis, la cuota de hoy se agotó, y la ficha de la charla con Gemini. SIGUE: el pedido como dato, FICHA 68.
+- **PLAN 1, AHORA** · Mejorar la interpretación: lo que recibe el modelo y cómo lo lee. FICHA 69. No se reduce ni se toca el cableado. 16-oct: ningún monto lo escribe el modelo; con Gemini pago 59 contra 55 de 64 casillas; K11 y el bloque doble de K21 arreglados en el código. SIGUE: el pedido como dato, FICHA 68: el reparto de K21 se pierde cuando cambia el pedido.
 - **PLAN 2** · Reducir el código drásticamente, sin tocar la interpretación. Lo que no pisa ningún caso va a `archivo/`.
 - **PLAN 3** · Recién al último, el cableado y la ayuda de afuera: Rasa CALM, una revisión de arquitectura.
 - **PLAN, LA REGLA** · No se escribe ninguna herramienta de medición nueva. Se mide con la vara de las 58 y las K, que ya existen.
