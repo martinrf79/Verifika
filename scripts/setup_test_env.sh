@@ -129,7 +129,7 @@ que son los que hacen algo en vez de pedirlo:
   banco_pruebas/sonda_turno.py           un turno por dentro
 
 Camino vivo: orchestrator -> respuesta.procesar_turno -> tablero.turno
-Reglas: CLAUDE.md. Donde esta cada cosa: MAPA.md. Orden abierta: FICHA_63.
+Reglas: CLAUDE.md. Donde esta cada cosa: MAPA.md. El plan: CLAUDE.md, seccion 1.
 =============================================================================
 REGLAS
 

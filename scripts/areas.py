@@ -14,7 +14,7 @@ def principal() -> int:
     print("  plata        app/core/calculadora.py, numeros.py, pago.py")
     print("  cierre       app/core/cierre.py, leads.py, camino_cobro.py")
     print("  fuente       data/clientes/<tienda>/")
-    print("  mejora       banco_pruebas/puerta.py   (FICHA 63)")
+    print("  mejora       banco_pruebas/puerta.py   (CLAUDE.md, seccion 1)")
     print("  produccion   banco_pruebas/produccion.py")
     print("  el mapa      MAPA.md")
     print("====================================================================")
