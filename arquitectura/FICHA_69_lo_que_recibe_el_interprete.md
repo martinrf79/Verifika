@@ -185,3 +185,26 @@ el reparto no se guarda como dato con el pedido. Y C35 sigue igual en los dos la
   muestra toda búsqueda para que pase una casilla. C35 es otra cosa: "otras opciones" tiene que excluir lo
   mostrado, y el intérprete perdió "gamer".
 - **Parches dichos como tales**, a reemplazar por el arreglo en su causa: ver PENDIENTE.
+
+## 16-oct, segunda sesión — el estado de la charla como datos, plan 1
+
+Martín: seguir el plan de `CLAUDE.md`, usando las mediciones que ya están en el repo.
+
+- **El estado.** `ficha_charla.estado` lee el documento de la charla una vez por turno, y lo deja como datos:
+  el pedido, lo mostrado con su id, lo buscado, el destino, el reparto y el pedido que espera el sí. Los lectores
+  del tablero leen eso, y la ficha del modelo se renderiza desde lo mismo. Se borró `_memoria_texto` y sus diez
+  lecturas por expresión regular.
+- **La vara sin cuota:** las 511 charlas grabadas del repo, reproducidas sin modelo por el código de antes y el de
+  ahora, comparadas en ficha, prompt, llamadas, hechos y respuesta. Herramienta de sesión, no del repo.
+- **Dos fallas de antes, encontradas al medir:**
+  - el precio guardado "$37.500" llegaba a la ficha como "$37": lo mostrado antes y los otros colores, en 244 de
+    511 charlas. Desde el 15-oct el modelo de producción lee esos precios mal;
+  - el lector de lo mostrado buscaba con re.S y se tragaba todo lo de antes: la cuenta del código sumaba todo lo
+    mostrado en la charla. K10 y G06.
+- **Lo que no entró:** sacar los recortes de ocho renglones rompe G06. Sin recorte, la notebook mostrada hace
+  muchos turnos certifica por su id, y `_elegidos` la descarta porque el cliente no dijo "16gb" ni "512gb". El
+  recorte tapaba esa capa. Va con el plan 3, cuando sale `_elegidos`.
+- **Lo que sigue del plan 1:** que el documento guarde el pedido como uno solo, no en `grupos_envio`,
+  `carrito_vigente` y `pedido_pendiente`, y lo buscado como datos, no como texto en `criterio_cliente`.
+- **Falta en vivo:** las 20 de memoria con la gratis, `gg_estado_1`, contra `gp_montos_1`. Hoy la cuota diaria
+  estaba agotada y no se pasó a la paga: se corre mañana.
