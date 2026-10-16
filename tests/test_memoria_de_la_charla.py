@@ -147,6 +147,17 @@ def test_si_la_respuesta_nombra_el_modelo_una_vez_los_colores_van_juntos(
     assert "2. MOU0003" in m, m
 
 
+def test_el_precio_guardado_llega_entero_a_la_ficha():
+    """16-oct: el precio de lo mostrado antes se guarda como "$37.500" y la ficha lo daba como "$37". El modelo
+    leia un precio falso y la guarda no tenia de donde sacar el verdadero. Seis formas, una ficha."""
+    from app.core import ficha_charla as F
+    formas = [80500, "80500", "80500.0", "$80.500", "80.500", " $80.500 "]
+    assert [F._plata(v) for v in formas] == ["$80.500"] * 6
+    assert F._plata("$1.250.000") == "$1.250.000"
+    conv = {"productos_vistos": [dict(G203, turno=0)]}
+    assert "MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500" in F.texto(conv, TIENDA)
+
+
 # ── LO QUE EL CLIENTE EXCLUYO SIGUE VALIENDO EN EL TURNO SIGUIENTE ─────────
 #
 # CH21 de la tanda: "auriculares que no sean redragon" y al turno siguiente

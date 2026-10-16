@@ -36,6 +36,10 @@ _FUERA = {"garantia"}
 def _plata(v) -> str:
     """"$80.500" de 80500, "80500", "80500.0" o "$80.500"."""
     s = str(v if v is not None else "").strip().replace("$", "").strip()
+    # EL PUNTO ES DE MILES (16-oct): "$37.500" salia "$37", y el modelo leia ese precio en lo mostrado antes y en
+    # los otros colores; la guarda tampoco lo veia como fuente.
+    if re.fullmatch(r"\d{1,3}(\.\d{3})+", s):
+        s = s.replace(".", "")
     try:
         n = int(float(s)) if re.fullmatch(r"\d+(\.\d+)?", s) else int(re.sub(r"\D", "", s.split(",")[0]))
     except ValueError:
