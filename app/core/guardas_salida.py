@@ -63,17 +63,6 @@ def business_name(tienda_id: str | None) -> str:
     return name
 
 
-# ── 1. HONESTIDAD DE BOT ────────────────────────────────────────────────────
-# Pregunta directa de IDENTIDAD ("sos un robot?", "con quien hablo?").
-_RE_PREGUNTA_BOT = re.compile(
-    r"\bsos\s+(?:un\s+)?(?:bot|robot|humano|una\s+maquina|una\s+ia|real)\b"
-    r"|\beres\s+(?:un\s+)?(?:bot|robot|humano)\b"
-    r"|\bhablo\s+con\s+(?:un\s+)?(?:bot|robot|humano|una\s+persona|una\s+maquina)\b"
-    r"|\bcon\s+quien\s+(?:hablo|estoy\s+hablando)\b"
-    r"|\bme\s+atiende\s+(?:un\s+)?(?:bot|robot|una\s+maquina)\b",
-    re.IGNORECASE)
-
-
 # ── 2. SALUDO Y AVISO DEL PRIMER MENSAJE ────────────────────────────────────
 # Saludo que el modelo escribe al arranque de SU texto: se recorta cuando el
 # codigo antepone el oficial. Solo saludos inequivocos; "buenas" pelado NO

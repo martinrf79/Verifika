@@ -733,16 +733,6 @@ def calculate_total(items: list[dict] | None = None,
 # 7) FAQ
 # ────────────────────────────────────────────────────────────
 
-# Senal determinista de PLAZO de entrega (charla real 10-jul: "cuanto demoran
-# los envios" y "en cuanto tiempo llegan los productos" caian al tema generico
-# 'envios' y el cliente pregunto CINCO veces la demora sin respuesta). Las
-# conjugaciones (demoran/tardan/llegan) y "cuanto tiempo" no matchean las
-# keywords de plazo_envio; esta senal re-rankea plazo_envio arriba de todo
-# cuando la consulta habla de tiempo de entrega.
-import re as _re_plazo
-_RE_SENAL_PLAZO = _re_plazo.compile(
-    r"\b(demora\w*|tarda\w*|plazo\w*|cuanto tiempo|cuantos dias|"
-    r"en cuanto (tiempo )?(llega\w*|esta\w*|tengo)|cuando (llega\w*|estaria))\b")
 
 
 

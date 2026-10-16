@@ -44,14 +44,6 @@ def _pregunta_cierre() -> str:
 
 PREGUNTA_CIERRE = _pregunta_cierre()
 
-# La respuesta del solver YA trae una pregunta de CONFIRMACION propia (no una
-# pregunta de dato): la enlatada no se pega encima. Se busca en TODA la
-# respuesta, no solo al final: el acople de FAQ puede quedar despues de la
-# pregunta y el doble cierre volvia por ahi (visto vivo 20-jul, guion 40).
-_RE_CIERRE_YA_PREGUNTADO = re.compile(
-    r"(?i)¿[^¿?]*(?:confirm|seguimos|avanzamos|cerramos|lo dejamos|"
-    r"lo preparo|reserv|lo pedimos|hacemos el pedido)[^¿?]*\?")
-
 # EL TEXTO YA NO VIVE ACA. Estas tres respuestas las emite el CODIGO cuando el
 # flujo lo decide -el cliente dice que no, el pedido ya estaba tomado, se deriva
 # a una persona- y hasta hoy eran constantes sueltas de este modulo que salian al
