@@ -294,7 +294,7 @@ def _con_el_color(pid: str, resto: str, tienda_id: str) -> list:
 
 
 def h_buscar(tienda_id: str, que: str = "", rubro: str = "", condiciones=None, orden=None,
-             cuantos: int = FILAS, **_) -> dict:
+             cuantos: int = FILAS, fuera=None, **_) -> dict:
     M = _motor()
     try:
         cuantos = max(1, min(int(cuantos or FILAS), 10))
@@ -312,6 +312,8 @@ def h_buscar(tienda_id: str, que: str = "", rubro: str = "", condiciones=None, o
         que = f"{rubro} {que}".strip()
     # Se le pide al motor de mas: los colores se juntan y lo sin stock baja.
     consulta = {"texto": que, "busco": "varios", "cuantos": min(cuantos * 3, 15), "condiciones": conds}
+    if fuera:
+        consulta["fuera"] = [str(i) for i in fuera]
     if rub:
         consulta["categoria"] = rub
     if isinstance(orden, dict) and orden.get("campo"):

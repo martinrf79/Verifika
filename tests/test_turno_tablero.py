@@ -451,6 +451,23 @@ def test_lo_que_elige_una_busqueda_no_se_hereda():
     assert "condiciones" not in pz[0]
 
 
+def test_otras_opciones_deja_afuera_lo_mostrado_con_todos_sus_colores():
+    """C35: "busco un mouse gamer Logitech", y "pasame otras opciones" volvia con los mismos cuatro."""
+    vistos = [{"id": i, "nombre": n, "turno": t} for i, n, t in (
+        ("MOU0001", "Mouse Logitech G203 Lightsync Negro", 1), ("MOU0004", "Mouse Logitech G502 Hero Blanco", 1),
+        ("MOU0005", "Mouse Logitech G Pro X Superlight Negro", 2), ("MOU0007", "Mouse Logitech MX Master 3S", 2))]
+    memoria = R._memoria_texto({"productos_vistos": vistos})
+    assert T.mostrado_en_la_charla(memoria) == ["MOU0005", "MOU0007", "MOU0001", "MOU0004"]
+    pz = [{"n": 1, "tipo": "buscar", "texto": "otras opciones", "rubro": "mouse", "fuera_lo_mostrado": True}]
+    llamadas = []
+    T.correr_piezas(pz, TIENDA, llamadas, 1, {"mensaje": "pasame otras opciones", "historial": [],
+                                               "memoria": memoria, "pide_total": False})
+    filas = llamadas[0]["vuelve"]["filas"]
+    ids = {f["id"] for f in filas} | {v["id"] for f in filas for v in f.get("variantes") or []}
+    assert filas and not ids & {"MOU0001", "MOU0002", "MOU0003", "MOU0004", "MOU0005", "MOU0006", "MOU0007",
+                                "MOU0008"}
+
+
 def test_la_revision_no_pierde_lo_que_el_mensaje_excluia(monkeypatch):
     """K17, primer turno: la correccion paso las exclusiones a una pieza verificar."""
     excluye = [{"campo": "marca", "operador": "no_contiene", "valor": "Genius"}]

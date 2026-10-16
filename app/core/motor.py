@@ -794,6 +794,18 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     if aviso:
         no_aplicado.append({"campo": "categoria", "motivo": aviso})
     de_cuantos = len(universo)
+    # LO YA MOSTRADO QUEDA AFUERA cuando el cliente pide otras opciones (16-oct,
+    # C35). Sale el modelo entero, con todos sus colores: otro color del mismo
+    # no es otra opcion.
+    fuera = {str(i) for i in c.get("fuera") or []}
+    sacados = 0
+    if fuera:
+        vistos = {(p.get("marca"), p.get("modelo")) for p in catalogo
+                  if str(p.get("id")) in fuera and p.get("modelo")}
+        quedan_u = [p for p in universo if str(p.get("id")) not in fuera
+                    and (p.get("marca"), p.get("modelo")) not in vistos]
+        sacados = len(universo) - len(quedan_u)
+        universo = quedan_u
 
     # 2. LAS CONDICIONES. `aplicar` ya informa el tercer balde —los que no
     #    tienen el dato— y los filtros que no se pudieron aplicar con su motivo.
@@ -1024,7 +1036,8 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
 
     if not quedan:
         veredicto = "no_existe"
-        notas.append("el catalogo no tiene nada de eso")
+        notas.append("ya le mostraste todo lo que hay de eso: no hay otras opciones" if sacados
+                     else "el catalogo no tiene nada de eso")
 
     # LA FILA DEL RESCATE DICE POR QUE NO CUMPLE, Y ES EL DATO REAL.
     #

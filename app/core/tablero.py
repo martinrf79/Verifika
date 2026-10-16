@@ -170,6 +170,9 @@ def esquema_piezas(tienda_id: str) -> dict:
         "sobre_lo_buscado": {"type": "boolean", "description":
                              "true si el cliente elige dentro de lo que ya busco: 'el mas barato de esos', "
                              "'de esos el inalambrico'. El codigo le suma las condiciones de esa busqueda"},
+        "fuera_lo_mostrado": {"type": "boolean", "description":
+                              "true si el cliente pide otras opciones, distintas de las que ya le mostraste en la "
+                              "charla. El codigo deja afuera lo mostrado"},
     }, "required": ["n", "tipo", "texto"]}
     return {"type": "object", "properties": {"piezas": {"type": "array", "items": pieza}}, "required": ["piezas"]}
 
@@ -369,7 +372,7 @@ def atar(piezas: list, tienda_id: str) -> tuple:
                 if pct is not None and str(r.get("medio") or "").strip():
                     rep.append({"medio": str(r["medio"]), "porcentaje": pct})
             p["reparto_pago"] = rep
-        for k in ("sobre_lo_buscado", "sobre_el_pedido", "con_lo_mostrado"):
+        for k in ("sobre_lo_buscado", "sobre_el_pedido", "con_lo_mostrado", "fuera_lo_mostrado"):
             if k in p:
                 p[k] = str(p[k]).strip().lower() in _SI
         if "depende_de" in p:
@@ -1138,6 +1141,9 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                     pid = _de_la_busqueda(args["producto"], ctx["busquedas"], ctx["usados"], 1)
                     if pid:
                         args["producto"] = pid
+        # "PASAME OTRAS OPCIONES" NO VUELVE A TRAER LO MOSTRADO (16-oct, C35): lo deja afuera el buscador.
+        if h == "buscar" and pz.get("fuera_lo_mostrado"):
+            args["fuera"] = mostrado_en_la_charla(ctx.get("memoria") or "")
         if h == "envio" and not args.get("destinos"):
             d = _destino(pz, piezas, ctx["mensaje"], ctx["historial"], ctx["memoria"])
             args["destinos"] = [d] if d else []
@@ -1244,6 +1250,13 @@ def _mostrados(memoria: str) -> list:
     colores: [[id, id_otro_color], ...], en el orden en que se leyo."""
     m = re.search(r"LO QUE NOMBRASTE EN TU ULTIMO MENSAJE.*?\n((?:\d+\..*\n?)+)", memoria or "", re.S)
     return [r for r in (_ID.findall(x) for x in (m.group(1).splitlines() if m else [])) if r]
+
+
+def mostrado_en_la_charla(memoria: str) -> list:
+    """Los ids de todo lo que el bot mostro en la charla: el ultimo mensaje y lo de antes."""
+    m = re.search(r"LO QUE NOMBRASTE EN TU ULTIMO MENSAJE:\n((?:\d+\..*\n?)+)", memoria or "")
+    a = re.search(r"Productos que le mostraste ANTES:\n((?:- .*\n?)+)", memoria or "")
+    return list(dict.fromkeys(_ID.findall((m.group(1) if m else "") + (a.group(1) if a else ""))))
 
 
 def _con_lo_mostrado(pedido: list, memoria: str, tienda_id: str) -> list:
