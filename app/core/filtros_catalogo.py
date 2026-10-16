@@ -1301,13 +1301,42 @@ def palabras_utiles(texto: str) -> list[str]:
     escribe "mecanico" y el switch dice "mecanicos". Sin recortar, ninguna de
     las tres matchea y la relevancia cae al precio con el dato cargado al lado.
     Se recortan tres letras y nunca por debajo de cinco, que alcanza para que
-    dos palabras distintas no se pisen."""
+    dos palabras distintas no se pisen.
+
+    UNA PALABRA CON NUMEROS NO SE RECORTA (16-oct): es un codigo de modelo, no
+    una palabra con raiz. "wh-ch520" quedaba en "wh-ch" y pegaba igual con el
+    WH-CH720N."""
     fuera = []
     for w in dict.fromkeys(_norm(texto).split()):
         if len(w) < 3 or w in _VACIAS:
             continue
-        fuera.append(w[:max(5, len(w) - 3)] if len(w) >= 6 else w)
+        con_numero = any(c.isdigit() for c in w)
+        fuera.append(w if con_numero or len(w) < 6 else w[:max(5, len(w) - 3)])
     return fuera
+
+
+def palabras_de_identidad(prods: list[dict], texto: str) -> list[str]:
+    """Las palabras que nombran UN producto: las utiles, mas las cortas que el
+    catalogo usa en el campo `modelo` (16-oct). `palabras_utiles` tira lo de
+    menos de tres letras, y en un nombre de modelo eso es lo que identifica:
+    "MX Master 3S" quedaba en "maste" y pegaba con las fuentes Cooler Master;
+    "Galaxy Tab A9" con todas las Galaxy Tab; "JBL Go 3" con veinte JBL. Que una
+    palabra corta cuente lo decide el catalogo, no una lista. Con numero —"3s",
+    "a9", "3"— alcanza con que este en algun modelo. Sin numero tiene que venir
+    pegada a su vecina como en un modelo: "mx master" y "go 3" si; "mi
+    notebook" no, aunque exista el cargador Xiaomi "Mi 33W"."""
+    modelos = [" " + " ".join(w for w in re.split(r"[^a-z0-9]+", _norm(_valor_crudo(p, "modelo"))) if w) + " "
+               for p in prods or []]
+    sueltas = {w for m in modelos for w in m.split()}
+    ws = [w for w in re.split(r"[^a-z0-9]+", _norm(texto)) if w]
+    cortas = []
+    for i, w in enumerate(ws):
+        if len(w) >= 3 or w not in sueltas:
+            continue
+        vecinas = ([f" {ws[i - 1]} {w} "] if i > 0 else []) + ([f" {w} {ws[i + 1]} "] if i + 1 < len(ws) else [])
+        if any(c.isdigit() for c in w) or any(v in m for v in vecinas for m in modelos):
+            cortas.append(w)
+    return list(dict.fromkeys(palabras_utiles(texto) + cortas))
 
 
 def pesos_por_rareza(prods: list[dict], texto: str) -> dict:
@@ -1384,7 +1413,7 @@ def los_que_lo_nombran_entero(prods: list[dict], texto: str) -> list[dict]:
     Ryzen 7 tienen esas mismas palabras MAS otras-. La ficha que se llama
     EXACTAMENTE asi no es una candidata mas: es la respuesta.
     """
-    palabras = palabras_utiles(texto)
+    palabras = palabras_de_identidad(prods, texto)
     if not palabras:
         return []
     exacto = _norm(texto)

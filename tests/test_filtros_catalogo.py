@@ -298,3 +298,29 @@ def test_una_condicion_SIN_VALOR_no_se_lleva_puesto_el_catalogo(firestore_doble)
     assert r["descartados"], "se aplico una condicion sin valor"
     assert len(r["productos"]) == len(prods), "filtro por nada"
     assert "sin valor" in r["descartados"][0]["motivo"]
+
+
+# ── LA IDENTIDAD LA DICEN LAS PALABRAS CORTAS DEL MODELO (16-oct) ───────────
+# `palabras_utiles` tira lo de menos de tres letras, y en un nombre de modelo
+# eso es lo que identifica. Medido con `por_el_codigo`: "MX Master 3S" pegaba
+# con las fuentes Cooler Master y "JBL Go 3" con veinte JBL.
+
+@pytest.mark.parametrize("nombre,ids", [
+    ("MX Master 3S", {"MOU0007", "MOU0008"}),
+    ("Galaxy Tab A9", {"TAB0001", "TAB0002", "TAB0003"}),
+    ("Sony WH-CH520", {"AUR0011", "AUR0012"}),
+    ("JBL Go 3", {"PAR0010", "PAR0011", "PAR0012"}),
+    ("G305", {"MOU0029", "MOU0030"})])
+def test_el_nombre_de_un_modelo_trae_solo_sus_colores(firestore_doble, nombre, ids):
+    from app.core.filtros_catalogo import los_que_lo_nombran_entero
+    from app.storage.firestore_client import get_all_products
+    hallados = {p["id"] for p in los_que_lo_nombran_entero(get_all_products(tienda_id="verifika_prod"), nombre)}
+    assert hallados == ids, f"{nombre}: {sorted(hallados)}"
+
+
+def test_una_palabra_corta_suelta_no_nombra_un_modelo(firestore_doble):
+    """"mi" esta en el cargador Xiaomi "Mi 33W", pero "mi notebook" no lo nombra:
+    sin numero, la palabra corta cuenta solo pegada a su vecina como en un modelo."""
+    from app.core.filtros_catalogo import palabras_de_identidad
+    from app.storage.firestore_client import get_all_products
+    assert "mi" not in palabras_de_identidad(get_all_products(tienda_id="verifika_prod"), "mi notebook")
