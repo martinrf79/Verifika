@@ -51,3 +51,19 @@ def test_un_reparto_NORMAL_sigue_saliendo_igual(firestore_doble):
     assert c.get("total_ars"), "un reparto valido dejo de dar total"
     assert not c.get("medio_no_disponible")
 
+
+
+# ── EN EL CAMINO VIVO EL MEDIO ES TEXTO DEL CLIENTE (16-oct) ────────────────
+# El esquema del tablero no cierra el medio, y el motor solo rechaza el valor
+# `medio_no_disponible`, que el esquema vivo ya no ofrece. Cerrarlo contra la
+# FAQ de formas de pago se probo el 16-oct y rompio K21 grabada: ante "setenta
+# treinta" el interprete pone "setenta" como medio y `tablero._reparto` lo deja
+# porque el cliente lo dijo. Primero hay que sacar eso de `_reparto`.
+
+@pytest.mark.xfail(strict=True, reason="PLAN: el motor rechaza el medio que la FAQ de formas de pago no nombra; "
+                                       "antes, tablero._reparto tiene que dejar de tomar 'setenta' como medio")
+def test_un_medio_que_la_tienda_no_toma_no_entra_al_total_en_el_camino_vivo(firestore_doble):
+    r = MT.buscar([], TIENDA, "t", cuenta={"items": UN_ITEM},
+                  reparto_pago=[{"medio": "cripto", "porcentaje": 50},
+                                {"medio": "transferencia", "porcentaje": 50}])
+    assert (r.get("cuenta") or {}).get("medio_no_disponible"), "'cripto' entro al total sin avisar que no se toma"
