@@ -1,10 +1,9 @@
 {
-  "techo": 12,
-  "medido": "15-oct-2026, al borrar diez funciones sin llamador",
+  "techo": 7,
+  "medido": "16-oct-2026, al borrar motor.esquema y lo que colgaba de el",
   "reparto": {
     "campo_sin_escritor": 5,
-    "funcion_sin_llamador": 5,
-    "esquema_sin_consumidor": 1
+    "funcion_sin_llamador": 2
   },
   "como_se_baja": "desconectando de verdad: borrar el modulo muerto, sacar la lectura del campo que nadie escribe, o enchufar la funcion que hacia falta. No se baja subiendo el techo.",
   "no_cuenta": "funcion_solo_instrumento: una funcion que usan los tests o el banco y no el camino vivo puede ser exactamente lo que corresponde. Meterla en el techo obligaria a borrar instrumental para bajar un numero.",
@@ -14,6 +13,7 @@
     "28 al enchufar el mapa 3: el modelo pide las politicas por el motor, asi que `certificar_temas` dejo de estar suelta y `politicas_relevantes` -que las adivinaba del mensaje crudo- se borro.",
     "27 al enchufar no_vendidas: `guia_compra.categoria_no_vendida` estaba escrita, validaba la alternativa contra el catalogo real, y no la importaba NADIE en app/. Ahora la llama el motor.",
     "23 al enchufar la memoria de la charla, 22-sep. El censo ya daba 24 antes de esta sesion con el techo en 27: nadie lo habia bajado. La punta que se cerro hoy es `preferencias_cliente` —las exclusiones que se arrastran entre turnos—, que tenia lector y ningun escritor desde que se apago el interprete viejo.",
-    "12 el 15-oct: diez funciones que solo nombraba archivo/ se borraron. Quedan asegurar_honestidad_bot y certificar_ids_de_resultado, que nombra MAPA_CABLEADO.md, health, que es una ruta, register_tienda, que usa un script, y temas_del_tablero, que usa motor.esquema."
+    "12 el 15-oct: diez funciones que solo nombraba archivo/ se borraron. Quedan asegurar_honestidad_bot y certificar_ids_de_resultado, que nombra MAPA_CABLEADO.md, health, que es una ruta, register_tienda, que usa un script, y temas_del_tablero, que usa motor.esquema.",
+    "7 el 16-oct: con motor.esquema se fueron temas_del_tablero, campos_ordenables y meta_categoria, y la clase 5 pasa a mirar el esquema vivo del tablero, que no tiene campos sin consumidor. Quedan health, que es una ruta, y register_tienda, que usa un script, mas los cinco campos que lee estado_venta y nadie escribe."
   ]
 }
