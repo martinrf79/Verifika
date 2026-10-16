@@ -113,6 +113,15 @@ def test_un_precio_no_se_confunde_con_un_modelo(firestore_doble):
     assert "g203" in R._claves_modelo("G203 Lightsync")
 
 
+def test_una_parte_del_modelo_que_tienen_otros_no_lo_nombra(firestore_doble):
+    """K21: "Kingston Fury Beast DDR4 3200 8GB" daba por nombradas las Patriot Viper DDR4 3200 8GB."""
+    assert R._claves_modelo("Fury Beast DDR4 3200 8GB", TIENDA) == ["fury beast ddr4 3200 8gb"]
+    assert "g203" in R._claves_modelo("G203 Lightsync", TIENDA)
+    fichas = [{"id": "RAM0001"}, {"id": "RAM0043"}, {"id": "TEC0020"}]
+    texto = "Memoria RAM: Kingston Fury Beast DDR4 3200 8GB ($34.500). Teclado: Genius KB-110X ($12.000)"
+    assert [f["id"] for f in R._nombrados(texto, fichas, TIENDA)] == ["RAM0001", "TEC0020"]
+
+
 def test_si_la_respuesta_numera_los_colores_cada_color_es_su_renglon(
         firestore_doble):
     """'1. G203 negro, 2. G203 blanco, 3. G502': ahi el segundo ES el blanco,

@@ -103,7 +103,7 @@ def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
             prod = get_product_by_id(str(f.get("id")), tienda_id=tienda_id) or {}
         except Exception:  # noqa: BLE001 — sin producto no se aparea
             prod = {}
-        apariciones = sorted({m.start() for k in _claves_modelo(prod.get("modelo"))
+        apariciones = sorted({m.start() for k in _claves_modelo(prod.get("modelo"), tienda_id)
                               for m in re.finditer(re.escape(k), t)})
         if not apariciones:
             continue
@@ -131,17 +131,24 @@ def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
     return fuera
 
 
-def _claves_modelo(modelo) -> list:
+def _claves_modelo(modelo, tienda_id: str = "") -> list:
     """Como se nombra un modelo en una respuesta: entero -"G Pro X
     Superlight"- o por la parte que lleva numeros -"G203" de "G203
     Lightsync"-, que es la que usan el cliente y el bot. Una palabra sin
-    numeros no alcanza: "Pro" o "Core" estan en veinte modelos."""
+    numeros no alcanza: "Pro" o "Core" estan en veinte modelos.
+    LA PARTE IDENTIFICA SOLO SI ES DE ESE MODELO (16-oct, K21): "ddr4" u "8gb"
+    estan en otros modelos del catalogo, y nombrar una memoria Kingston daba por
+    nombradas las Patriot."""
     import re
     m = _norm_simple(modelo)
     claves = [m] if len(m) >= 3 else []
     claves += [w for w in re.split(r"\s+", m)
                if len(w) >= 3 and any(c.isdigit() for c in w)
                and any(c.isalpha() for c in w) and w != m]
+    if tienda_id and len(claves) > 1:
+        from app.storage.firestore_client import get_all_products
+        otros = {_norm_simple(p.get("modelo")) for p in get_all_products(tienda_id=tienda_id) or []} - {m}
+        claves = claves[:1] + [w for w in claves[1:] if not any(w in o.split() for o in otros)]
     return claves
 
 
