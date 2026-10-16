@@ -12,7 +12,9 @@ LO QUE FALTA ES UN XFAIL ESTRICTO con su motivo. Si alguien lo arregla y no saca
 la marca, se pone rojo. `grabadas_techo.json` solo baja.
 
 Las grabaciones: `gp_montos_1`, las 20 de memoria con Gemini pago y el redactor
-de la FICHA 69; `gp_pedido_1`, K11 y K21 despues del arreglo del pedido.
+de la FICHA 69; `gp_pedido_1`, K11 y K21 despues del arreglo del pedido;
+`gp_c35_1`, C35 con la marca de otras opciones; `gp_k21v_1`, K21 donde el
+codigo perdia el teclado que el interprete habia puesto bien.
 """
 import json
 import os
@@ -22,7 +24,7 @@ import sys
 import pytest
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GRABACIONES = {"gp_montos_1": 20, "gp_pedido_1": 2}
+GRABACIONES = {"gp_montos_1": 20, "gp_pedido_1": 2, "gp_c35_1": 1, "gp_k21v_1": 1}
 FALTA = {
     ("gp_montos_1", "C35"): "PLAN: 'pasame otras opciones' no excluye lo ya mostrado, y el interprete pierde la "
                             "condicion gamer. HOY vuelven los mismos cuatro Logitech. OBJETIVO mostrar otros mouse "
