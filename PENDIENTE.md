@@ -12,7 +12,7 @@ python3 -m pytest -q          la batería offline
 ```
 
 Camino vivo: `orchestrator` → `respuesta.procesar_turno` → `tablero.turno` sobre
-`motor.buscar`. Unidad de trabajo: `arquitectura/FICHA_69_lo_que_recibe_el_interprete.md`.
+`motor.buscar`. El plan: `CLAUDE.md`, sección 1; lo medido que lo sostiene, FICHA 67 y FICHA 69.
 Dónde está cada cosa: `MAPA.md`.
 
 CÓMO NO SE PIERDE LO QUE DICE MARTÍN, sesión a sesión. Al cerrar, la sesión escribe:
@@ -26,10 +26,8 @@ charla, en la ficha abierta, en una sección con la fecha. Martín no repite nad
 ## El plan de Martín — se sigue en este orden, sin volver a preguntarlo
 
 - **LA VARA FIJA, la primera que se mira** · `pytest tests/test_casos_grabados.py`: 24 charlas grabadas con Gemini, reproducidas sin modelo por el código de hoy. 16-oct: 23 bien y 1 marcada, C35 de `gp_montos_1`, grabada antes de la marca de otras opciones; C35 en vivo con la marca sale entera, `gp_c35_1`. Reemplazar la grabación vieja por la nueva baja el techo: lo decide Martín. Fuera de la vara, todas las grabaciones del repo: 459 bien. Avanzar es bajar `tests/grabadas_techo.json`; ninguna sesión cambia la vara para que pase.
-- **PLAN 1, AHORA** · Mejorar la interpretación. FICHA 69. 16-oct: C35, otras opciones deja afuera lo mostrado; K21, nombrar una memoria Kingston ya no da por nombradas las Patriot, y la cuenta no pierde el teclado; en vivo con la paga, 2 de 3 enteras antes y la que fallaba ahora pasa. SIGUE: los 20 casos que fallan en las grabaciones, separando los del código de los del intérprete; en K21, que el intérprete marque con_lo_mostrado ante el sí. Después el pedido como dato, FICHA 68.
+- **EL PLAN, AHORA** · Está en `CLAUDE.md`, sección 1, y no se copia acá. 16-oct: paso 1, el estado único de la charla escrito por el código, medido con la vara del desmenuzado sobre el contexto que arma el código. Ese mismo día: C35 y K21 arreglados en su causa; en vivo K21 da 3 de 6 enteras, y lo que falla es del intérprete ante el sí y del redactor que repite.
 - **ABIERTO, PARCHES A REEMPLAZAR** · Del 16-oct, dichos como parche: un bloque igual no suma dos veces, sin saber por qué la memoria tenía el destino repetido; el renglón corto, de 8 palabras o menos, que repite plata de un bloque se borra; "el resto" del reparto no se renombra. Cada uno se reemplaza por el arreglo en su causa.
-- **PLAN 2** · Reducir el código drásticamente, sin tocar la interpretación. Lo que no pisa ningún caso va a `archivo/`.
-- **PLAN 3** · Recién al último, el cableado y la ayuda de afuera: Rasa CALM, una revisión de arquitectura.
 - **PLAN, LA REGLA** · No se escribe ninguna herramienta de medición nueva. Se mide con la vara de las 58 y las K, que ya existen.
 
 ## Abierto
