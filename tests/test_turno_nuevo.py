@@ -212,8 +212,9 @@ def test_el_DESTINO_DE_LA_CHARLA_le_llega_al_modelo_para_que_lo_nombre(
     asi que lo que no puede faltar es que la charla se lo diga: sin este
     renglon, un cliente que dio el codigo postal tres turnos antes no tiene
     quien lo nombre."""
-    memoria = R._memoria_texto({"ultima_localidad": "cordoba"})
-    assert "cordoba" in memoria.lower(), memoria
+    from app.core import ficha_charla as F
+    ficha = F.texto(F.estado({"ultima_localidad": "cordoba"}), TIENDA)
+    assert "cordoba" in ficha.lower(), ficha
 
 
 def test_la_PREVIA_no_pisa_el_destino_que_el_modelo_NOMBRO(firestore_doble):
@@ -599,7 +600,8 @@ def test_el_inventario_tambien_es_fuente(firestore_doble):
 def test_la_memoria_lleva_el_ID_y_el_PRECIO_de_lo_ya_mostrado():
     conv = {"productos_vistos": [
         {"id": "MOU2", "nombre": "Mouse Logitech G203", "precio": "$37.500"}]}
-    m = R._memoria_texto(conv)
+    from app.core import ficha_charla as F
+    m = F.texto(F.estado(conv), TIENDA)
     assert "MOU2" in m, "sin el id no puede volver a buscarlo"
     assert "$37.500" in m, "sin el precio lo escribe de memoria o no lo dice"
 
@@ -610,8 +612,9 @@ def test_el_precio_de_lo_YA_MOSTRADO_no_es_plata_inventada(firestore_doble,
     el bot le dice el precio sin volver a buscarlo. Antes salia el fallback."""
     conv = {"productos_vistos": [
         {"id": "MOU2", "nombre": "Mouse Logitech G203", "precio": "$37.500"}]}
-    memoria = R._memoria_texto(conv)
-    # El modelo copia el precio de la memoria y NO busco: fichas vacias.
+    from app.core import ficha_charla as F
+    memoria = F.texto(F.estado(conv), TIENDA)
+    # El modelo copia el precio de la ficha y NO busco: fichas vacias.
     _, inf = N.llenar("El Logitech G203 sale $37.500.", [], "t",
                       fuente_texto=memoria)
     assert not inf["inventada"], (
@@ -651,7 +654,8 @@ def test_la_memoria_dice_cual_es_el_ultimo_que_mostro():
         {"id": "TEC9", "nombre": "Teclado Genius KB-110X Blanco",
          "precio": "$12.000"}]}
     # Lo que lee el modelo es la ficha de la charla desde el 15-oct (FICHA 69).
-    m = __import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod")
+    from app.core import ficha_charla as F
+    m = F.texto(F.estado(conv), "verifika_prod")
     assert "el que me dijiste" in m.lower()
     assert m.rfind("TEC9") > m.rfind("MOU2")
 

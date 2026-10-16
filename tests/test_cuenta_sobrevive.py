@@ -58,6 +58,11 @@ def test_la_cantidad_del_pedido_no_se_pierde():
     assert [i["cantidad"] for i in c["items"]] == [2, 2]
 
 
+def _ficha(conv):
+    from app.core import ficha_charla as F
+    return F.texto(F.estado(conv), "verifika_prod")
+
+
 def test_el_turno_siguiente_ve_el_carrito_y_no_el_presupuesto_viejo():
     """El carrito se muestra CON el id, que es con lo que el modelo vuelve a
     pedir la misma cuenta. El presupuesto viejo ya no viaja desde la FICHA 69:
@@ -66,7 +71,7 @@ def test_el_turno_siguiente_ve_el_carrito_y_no_el_presupuesto_viejo():
                                   "$75.000\nTotal: $75.000",
             "carrito_vigente": [{"id": "MOU0001", "cantidad": 2,
                                  "nombre": "Mouse Logitech G203"}]}
-    t = __import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod")
+    t = _ficha(conv)
     assert "2x MOU0001" in t
     assert "$75.000" not in t
     assert "pedi la cuenta" in t.lower()
@@ -78,7 +83,7 @@ def test_el_presupuesto_viejo_no_es_fuente():
     from app.core import numeros as N
     conv = {"ultimo_presupuesto": "Total: $395.000"}
     texto, informe = N.llenar("Te confirmo el pedido por $395.000.", [], "t",
-                              fuente_texto=__import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod"))
+                              fuente_texto=_ficha(conv))
     assert informe["inventada"] and "395.000" not in texto
 
 

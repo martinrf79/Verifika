@@ -1,21 +1,25 @@
-"""LA FICHA DE LA CHARLA — lo que el modelo lee de la charla, como datos (15-oct-2026, FICHA 69).
+"""EL ESTADO DE LA CHARLA Y SU FICHA — lo que el codigo sabe de la charla, como datos (15-oct-2026, FICHA 69).
 
 POR QUE EXISTE. En el banco, el interprete traduce bien cuando la charla le
 llega con el pedido por destino, lo mostrado con todo lo que la tienda sabe de
 cada producto y las exclusiones que siguen valiendo. Lo que le llegaba en
-produccion era `respuesta._memoria_texto`: nombre y precio pelados, el destino
-de cada articulo perdido, las exclusiones enterradas en el texto de la busqueda
-y una instruccion pegada a cada bloque, recortada a ocho productos y cuatro
-destinos. Lo que se cortaba dejaba de existir para el modelo.
+produccion era un texto con nombre y precio pelados, el destino de cada
+articulo perdido, las exclusiones enterradas en el texto de la busqueda y una
+instruccion pegada a cada bloque. Y el codigo releia ese mismo texto con
+expresiones regulares en diez lugares: lo que el texto no decia, no existia.
 
-QUE ES. Un solo renderizador, sobre el documento de la conversacion tal como
-se guarda y sobre el catalogo. Lo leen el interprete y el redactor. Los datos
-van solos; como leerlos se dice una vez, arriba.
+QUE ES. Dos cosas, y una sale de la otra:
+  `estado`  el documento de la conversacion leido UNA vez, como datos: el
+            pedido, lo mostrado con su id, lo que busco el cliente, el destino,
+            el reparto y el pedido que espera el si. Lo leen los lectores del
+            tablero; ninguno vuelve a leer un texto.
+  `texto`   la ficha que lee el modelo, renderizada desde el estado. Los datos
+            van solos; como leerlos se dice una vez, arriba.
 
-LO QUE NO ES. `_memoria_texto` sigue escribiendo el texto que releen los
-lectores del cableado de `tablero` —`pedido_vigente`, `busquedas_vigentes`,
-`_mostrados`—; el modelo ya no lo lee. Que esos lectores lean el documento y no
-un texto es el plan 3, el cableado.
+LO QUE FALTA. El documento todavia guarda el pedido en dos campos
+—`grupos_envio` y `carrito_vigente`— y lo buscado como texto, en
+`criterio_cliente`. El estado los junta al leer; que se escriban como uno es
+el paso siguiente del plan.
 """
 import re
 
@@ -89,18 +93,14 @@ def datos(pid: str, tienda_id: str, nombre: str = "", precio="") -> str:
     return r + "; " + "; ".join(extra)
 
 
-def _pedido(conv: dict) -> list:
-    """El pedido por destino: [(destino, [(id, cantidad, nombre)])]. Con varios destinos, los presupuestos por
-    destino; con uno, lo que se conto y el lugar al que va."""
-    grupos = [g for g in (conv.get("grupos_envio") or []) if isinstance(g, dict) and g.get("items")]
-    if grupos:
-        return [(str(g.get("destino") or "sin destino"),
-                 [(str(i.get("producto")), int(i.get("cantidad") or 1), "") for i in g["items"]]) for g in grupos]
-    carrito = [p for p in conv.get("carrito_vigente") or [] if isinstance(p, dict) and p.get("id")]
-    if carrito:
-        return [(str(conv.get("ultima_localidad") or "sin destino"),
-                 [(str(p["id"]), int(p.get("cantidad") or 1), str(p.get("nombre") or "")) for p in carrito])]
-    return []
+_ID = re.compile(r"[A-Z]{3}\d{4}")
+
+
+def _items(items, clave: str) -> list:
+    """Los articulos con id, como los corre la cuenta: {"producto", "cantidad"}. El id esta en `producto` en los
+    bloques por destino y en `id` en lo que se conto."""
+    return [{"producto": str(i.get(clave)), "cantidad": int(i.get("cantidad") or 1)}
+            for i in items or [] if isinstance(i, dict) and _ID.fullmatch(str(i.get(clave)))]
 
 
 def _mostrado(vistos: list) -> tuple:
@@ -119,72 +119,104 @@ def _mostrado(vistos: list) -> tuple:
     return [ps for _, ps in grupos], [p for p in vistos if p not in recien]
 
 
-def texto(conv: dict, tienda_id: str) -> str:
+def estado(conv: dict) -> dict:
+    """EL ESTADO DE LA CHARLA, leido una vez del documento. El pedido es uno solo: con varios destinos, los
+    presupuestos por destino; con uno, lo que se conto y el lugar al que va."""
+    from app.core import pedido as PD
+    from app.core import tablero as T
+    conv = conv or {}
+    grupos = [{"destino": str(g.get("destino") or "").strip(), "items": _items(g.get("items"), "producto")}
+              for g in conv.get("grupos_envio") or [] if isinstance(g, dict) and g.get("items")]
+    grupos = [g for g in grupos if g["items"]]
+    carrito = [p for p in conv.get("carrito_vigente") or [] if isinstance(p, dict)]
+    destino = str(conv.get("ultima_localidad") or "").strip()
+    if len(grupos) > 1:
+        pedido = grupos
+    else:
+        pedido = [{"destino": destino, "items": _items(carrito, "id")}] if _items(carrito, "id") else []
+    recien, antes = _mostrado(conv.get("productos_vistos") or [])
+    criterio = str(conv.get("criterio_cliente") or "").strip()
+    return {
+        "nombre": str((conv.get("datos_cliente_parciales") or {}).get("nombre") or ""),
+        "destino": destino,
+        "descartados": list(conv.get("descartados") or []),
+        "pedido": pedido,
+        "por_destino": len(grupos) > 1,
+        # Lo que se conto en el ultimo presupuesto de un destino: vale aunque haya bloques por destino.
+        "carrito": _items(carrito, "id"),
+        "nombres": {str(p.get("id")): str(p.get("nombre") or "") for p in carrito if p.get("id")},
+        "pendiente": PD.pendiente(conv.get("pedido_pendiente")),
+        "reparto": conv.get("reparto_pago") or None,
+        "mostrado": [[dict(p, id=str(p.get("id"))) for p in ps] for ps in recien],
+        "antes": [dict(p, id=str(p.get("id"))) for p in antes],
+        "criterio": criterio,
+        "busquedas": T.busquedas_de(criterio),
+        "resumen": str(conv.get("summary") or "").strip(),
+    }
+
+
+def texto(e: dict, tienda_id: str) -> str:
     """La ficha entera, o "" si la charla no tiene nada guardado."""
     from app.core import pedido as PD
     from app.core import tablero as T
     from app.core.respuesta import RESPUESTA
-    conv = conv or {}
+    e = e or {}
     r = []
     cliente = []
-    datos_c = conv.get("datos_cliente_parciales") or {}
-    if datos_c.get("nombre"):
-        cliente.append("se llama " + str(datos_c["nombre"]))
-    if conv.get("ultima_localidad"):
-        cliente.append("envia a " + str(conv["ultima_localidad"]))
-    if conv.get("descartados"):
-        cliente.append("ya dijo que no a " + ", ".join(str(x) for x in conv["descartados"]))
+    if e.get("nombre"):
+        cliente.append("se llama " + e["nombre"])
+    if e.get("destino"):
+        cliente.append("envia a " + e["destino"])
+    if e.get("descartados"):
+        cliente.append("ya dijo que no a " + ", ".join(str(x) for x in e["descartados"]))
     if cliente:
         r.append("CLIENTE: " + "; ".join(cliente))
 
-    pedido = _pedido(conv)
     en_pedido = []
-    if pedido:
+    if e.get("pedido"):
         r.append("PEDIDO ACTUAL, por destino:")
-        for destino, items in pedido:
-            r.append(f"- a {destino}: " + "; ".join(
-                f"{q}x {pid} {nombre or _producto(pid, tienda_id).get('nombre') or ''}".strip()
-                for pid, q, nombre in items))
-            en_pedido += [pid for pid, _, _ in items]
-    guardado = PD.pendiente(conv.get("pedido_pendiente"))
-    if guardado:
+        for b in e["pedido"]:
+            r.append(f"- a {b['destino'] or 'sin destino'}: " + "; ".join(
+                f"{i['cantidad']}x {i['producto']} "
+                f"{(e.get('nombres') or {}).get(i['producto']) or _producto(i['producto'], tienda_id).get('nombre') or ''}"
+                .strip() for i in b["items"]))
+            en_pedido += [i["producto"] for i in b["items"]]
+    if e.get("pendiente"):
         import json
         r.append("ESPERA EL SI DEL CLIENTE para este pedido: "
-                 + json.dumps(PD.resumen(guardado["piezas"]), ensure_ascii=False))
+                 + json.dumps(PD.resumen(e["pendiente"]["piezas"]), ensure_ascii=False))
 
-    recien, antes = _mostrado(conv.get("productos_vistos") or [])
     mostrados = set()
-    if recien:
+    if e.get("mostrado"):
         r.append("LO MOSTRADO en tu ultimo mensaje, en el orden en que lo leyo el cliente:")
-        for n, ps in enumerate(recien, 1):
+        for n, ps in enumerate(e["mostrado"], 1):
             p0 = ps[0]
             marca = RESPUESTA if any(p.get("respuesta") for p in ps) else ""
-            r.append(f"{n}. " + datos(str(p0.get("id")), tienda_id, p0.get("nombre"), p0.get("precio")) + marca)
+            r.append(f"{n}. " + datos(p0["id"], tienda_id, p0.get("nombre"), p0.get("precio")) + marca)
             for p in ps[1:]:
-                r.append(f"   mismo modelo: {p.get('id')}: {p.get('nombre')}, {_plata(p.get('precio'))}")
-            mostrados |= {str(p.get("id")) for p in ps}
+                r.append(f"   mismo modelo: {p['id']}: {p.get('nombre')}, {_plata(p.get('precio'))}")
+            mostrados |= {p["id"] for p in ps}
     sueltos = [pid for pid in dict.fromkeys(en_pedido) if pid not in mostrados]
     if sueltos:
         r.append("LO PEDIDO que no se mostro recien:")
         r += ["- " + datos(pid, tienda_id) for pid in sueltos]
         mostrados |= set(sueltos)
-    antes = [p for p in antes if str(p.get("id")) not in mostrados]
+    antes = [p for p in e.get("antes") or [] if p["id"] not in mostrados]
     if antes:
-        r.append("MOSTRADO ANTES, del mas viejo al mas reciente" + ("" if recien else "; 'ese' o 'el que me dijiste' es el ultimo") + ":")
-        r += [f"- {p.get('id')}: {p.get('nombre')}, {_plata(p.get('precio'))}"
+        r.append("MOSTRADO ANTES, del mas viejo al mas reciente"
+                 + ("" if e.get("mostrado") else "; 'ese' o 'el que me dijiste' es el ultimo") + ":")
+        r += [f"- {p['id']}: {p.get('nombre')}, {_plata(p.get('precio'))}"
               + (RESPUESTA if p.get("respuesta") else "") for p in antes[-12:]]
 
-    busco = (conv.get("criterio_cliente") or "").strip()
-    if busco:
+    if e.get("criterio"):
         r.append("LO QUE BUSCO EL CLIENTE, como se interpreto; lo que sigue la busqueda hereda el alcance y las "
-                 "condiciones que no cambio:\n" + busco)
-        excl = T.exclusiones_vigentes(busco)
+                 "condiciones que no cambio:\n" + e["criterio"])
+        excl = T.exclusiones_vigentes(e.get("busquedas"))
         if excl:
             r.append("EXCLUSIONES QUE SIGUEN VALIENDO para cualquier rubro, hasta que el cliente las saque: "
                      + "; ".join(f"{c['campo']} {c['operador']} {c['valor']}" for c in excl))
-    resumen = (conv.get("summary") or "").strip()
-    if resumen:
-        r.append("DE LO QUE YA HABLARON antes de los ultimos mensajes: " + resumen)
+    if e.get("resumen"):
+        r.append("DE LO QUE YA HABLARON antes de los ultimos mensajes: " + e["resumen"])
     if not r:
         return ""
     return COMO_LEERLA + "\n" + "\n".join(r)

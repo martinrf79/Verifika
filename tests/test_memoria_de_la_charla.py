@@ -16,7 +16,9 @@ Dos defectos que la vara de mensajes sueltos no podia ver:
 """
 import asyncio
 
+from app.core import ficha_charla as F
 from app.core import respuesta as R
+from app.core import tablero as T
 
 TIENDA = "verifika_prod"
 
@@ -74,7 +76,7 @@ def test_la_memoria_numera_lo_ultimo_que_nombro():
         dict(M170, turno=1),
         dict(G502, turno=2), dict(G203, turno=2), dict(SUPER, turno=2)]}
     # Lo que lee el modelo es la ficha de la charla desde el 15-oct (FICHA 69).
-    m = __import__("app.core.ficha_charla", fromlist=["texto"]).texto(conv, "verifika_prod")
+    m = F.texto(F.estado(conv), "verifika_prod")
     assert "1. MOU0003" in m and "2. MOU0001" in m and "3. MOU0005" in m
     assert "el segundo" in m.lower()
     assert "MOU0009" in m, "lo de antes tambien se recuerda"
@@ -83,8 +85,8 @@ def test_la_memoria_numera_lo_ultimo_que_nombro():
 def test_la_memoria_muestra_lo_MAS_RECIENTE_y_no_lo_mas_viejo():
     """Con doce vistos mostraba los ocho primeros: el reciente no llegaba."""
     vistos = [_ficha(f"X{i:02d}", f"Producto {i}", "$1") for i in range(12)]
-    m = R._memoria_texto({"productos_vistos": vistos})
-    assert "X11" in m and "X00" not in m
+    ids = [p["id"] for p in T._vistos(F.estado({"productos_vistos": vistos}))]
+    assert "X11" in ids and "X00" not in ids
 
 
 
@@ -100,10 +102,7 @@ def test_un_modelo_en_dos_colores_es_UN_renglon():
         dict(G203, turno=1, grupo="G203 Lightsync"),
         dict(blanco, turno=1, grupo="G203 Lightsync"),
         dict(G502, turno=1, grupo="G502 Hero")]}
-    m = R._memoria_texto(conv)
-    assert "2. MOU0003" in m, m
-    renglon_uno = next(r for r in m.splitlines() if r.startswith("1. "))
-    assert "MOU0001" in renglon_uno and "MOU0002" in renglon_uno
+    assert T._mostrados(F.estado(conv)) == [["MOU0001", "MOU0002"], ["MOU0003"]]
 
 
 def test_un_precio_no_se_confunde_con_un_modelo(firestore_doble):
@@ -133,8 +132,7 @@ def test_si_la_respuesta_numera_los_colores_cada_color_es_su_renglon(
              "G502 Hero Negro ($70.000)")
     vistos = R._vistos_al_dia([], [G502, blanco, G203], texto, 1, TIENDA)
     assert [p["id"] for p in vistos] == ["MOU0001", "MOU0002", "MOU0003"]
-    m = R._memoria_texto({"productos_vistos": vistos})
-    assert "2. MOU0002" in m, m
+    assert T._mostrados(F.estado({"productos_vistos": vistos}))[1] == ["MOU0002"]
 
 
 def test_si_la_respuesta_nombra_el_modelo_una_vez_los_colores_van_juntos(
@@ -143,8 +141,7 @@ def test_si_la_respuesta_nombra_el_modelo_una_vez_los_colores_van_juntos(
                     "$37.500")
     texto = "el G203 Lightsync (negro o blanco) a $37.500 y el G502 Hero"
     vistos = R._vistos_al_dia([], [G502, blanco, G203], texto, 1, TIENDA)
-    m = R._memoria_texto({"productos_vistos": vistos})
-    assert "2. MOU0003" in m, m
+    assert T._mostrados(F.estado({"productos_vistos": vistos}))[1] == ["MOU0003"]
 
 
 def test_el_precio_guardado_llega_entero_a_la_ficha():
@@ -155,7 +152,7 @@ def test_el_precio_guardado_llega_entero_a_la_ficha():
     assert [F._plata(v) for v in formas] == ["$80.500"] * 6
     assert F._plata("$1.250.000") == "$1.250.000"
     conv = {"productos_vistos": [dict(G203, turno=0)]}
-    assert "MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500" in F.texto(conv, TIENDA)
+    assert "MOU0001: Mouse Logitech G203 Lightsync Negro, $37.500" in F.texto(F.estado(conv), TIENDA)
 
 
 # ── LO QUE EL CLIENTE EXCLUYO SIGUE VALIENDO EN EL TURNO SIGUIENTE ─────────

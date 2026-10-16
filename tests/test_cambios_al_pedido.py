@@ -51,10 +51,12 @@ def test_un_articulo_cambia_de_destino_y_el_resto_queda(firestore_doble):
 
 
 def test_la_pieza_sobre_el_pedido_lleva_el_cambio_a_la_cuenta(firestore_doble):
-    memoria = "EN EL PEDIDO, tal como se conto: 3x TEC0020 Teclado Genius KB-110X Blanco\n"
+    from app.core import ficha_charla
+    estado = ficha_charla.estado({"carrito_vigente": [{"id": "TEC0020", "nombre": "Teclado Genius KB-110X Blanco",
+                                                       "cantidad": 3}]})
     piezas = [{"n": 1, "tipo": "cuenta", "sobre_el_pedido": True,
                "items": [{"producto": "TEC0020", "cantidad": 2, "destino": "Rosario"}]}]
-    out = T._sobre_el_pedido(piezas, memoria, T_)
+    out = T._sobre_el_pedido(piezas, estado, T_)
     assert [p["items"] for p in out] == [[{"producto": "TEC0020", "cantidad": 2, "destino": "Rosario"}]]
     assert out[0]["destinos"] == ["Rosario"]
 
@@ -79,7 +81,7 @@ def test_el_reparto_vigente_va_a_las_cuentas_del_pedido(firestore_doble):
     piezas = [{"n": 1001, "tipo": "cuenta", "del_pedido": True, "destinos": [b["destino"]],
                "items": [dict(i, destino=b["destino"]) for i in b["items"]]} for b in TRES]
     llamadas = []
-    ctx = {"mensaje": "sip", "historial": [], "memoria": "", "pide_total": True, "puede_confirmar": False,
+    ctx = {"mensaje": "sip", "historial": [], "estado": {}, "pide_total": True, "puede_confirmar": False,
            "reparto_vigente": [{"medio": "parte 1", "porcentaje": 70}, {"medio": "parte 2", "porcentaje": 30}]}
     T.correr_piezas(piezas, T_, llamadas, 1, ctx)
     tg = next(x for x in llamadas if x["herramienta"] == "total_general")
@@ -92,7 +94,7 @@ def test_una_cuenta_nueva_no_hereda_el_reparto(firestore_doble):
     """El reparto es del pedido: una cuenta que no es del pedido no lo lleva."""
     piezas = [{"n": 1, "tipo": "cuenta", "items": [{"producto": "TEC0020", "cantidad": 1}]}]
     llamadas = []
-    ctx = {"mensaje": "cuanto sale el teclado", "historial": [], "memoria": "", "pide_total": True,
+    ctx = {"mensaje": "cuanto sale el teclado", "historial": [], "estado": {}, "pide_total": True,
            "puede_confirmar": False, "reparto_vigente": [{"medio": "parte 1", "porcentaje": 70}]}
     T.correr_piezas(piezas, T_, llamadas, 1, ctx)
     assert next(x for x in llamadas if x["herramienta"] == "cuenta")["args"]["reparto_pago"] is None

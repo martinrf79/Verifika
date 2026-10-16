@@ -4,9 +4,9 @@ ES EL TURNO VIVO DESDE EL 30-SEP: `respuesta.procesar_turno` lo llama en vez
 de `agente.turno`. Las herramientas y la completitud siguen en `agente`. Se
 mide por el clon con `sonda_charlas --vara todas`.
 
-MISMA ENTRADA Y MISMA SALIDA QUE `agente.turno`: el historial, el mensaje, la
-tienda y la memoria que arma `respuesta`; vuelve el texto, las llamadas con lo
-que devolvio cada herramienta y el uso. Por eso lo de alrededor —la guarda de
+LA ENTRADA: el historial, el mensaje, la tienda, y el estado de la charla con
+su ficha, los dos de `ficha_charla`. Vuelve el texto, las llamadas con lo que
+devolvio cada herramienta y el uso. Por eso lo de alrededor —la guarda de
 plata, la memoria, el cierre— es el de produccion sin tocar, y mudar es
 cambiar una funcion por otra.
 
@@ -197,12 +197,12 @@ def _con_esquema(sistema: str, formato: dict, esquema: dict) -> str:
         + json.dumps(esquema, ensure_ascii=False)
 
 
-def con_ejemplos(sistema: str, mensaje: str, memoria: str = "") -> str:
+def con_ejemplos(sistema: str, mensaje: str, estado: dict = None) -> str:
     """LOS EJEMPLOS RESUELTOS MAS PARECIDOS AL MENSAJE, al final del prompt del
     interprete (FICHA 67, 7-oct). Los elige el codigo: `app/core/ejemplos.py`.
-    Con un pedido vigente en la memoria van primero los de ese estado."""
+    Con un pedido vigente en el estado de la charla van primero los de ese estado."""
     from app.core.ejemplos import bloque
-    b = bloque(mensaje, estado="pedido" if pedido_vigente(memoria) else "")
+    b = bloque(mensaje, estado="pedido" if pedido_vigente(estado) else "")
     return sistema + "\n\n" + b if b else sistema
 
 
@@ -548,7 +548,7 @@ def _lugar_en(texto: str) -> str:
     return ""
 
 
-def _destino(pz: dict, piezas: list, mensaje: str, historial: list, memoria: str) -> str:
+def _destino(pz: dict, piezas: list, mensaje: str, historial: list, estado: dict) -> str:
     """El destino de la pieza; si no lo trae, el que el cliente dijo en este
     mensaje o antes. Lo que el cliente dijo sigue valiendo: objetivo 3."""
     for d in (pz.get("destinos") or []) + [d for p in piezas if p.get("tipo") == "envio"
@@ -562,8 +562,7 @@ def _destino(pz: dict, piezas: list, mensaje: str, historial: list, memoria: str
         lugar = _lugar_en(texto)
         if lugar:
             return lugar
-    m = re.search(r"Envia a: (.+)", memoria or "")
-    return m.group(1).strip() if m else ""
+    return (estado or {}).get("destino") or ""
 
 
 def _es_rubro(nombre: str, tienda_id: str) -> str:
@@ -701,7 +700,7 @@ def _resolver_items(items: list, tienda_id: str, llamadas: list, ctx: dict) -> l
     for i in items:
         if not isinstance(i, dict):
             continue
-        pid = _certificado(str(i.get("producto") or ""), tienda_id, llamadas, _ID.findall(ctx.get("memoria") or ""))
+        pid = _certificado(str(i.get("producto") or ""), tienda_id, llamadas, ids_de_la_charla(ctx.get("estado")))
         out.append({**i, "producto": pid})
         if not _ID.fullmatch(str(pid)):
             pend.append(out[-1])
@@ -737,10 +736,9 @@ _FALTA_LUGAR = re.compile(r"destin|envi|direcc|localidad|ciudad|domicilio|calle|
 _NADA = re.compile(r"|ningun[oa]?|nada|no|none|null|n/?a|-")
 
 
-def respondidos_en(memoria: str) -> set:
-    """Los ids que la memoria marca como la respuesta a lo que el cliente pidio."""
-    from app.core.respuesta import RESPUESTA
-    return set(re.findall(r"([A-Z]{3}\d{4}): [^/\n]*?" + re.escape(RESPUESTA), memoria or ""))
+def respondidos_en(estado: dict) -> set:
+    """Los ids que el estado marca como la respuesta a lo que el cliente pidio."""
+    return {p["id"] for p in _vistos(estado) if p.get("respuesta") and _ID.fullmatch(p["id"])}
 
 
 def respondidos(busquedas: list) -> list:
@@ -756,7 +754,7 @@ def respondidos(busquedas: list) -> list:
     return list(dict.fromkeys(i for i in out if i and i != "None"))
 
 
-def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resueltos: set = None) -> list:
+def _elegidos(items: list, llamadas: list, estado: dict, tienda_id: str, resueltos: set = None) -> list:
     """LA CUENTA SUMA LO QUE EL CLIENTE ELIGIO, NO LO QUE EL BOT MOSTRO (30-sep,
     M10): ante "cuanto es todo" el interprete metia los doce productos de la
     lista. Elegido es lo que el cliente nombro, lo reservado y lo que ya estaba
@@ -765,7 +763,7 @@ def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resuelt
     dijo = A._n(CLIENTE_DIJO.get())
     reservados = {str((x.get("vuelve") or {}).get("id")) for x in llamadas if x.get("herramienta") == "reservar"}
     # El pedido vigente entero, de uno o de varios destinos (7-oct, K21).
-    pedido = {str(i["producto"]) for b in pedido_vigente(memoria) for i in b["items"]}
+    pedido = {str(i["producto"]) for b in pedido_vigente(estado) for i in b["items"]}
 
     def nombrado(pid: str) -> bool:
         prod = get_product_by_id(pid, tienda_id=tienda_id) or {}
@@ -776,14 +774,14 @@ def _elegidos(items: list, llamadas: list, memoria: str, tienda_id: str, resuelt
         # Sin numero, la palabra mas larga del modelo: "stinger 2" nombra el
         # "Cloud Stinger 2" aunque no diga "cloud" (2-oct, guion 32).
         return bool(todas) and max(todas, key=len) in dijo
-    resueltos = (resueltos or set()) | respondidos_en(memoria)
+    resueltos = (resueltos or set()) | respondidos_en(estado)
     quedan = [i for i in items if not _ID.fullmatch(str(i.get("producto"))) or str(i["producto"]) in reservados
               or str(i["producto"]) in pedido or str(i["producto"]) in resueltos or nombrado(str(i["producto"]))]
     return quedan or items
 
 
 def _un_color_por_modelo(items: list, tienda_id: str) -> list:
-    """UN MODELO EN VARIOS COLORES ES UNA OPCION (1-oct, K18). La memoria
+    """UN MODELO EN VARIOS COLORES ES UNA OPCION (1-oct, K18). La ficha
     muestra cada renglon con sus colores, y ante "sumame uno de cada uno" el
     interprete metia el negro y el blanco. Si el cliente no nombro el color,
     de cada modelo queda uno: el primero con stock."""
@@ -996,12 +994,13 @@ def _reparto_en_cuentas(piezas: list) -> list:
 _EXCLUYEN = ("no_contiene", "evita")
 
 
-def busquedas_vigentes(memoria: str) -> list:
+def busquedas_de(criterio: str) -> list:
     """Las ultimas busquedas del cliente, leidas de los renglones que escribe
-    `busqueda_vigente`: "buscar mouse, marca no_contiene Genius" vuelve como
-    {"rubro": "mouse", "condiciones": [...]}. "toda la tienda" es sin rubro."""
+    `busqueda_vigente` en `criterio_cliente`: "buscar mouse, marca no_contiene
+    Genius" vuelve como {"rubro": "mouse", "condiciones": [...]}. "toda la
+    tienda" es sin rubro. Lo lee `ficha_charla.estado`, una vez por turno."""
     out = []
-    for renglon in re.findall(r"^buscar (.+)$", memoria or "", re.M):
+    for renglon in re.findall(r"^buscar (.+)$", criterio or "", re.M):
         rubro, *partes = renglon.split(", ")
         conds = [{"campo": w[0], "operador": w[1], "valor": w[2]}
                  for w in (x.split(" ", 2) for x in partes) if len(w) == 3 and w[1] in OPERADORES]
@@ -1009,23 +1008,29 @@ def busquedas_vigentes(memoria: str) -> list:
     return out
 
 
-def exclusiones_vigentes(memoria: str) -> list:
+def busquedas_vigentes(estado: dict) -> list:
+    """Las busquedas del cliente que siguen valiendo, del estado de la charla."""
+    e = estado or {}
+    return busquedas_de(e.get("criterio", "")[:_HASTA["criterio"]]) if e.get("criterio") else []
+
+
+def exclusiones_vigentes(busquedas: list) -> list:
     """Las exclusiones de la ultima busqueda del cliente."""
     out = []
-    for b in busquedas_vigentes(memoria):
+    for b in busquedas or []:
         for c in b["condiciones"]:
             if c["operador"] in _EXCLUYEN and c not in out:
                 out.append(c)
     return out
 
 
-def _sobre_lo_buscado(piezas: list, memoria: str) -> list:
+def _sobre_lo_buscado(piezas: list, estado: dict) -> list:
     """"EL MAS BARATO DE ESOS TECLADOS" SE ELIGE EN LA BUSQUEDA, NO EN LO
     MOSTRADO (7-oct, K17). El bot muestra unos pocos de una busqueda que trajo
     mas. El interprete marca `sobre_lo_buscado` y el codigo le suma a la pieza
     las condiciones de esa busqueda; el orden lo pone la pieza y el minimo lo
     calcula el buscador, no el modelo mirando una lista."""
-    vigentes = busquedas_vigentes(memoria)
+    vigentes = busquedas_vigentes(estado)
     out = []
     for p in piezas:
         if p.get("tipo") == "buscar" and p.get("sobre_lo_buscado") and vigentes:
@@ -1047,7 +1052,7 @@ def exclusiones_de(piezas: list) -> list:
             if isinstance(c, dict) and c.get("operador") in _EXCLUYEN]
 
 
-def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje: list = None) -> list:
+def _heredar_exclusiones(piezas: list, estado: dict, mensaje: str, del_mensaje: list = None) -> list:
     """LA EXCLUSION SIGUE VALIENDO HASTA QUE EL CLIENTE LA SUELTE (2-oct, K17).
     "Que no sea Genius ni Logitech" y despues "y teclados?": la busqueda nueva
     salia sin la exclusion y el bot mostraba Logitech. La memoria la tenia
@@ -1057,7 +1062,7 @@ def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje: 
     se hereda. Se suelta si el mensaje dice que la marca no importa o vuelve
     a nombrar lo excluido."""
     m = A._n(mensaje)
-    vigentes = [] if A._SUELTA.search(m) else [c for c in exclusiones_vigentes(memoria)
+    vigentes = [] if A._SUELTA.search(m) else [c for c in exclusiones_vigentes(busquedas_vigentes(estado))
                                                if A._n(c["valor"]) not in m]
     # Lo que la primera lectura de ESTE mensaje excluia tampoco se pierde en
     # la revision: el 2-oct, K17, la correccion paso las exclusiones a una
@@ -1079,9 +1084,9 @@ def _heredar_exclusiones(piezas: list, memoria: str, mensaje: str, del_mensaje: 
 
 def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> list:
     """Corre cada pieza con su herramienta. Vuelve los HECHOS, uno por pieza."""
-    piezas = _sobre_el_pedido(_reparto_leido(piezas, ctx.get("mensaje") or ""), ctx.get("memoria") or "", tienda_id)
-    piezas = _sobre_lo_buscado(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("memoria") or "")
-    piezas = _heredar_exclusiones(piezas, ctx.get("memoria") or "",
+    piezas = _sobre_el_pedido(_reparto_leido(piezas, ctx.get("mensaje") or ""), ctx.get("estado"), tienda_id)
+    piezas = _sobre_lo_buscado(_normalizar(_envios_juntos(piezas), tienda_id), ctx.get("estado"))
+    piezas = _heredar_exclusiones(piezas, ctx.get("estado"),
                                   ctx.get("mensaje") or "", ctx.get("excluye_el_mensaje"))
     hechos = []
     ctx["busquedas"], ctx["usados"], ctx["no_vende"] = [], {}, []
@@ -1123,14 +1128,14 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                 # total lo tiene que dar la cuenta, no el redactor sumando.
                 if len(args["items"]) > 1:
                     args["items"] = _un_color_por_modelo(args["items"], tienda_id)
-                    args["items"] = _elegidos(args["items"], llamadas, ctx["memoria"], tienda_id,
+                    args["items"] = _elegidos(args["items"], llamadas, ctx["estado"], tienda_id,
                                               ctx.get("resueltos"))
                 certificada = bool(args["items"]) and all(_ID.fullmatch(str(i["producto"])) for i in args["items"])
                 if not (ctx["pide_total"] or args.get("reparto_pago") or certificada):
                     h = None
                     ctx["cuenta_pedida"] = True  # la pidio el interprete sin productos certificados
                 args["destino"] = args.get("destino") or _destino(pz, piezas, ctx["mensaje"], ctx["historial"],
-                                                                   ctx["memoria"])
+                                                                   ctx["estado"])
                 args["destinos"] = _destinos_del_turno(pz, piezas) or ([args["destino"]] if args["destino"] else [])
                 if args["destinos"]:
                     args["destino"] = args["destinos"][0]
@@ -1143,9 +1148,9 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
                         args["producto"] = pid
         # "PASAME OTRAS OPCIONES" NO VUELVE A TRAER LO MOSTRADO (16-oct, C35): lo deja afuera el buscador.
         if h == "buscar" and pz.get("fuera_lo_mostrado"):
-            args["fuera"] = mostrado_en_la_charla(ctx.get("memoria") or "")
+            args["fuera"] = mostrado_en_la_charla(ctx.get("estado"))
         if h == "envio" and not args.get("destinos"):
-            d = _destino(pz, piezas, ctx["mensaje"], ctx["historial"], ctx["memoria"])
+            d = _destino(pz, piezas, ctx["mensaje"], ctx["historial"], ctx["estado"])
             args["destinos"] = [d] if d else []
         hecho = {"parte": pz.get("texto"), "tipo": pz.get("tipo")}
         if pz.get("tipo") == "buscar" and pz.get("rubro") == NO_LO_VENDE:
@@ -1167,7 +1172,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
         # preguntaba por la direccion que ya habia dado.
         falta = "" if _NADA.fullmatch(A._n(str(pz.get("falta") or "")).strip()) else pz.get("falta")
         if falta and not (_FALTA_LUGAR.search(A._n(falta)) and _destino(
-                pz, piezas, ctx["mensaje"], ctx["historial"], ctx["memoria"])):
+                pz, piezas, ctx["mensaje"], ctx["historial"], ctx["estado"])):
             hecho["pregunta_al_cliente"] = falta
         if h:
             # LA CONSULTA REPETIDA NO SE VUELVE A HACER, PERO SU RESULTADO SI
@@ -1196,7 +1201,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
 def _hecho_total_general(bloques: list, rep, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> dict:
     """El total general como llamada —la guarda de plata ve sus montos— y como
     hecho para el redactor. Deja en `ctx["bloques"]` que va a cada destino,
-    para que el turno siguiente lo encuentre en la memoria."""
+    para que el turno siguiente lo encuentre en el estado de la charla."""
     from app.storage.firestore_client import get_product_by_id
     tg = _total_general([c for _, c in bloques], rep, tienda_id)
     llamadas.append({"vuelta": vuelta, "herramienta": "total_general",
@@ -1215,51 +1220,62 @@ def _hecho_total_general(bloques: list, rep, tienda_id: str, llamadas: list, vue
             "resultado": {"total_general": tg["total"], "detalle": tg["detalle"]}}
 
 
-_BLOQUES = re.compile(r"LOS PRESUPUESTOS POR DESTINO[^\n]*\n((?:- .+\n?)+)")
+# LOS RECORTES DEL TEXTO QUE RELEIAN ESTOS LECTORES, iguales a los de antes: sacarlos es su propio cambio.
+_HASTA = {"mostrado": 8, "antes": 8, "bloques": 4, "carrito": 8, "criterio": 400}
 
 
-def bloques_en_memoria(memoria: str) -> list:
-    """Los presupuestos por destino que la memoria trae del turno anterior."""
-    m = _BLOQUES.search(memoria or "")
-    out = []
-    for r in (m.group(1).splitlines() if m else []):
-        d = re.match(r"- (.+?): ", r)
-        items = [{"producto": pid, "cantidad": int(n)} for n, pid in re.findall(r"(\d+)x ([A-Z]{3}\d{4})", r)]
-        if d and items:
-            out.append({"destino": d.group(1).strip(), "items": items})
-    return out
+def _vistos(estado: dict) -> list:
+    """Lo mostrado en el ultimo mensaje y lo de antes, producto por producto."""
+    e = estado or {}
+    return [p for ps in (e.get("mostrado") or [])[:_HASTA["mostrado"]] for p in ps] \
+        + (e.get("antes") or [])[-_HASTA["antes"]:]
 
 
-def pedido_vigente(memoria: str) -> list:
+def bloques_vigentes(estado: dict) -> list:
+    """Los presupuestos por destino del turno anterior; vacio si el pedido es de un destino."""
+    e = estado or {}
+    if not e.get("por_destino"):
+        return []
+    return [{"destino": b["destino"], "items": [dict(i) for i in b["items"]]}
+            for b in (e.get("pedido") or [])[:_HASTA["bloques"]]]
+
+
+def pedido_vigente(estado: dict) -> list:
     """EL PEDIDO QUE EL CLIENTE YA TIENE, como lo dejo el codigo (7-oct, K21):
     los presupuestos por destino, o el pedido de un destino con su lugar. Cada
     bloque es {"destino", "items": [{"producto": id, "cantidad"}]}. Vacio si
     no hay pedido."""
-    grupos = bloques_en_memoria(memoria)
-    if grupos:
-        return grupos
-    p = re.search(r"EN EL PEDIDO, tal como se conto: (.+)", memoria or "")
-    items = [{"producto": pid, "cantidad": int(n)} for n, pid in re.findall(r"(\d+)x ([A-Z]{3}\d{4})", p.group(1))] \
-        if p else []
-    lugar = re.search(r"^Envia a: (.+)$", memoria or "", re.M)
-    return [{"destino": lugar.group(1).strip() if lugar else "", "items": items}] if items else []
+    e = estado or {}
+    if e.get("por_destino"):
+        return bloques_vigentes(e)
+    items = [dict(i) for i in (e.get("carrito") or [])[:_HASTA["carrito"]]]
+    return [{"destino": e.get("destino") or "", "items": items}] if items else []
 
 
-def _mostrados(memoria: str) -> list:
+def _mostrados(estado: dict) -> list:
     """Lo que nombro el ultimo mensaje del bot, un renglon por modelo con sus
     colores: [[id, id_otro_color], ...], en el orden en que se leyo."""
-    m = re.search(r"LO QUE NOMBRASTE EN TU ULTIMO MENSAJE.*?\n((?:\d+\..*\n?)+)", memoria or "", re.S)
-    return [r for r in (_ID.findall(x) for x in (m.group(1).splitlines() if m else [])) if r]
+    renglones = [[p["id"] for p in ps if _ID.fullmatch(p["id"])]
+                 for ps in ((estado or {}).get("mostrado") or [])[:_HASTA["mostrado"]]]
+    return [r for r in renglones if r]
 
 
-def mostrado_en_la_charla(memoria: str) -> list:
+def mostrado_en_la_charla(estado: dict) -> list:
     """Los ids de todo lo que el bot mostro en la charla: el ultimo mensaje y lo de antes."""
-    m = re.search(r"LO QUE NOMBRASTE EN TU ULTIMO MENSAJE:\n((?:\d+\..*\n?)+)", memoria or "")
-    a = re.search(r"Productos que le mostraste ANTES:\n((?:- .*\n?)+)", memoria or "")
-    return list(dict.fromkeys(_ID.findall((m.group(1) if m else "") + (a.group(1) if a else ""))))
+    return list(dict.fromkeys(p["id"] for p in _vistos(estado) if _ID.fullmatch(p["id"])))
 
 
-def _con_lo_mostrado(pedido: list, memoria: str, tienda_id: str) -> list:
+def ids_de_la_charla(estado: dict) -> list:
+    """Los ids que la charla nombro, en el orden en que los da el estado: lo mostrado, lo de antes, el pedido y
+    lo buscado. `_certificado` desempata por el primero; `_ids_recientes` toma los ultimos."""
+    e = estado or {}
+    return [p["id"] for p in _vistos(e) if _ID.fullmatch(p["id"])] \
+        + [i["producto"] for b in bloques_vigentes(e) for i in b["items"]] \
+        + [i["producto"] for i in (e.get("carrito") or [])[:_HASTA["carrito"]]] \
+        + _ID.findall((e.get("criterio") or "")[:_HASTA["criterio"]])
+
+
+def _con_lo_mostrado(pedido: list, estado: dict, tienda_id: str) -> list:
     """EL MISMO PEDIDO CON LO QUE EL BOT ACABA DE MOSTRAR (7-oct, K21). "Quiero
     los mas economicos de cada clase", el bot los muestra, y "sip": mismos
     destinos y cantidades, y cada articulo cambia por el mostrado de su rubro.
@@ -1276,7 +1292,7 @@ def _con_lo_mostrado(pedido: list, memoria: str, tienda_id: str) -> list:
             cat = str(prod(i["producto"]).get("categoria") or "")
             lleva[cat] = lleva.get(cat, 0) + i["cantidad"]
     por_rubro: dict = {}
-    for renglon in _mostrados(memoria):
+    for renglon in _mostrados(estado):
         cat = str(prod(renglon[0]).get("categoria") or "")
         if cat in lleva and cat not in por_rubro:
             con_stock = [pid for pid in renglon if int(prod(pid).get("stock") or 0) >= lleva[cat]]
@@ -1338,7 +1354,7 @@ def _cambios_al_pedido(pedido: list, items: list, tienda_id: str) -> list:
     return [b for b in out if b["items"]]
 
 
-def _sobre_el_pedido(piezas: list, memoria: str, tienda_id: str = "") -> list:
+def _sobre_el_pedido(piezas: list, estado: dict, tienda_id: str = "") -> list:
     """EL PEDIDO LO PONE EL CODIGO, NO EL INTERPRETE (7-oct, K21). Con el
     pedido ya presupuestado, "si", "me llamo Julio" o "70 por ciento
     transferencia" no nombran articulos. El interprete rearmaba el pedido en
@@ -1346,11 +1362,11 @@ def _sobre_el_pedido(piezas: list, memoria: str, tienda_id: str = "") -> list:
     mas, la compra del primero. Ahora marca `sobre_el_pedido` y el codigo
     pone cada bloque guardado: una cuenta por destino con el reparto que pida,
     y si compra, una reserva por articulo."""
-    pedido = pedido_vigente(memoria)
+    pedido = pedido_vigente(estado)
     if not pedido or not any(p.get("sobre_el_pedido") for p in piezas):
         return piezas
     if any(p.get("sobre_el_pedido") and p.get("con_lo_mostrado") for p in piezas):
-        pedido = _con_lo_mostrado(pedido, memoria, tienda_id)
+        pedido = _con_lo_mostrado(pedido, estado, tienda_id)
     for p in piezas:
         if p.get("sobre_el_pedido") and p.get("items"):
             pedido = _cambios_al_pedido(pedido, p["items"], tienda_id)
@@ -1381,15 +1397,13 @@ def _sobre_el_pedido(piezas: list, memoria: str, tienda_id: str = "") -> list:
     return out
 
 
-def _ids_recientes(memoria: str) -> list:
+def _ids_recientes(estado: dict) -> list:
     """Los ids de lo que el bot nombro en su ultimo mensaje, y el pedido."""
     # Un renglon es un modelo en varios colores: vale el primero, el que se nombro.
-    ids = [r[0] for r in _mostrados(memoria)]
-    p = re.search(r"EN EL PEDIDO, tal como se conto: (.+)", memoria or "")
-    if p:
-        ids += _ID.findall(p.group(1))
+    ids = [r[0] for r in _mostrados(estado)]
+    ids += [i["producto"] for i in ((estado or {}).get("carrito") or [])[:_HASTA["carrito"]]]
     if not ids:
-        ids = _ID.findall(memoria or "")[-4:]
+        ids = ids_de_la_charla(estado)[-4:]
     return list(dict.fromkeys(ids))
 
 
@@ -1422,7 +1436,7 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
     # mitad transferencia y mitad mercado pago" despues de tres destinos es
     # sobre los tres. Se rearma cada bloque y el total general, con el reparto
     # nuevo.
-    grupos = bloques_en_memoria(ctx["memoria"]) if not ids else []
+    grupos = bloques_vigentes(ctx["estado"]) if not ids else []
     if len(grupos) > 1:
         bloques = []
         for g in grupos:
@@ -1435,14 +1449,14 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
             return _hecho_total_general(bloques, _reparto(rep or ctx.get("reparto_vigente")), tienda_id, llamadas,
                                         vuelta, ctx)
     if not ids:
-        ids = _ids_recientes(ctx["memoria"])
+        ids = _ids_recientes(ctx["estado"])
     ids = list(dict.fromkeys(ids))
     if not ids:
         return {}
     destinos = _destinos_del_turno({}, piezas)
     args = {"items": [{"producto": i, "cantidad": cant.get(i, 1)} for i in ids],
             "destino": (destinos or [""])[0] or _destino({}, piezas, ctx["mensaje"], ctx["historial"],
-                                                         ctx["memoria"]),
+                                                         ctx["estado"]),
             "destinos": destinos, "reparto_pago": _reparto(rep)}
     out = ejecutar("cuenta", args, tienda_id)
     llamadas.append({"vuelta": vuelta, "herramienta": "cuenta", "args": args, "vuelve": out})
@@ -1521,7 +1535,7 @@ def busqueda_vigente(busquedas: list) -> str:
     memoria guardaba lo que el bot mostro y no lo que el cliente pidio: "y el
     mas barato?" despues de "el mas caro que vendes" heredaba el rubro del
     producto mostrado, y "y teclados?" perdia el "que no sea Genius ni
-    Logitech". Esto sobrevive al turno y el interprete lo lee en la memoria."""
+    Logitech". Esto sobrevive al turno y el interprete lo lee en la ficha."""
     renglones = []
     for pz, _ in busquedas or []:
         if not isinstance(pz, dict):
@@ -1543,9 +1557,9 @@ def busqueda_vigente(busquedas: list) -> str:
 # ══ EL TURNO ════════════════════════════════════════════════════════════════
 
 async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "",
-                memoria: str = "", pedido: dict = None, ficha: str = "", reparto: list = None) -> dict:
-    """Un turno con el tablero. No lanza. El modelo lee `ficha`, de `ficha_charla`; los lectores del codigo leen
-    `memoria`, de `respuesta._memoria_texto`, hasta el plan 3."""
+                estado: dict = None, ficha: str = "") -> dict:
+    """Un turno con el tablero. No lanza. El modelo lee `ficha` y el codigo lee `estado`: los dos de
+    `ficha_charla`, uno renderizado del otro."""
     from app.core import guardas_salida as gs
     from app.core.contexto_turno import set_current_tienda
     from app.core.llm_reintento import _cliente
@@ -1562,7 +1576,7 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     sis_i = INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in ACCIONES.items()), no_lo_vende=NO_LO_VENDE)
     esquema = esquema_piezas(tienda_id)
     esq = _formato("piezas", esquema)
-    sis_i = con_ejemplos(_con_esquema(sis_i, esq, esquema), mensaje, memoria)
+    sis_i = con_ejemplos(_con_esquema(sis_i, esq, esquema), mensaje, estado)
     esq_b = _formato("banderas", _esquema_banderas())
     try:
         t_piezas, t_banderas = await asyncio.gather(
@@ -1598,9 +1612,10 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
                  reintento=reintento)
     banderas = banderas_de(t_banderas)
     from app.core import pedido as PD
-    guardado = PD.pendiente(pedido)
-    ctx = {"mensaje": mensaje, "historial": historial, "memoria": memoria, "tienda_id": tienda_id,
-           "reparto_vigente": reparto or None,
+    estado = estado or {}
+    guardado = PD.pendiente(estado.get("pendiente"))
+    ctx = {"mensaje": mensaje, "historial": historial, "estado": estado, "tienda_id": tienda_id,
+           "reparto_vigente": estado.get("reparto") or None,
            # EL TOTAL PEDIDO LO DICEN LAS PIEZAS (7-oct, K01). Habia una
            # pregunta de si o no aparte, y cuando no coincidia con las piezas
            # mandaba ella: la revision agregaba una cuenta y el bot se

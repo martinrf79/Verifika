@@ -111,7 +111,7 @@ def test_la_cuenta_de_una_reserva_lleva_la_cantidad_reservada(firestore_doble):
     from app.core import tablero as T
     llamadas = [{"herramienta": "reservar", "args": {"producto": "TEC0020", "cantidad": 3},
                  "vuelve": {"veredicto": "listo_para_cerrar", "id": "TEC0020", "cantidad": 3}}]
-    ctx = {"memoria": "", "mensaje": "dale, sumame 3 de esos teclados", "historial": []}
+    ctx = {"estado": {}, "mensaje": "dale, sumame 3 de esos teclados", "historial": []}
     T._cuenta_del_codigo([{"tipo": "comprar", "producto": "teclado", "cantidad": 3}], llamadas, "verifika_prod", ctx, 3)
     cuenta = next(x for x in llamadas if x["herramienta"] == "cuenta")
     assert cuenta["args"]["items"] == [{"producto": "TEC0020", "cantidad": 3}]

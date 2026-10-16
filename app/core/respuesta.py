@@ -36,54 +36,6 @@ log = get_logger(__name__)
 settings = get_settings()
 
 
-def _memoria_texto(conv: dict) -> str:
-    """LO QUE RELEEN LOS LECTORES DEL TABLERO, no el modelo. Desde el 15-oct el
-    modelo lee `ficha_charla` (FICHA 69). Cada renglon tiene la forma que busca
-    su lector —`_mostrados`, `bloques_en_memoria`, `pedido_vigente`,
-    `busquedas_vigentes`, `respondidos_en`, el destino y `_ID`— con los mismos
-    recortes de antes, para no cambiar el cableado. Que lean el documento y no
-    este texto es el plan 3."""
-    partes = []
-    vistos = conv.get("productos_vistos") or []
-    ultimo = max((int(p.get("turno") or 0) for p in vistos), default=0)
-    recien = [p for p in vistos if ultimo and int(p.get("turno") or 0) == ultimo]
-
-    def renglon(p):
-        return (f"{p.get('id')}: {p.get('nombre')}" + (f", {p['precio']}" if p.get("precio") else "")
-                + (RESPUESTA if p.get("respuesta") else ""))
-    if recien:
-        # Un modelo en dos colores es UN renglon, como lo leyo el cliente.
-        grupos: list = []
-        for p in recien:
-            clave = p.get("grupo") or p.get("modelo") or p.get("id")
-            g = next((g for g in grupos if g[0] == clave), None)
-            if g:
-                g[1].append(p)
-            else:
-                grupos.append((clave, [p]))
-        partes.append("LO QUE NOMBRASTE EN TU ULTIMO MENSAJE:\n" + "\n".join(
-            f"{n}. " + " / ".join(renglon(p) for p in ps) for n, (_c, ps) in enumerate(grupos[:8], 1)))
-        vistos = [p for p in vistos if p not in recien]
-    if vistos:
-        partes.append("Productos que le mostraste ANTES:\n" + "\n".join(f"- {renglon(p)}" for p in vistos[-8:]))
-    grupos = [g for g in (conv.get("grupos_envio") or []) if isinstance(g, dict) and g.get("items")]
-    if len(grupos) > 1:
-        partes.append("LOS PRESUPUESTOS POR DESTINO:\n" + "\n".join(
-            f"- {g.get('destino')}: " + ", ".join(f"{i.get('cantidad') or 1}x {i.get('producto')}" for i in g["items"])
-            for g in grupos[:4]))
-    carrito = conv.get("carrito_vigente") or []
-    if carrito:
-        partes.append("EN EL PEDIDO, tal como se conto: " + " · ".join(
-            f"{p.get('cantidad') or 1}x {p.get('id')} {p.get('nombre') or ''}".strip() for p in carrito[:8]))
-    busco = (conv.get("criterio_cliente") or "").strip()
-    if busco:
-        partes.append("LO ULTIMO QUE BUSCO EL CLIENTE:\n" + busco[:400])
-    loc = (conv.get("ultima_localidad") or "").strip()
-    if loc:
-        partes.append("Envia a: " + loc)
-    return "\n".join(partes)
-
-
 def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
     """Las fichas que la respuesta NOMBRA, en el orden en que las nombra.
 
@@ -339,14 +291,13 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
 
     # ── 1. AGENTE ───────────────────────────────────────────────────────
     t = time.time()
-    # El modelo lee la ficha; el codigo del tablero, la memoria (FICHA 69).
-    from app.core.ficha_charla import texto as _ficha
-    memoria = _memoria_texto(conv)
-    ficha = _ficha(conv, tienda_id)
+    # El estado de la charla se lee una vez; el codigo lo lee como datos y el modelo, su ficha (FICHA 69).
+    from app.core import ficha_charla
+    estado = ficha_charla.estado(conv)
+    ficha = ficha_charla.texto(estado, tienda_id)
     r = await tablero.turno([{"role": m.get("role"), "content": m.get("content") or ""}
                             for m in history if m.get("role") in ("user", "assistant")],
-                           raw_message, tienda_id, trace_id=trace_id, memoria=memoria,
-                           pedido=conv.get("pedido_pendiente"), ficha=ficha, reparto=conv.get("reparto_pago"))
+                           raw_message, tienda_id, trace_id=trace_id, estado=estado, ficha=ficha)
     llamadas = r.get("llamadas") or []
     fichas, envios, cuenta = _lo_que_volvio(llamadas)
     etapas["turno"] = int((time.time() - t) * 1000)

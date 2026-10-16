@@ -367,7 +367,7 @@ def test_la_condicion_categoria_no_llega_al_motor_aunque_venga_el_rubro():
 
 def _agente_fijo(monkeypatch, texto, llamadas):
     # Desde el 30-sep `respuesta` llama al tablero: el turno fijo va ahi.
-    async def falso(historial, mensaje, tienda_id, trace_id="", memoria="", pedido=None, ficha="", reparto=None):
+    async def falso(historial, mensaje, tienda_id, trace_id="", estado=None, ficha=""):
         return {"texto": texto, "llamadas": llamadas, "uso": []}
     from app.core import tablero
     monkeypatch.setattr(tablero, "turno", falso)
@@ -419,4 +419,5 @@ def test_lo_que_el_cliente_vio_queda_en_la_memoria(monkeypatch):
     from app.storage.firestore_client import get_conversation
     conv = get_conversation("t_agente_vistos", tienda_id=TIENDA)
     assert [p["id"] for p in conv["productos_vistos"]] == ["MOU0001"]
-    assert "MOU0001" in R._memoria_texto(conv)
+    from app.core import ficha_charla
+    assert ficha_charla.estado(conv)["mostrado"][0][0]["id"] == "MOU0001"

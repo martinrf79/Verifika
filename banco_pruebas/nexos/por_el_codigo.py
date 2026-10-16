@@ -161,15 +161,15 @@ def ficha_a_piezas(llena: dict, tienda_id: str) -> list:
 
 def correr(caso, llena) -> dict:
     from app.core import tablero as T
-    from app.core.respuesta import _memoria_texto
+    from app.core import ficha_charla as F
     from app.core.agente import CLIENTE_DIJO
     cid, ctx, msg, esp = caso
-    memoria = _memoria_texto(D.conv_de(ctx))
+    estado = F.estado(D.conv_de(ctx))
     # Como `tablero.turno`: lo que dijo el cliente en la charla, que el codigo usa para no inventarle medios de pago.
     hist = D.historial(ctx)
     CLIENTE_DIJO.set("\n".join([m.get("content") or "" for m in hist if m.get("role") == "user"] + [msg]))
     piezas, errores, _ = T.atar(ficha_a_piezas(llena, D.TIENDA), D.TIENDA)
-    c = {"mensaje": msg, "historial": hist, "memoria": memoria, "tienda_id": D.TIENDA,
+    c = {"mensaje": msg, "historial": hist, "estado": estado, "tienda_id": D.TIENDA,
          "pide_total": any(p.get("tipo") == "cuenta" for p in piezas), "puede_confirmar": True}
     llamadas, error = [], ""
     try:

@@ -12,6 +12,7 @@ from types import SimpleNamespace as NS
 import pytest
 
 from app.core import agente as A
+from app.core import ficha_charla as F
 from app.core import respuesta as R
 from app.core import tablero as T
 
@@ -49,8 +50,8 @@ def _con(monkeypatch, m):
     return m
 
 
-def _turno(mensaje, historial=None, memoria=""):
-    return asyncio.run(T.turno(historial or [], mensaje, TIENDA, trace_id="t", memoria=memoria))
+def _turno(mensaje, historial=None, estado=None):
+    return asyncio.run(T.turno(historial or [], mensaje, TIENDA, trace_id="t", estado=estado))
 
 
 def test_el_turno_corre_las_piezas_y_el_redactor_ve_solo_lo_que_volvio(monkeypatch):
@@ -66,7 +67,7 @@ def test_el_turno_corre_las_piezas_y_el_redactor_ve_solo_lo_que_volvio(monkeypat
 
 def test_una_consulta_repetida_lleva_su_resultado_al_redactor():
     pz = [{"n": 1, "tipo": "envio", "texto": "a Rosario", "destinos": ["Rosario"]}]
-    ctx = {"mensaje": "a Rosario", "historial": [], "memoria": "", "pide_total": False}
+    ctx = {"mensaje": "a Rosario", "historial": [], "estado": {}, "pide_total": False}
     llamadas = []
     T.correr_piezas(pz, TIENDA, llamadas, 1, ctx)
     segunda = T.correr_piezas(pz, TIENDA, llamadas, 2, ctx)
@@ -113,7 +114,7 @@ def test_si_falta_un_dato_del_cliente_el_codigo_pide_la_repregunta(monkeypatch):
 
 
 def test_procesar_turno_llama_al_tablero(monkeypatch):
-    async def falso(historial, mensaje, tienda_id, trace_id="", memoria="", pedido=None, ficha="", reparto=None):
+    async def falso(historial, mensaje, tienda_id, trace_id="", estado=None, ficha=""):
         return {"texto": "desde el tablero", "llamadas": [], "uso": []}
     monkeypatch.setattr(T, "turno", falso)
     assert "desde el tablero" in asyncio.run(R.procesar_turno("t_tab", "hola", TIENDA, "whatsapp", "t")).lower()
@@ -244,7 +245,7 @@ def test_con_varios_destinos_hay_un_total_general_y_el_reparto_va_sobre_el(monke
                "reparto_pago": [{"medio": "x", "porcentaje": 70}, {"medio": "y", "porcentaje": 30}]},
               {"n": 2, "tipo": "cuenta", "texto": "a Concordia", "destinos": ["Concordia"],
                "items": [{"producto": "MOU0023", "cantidad": 1}]}]
-    ctx = {"mensaje": K20, "historial": [], "memoria": "", "pide_total": True}
+    ctx = {"mensaje": K20, "historial": [], "estado": {}, "pide_total": True}
     llamadas = []
     hechos = T.correr_piezas(piezas, TIENDA, llamadas, 1, ctx)
     cuentas = [x for x in llamadas if x["herramienta"] == "cuenta"]
@@ -258,13 +259,15 @@ def test_con_varios_destinos_hay_un_total_general_y_el_reparto_va_sobre_el(monke
 
 # ══ LA MEMORIA GUARDA LO QUE BUSCO EL CLIENTE (1-oct, K17, K18, M03) ════════
 
-def test_lo_que_busco_el_cliente_sobrevive_al_turno_y_va_a_la_memoria():
+def test_lo_que_busco_el_cliente_sobrevive_al_turno_y_va_al_estado():
     b = [({"rubro": "", "orden": {"campo": "precio_ars", "direccion": "max"}}, {}),
          ({"rubro": "mouse", "condiciones": [{"campo": "marca", "operador": "no_contiene", "valor": "Genius"}]}, {})]
     v = T.busqueda_vigente(b)
     assert v.splitlines() == ["buscar toda la tienda, orden precio_ars max",
                               "buscar mouse, marca no_contiene Genius"]
-    assert "toda la tienda" in R._memoria_texto({"criterio_cliente": v})
+    e = F.estado({"criterio_cliente": v})
+    assert [b["rubro"] for b in e["busquedas"]] == ["", "mouse"]
+    assert "toda la tienda" in F.texto(e, TIENDA)
 
 
 def test_un_modelo_en_dos_colores_es_uno_si_el_cliente_no_nombro_el_color():
@@ -304,7 +307,7 @@ def test_la_pieza_repetida_de_un_rubro_no_duplica_lo_pedido():
 def test_un_rubro_que_la_tienda_no_vende_es_no_existe_y_no_se_busca():
     """K12: con la lista cerrada, "celulares" salia como notebook."""
     pz = [{"n": 1, "tipo": "buscar", "texto": "tenes celulares samsung", "rubro": T.NO_LO_VENDE}]
-    ctx = {"mensaje": "tenes celulares samsung?", "historial": [], "memoria": "", "pide_total": False}
+    ctx = {"mensaje": "tenes celulares samsung?", "historial": [], "estado": {}, "pide_total": False}
     llamadas = []
     hechos = T.correr_piezas(pz, TIENDA, llamadas, 1, ctx)
     assert llamadas == [] and hechos[0]["resultado"]["veredicto"] == "no_existe"
@@ -314,18 +317,18 @@ def test_un_rubro_que_la_tienda_no_vende_es_no_existe_y_no_se_busca():
 
 def test_el_reparto_nuevo_sobre_los_presupuestos_por_destino_de_la_memoria(monkeypatch):
     """K07: tres destinos en un turno y en el siguiente "mitad transferencia y
-    mitad mercado pago". La memoria trae los bloques y el codigo los rearma con
+    mitad mercado pago". El estado trae los bloques y el codigo los rearma con
     el reparto nuevo, sobre el total general."""
     conv = {"grupos_envio": [{"destino": "Rosario", "items": [{"producto": "MOU0023", "cantidad": 1}]},
                              {"destino": "Concordia", "items": [{"producto": "MOU0023", "cantidad": 1}]}]}
-    memoria = R._memoria_texto(conv)
-    assert [g["destino"] for g in T.bloques_en_memoria(memoria)] == ["Rosario", "Concordia"]
+    estado = F.estado(conv)
+    assert [g["destino"] for g in T.bloques_vigentes(estado)] == ["Rosario", "Concordia"]
     _con(monkeypatch, _Modelo([{"n": 1, "tipo": "cuenta", "texto": "mitad y mitad", "items": [],
                                 "reparto_pago": [{"medio": "transferencia", "porcentaje": 50},
                                                  {"medio": "mercado pago", "porcentaje": 50}]}],
                               banderas={"pide_total": True}))
     r = asyncio.run(T.turno([], "Decime mitad transferencia y mitad mercado pago como quedaria", TIENDA,
-                            trace_id="t", memoria=memoria))
+                            trace_id="t", estado=estado))
     tg = next(x for x in r["llamadas"] if x["herramienta"] == "total_general")["vuelve"]
     assert tg["total_ars"] == (8500 + 7000) + (8500 + 6500)
     assert [p["medio"] for p in tg["split_pago"]["partes"]] == ["transferencia", "mercado pago"]
@@ -383,7 +386,7 @@ def test_si_lo_repartido_no_cierra_se_confirma_antes_de_calcular(monkeypatch):
     _con(monkeypatch, _Modelo([{"n": 1, "tipo": "charla", "texto": "si"}],
                               banderas={"confirma_resumen": True}))
     r2 = asyncio.run(T.turno([{"role": "user", "content": msg}, {"role": "assistant", "content": "¿esta bien?"}],
-                             "si, dale", TIENDA, trace_id="t", pedido=r["pedido"]))
+                             "si, dale", TIENDA, trace_id="t", estado={"pendiente": r["pedido"]}))
     cuentas = [x for x in r2["llamadas"] if x["herramienta"] == "cuenta"]
     assert len(cuentas) == 2 and any(x["herramienta"] == "total_general" for x in r2["llamadas"])
     assert r2["pedido"] == {}
@@ -393,7 +396,7 @@ def test_un_mensaje_de_otra_cosa_deja_el_pedido_esperando(monkeypatch):
     _con(monkeypatch, _Modelo([{"n": 1, "tipo": "politica", "texto": "hacen factura A?", "tema": "facturacion"}]))
     from app.core import pedido as PD
     guardado = PD.guardar(_k20_piezas(), {"sin_destino": ["1 mouse"]})
-    r = asyncio.run(T.turno([], "hacen factura A?", TIENDA, trace_id="t", pedido=guardado))
+    r = asyncio.run(T.turno([], "hacen factura A?", TIENDA, trace_id="t", estado={"pendiente": guardado}))
     assert not any(x["herramienta"] == "cuenta" for x in r["llamadas"]) and r["pedido"] is None
 
 
@@ -426,28 +429,28 @@ def test_un_id_en_las_condiciones_de_una_busqueda_va_por_id():
     assert r["veredicto"] == "existe" and _filas(r)[0] in ("MOU0001", "MOU0002")
 
 
-_MEMORIA_EXCLUYE = "LO ULTIMO QUE BUSCO EL CLIENTE:\nbuscar mouse, marca no_contiene Genius, marca no_contiene Logitech"
+_EXCLUYE = F.estado({"criterio_cliente": "buscar mouse, marca no_contiene Genius, marca no_contiene Logitech"})
 
 
 def test_la_exclusion_sigue_valiendo_en_otro_rubro():
     """K17: "que no sea Genius ni Logitech" y despues "y teclados?"."""
     pz = T._heredar_exclusiones([{"n": 1, "tipo": "buscar", "texto": "y teclados?", "rubro": "teclado"}],
-                                _MEMORIA_EXCLUYE, "y teclados?")
+                                _EXCLUYE, "y teclados?")
     assert {c["valor"] for c in pz[0]["condiciones"]} == {"Genius", "Logitech"}
 
 
 def test_la_exclusion_se_suelta_si_el_cliente_la_suelta_o_vuelve_a_nombrar_la_marca():
     pz = [{"n": 1, "tipo": "buscar", "texto": "x", "rubro": "teclado"}]
-    assert "condiciones" not in T._heredar_exclusiones(pz, _MEMORIA_EXCLUYE, "y teclados, cualquier marca")[0]
-    vale = T._heredar_exclusiones(pz, _MEMORIA_EXCLUYE, "y teclados logitech?")[0]["condiciones"]
+    assert "condiciones" not in T._heredar_exclusiones(pz, _EXCLUYE, "y teclados, cualquier marca")[0]
+    vale = T._heredar_exclusiones(pz, _EXCLUYE, "y teclados logitech?")[0]["condiciones"]
     assert [c["valor"] for c in vale] == ["Genius"]
 
 
 def test_lo_que_elige_una_busqueda_no_se_hereda():
     """M10: "auriculares JBL" y despues "un mouse barato" no es un mouse JBL."""
-    memoria = "buscar auriculares, marca igual JBL"
+    estado = F.estado({"criterio_cliente": "buscar auriculares, marca igual JBL"})
     pz = T._heredar_exclusiones([{"n": 1, "tipo": "buscar", "texto": "y un mouse", "rubro": "mouse"}],
-                                memoria, "y un mouse")
+                                estado, "y un mouse")
     assert "condiciones" not in pz[0]
 
 
@@ -456,12 +459,12 @@ def test_otras_opciones_deja_afuera_lo_mostrado_con_todos_sus_colores():
     vistos = [{"id": i, "nombre": n, "turno": t} for i, n, t in (
         ("MOU0001", "Mouse Logitech G203 Lightsync Negro", 1), ("MOU0004", "Mouse Logitech G502 Hero Blanco", 1),
         ("MOU0005", "Mouse Logitech G Pro X Superlight Negro", 2), ("MOU0007", "Mouse Logitech MX Master 3S", 2))]
-    memoria = R._memoria_texto({"productos_vistos": vistos})
-    assert T.mostrado_en_la_charla(memoria) == ["MOU0005", "MOU0007", "MOU0001", "MOU0004"]
+    estado = F.estado({"productos_vistos": vistos})
+    assert T.mostrado_en_la_charla(estado) == ["MOU0005", "MOU0007", "MOU0001", "MOU0004"]
     pz = [{"n": 1, "tipo": "buscar", "texto": "otras opciones", "rubro": "mouse", "fuera_lo_mostrado": True}]
     llamadas = []
     T.correr_piezas(pz, TIENDA, llamadas, 1, {"mensaje": "pasame otras opciones", "historial": [],
-                                               "memoria": memoria, "pide_total": False})
+                                               "estado": estado, "pide_total": False})
     filas = llamadas[0]["vuelve"]["filas"]
     ids = {f["id"] for f in filas} | {v["id"] for f in filas for v in f.get("variantes") or []}
     assert filas and not ids & {"MOU0001", "MOU0002", "MOU0003", "MOU0004", "MOU0005", "MOU0006", "MOU0007",
@@ -508,11 +511,13 @@ def test_lo_que_respondio_el_mas_caro_es_lo_elegido_y_el_resto_de_la_lista_no():
              {"filas": [{"id": "NOT0160", "variantes": [{"id": "NOT0160"}, {"id": "NOT0162"}]}, {"id": "NOT0157"}]}),
             ({"tipo": "buscar", "rubro": "mouse"}, {"filas": [{"id": "MOU0009"}]})]
     assert T.respondidos(busq) == ["NOT0160", "NOT0162"]
-    from app.core.respuesta import RESPUESTA
-    memoria = (f"- NOT0160: Notebook Asus, $3.100.500{RESPUESTA}\n- NOT0157: Notebook Asus Ryzen, $2.827.000\n"
-               f"1. MOU0023: Mouse Genius DX-110 Negro, $8.500{RESPUESTA} / MOU0024: Mouse Genius DX-110 Blanco")
+    estado = F.estado({"productos_vistos": [
+        {"id": "NOT0160", "nombre": "Notebook Asus", "turno": 1, "respuesta": True},
+        {"id": "NOT0157", "nombre": "Notebook Asus Ryzen", "turno": 1},
+        {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "grupo": "DX-110", "turno": 2, "respuesta": True},
+        {"id": "MOU0024", "nombre": "Mouse Genius DX-110 Blanco", "grupo": "DX-110", "turno": 2}]})
     items = [{"producto": i, "cantidad": 1} for i in ("NOT0160", "NOT0157", "NOT0124", "MOU0023")]
-    assert [i["producto"] for i in T._elegidos(items, [], memoria, TIENDA)] == ["NOT0160", "MOU0023"]
+    assert [i["producto"] for i in T._elegidos(items, [], estado, TIENDA)] == ["NOT0160", "MOU0023"]
 
 
 def test_la_memoria_marca_lo_que_respondio():
@@ -604,15 +609,14 @@ def test_el_mas_barato_de_esos_se_elige_en_la_busqueda_del_cliente(monkeypatch):
     """K17: la busqueda trajo mas teclados que los cuatro mostrados. Con
     sobre_lo_buscado la pieza hereda las condiciones de esa busqueda y el
     buscador da el mas barato de todos, no el modelo mirando la lista."""
-    memoria = ("LO ULTIMO QUE BUSCO EL CLIENTE, como se interpreto:\n"
-               "buscar teclado, marca no_contiene Genius, marca no_contiene Logitech")
+    estado = F.estado({"criterio_cliente": "buscar teclado, marca no_contiene Genius, marca no_contiene Logitech"})
     pz = T._sobre_lo_buscado([{"n": 1, "tipo": "buscar", "texto": "el mas barato de esos", "rubro": "teclado",
                                "orden": {"campo": "precio_ars", "direccion": "min"}, "sobre_lo_buscado": True}],
-                             memoria)
+                             estado)
     assert {c["valor"] for c in pz[0]["condiciones"]} == {"Genius", "Logitech"}
-    sin_marca = T._sobre_lo_buscado([{"n": 1, "tipo": "buscar", "rubro": "teclado"}], memoria)
+    sin_marca = T._sobre_lo_buscado([{"n": 1, "tipo": "buscar", "rubro": "teclado"}], estado)
     assert "condiciones" not in sin_marca[0]
-    assert T.busquedas_vigentes("buscar toda la tienda, orden precio_ars max") == [{"rubro": "", "condiciones": []}]
+    assert T.busquedas_de("buscar toda la tienda, orden precio_ars max") == [{"rubro": "", "condiciones": []}]
 
 
 def test_el_renglon_del_envio_dice_a_donde_va(firestore_doble):
@@ -637,25 +641,29 @@ def test_sin_pieza_cuenta_no_hay_total_aunque_diga_en_total(monkeypatch):
 
 # ══ 7-oct, K21: el pedido lo pone el codigo ═════════════════════════════════
 
-_MULTI = ("LOS PRESUPUESTOS POR DESTINO que ya le pasaste, y un total general:\n"
-          "- Córdoba capital: 1x AUR0019 Auriculares Redragon Zeus X Negro, 1x MOU0023 Mouse Genius DX-110 Negro\n"
-          "- Posadas: 1x AUR0019 Auriculares Redragon Zeus X Negro, 1x RAM0001 Memoria\n"
-          "- Concordia: 1x MOU0023 Mouse Genius DX-110 Negro, 1x RAM0001 Memoria, 1x TEC0020 Teclado\n")
+def _grupo(destino, *ids):
+    return {"destino": destino, "items": [{"producto": i, "cantidad": 1} for i in ids]}
 
 
-def test_el_pedido_vigente_sale_de_la_memoria():
+_MULTI_CONV = {"grupos_envio": [_grupo("Córdoba capital", "AUR0019", "MOU0023"), _grupo("Posadas", "AUR0019", "RAM0001"),
+                                _grupo("Concordia", "MOU0023", "RAM0001", "TEC0020")]}
+_MULTI = F.estado(_MULTI_CONV)
+
+
+def test_el_pedido_vigente_sale_del_estado():
     assert [(b["destino"], len(b["items"])) for b in T.pedido_vigente(_MULTI)] == \
         [("Córdoba capital", 2), ("Posadas", 2), ("Concordia", 3)]
-    uno = "EN EL PEDIDO, tal como se conto: 2x MOU0029 Mouse Logitech G305\nEnvia a: Rosario"
+    uno = F.estado({"carrito_vigente": [{"id": "MOU0029", "nombre": "Mouse Logitech G305", "cantidad": 2}],
+                    "ultima_localidad": "Rosario"})
     assert T.pedido_vigente(uno) == [{"destino": "Rosario", "items": [{"producto": "MOU0029", "cantidad": 2}]}]
-    assert T.pedido_vigente("") == []
+    assert T.pedido_vigente(F.estado({})) == []
 
 
 def test_el_nombre_sobre_el_pedido_reserva_todo_y_da_el_total_general(monkeypatch):
     """K21: "mi nombre es Julio" despues del presupuesto. Se reservan los siete
     articulos, no el primero, y el total general es el de los tres destinos."""
     _con(monkeypatch, _Modelo([{"n": 1, "tipo": "comprar", "texto": "da su nombre", "sobre_el_pedido": True}]))
-    r = _turno("Mi nombre es Julio", memoria=_MULTI)
+    r = _turno("Mi nombre es Julio", estado=_MULTI)
     reservas = [x for x in r["llamadas"] if x["herramienta"] == "reservar"]
     assert sum(x["args"]["cantidad"] for x in reservas) == 7
     # el presupuesto aceptado ya le nombro cada color: no se vuelve a preguntar
@@ -670,7 +678,7 @@ def test_el_reparto_sobre_el_pedido_va_sobre_el_total_general(monkeypatch):
                                 "items": [{"producto": "MOU0023", "cantidad": 2}],
                                 "reparto_pago": [{"medio": "transferencia", "porcentaje": 70},
                                                  {"medio": "mercado pago", "porcentaje": 30}]}]))
-    r = _turno("Color indistinto 70 por ciento transferencia", memoria=_MULTI)
+    r = _turno("Color indistinto 70 por ciento transferencia", estado=_MULTI)
     tg = next(x for x in r["llamadas"] if x["herramienta"] == "total_general")["vuelve"]
     assert tg["total_ars"] == 237000
     assert [p["monto_ars"] for p in tg["split_pago"]["partes"]][1] == 71100
@@ -692,8 +700,9 @@ def test_el_reparto_que_dice_el_mensaje_completa_la_cuenta_que_lo_perdio():
 def test_el_pedido_con_lo_mostrado_cambia_cada_articulo_por_el_de_su_rubro_con_stock():
     """K21: "sip" despues de mostrar los mas baratos. Mismos destinos y cantidades;
     del DX-110 va el negro, que tiene stock, no el blanco."""
-    memoria = _MULTI + ("LO QUE NOMBRASTE EN TU ULTIMO MENSAJE, en el orden:\n"
-                        "1. MOU0024: Mouse Genius DX-110 Blanco, $8.500 / MOU0023: Mouse Genius DX-110 Negro, $8.500\n")
+    estado = F.estado({**_MULTI_CONV, "productos_vistos": [
+        {"id": "MOU0024", "nombre": "Mouse Genius DX-110 Blanco", "precio": "$8.500", "grupo": "DX-110", "turno": 1},
+        {"id": "MOU0023", "nombre": "Mouse Genius DX-110 Negro", "precio": "$8.500", "grupo": "DX-110", "turno": 1}]})
     pedido = T._con_lo_mostrado([{"destino": "Rosario", "items": [{"producto": "MOU0001", "cantidad": 2}]}],
-                                memoria, TIENDA)
+                                estado, TIENDA)
     assert pedido == [{"destino": "Rosario", "items": [{"producto": "MOU0023", "cantidad": 2}]}]

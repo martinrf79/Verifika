@@ -4,7 +4,7 @@ Mide SOLO la primera traduccion del modelo, la que recibe el codigo. Sin buscar,
 Dos formas de pedir, sobre los MISMOS casos y el MISMO contexto:
 
   tablero   el interprete de produccion tal cual: `app.core.tablero`, su prompt, su esquema JSON con las listas
-            cerradas, la memoria que arma `respuesta._memoria_texto` y la charla literal. Despues la atadura del
+            cerradas, la ficha que arma `ficha_charla` y la charla literal. Despues la atadura del
             codigo y su reintento, como en produccion. Sin la revision de la segunda vuelta.
   nexos     las lineas de `banco_pruebas/nexos/nexos.py`: indice fijo, nexos, ESTADO escrito por el codigo y los
             ultimos mensajes. Con el reintento por lineas mal formadas. Sin la red ni el decidir de la segunda vuelta.
@@ -408,7 +408,7 @@ def historial(ctx):
 
 
 def conv_de(ctx):
-    """El documento de la charla como lo guarda produccion, para `respuesta._memoria_texto`."""
+    """El documento de la charla como lo guarda produccion, para `ficha_charla.estado`."""
     if not ctx:
         return {}
     conv = {"productos_vistos": [{"id": i, "nombre": POR_ID[i]["nombre"], "precio": L.plata(POR_ID[i]["precio"]),
@@ -471,13 +471,14 @@ def _crear(modelo, msgs, formato=None):
 
 def correr_tablero(modelo, ctx, mensaje):
     from app.core import tablero as T
-    from app.core.respuesta import _memoria_texto
-    charla = T._charla(historial(ctx), _memoria_texto(conv_de(ctx)), mensaje)
+    from app.core import ficha_charla as F
+    estado = F.estado(conv_de(ctx))
+    charla = T._charla(historial(ctx), F.texto(estado, TIENDA), mensaje)
     sis = T.INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in T.ACCIONES.items()), no_lo_vende=T.NO_LO_VENDE)
     esquema = T.esquema_piezas(TIENDA)
     fmt = {"type": "json_object"} if "deepseek" in modelo else \
         {"type": "json_schema", "json_schema": {"name": "piezas", "schema": esquema}}
-    sis = T.con_ejemplos(T._con_esquema(sis, fmt, esquema), mensaje, _memoria_texto(conv_de(ctx)))
+    sis = T.con_ejemplos(T._con_esquema(sis, fmt, esquema), mensaje, estado)
     fb = {"type": "json_object"} if "deepseek" in modelo else \
         {"type": "json_schema", "json_schema": {"name": "banderas", "schema": T._esquema_banderas()}}
     crudo, u1 = _crear(modelo, [{"role": "system", "content": sis}] + charla, fmt)
@@ -902,10 +903,10 @@ def rearmar(fila):
     caso = next(c for c in CASOS if c[0] == fila["id"])
     if fila["forma"] == "tablero":
         from app.core import tablero as T
-        from app.core.respuesta import _memoria_texto
+        from app.core import ficha_charla as F
         ultimo = fila["crudo"].split("\n--- atadura ---\n")[-1]
         piezas, _, _ = T.atar(T.piezas_de(ultimo), TIENDA)
-        mem = _memoria_texto(conv_de(caso[1]))
+        mem = F.estado(conv_de(caso[1]))
         piezas = T._heredar_exclusiones(T._normalizar(T._envios_juntos(piezas), TIENDA), mem, caso[2], None)
         r = {"crudo": fila["crudo"], "piezas": piezas, "banderas": fila.get("banderas") or {}}
     else:
@@ -1063,14 +1064,15 @@ def entrevistar(etiqueta, rep=1):
         cid, ctx, msg, esp = next(c for c in CASOS if c[0] == f["id"])
         if f["forma"] == "tablero":
             from app.core import tablero as T
-            from app.core.respuesta import _memoria_texto
-            charla = T._charla(historial(ctx), _memoria_texto(conv_de(ctx)), msg)
+            from app.core import ficha_charla as F
+            estado = F.estado(conv_de(ctx))
+            charla = T._charla(historial(ctx), F.texto(estado, TIENDA), msg)
             sis = T.INTERPRETE.format(acciones="; ".join(f"{k}: {v}" for k, v in T.ACCIONES.items()),
                                       no_lo_vende=T.NO_LO_VENDE)
             esquema = T.esquema_piezas(TIENDA)
             sis = T._con_esquema(sis, {"type": "json_object"}, esquema)  # el esquema a la vista, en texto
             # Lo que vio de verdad en el turno: con los ejemplos que eligio el codigo (9-oct).
-            sis = T.con_ejemplos(sis, msg, _memoria_texto(conv_de(ctx)))
+            sis = T.con_ejemplos(sis, msg, estado)
             base = [{"role": "system", "content": sis}] + charla
         else:
             import nexos as NX
