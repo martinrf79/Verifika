@@ -1,24 +1,4 @@
-"""LOS EJEMPLOS RESUELTOS DEL INTERPRETE, elegidos por parecido (FICHA 67, 7-oct-2026).
-
-El interprete del tablero recibe, ademas de sus reglas, los ejemplos resueltos
-mas parecidos al mensaje: cada uno con su memoria, el mensaje del cliente y las
-piezas correctas. Los elige el CODIGO, no el modelo. Medido en la ficha 67 con
-la forma de los nexos: el modelo de produccion paso de 9 de 12 a 12 de 12 en la
-reserva limpia. Aca va la misma idea en el formato de piezas, asi la ejecucion,
-la plata y el cierre son los de siempre.
-
-LA FUENTE es `ejemplos_interprete.json`: las 58 combinaciones de la ficha 58,
-los cuatro numeros nuevos y algunas variantes, escritas con sus palabras y no
-copiadas de los casos del banco. Una traduccion mal hecha en produccion se
-corrige UNA vez y entra ahi como un ejemplo mas: cubre a todos los mensajes
-parecidos sin tocar el prompt. `tests/test_ejemplos.py` exige que cada ejemplo
-pase la atadura del tablero.
-
-Recuperacion: TF-IDF sobre palabras, sin dependencias. El mensaje se parte en
-clausulas solo para buscar: el mensaje entero trae sus tres ejemplos mas
-parecidos y cada clausula los suyos, hasta ocho sin repetir. Si la charla
-tiene un pedido vigente, van primero los ejemplos de estado "pedido".
-"""
+"""LOS EJEMPLOS RESUELTOS DEL INTERPRETE, elegidos por parecido (FICHA 67, 7-oct-2026)."""
 import json
 import math
 import os
@@ -75,9 +55,7 @@ def clausulas(mensaje: str) -> list:
 
 
 def elegir(mensaje: str, k_total: int = 8, k_clausula: int = 2, k_entero: int = 3, estado: str = "") -> list:
-    """Los ejemplos mas parecidos: los del mensaje entero y los de cada clausula, sin repetir. Con un
-    `estado` de la charla —"pedido"—, primero los ejemplos de ese estado: "si" o "sip" no tienen
-    palabras para parecerse, y lo que deciden es el estado en que llegan."""
+    """Los ejemplos mas parecidos: los del mensaje entero y los de cada clausula, sin repetir."""
     elegidos: list = [i for i, e in enumerate(EJEMPLOS) if estado and e.get("estado") == estado]
 
     def top(texto, k):

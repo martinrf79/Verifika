@@ -1,31 +1,4 @@
-"""
-ESTAMPADO DE LA FAQ CURADA — los numeros nunca viven en el texto.
-
-Cada tema de `faq.json` trae la `respuesta_curada` que escribio Martin y, aparte,
-sus `valores` estructurados. El texto lleva huecos `{{concepto}}` y este modulo
-los rellena con el valor de ese mismo tema. Una tarifa que cambia se cambia en el
-valor y la curada nunca queda vieja: hay UNA sola fuente del numero.
-
-Si un hueco no resuelve, `estampar_valores` devuelve None y el llamador NO sirve
-la curada. Una politica a medias -"tenes {{dias}} dias para el cambio"- es peor
-que no contestarla.
-
-DOS FUENTES, DOS NATURALEZAS (3-ago). La prosa sin numeros -voz, criterio,
-movidas, mensajes fijos- vive en `base_conocimiento.json`. La politica CON
-numeros vive aca, en `faq.json`, porque sus `valores` son dato duro y se suben a
-Firestore como el catalogo. No es la fuente partida al medio: es dato en el
-archivo de dato y prosa en el archivo de prosa.
-
-Lo que este modulo tenia hasta hoy y se BORRO: todo el ACOPLE, unas trescientas
-lineas que decidian cuando pegar el bloque curado abajo de la prosa del solver.
-Estaba muerto desde el 2-ago, porque dependia de la tool `query_faq` y del dict
-de veinte campos del interprete, y ninguna de las dos existe. Las cinco lecciones
-de charlas reales que ese codigo encerraba -no repetir el enlatado, un solo
-cierre por mensaje, no pedir un dato que la charla ya tiene, la politica general
-no tapa el dato exacto, y con pedido en juego la politica acompaña- NO se
-perdieron: pasaron a `identidad.charla` en la fuente, o sea que ahora se las dice
-al modelo en cada turno en vez de corregirlo despues.
-"""
+"""ESTAMPADO DE LA FAQ CURADA — los numeros nunca viven en el texto."""
 import re
 
 from app.logger import get_logger
@@ -43,8 +16,7 @@ def _money(n) -> str:
 
 
 def _fmt_valor(v: dict) -> str | None:
-    """Renderiza un valor estructurado como texto legible segun su unidad y
-    modalidad. None si no hay forma segura de renderizarlo."""
+    """Renderiza un valor estructurado como texto legible segun su unidad y modalidad."""
     unidad = str(v.get("unidad") or "").strip().lower()
     if v.get("modalidad") == "rango":
         mn, mx = v.get("monto_min"), v.get("monto_max")
@@ -68,9 +40,7 @@ def _fmt_valor(v: dict) -> str | None:
 
 
 def estampar_valores(texto: str, faq_tema: dict) -> str | None:
-    """Rellena cada hueco {{concepto}} con el valor estructurado de ese concepto
-    en la MISMA FAQ. Si un hueco no resuelve, devuelve None: una curada a medias
-    no se sirve (el turno cae al camino normal y queda el warning)."""
+    """Rellena cada hueco {{concepto}} con el valor estructurado de ese concepto en la MISMA FAQ."""
     valores = {str(v.get("concepto") or ""): v
                for v in (faq_tema.get("valores") or [])}
 

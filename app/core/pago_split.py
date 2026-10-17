@@ -1,22 +1,5 @@
-"""
-SPLIT DE PAGO — reparte un total entre varios medios de pago y aplica el
-descuento por transferencia a la parte que corresponde.
-
-UNA sola función genérica, no una por variante: recibe una lista de medios con su
-porcentaje y cubre cualquier combinación (50/50, 70/30, 60/40, tres medios, los
-que sean) mientras sumen 100. El código dueña TODA la cuenta; el solver no
-calcula ni una cifra.
-
-Regla de negocio (Martín, 27-sep): lleva el descuento el medio que nombra la
-CONDICION del descuento en la FAQ de la tienda —"pago por transferencia
-bancaria"—. El porcentaje y la condicion salen de la misma entrada de la FAQ.
-Hasta el 27-sep la regla era "todo lo que no es Mercado Pago", de cuando la
-tienda cobraba solo de esas dos formas: en WhatsApp salio un 10% de descuento
-con la tarjeta Naranja. Una lista de excepciones arreglaba esa tarjeta y dejaba
-la proxima; leer la condicion cubre cualquier medio y cualquier tienda.
-
-Lógica pura, determinista, sin LLM ni Firestore (los datos entran por parámetro).
-"""
+"""SPLIT DE PAGO — reparte un total entre varios medios de pago y aplica el descuento por transferencia a la
+parte que corresponde."""
 import re
 import unicodedata
 
@@ -37,8 +20,7 @@ def _palabras(t: str) -> set:
 
 
 def lleva_descuento(medio: str, condicion: str) -> bool:
-    """True si el medio nombra lo que dice la condicion del descuento. Sin
-    condicion escrita no hay descuento: no se inventa."""
+    """True si el medio nombra lo que dice la condicion del descuento."""
     return bool(_palabras(medio) & _palabras(condicion))
 
 
@@ -47,8 +29,7 @@ def _money(n) -> str:
 
 
 def descuento_de(tienda_id: str) -> tuple:
-    """(porcentaje, condicion) del descuento por transferencia, de la FAQ de la
-    tienda. (0, "") si no hay: el reparto sale sin descuento, no se inventa."""
+    """(porcentaje, condicion) del descuento por transferencia, de la FAQ de la tienda."""
     try:
         from app.storage.firestore_client import get_all_faq
         vt = (((get_all_faq(tienda_id=tienda_id) or {}).get("descuento_transferencia")
@@ -64,17 +45,8 @@ def descuento_de(tienda_id: str) -> tuple:
 
 def calcular_split(base_ars: int, pago: list[dict],
                    pct_descuento: int, condicion: str) -> dict:
-    """Reparte base_ars entre los medios de `pago` y aplica el descuento a la
-    parte cuyo medio nombra la `condicion` del descuento.
-
-    pago: lista de {"medio": str, "porcentaje": number}. Los porcentajes deben
-        sumar 100 (se tolera ±1 por redondeo). Cubre cualquier reparto.
-    pct_descuento: porcentaje de descuento por transferencia (de la FAQ).
-    condicion: la condicion del descuento, de la misma entrada de la FAQ.
-
-    Devuelve {ok, partes:[{medio, porcentaje, monto_ars, es_transferencia,
-    descuento_ars, monto_final_ars}], descuento_total_ars, total_final_ars}.
-    ok False con motivo si el reparto no es válido (no se inventa una cuenta)."""
+    """Reparte base_ars entre los medios de `pago` y aplica el descuento a la parte cuyo medio nombra la
+    `condicion` del descuento. pago: lista de {"medio": str, "porcentaje": number}."""
     if not base_ars or base_ars <= 0:
         return {"ok": False, "motivo": "base invalida"}
     partes_in = [p for p in (pago or [])

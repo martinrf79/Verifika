@@ -1,90 +1,5 @@
-"""
-EL SELECTOR — la UNICA puerta para acotar, ordenar y rankear el catalogo.
-
-5-AGO-2026: SE COLAPSARON LAS CUATRO PUERTAS. `buscar_productos` tenia cuatro
-argumentos que hacian todos lo mismo -acotar el conjunto de una consulta sobre
-los mismos campos-, cada uno con su sintaxis, su borde y su degradacion propia:
-
-    orden barato|caro   ->  es `ordenar_por precio_ars` con dos valores
-    tope_precio         ->  es `precio_ars menor X`
-    excluir             ->  es `origen no_contiene china`, con su `_grado` aparte
-    filtros             ->  la forma general de las tres de arriba
-
-Por eso cada arreglo habia que hacerlo cuatro veces y el modelo elegia mal.
-Ahora hay UNA forma: condiciones campo/operador/valor, mas un criterio de orden
-sobre cualquier campo. Se BORRARON `_grado`, `_excluido` y `_categorias_que_
-cumplen` de herramientas.py; su trabajo lo hace el mismo mecanismo que el resto.
-
-LO QUE SE MIDIO Y LO QUE LO CAUSO (banco de candidatos, 5-ago):
-
-  - "notebook para diseño grafico" devolvia las 3 MAS BARATAS de 171. La
-    descripcion se descartaba entera y el unico criterio de orden que existia
-    en todo el sistema era el precio. Ahora el orden por defecto es la
-    RELEVANCIA contra lo que dijo el cliente.
-  - "el mas liviano" no tenia llamada posible. Ahora se ordena por cualquier
-    campo del registro.
-  - "el mouse que menos partes chinas tenga" devolvia 3 arbitrarios entre 19
-    EMPATADOS, presentados como si fueran los menos chinos. La fuente solo
-    distingue dos hechos -pais de la marca y pais de fabricacion-, asi que 19
-    mouse estan REALMENTE igual de lejos. La respuesta honesta no es inventar
-    un gradiente mas fino: es DECIR el empate. Se informa `empatados` y con que
-    criterio se desempato.
-
-EL GRADIENTE SE ATA A HECHOS, NO A JUICIOS. `_grado` puntuaba "cuan chino es"
-sumando 3 por la marca y 2 por la fabricacion: eso es un JUICIO, y el codigo no
-puede hacer juicios. Ahora `origen` se parte en dos campos DERIVADOS de la
-fuente -`pais_marca` y `pais_fabricacion`-, que son dos hechos comparables. Un
-producto que incumple los dos esta mas lejos que uno que incumple uno solo, y
-eso es contar, no opinar.
-
-EL AGUJERO ORIGINAL QUE ESTE MODULO CERRO (4-ago). El catalogo tiene VEINTE
-columnas llenas al cien por ciento en los 880 productos -color, material,
-peso_gramos, dimensiones, garantia_meses, origen, contenido_caja- y ademas
-VEINTICUATRO claves de `specs` estructuradas. De todo eso, `buscar_productos`
-le dejaba pedir al modelo exactamente SEIS cosas.
-
-EL AGUJERO QUE CIERRA (medido el 4-ago sobre `main`). El catalogo tiene VEINTE
-columnas llenas al cien por ciento en los 880 productos -color, material,
-peso_gramos, dimensiones, garantia_meses, origen, contenido_caja- y ademas
-VEINTICUATRO claves de `specs` estructuradas -bluetooth, conexion, bateria,
-resistencia_agua, hz, ram, procesador-. De todo eso, `buscar_productos` le
-dejaba pedir al modelo exactamente SEIS cosas: descripcion, categoria, orden,
-tope_precio, excluir y cuantos.
-
-O sea: ante "tenes alguno blanco", "cual pesa menos de 500 gramos" o "que sea
-resistente al agua" el modelo NO TENIA COMO PREGUNTARSELO AL CODIGO. Le
-llegaban tres fichas elegidas por una descripcion difusa y tenia que razonar
-sobre la prosa que venia adentro. Ese es el mecanismo de alucinacion, y el dato
-para evitarlo ya estaba cargado en la fuente.
-
-COMO SE ATA, que es lo que importa:
-  - el enum de `campo` SALE DE LA FUENTE VIVA, igual que `categoria` y `temas`.
-    Se derivan las columnas del catalogo real mas las claves de `specs` que
-    existan. El modelo no puede inventar un nombre de campo: si no esta en el
-    catalogo, no esta en el enum.
-  - el TIPO de cada campo se infiere de los datos, no se declara a mano. Un
-    campo numerico acepta mayor/menor; uno de texto acepta contiene. Pedir
-    `mayor` sobre `color` no llega a filtrar nada: se devuelve como filtro NO
-    aplicado, con el motivo.
-  - NO SE ENTIENDE EL SILENCIO COMO UN NO. Si un producto no tiene el campo, no
-    "incumple": no se sabe. Va a un tercer balde y se informa cuantos quedaron
-    afuera por falta de dato, para que el modelo pueda ser honesto en vez de
-    afirmar que no existe lo que la fuente no dice.
-  - NINGUNA HERRAMIENTA DEVUELVE VACIO (Martin, 2-ago). Si el conjunto de
-    filtros no deja nada, se devuelve lo que MAS condiciones cumple y se dice
-    cual no se cumplio. Misma regla que ya tenia `excluir`.
-
-COMO SE ATA, que es lo que importa:
-  - el enum de `campo` SALE DE LA FUENTE VIVA. Se derivan las columnas del
-    catalogo real mas las claves de `specs` que existan. El modelo no puede
-    inventar un nombre de campo: si no esta en el catalogo, no esta en el enum.
-  - el TIPO de cada campo se infiere de los datos, no se declara a mano.
-  - NO SE ENTIENDE EL SILENCIO COMO UN NO. Si un producto no tiene el campo, no
-    "incumple": no se sabe. Va a un tercer balde y se informa.
-  - NINGUNA HERRAMIENTA DEVUELVE VACIO (Martin, 2-ago). Si el conjunto de
-    condiciones no deja nada, se devuelve lo que MENOS condiciones incumple,
-    ordenado, y se dice cual falla.
-"""
+"""EL SELECTOR — la UNICA puerta para acotar, ordenar y rankear el catalogo. 5-AGO-2026: SE COLAPSARON LAS CUATRO
+PUERTAS."""
 import re
 import unicodedata
 
@@ -99,61 +14,25 @@ def _norm(s) -> str:
     return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
-# Campos que NO se ofrecen para filtrar, cada uno con su motivo:
-#   id, stock            -> plomeria interna, no es info que el cliente pida.
-#   categoria            -> ya tiene su propio parametro con su propio enum.
-#   precio_ars           -> ya tiene `tope_precio` y `orden`.
-#   tags                 -> terminos de busqueda internos, no info del producto.
-#   descripcion_rica     -> identica a `descripcion`, duplicaria el enum.
-#   specs, compat        -> son mapas; sus claves entran una por una mas abajo.
+# Campos que NO se ofrecen para filtrar, cada uno con su motivo: id, stock -> plomeria interna, no es info que
+# el cliente pida. categoria -> ya tiene su propio parametro con su propio enum. precio_ars -> ya tiene
+# `tope_precio` y `orden`. tags -> terminos de busqueda internos, no info del producto. descripcion_rica ->
+# identica a `descripcion`, duplicaria el enum. specs, compat -> son mapas; sus claves entran una por una mas
+# abajo.
 _CAMPOS_INTERNOS = frozenset({
     "id", "stock", "categoria", "precio_ars", "tags", "descripcion_rica",
     "specs", "compat", "embedding", "created_at", "updated_at"})
 
 # ── LOS CAMPOS QUE YA TIENEN BOCA PROPIA ────────────────────────────────────
-#
-# FICHA 54, punto 3.1. No son internos: son prosa de la casa sobre PARA QUE
-# SIRVE algo, y eso lo contesta la boca `criterio`. Tenerlos ADEMAS como campo
-# filtrable son DOS CAMINOS para la misma pregunta, y el modelo elige el que ve
-# en el enum, porque el enum esta delante y la boca hay que acordarsela.
-#
-# MEDIDO el 15-sep: "me sirve un mouse de esos para diseño grafico" fue a
-# filtrar el catalogo por `uso_recomendado` en vez de preguntarle a la casa, y
-# volvio el hueco de valor -la fuente no escribe 'diseño grafico' ahi, escribe
-# 'trabajo y estudio', 'gaming', 'gaming y productividad'-. El cliente pregunto
-# para que sirve y el sistema le contesto que esa palabra no esta en una
-# columna.
-#
-# EL CAMPO NO SE BORRA Y SIGUE PESANDO EN EL PARECIDO: `relevancia` lo usa con
-# peso 2.5, asi que "algo para jugar" sigue trayendo lo que la ficha dice que
-# es para jugar. Lo que se saca es la posibilidad de DECLARARLO como condicion,
-# que es la que abria el segundo camino.
 _CAMPOS_CON_BOCA_PROPIA = frozenset({"uso_recomendado"})
 
-# Claves de `specs` que repiten una columna del catalogo. Se deja la columna,
-# que viene tipada: `garantia_meses` es un entero y se puede comparar; la spec
-# `garantia` es el texto "24 meses" y no.
+# Claves de `specs` que repiten una columna del catalogo.
 _SPECS_DUPLICADAS = frozenset({"garantia"})
 
-# Un campo entra al enum si al menos estos productos lo tienen. No es para
-# esconder los flacos -`memoria_video` esta en 18 y sirve igual-, es para que
-# una columna vacia o un tipeo de una fila no se conviertan en una opcion que
-# el modelo puede pedir y nunca trae nada.
+# Un campo entra al enum si al menos estos productos lo tienen.
 _MINIMO_PRODUCTOS = 10
 
-# EL GRADO ENTRA EL 20-sep, Y ES EL CASILLERO QUE FALTABA. Los cinco de antes
-# son binarios: cumple o no cumple. Un cliente que pide "las menos partes
-# chinas posibles" no esta excluyendo, esta PREFIRIENDO, y con cinco operadores
-# binarios delante el modelo elegia el menos malo.
-#
-# MEDIDO CUATRO VECES EN WHATSAPP EL 19-sep, mismo mensaje: salio
-# `pais_fabricacion no_contiene china` y volvieron cuatro `no_existe`. El
-# cliente pidio MINIMIZAR y el sistema fue a EXCLUIR. No fue una alucinacion:
-# fue la unica forma que el enum le dejaba de escribir eso.
-#
-# `prefiere` y `evita` NO FILTRAN: ordenan y devuelven a todos. Por eso no
-# pueden dejar un resultado vacio, que es el otro lado del mismo defecto: cero
-# productos se lee como "no lo tenemos".
+# EL GRADO ENTRA EL 20-sep, Y ES EL CASILLERO QUE FALTABA.
 OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor",
               "prefiere", "evita")
 
@@ -162,94 +41,11 @@ OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor",
 ORDENAN = ("prefiere", "evita")
 
 # LA ESCAPATORIA DEL ENUM, y es lo contrario de lo que parece.
-#
-# El CONTACTOR ata `campo` a un enum cerrado de los campos de la fuente, y eso
-# esta bien: sin el, el modelo inventa `peso`, `medidas`, `garantia`. Pero un
-# enum cerrado y OBLIGATORIO tiene un borde que este repo no tenia cubierto: si
-# lo que el cliente pide no lo expresa NINGUN campo -"con cancelacion de ruido
-# activa", "que sea silencioso", "resistente para el campo"-, el modelo no puede
-# decirlo. Esta obligado a elegir, asi que elige el mas parecido y lo elige con
-# confianza total. El esquema deja de prevenir el invento y pasa a fabricarlo.
-#
-# Con este valor el modelo tiene por fin como decir "esto no es un campo". El
-# codigo entonces NO filtra por nada, lo dice, y anota el hueco. Es la unica
-# forma de que un pedido que la fuente no expresa se vea como lo que es en vez
-# de disfrazarse de filtro que no encontro nada.
 SIN_CAMPO = "sin_campo_en_la_fuente"
 
 # ── EL VOCABULARIO: CUANDO UN CAMPO SE ENUMERA Y CUANDO NO ──────────────────
-#
-# LA REGLA ES LA VARIEDAD, NO EL TIPO NI EL LARGO DEL CAMPO. `dimensiones`
-# tiene 850 valores distintos en 880 productos y listarlos es basura;
-# `pais_fabricacion` tiene 5 y es justo el que hace falta. Es la decision de la
-# FICHA 50 y la maqueta de la 53.
-#
-# Y SE ENUMERA SOLO SI EL VALOR ES UNA ETIQUETA, o sea si entra en un renglon.
-# `contenido_caja` tiene 22 valores distintos -poca variedad- pero cada uno es
-# un parrafo: listarlo pesa 675 tokens de prosa que no le sirven a nadie. Las
-# dos condiciones juntas, medidas el 13-sep sobre la tienda viva: enumeran 16
-# campos de 41 y pesan 801 tokens.
-# El valor tiene que ser una ETIQUETA: entra en un renglon, no es un parrafo.
 LARGO_ETIQUETA = 60
-# Y LA LISTA ENTERA COMPITE POR UN PRESUPUESTO UNICO. Es la variedad medida en
-# caracteres, que es lo unico que se paga: `marca` tiene 75 valores y pesa 825
-# caracteres, y es de los campos que mas nombra un cliente -"tenes Logitech?"-;
-# `puertos` tiene 43 y pesa 1.700, porque cada valor es una lista. Contar
-# valores dejaba afuera al barato y adentro al caro.
-#
-# QUIEN ENTRA PRIMERO LO DECIDE EL RENDIMIENTO, no un orden escrito a mano:
-# en cuantos productos esta cargado el campo, dividido lo que cuesta su
-# renglon. Asi el presupuesto se llena con lo que mas contesta por caracter, y
-# una tienda nueva con otra fuente se ordena sola.
-# BAJA OTRA VEZ, A 900, EL 20-sep, PARA PAGAR EL VINCULO. Sale `ram`: 154
-# caracteres, rendimiento 2,01, el que peor rinde de los que quedaban. La
-# leyenda pasa de 1.008 a 854 y quedan seis campos. Mismo criterio que `marca`
-# y `caracteristicas_extra` —lo decide el RENDIMIENTO, no una lista— y misma
-# cobertura de reemplazo: el HUECO DE VALOR devuelve los valores reales de
-# `ram` cuando el modelo escribe uno que la fuente no usa.
-#
-# LO QUE COMPRA: el campo `envios` pasa de 304 a 460 bytes porque cada destino
-# lleva ahora QUE va ahi. Es la casilla del VINCULO, que se medio 0 de 4 en
-# cuatro tandas porque el modelo NO TENIA DONDE escribirla.
-#
-# LA BAJA ANTERIOR, A 1.050, Y LA CUENTA ERA ESTA. Medido: con el techo en 3.000 la
-# leyenda gasta 2.095 caracteres en nueve campos, y los dos mas caros son los
-# dos que menos rinden. `marca` pesa 724 —el 35% del gasto, 75 valores— y
-# `caracteristicas_extra` 363. Con 1.050 entran siete campos por 1.008 y esos
-# dos quedan afuera. Quien entra lo sigue decidiendo el RENDIMIENTO y no una
-# lista escrita a mano, asi que una tienda con otra fuente se ordena sola:
-#
-#     9,57   90  color                    entra
-#     5,69  154  pais_marca               entra
-#     5,37  164  pais_fabricacion         entra
-#     4,18   79  almacenamiento           entra
-#     3,71  237  material                 entra
-#     2,35  363  caracteristicas_extra    QUEDA AFUERA
-#     2,22  130  wifi                     entra
-#     2,01  154  ram                      entra
-#     1,22  724  marca                    QUEDA AFUERA
-#
-# LO QUE SALE NO QUEDA SIN CUBRIR, y por eso se puede sacar: el HUECO DE VALOR
-# ya hace el mismo trabajo y cobra solo cuando falla. El modelo escribe una
-# marca que la fuente no usa, el motor no filtra por eso y le devuelve los
-# valores reales de ese campo. La leyenda es seguro pagado por adelantado sobre
-# los 41 campos y en las dos vueltas de cada turno; el hueco es pago al usar y
-# devuelve exactamente el campo que fallo.
-#
-# Y HAY MEDICION DE QUE LA LEYENDA NO ALCANZABA SOLA: el 19-sep, cuatro veces
-# seguidas, el modelo tuvo los cinco valores de `pais_fabricacion` delante y
-# escribio igual `no_contiene china`. La leyenda resuelve QUE PALABRA usa la
-# casa; no resuelve que FORMA tiene lo que le pidieron. Eso lo cierra el
-# operador de grado, que es otro commit.
-#
-# LA BAJA ANTERIOR, DEL 15-sep, Y LA CUENTA ERA ESTA. Los ocho campos de si o no se
-# fueron del presupuesto a su propio renglon: enumerarlos costaba 1.224
-# caracteres -bluetooth 652 y retroiluminacion 572- y el renglon nuevo cuesta
-# 471 y vive afuera, igual que los numeros. Con el techo viejo esos 1.224
-# liberados los compraba `bateria`, que son 945 caracteres para 23 formas de
-# decir tres cosas: justo la prosa que este techo existe para frenar. Bajando
-# 400 la leyenda dice MAS que antes -ocho campos nombrados contra dos
-# enumerados- y el tablero pasa de 2.656 a 2.460 tokens. Solo baja.
+# Y LA LISTA ENTERA COMPITE POR UN PRESUPUESTO UNICO.
 TECHO_LEYENDA = 900
 
 # Un campo cargado en menos de esto no se enumera y se avisa aparte: filtrar
@@ -257,35 +53,18 @@ TECHO_LEYENDA = 900
 CARGA_FLACA = 0.30
 
 # Cuantos valores de un campo se le devuelven al modelo cuando se lo corrige.
-# No es el tope de la leyenda —ese reparte un presupuesto entre TODOS los
-# campos—: aca es un campo solo y lo que se cuida es que el bloque siga siendo
-# legible de un vistazo.
 VALORES_AL_CORREGIR = 8
 
-# Cuantos valores reales se le muestran al modelo cuando escribio uno que no
-# existe. Cinco alcanzan para que corrija y no inundan el retorno.
+# Cuantos valores reales se le muestran al modelo cuando escribio uno que no existe.
 TOPE_HUECO = 5
 
-# Hasta cuantos valores distintos se guardan por campo. Pasado el tope se deja
-# de acumular: `descripcion` tiene uno por producto y guardarlos todos seria
-# tener el catalogo dos veces en memoria. El tope es cuarenta veces la variedad
-# que se enumera, asi que ningun campo enumerable puede tocarlo.
+# Hasta cuantos valores distintos se guardan por campo.
 TOPE_VALORES = 200
 
 _cache: dict = {}
 
 
 # ── CAMPOS DERIVADOS: los dos paises que el origen esconde ──────────────────
-#
-# La fuente escribe el origen en UNA linea con forma fija: "Marca Logitech de
-# Suiza. Fabricado en China." Ahi adentro viven DOS hechos distintos que para el
-# cliente no valen lo mismo, y mientras estuvieron pegados no habia forma de
-# pedir uno solo: "no quiero marca china" y "no quiero fabricado en China" eran
-# la misma consulta y devolvian lo mismo.
-#
-# Separarlos no agrega informacion: la parte, y partir un dato es del codigo.
-# Lo que NO hace es pesarlos -3 la marca, 2 la fabricacion, como hacia `_grado`-,
-# porque cuanto pesa cada uno es un juicio del cliente, no un hecho de la fuente.
 _RE_PAIS_MARCA = re.compile(r"marca\s+\S+(?:\s+\S+)?\s+de\s+([^.]+)")
 _RE_PAIS_FAB = re.compile(r"fabricad\w*\s+en\s+([^.]+)")
 
@@ -305,9 +84,7 @@ def _derivado(prod: dict, campo: str) -> str:
 
 
 def _valor_crudo(prod: dict, campo: str):
-    """El valor del campo, este arriba de todo, adentro del mapa `specs` o
-    derivado del origen. El modelo pide `bluetooth` o `pais_marca` y no le
-    importa en que estante lo guardamos."""
+    """El valor del campo, este arriba de todo, adentro del mapa `specs` o derivado del origen."""
     if campo in DERIVADOS:
         return _derivado(prod, campo)
     if campo in prod:
@@ -316,15 +93,7 @@ def _valor_crudo(prod: dict, campo: str):
 
 
 def _si_no(v) -> str:
-    """`si`, `no`, o vacio cuando el valor NO es un veredicto.
-
-    La fuente no guarda booleanos: guarda la frase entera con el veredicto
-    adelante. "si, bluetooth 5.0", "no, este modelo es con cable", "no trae
-    lector de tarjetas". UNA sola definicion de que cuenta como veredicto, y la
-    usan los dos lados: la recorrida para TIPAR el campo y `evaluar` para
-    COMPARARLO. Con dos copias, la que se arregle primero deja a la otra
-    leyendo distinto el mismo dato.
-    """
+    """`si`, `no`, o vacio cuando el valor NO es un veredicto."""
     if isinstance(v, bool):
         return "si" if v else "no"
     m = re.match(r"(si|no)\b", _norm(v))
@@ -332,23 +101,9 @@ def _si_no(v) -> str:
 
 
 def recorrida(tienda_id: str) -> dict:
-    """UNA SOLA PASADA POR EL CATALOGO, y de ella salen las DOS cosas que el
-    codigo deriva de la fuente: el REGISTRO DE CAMPOS con su tipo y el
-    INVENTARIO -cuantos productos, que categorias, en que rango de precios-.
-
-    POR QUE ESTAN JUNTAS, y no es prolijidad. Hasta el 11-sep eran dos
-    funciones en dos modulos -`campos_filtrables` aca y `fuente.inventario`
-    alla-, cada una recorriendo los mismos 880 productos y cada una con SU
-    PROPIO CACHE. Dos caches del mismo dato tienen dos vidas, y una de las dos
-    siempre se olvida de morir: `firestore_client.invalidate_cache` -la que
-    corre en cada `/admin/upload-catalog`- vaciaba el catalogo y no tocaba
-    ninguno de los dos. O sea que despues de subir un catalogo nuevo el bot
-    seguia diciendo el numero de productos del viejo y seguia ofreciendo los
-    campos del viejo, hasta que el proceso se reiniciara. Con una pasada y un
-    cache hay un solo lugar del que acordarse, y `limpiar_cache` es ese lugar.
-
-    Devuelve {campos, productos, categorias, precio_min, precio_max}.
-    """
+    """UNA SOLA PASADA POR EL CATALOGO, y de ella salen las DOS cosas que el codigo deriva de la fuente: el
+    REGISTRO DE CAMPOS con su tipo y el INVENTARIO -cuantos productos, que categorias, en que rango de
+    precios-."""
     if tienda_id in _cache:
         return _cache[tienda_id]
     try:
@@ -377,10 +132,8 @@ def recorrida(tienda_id: str) -> dict:
                 precios.append(int(p["precio_ars"]))
             except (TypeError, ValueError):
                 pass
-        # LOS DERIVADOS ENTRAN A LA PASADA, y no es un detalle: el campo del
-        # defecto medido -`pais_fabricacion`, 5 valores- no vive arriba de todo
-        # ni adentro de `specs`, se parte de `origen`. Sin esto el unico campo
-        # que el modelo venia errando quedaba justo afuera del vocabulario.
+        # LOS DERIVADOS ENTRAN A LA PASADA, y no es un detalle: el campo del defecto medido
+        # -`pais_fabricacion`, 5 valores- no vive arriba de todo ni adentro de `specs`, se parte de `origen`.
         for campo in DERIVADOS:
             d = _derivado(p, campo)
             if d:
@@ -405,27 +158,16 @@ def recorrida(tienda_id: str) -> dict:
     for campo, n in llenos.items():
         if n < _MINIMO_PRODUCTOS:
             continue
-        # Numerico solo si lo es SIEMPRE. Un campo mitad numero mitad texto se
-        # trata como texto: comparar "24" contra "24 meses" con `mayor` da un
-        # resultado que parece bien y esta mal.
-        #
-        # SI O NO CON LA MISMA VARA, y por la misma razon. `bateria` dice "si,
-        # bateria recargable" en 470 productos y "funciona con 1 pila AA" en 12:
-        # tratarlo como veredicto haria que `bateria igual no` dejara afuera a
-        # esos 12, que NO dicen que no. Medido el 11-sep sobre el catalogo vivo:
-        # con la vara del SIEMPRE dan `si_no` ocho campos -bluetooth,
-        # lector_huella, lector_tarjetas, ram_ampliable, resistencia_agua,
-        # retroiluminacion, tactil y thunderbolt- y quedan en texto bateria,
-        # camara y wifi, que estan realmente mezclados.
+        # Numerico solo si lo es SIEMPRE. Un campo mitad numero mitad texto se trata como texto: comparar "24"
+        # contra "24 meses" con `mayor` da un resultado que parece bien y esta mal.
         if numericos.get(campo, 0) == n:
             registro[campo] = "numero"
         elif veredictos.get(campo, 0) == n:
             registro[campo] = "si_no"
         else:
             registro[campo] = "texto"
-    # El precio ENTRA al registro. Tenia su propia puerta -`tope_precio` y
-    # `orden`- y era la cuarta forma de decir lo mismo. Como condicion es
-    # `precio_ars menor 100000`; como orden es `ordenar_por precio_ars`.
+    # El precio ENTRA al registro. Tenia su propia puerta -`tope_precio` y `orden`- y era la cuarta forma de
+    # decir lo mismo.
     registro["precio_ars"] = "numero"
     for campo in DERIVADOS:
         registro[campo] = "texto"
@@ -440,9 +182,8 @@ def recorrida(tienda_id: str) -> dict:
         "precio_max": max(precios) if precios else None,
     }
     if not prods:
-        # UNA LECTURA VACIA NO SE CACHEA, la misma linea que ya tiene
-        # `get_all_products`: este cache no tiene TTL, asi que cachear el vacio
-        # deja al bot sin campos y sin inventario hasta que reinicie el proceso.
+        # UNA LECTURA VACIA NO SE CACHEA, la misma linea que ya tiene `get_all_products`: este cache no tiene
+        # TTL, asi que cachear el vacio deja al bot sin campos y sin inventario hasta que reinicie el proceso.
         log.error("recorrida_catalogo_vacia", tienda_id=tienda_id)
         return out
     _cache[tienda_id] = out
@@ -453,9 +194,7 @@ def recorrida(tienda_id: str) -> dict:
 
 
 def _sumar_valor(valores: dict, campo: str, v) -> None:
-    """Un valor mas al vocabulario del campo, con su cuenta. Se corta en
-    `TOPE_VALORES` y queda anotado que se corto: un campo truncado no se
-    enumera nunca, asi que el recorte no puede mentirle al modelo."""
+    """Un valor mas al vocabulario del campo, con su cuenta."""
     d = valores.setdefault(campo, {"vistos": {}, "truncado": False})
     if d["truncado"]:
         return
@@ -469,21 +208,7 @@ def _sumar_valor(valores: dict, campo: str, v) -> None:
 
 
 def vocabulario(tienda_id: str) -> dict[str, dict]:
-    """EL VOCABULARIO DE LA FUENTE: por campo, con que palabras se pregunta.
-
-    Es la PARTE B del tablero -la FICHA 53- y sale de la misma `recorrida` que
-    ya derivaba los campos y el inventario. No hay pasada nueva ni cache nuevo:
-    es la misma regla que junto `campos_filtrables` con `inventario` el 11-sep,
-    y por el mismo motivo -dos caches del mismo dato tienen dos vidas y una se
-    olvida de morir-.
-
-    Por campo: {tipo, llenos, distintos, valores}. `valores` es la lista
-    ordenada por frecuencia SOLO si el campo se enumera; `None` si no.
-
-    UN VALOR ENUMERADO NO ES UN DATO, ES VOCABULARIO. Que la fuente escriba
-    `china` no dice que producto es chino: dice que esa es la palabra. Por eso
-    esto no crece con el catalogo, crece con la variedad.
-    """
+    """EL VOCABULARIO DE LA FUENTE: por campo, con que palabras se pregunta."""
     r = recorrida(tienda_id)
     campos = r.get("campos") or {}
     llenos = r.get("llenos") or {}
@@ -494,12 +219,8 @@ def vocabulario(tienda_id: str) -> dict[str, dict]:
         vistos = d["vistos"]
         distintos = len(vistos)
         orden = sorted(vistos, key=lambda k: (-vistos[k], k))
-        # SE CONOCE EL VOCABULARIO ENTERO salvo que se haya truncado, y eso es
-        # lo que habilita el hueco de valor. ENUMERARLO en la leyenda es otra
-        # cosa y la decide `leyenda` con su presupuesto: un campo se puede
-        # conocer sin que convenga listarlo.
-        # `precio_ars` no entra a la pasada -es campo interno- pero lo tienen
-        # todos los productos que la recorrida conto con precio.
+        # SE CONOCE EL VOCABULARIO ENTERO salvo que se haya truncado, y eso es lo que habilita el hueco de
+        # valor.
         cargado = llenos.get(campo, 0)
         if campo == "precio_ars" and not cargado:
             cargado = r.get("productos") or 0
@@ -515,30 +236,7 @@ def vocabulario(tienda_id: str) -> dict[str, dict]:
 
 
 def leyenda(tienda_id: str) -> str:
-    """EL VOCABULARIO COMO LO LEE EL MODELO, un renglon por campo.
-
-    Es lo unico que el esquema no podia decir: el enum del proveedor cierra los
-    NOMBRES de campo, y esto dice, de cada uno, en cuantos productos esta
-    cargado y con que palabras esta escrito.
-
-    POR QUE HACE FALTA, medido el 13-sep sobre la tienda viva:
-    `pais_fabricacion igual china` trae 633 productos y `contiene china` trae
-    789. Son 156 de diferencia, el 18% del catalogo, decididos por un operador
-    que el modelo elegia sin ver los 5 valores que la fuente usa.
-
-    Y EL `n/total` NO ES ADORNO: `memoria_video` esta en 18 de 880. Filtrar por
-    ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos" en vez
-    de "la fuente no lo tiene cargado". Es la respuesta 2 dicha como la 3, que
-    la FICHA 52 llama el defecto mas caro del nicho.
-
-    UN CAMPO DE VEREDICTO SE DICE EN VEREDICTO (15-sep, FICHA 54 punto 1). La
-    leyenda enumeraba las 19 formas en que la fuente escribe que algo tiene
-    bluetooth y las 17 de la retroiluminacion, y el motor NO las usa: `evaluar`
-    compara por `_si_no`, o sea por la primera palabra. Eran 1.224 caracteres
-    del presupuesto para ensenar un idioma que ningun lado del codigo habla, y
-    encima inducian a copiar la frase entera. Los ocho campos de si o no van
-    ahora en su propio renglon, con las dos palabras que el motor entiende.
-    """
+    """EL VOCABULARIO COMO LO LEE EL MODELO, un renglon por campo."""
     voc = vocabulario(tienda_id)
     total = recorrida(tienda_id).get("productos") or 0
     if not voc or not total:
@@ -546,17 +244,14 @@ def leyenda(tienda_id: str) -> str:
     r = recorrida(tienda_id)
     numericos, veredictos, candidatos, flacos = [], [], [], []
     for campo, d in sorted(voc.items()):
-        # UN NUMERO NO SE ENUMERA, SE ACOTA. Listarle 386 precios al modelo no
-        # le dice nada; el rango le dice todo lo que necesita para escribir un
-        # `menor` que no vuelva vacio. Van siempre: son tres y son baratos.
+        # UN NUMERO NO SE ENUMERA, SE ACOTA. Listarle 386 precios al modelo no le dice nada; el rango le dice
+        # todo lo que necesita para escribir un `menor` que no vuelva vacio.
         if d["tipo"] == "numero":
             lo, hi = _rango(campo, d, r)
             numericos.append(f"{campo} de {lo} a {hi}" if lo is not None
                              else campo)
             continue
         # UN VEREDICTO NO SE ENUMERA TAMPOCO: su vocabulario son dos palabras.
-        # Va siempre y fuera del presupuesto, por lo mismo que los numeros: no
-        # crece con la variedad de VALORES, crece con la de CAMPOS.
         if d["tipo"] == "si_no":
             veredictos.append(f"{campo} ({d['llenos']}/{total})")
             continue
@@ -602,24 +297,7 @@ def leyenda(tienda_id: str) -> str:
 
 
 def que_dice_la_fuente_de(campo: str, tienda_id: str) -> str:
-    """LO QUE LA FUENTE TIENE DE UN CAMPO, en un renglon, para UN campo solo.
-
-    `leyenda` arma esto para el tablero entero y con presupuesto: entra el que
-    mas contesta por caracter y el resto se cae. Esta funcion contesta la otra
-    pregunta, que es de a uno y sin presupuesto: **de ESTE campo, ¿que tiene la
-    fuente?**
-
-    PARA QUE SE USA, y es lo unico que la justifica: cuando el modelo AFIRMA
-    sobre un campo que no miro, el codigo le devuelve el dato en vez de dejarlo
-    pasar. Medido en WhatsApp el 16-sep: el bot contesto "no contamos con
-    informacion sobre el pais de fabricacion" con el campo cargado en 880 de
-    880, y con ese renglon en el tablero que el mismo no uso. La negacion la
-    tiene que escribir el codigo y el modelo copiarla —FICHA 55 §1-bis—, y para
-    eso el codigo tiene que poder decir, de un campo cualquiera, que hay.
-
-    Cadena vacia si el campo no existe en la fuente. Ahi la negacion del modelo
-    era correcta y no hay nada que corregir.
-    """
+    """LO QUE LA FUENTE TIENE DE UN CAMPO, en un renglon, para UN campo solo."""
     voc = vocabulario(tienda_id)
     d = voc.get(campo)
     if not d:
@@ -633,11 +311,9 @@ def que_dice_la_fuente_de(campo: str, tienda_id: str) -> str:
     elif d["tipo"] == "si_no":
         cuerpo = "es de si o no, y se filtra con `igual si` o `igual no`"
     elif d.get("valores"):
-        # SE ACOTA, Y NO ES UN DETALLE. `origen` tiene 84 valores distintos y
-        # cada uno es una frase entera —"marca logitech de suiza. fabricado en
-        # china."—: devolverlos todos es un chorro de prosa adentro de un
-        # bloque que tiene que leerse de un vistazo. Con los primeros y el
-        # total, el modelo sabe con que palabras se busca y cuanto hay.
+        # SE ACOTA, Y NO ES UN DETALLE. `origen` tiene 84 valores distintos y cada uno es una frase entera
+        # —"marca logitech de suiza. fabricado en china."—: devolverlos todos es un chorro de prosa adentro de
+        # un bloque que tiene que leerse de un vistazo.
         vals = list(d["valores"])
         cuerpo = "la fuente escribe: " + " | ".join(vals[:VALORES_AL_CORREGIR])
         if len(vals) > VALORES_AL_CORREGIR:
@@ -649,9 +325,7 @@ def que_dice_la_fuente_de(campo: str, tienda_id: str) -> str:
 
 
 def _rango(campo: str, d: dict, r: dict):
-    """El minimo y el maximo de un campo numerico. `precio_ars` no pasa por el
-    vocabulario -es campo interno de la pasada- y su rango ya lo tiene la
-    recorrida, asi que se lee de ahi y no se calcula dos veces."""
+    """El minimo y el maximo de un campo numerico."""
     if campo == "precio_ars":
         return r.get("precio_min"), r.get("precio_max")
     nums = [n for n in (_a_numero(v) for v in (d.get("valores") or []))
@@ -666,29 +340,16 @@ def _rango(campo: str, d: dict, r: dict):
 
 def condicion_sin_vocabulario(campo: str, operador: str, valor,
                               tienda_id: str) -> list | None:
-    """EL HUECO DE VALOR. Si NINGUN valor de la fuente puede cumplir esta
-    condicion, devuelve los valores que SI hay. `None` si la condicion es
-    cumplible, o si el campo no se enumera.
-
-    POR QUE EXISTE, y es la decision D3 de la FICHA 53: un valor que la fuente
-    no usa no puede devolver cero. Cero se lee como "no lo tenemos"; el hueco
-    se lee como "esa palabra no es la nuestra, estas si". Es la misma escuela
-    de `SIN_CAMPO`: el pedido que la fuente no expresa se ve como lo que es en
-    vez de disfrazarse de filtro que no encontro nada.
-
-    SOLO SOBRE CAMPOS ENUMERABLES, a proposito. Sobre `modelo`, con 482
-    valores, el que contesta es el rescate por cercania, que ya existe y ya
-    devuelve lo mas parecido con el motivo al lado.
-    """
+    """EL HUECO DE VALOR. Si NINGUN valor de la fuente puede cumplir esta condicion, devuelve los valores que SI
+    hay."""
     d = (vocabulario(tienda_id) or {}).get(campo)
     if not d or not d["valores"]:
         return None
     for v in d["valores"]:
         if evaluar({"_v": v}, "_v", operador, valor, d["tipo"]) is True:
             return None
-    # UN VEREDICTO CONTESTA EN VEREDICTO. Devolverle "si, bluetooth 5.1 | no,
-    # este modelo es con cable" a un `igual true` le ensena a copiar la frase,
-    # que es justo lo que el motor no compara. Las dos palabras que entiende.
+    # UN VEREDICTO CONTESTA EN VEREDICTO. Devolverle "si, bluetooth 5.1 | no, este modelo es con cable" a un
+    # `igual true` le ensena a copiar la frase, que es justo lo que el motor no compara.
     if d["tipo"] == "si_no":
         return ["si", "no"]
     # Los mas usados y no todos: el hueco tiene que caber en el retorno.
@@ -696,63 +357,17 @@ def condicion_sin_vocabulario(campo: str, operador: str, valor,
 
 
 # LA PROSA QUE YA VIAJA NORMALIZADA EN OTRO CAMPO (20-sep-2026).
-#
-# NO ES UNA LISTA DE EXCLUSIONES A GUSTO: es una regla con una condicion que se
-# puede verificar campo por campo. Un campo entra aca solo si cumple LAS DOS:
-# sus valores son PROSA —no entran en un renglon, `etiqueta` False— y el mismo
-# dato ya viaja NORMALIZADO en otro campo del catalogo. Filtrar por el da
-# basura y ademas es innecesario, porque el gemelo contesta lo mismo y mejor.
-#
-#     origen -> pais_fabricacion y pais_marca
-#         880 productos, 84 valores, hasta 88 caracteres, del tipo
-#         "marca logitech de suiza. fabricado en china.". Los gemelos tienen
-#         5 y 9 valores, y los dos estan en la leyenda.
-#
-# QUE PASABA CON EL, y es D8 del MAPA_CABLEADO mas lo medido el 19 y el 20-sep.
-# El modelo lo pedia —`origen no_contiene china`, cuatro veces medidas— y
-# devolvia cero, porque el corte por raices sobre prosa no discrimina: "que no
-# sea de marca china" resolvia a `origen no_contiene marc`, la raiz de "marca",
-# que esta en los 880 origenes.
-#
-# Y LO SEGUNDO, QUE ES LO QUE COSTABA VUELTAS. `guardas_salida.afirmo_sin_mirar`
-# mira los campos que la RESPUESTA nombra contra los que el turno miro. El
-# modelo buscaba bien por `pais_fabricacion`, escribia "origen" en el texto, y
-# la guarda lo marcaba como afirmado sin mirar. Disparo en 9 de 9 turnos de las
-# ultimas tres tandas y cada disparo cuesta DOS vueltas: el modelo contesta, se
-# lo manda a corregir, vuelve a buscar y contesta de nuevo. Un campo que no se
-# puede pedir tampoco se puede reclamar.
-#
-# CONTENIDO_CAJA Y DESCRIPCION NO ENTRAN, y es la contracara que hace que esto
-# sea una regla y no una lista. Los dos son prosa, pero NO tienen gemelo: "trae
-# cable?" se contesta con `contenido_caja contiene cable` y no hay otro campo
-# que lo diga. Se quedan.
 PROSA_CON_GEMELO = ("origen",)
 
 
 def campos_filtrables(tienda_id: str) -> dict[str, str]:
-    """El registro de campos, DERIVADO DEL CATALOGO VIVO: {campo: tipo}, con
-    tipo `numero`, `texto` o `si_no`.
-
-    Es la vista de campos de `recorrida`, que es la unica pasada y el unico
-    cache. Corre en cada turno y no puede costar 880 productos por mensaje.
-
-    MENOS LA PROSA QUE TIENE GEMELO, y el motivo entero esta arriba de
-    `PROSA_CON_GEMELO`. Sale de aca y no de la recorrida a proposito: el
-    catalogo se sigue leyendo entero y el campo sigue existiendo en la ficha;
-    lo que deja de existir es la posibilidad de FILTRAR por el, que es lo que
-    daba cero, y la de que la guarda lo reclame, que es lo que costaba dos
-    vueltas por turno.
-    """
+    """El registro de campos, DERIVADO DEL CATALOGO VIVO: {campo: tipo}, con tipo `numero`, `texto` o `si_no`."""
     campos = recorrida(tienda_id)["campos"]
     return {k: v for k, v in campos.items() if k not in PROSA_CON_GEMELO}
 
 
 def limpiar_cache(tienda_id: str | None = None) -> None:
-    """Para los tests y para cuando se recarga el catalogo por /admin.
-
-    La llama `firestore_client.invalidate_cache`: lo que se deriva del catalogo
-    muere junto con el catalogo, siempre, y no por separado.
-    """
+    """Para los tests y para cuando se recarga el catalogo por /admin."""
     # EL INDICE DEL AGENTE TAMBIEN SALE DEL CATALOGO —rubros, tags y temas—
     # y muere con el: sin esto un rubro nuevo no entraba hasta el deploy.
     from app.core import agente
@@ -774,39 +389,13 @@ def _a_numero(v):
 
 
 def _raices(valor) -> list[str]:
-    """Raices por palabra: 'partes chinas' -> ['chin']. Lo que venia de
-    `herramientas._stems`, que existia solo para `excluir`.
-
-    UN NUMERO NO TIENE RAIZ, y recortarlo lo convertia en otro numero. Lo
-    encontro el barrido de filtros el 13-ago: `precio_ars no_contiene 29000`
-    dejaba pasar al producto que sale exactamente 29000. La raiz daba '2900', y
-    como el borde de un numero son OTROS DIGITOS -la misma regla que hace que
-    '16' pegue en '16GB' y no en '160'-, '2900' no puede pegar nunca adentro de
-    '29000'. O sea que la exclusion no excluia nada y lo hacia en silencio:
-    volvia el producto que el cliente pidio no ver. Con menos de cuatro digitos
-    andaba de casualidad, porque no llegaba a recortarse.
-
-    Recortar sirve para las palabras -'chinas' y 'china' tienen que pegar
-    igual-; para un numero, su raiz es el numero entero.
-    """
+    """Raices por palabra: 'partes chinas' -> ['chin']."""
     return [w if w.isdigit() else w[:4]
             for w in _norm(valor).split() if len(w) >= 4] or [_norm(valor)]
 
 
 def _texto_contiene(valor_prod: str, buscado: str) -> bool:
-    """Substring, salvo que lo buscado sea muy corto: ahi se exige palabra
-    entera. Sin esto `si` matchea adentro de `version` y `segun version`, y la
-    mitad de las specs empiezan con "si," o "no,": el filtro de bluetooth daria
-    verdadero sobre un producto que dice "no, este modelo es con cable".
-
-    UN NUMERO NO ES UNA PALABRA CORTA, y confundirlos costaba caro. La regla de
-    palabra entera exigia que despues del valor no viniera letra NI digito, asi
-    que `ram contiene 16` daba CERO contra una ficha que dice "16GB": la 'g'
-    pegada rompia el borde. Y `16` es exactamente lo que pide el modelo -medido
-    en vivo el 4-ago ante "notebooks con 16gb de ram"-, o sea que el filtro
-    devolvia vacio y el bot contestaba que no hay, con 148 notebooks de 16GB en
-    el catalogo. Para un numero el borde son OTROS DIGITOS: '16' no puede pegar
-    dentro de '160', pero si tiene que pegar en '16GB'."""
+    """Substring, salvo que lo buscado sea muy corto: ahi se exige palabra entera."""
     a, b = _norm(valor_prod), _norm(buscado)
     if not b:
         return False
@@ -824,18 +413,14 @@ def evaluar(prod: dict, campo: str, operador: str, valor, tipo: str):
     if crudo in (None, "", [], {}):
         return None
     if operador in ("mayor", "menor"):
-        # `mayor` y `menor` incluyen el borde a proposito: el cliente dice
-        # "hasta 500 gramos" y "de 24 meses o mas" mucho mas seguido que la
-        # desigualdad estricta, y el modelo traduce literal lo que escucha.
+        # `mayor` y `menor` incluyen el borde a proposito: el cliente dice "hasta 500 gramos" y "de 24 meses o
+        # mas" mucho mas seguido que la desigualdad estricta, y el modelo traduce literal lo que escucha.
         a, b = _a_numero(crudo), _a_numero(valor)
         if a is None or b is None:
             return None
         return a >= b if operador == "mayor" else a <= b
     if operador == "no_contiene":
-        # LA EXCLUSION, que era `excluir` con su logica aparte. Se busca por
-        # RAIZ de cada palabra -"partes chinas" -> "chin"- para que filtre
-        # escriba como escriba el cliente; el corte por frase entera no
-        # matcheaba nunca.
+        # LA EXCLUSION, que era `excluir` con su logica aparte.
         return not any(_texto_contiene(crudo, s) for s in _raices(valor))
     if operador == "igual":
         if tipo == "numero":
@@ -843,37 +428,17 @@ def evaluar(prod: dict, campo: str, operador: str, valor, tipo: str):
             return None if a is None or b is None else a == b
         if tipo == "si_no":
             # UN VEREDICTO SE COMPARA POR EL VEREDICTO, no por la frase.
-            #
-            # El corte por coma de abajo salvaba "si, bluetooth 5.0" y NO
-            # salvaba "no trae lector de tarjetas", que es como la fuente
-            # escribe la mitad de los campos de si o no. Medido el 11-sep:
-            # `lector_tarjetas igual no` daba CERO sobre los 230 productos que
-            # lo dicen, y el bot contestaba que no hay. El tipo cierra ese
-            # agujero para los nueve campos que son veredicto de punta a punta.
             a, b = _si_no(crudo), _si_no(valor)
             if a and b:
                 return a == b
-        # `igual` sobre texto vale contra el string entero O contra su PRIMER
-        # SEGMENTO. Las specs de si o no estan escritas "veredicto, detalle":
-        # 234 productos dicen "si, bluetooth 5.0" y 202 "no, este modelo es con
-        # cable". Medido con el modelo vivo el 4-ago: ante "necesito unos
-        # auriculares con bluetooth" pidio `bluetooth igual si`, que es lo
-        # natural para un campo de si o no, y con igualdad estricta eso no
-        # matchea NUNCA -ni los 234 que si lo tienen-. El filtro daba cero y el
-        # bot contestaba que no hay, con el catalogo lleno.
+        # `igual` sobre texto vale contra el string entero O contra su PRIMER SEGMENTO.
         a, b = _norm(crudo), _norm(valor)
         return a == b or a.split(",")[0].strip() == b
     return _texto_contiene(crudo, valor)
 
 
 def _pega_por_raiz(prod: dict, campo: str, valor) -> bool | None:
-    """Si el producto trae ese valor, por RAIZ de cada palabra. None cuando no
-    tiene el dato cargado: no es un no, es un no se sabe.
-
-    Es la misma comparacion que usa `no_contiene` —"partes chinas" -> "chin"—
-    y se saca a una funcion para que la preferencia y la exclusion no puedan
-    contestar distinto sobre el mismo producto.
-    """
+    """Si el producto trae ese valor, por RAIZ de cada palabra."""
     crudo = _valor_crudo(prod, campo)
     if crudo in (None, "", [], {}):
         return None
@@ -882,21 +447,7 @@ def _pega_por_raiz(prod: dict, campo: str, valor) -> bool | None:
 
 def _preferencia_numerica(prods: list, campo: str, operador: str,
                           valor) -> tuple:
-    """EL GRADO SOBRE UN NUMERO ES UNA DISTANCIA, no una coincidencia de texto.
-
-    MEDIDO EN PRODUCCION EL 20-sep, cuatro corridas: a "acorde a la crisis" el
-    modelo escribio `precio_ars prefiere 8500` —8500 es el minimo del catalogo,
-    que la leyenda le dice— o sea "preferi los que esten cerca del mas barato".
-    La traduccion es CORRECTA. Lo que estaba mal era el codigo: `_pega_por_raiz`
-    compara TEXTO, asi que buscaba precios que contuvieran la cadena "8500" y
-    el orden salia basura, en silencio.
-
-    Es el gemelo de la guarda que ya existe del otro lado: `mayor` y `menor`
-    sobre un campo de texto se rechazan con motivo escrito. El grado sobre un
-    numero no se rechaza porque SI significa algo: `prefiere` ordena por
-    cercania al valor y `evita` por lejania. El que no tiene el dato va al
-    medio, igual que en el de texto.
-    """
+    """EL GRADO SOBRE UN NUMERO ES UNA DISTANCIA, no una coincidencia de texto."""
     ref = _a_numero(valor)
     if ref is None:
         return list(prods), 0, 0
@@ -919,14 +470,7 @@ def _preferencia_numerica(prods: list, campo: str, operador: str,
 
 def _ordenar_por_preferencia(prods: list, campo: str, operador: str,
                              valor) -> tuple:
-    """Devuelve (ordenados, cuantos_pegan, cuantos_sin_dato). NO saca a nadie.
-
-    EL QUE NO TIENE EL DATO VA AL MEDIO, y es la unica decision de aca. Con
-    `prefiere` primero van los que lo cumplen y ultimos los que NO lo cumplen;
-    el que no tiene el dato cargado no es ninguna de las dos cosas y no puede
-    quedar mezclado con el que dijo que no. Es la respuesta 2 contra la 3 de la
-    FICHA 52, aplicada al orden.
-    """
+    """Devuelve (ordenados, cuantos_pegan, cuantos_sin_dato)."""
     pegan = {id(p): _pega_por_raiz(p, campo, valor) for p in prods}
     if operador == "prefiere":
         rango = {True: 0, None: 1, False: 2}
@@ -939,51 +483,19 @@ def _ordenar_por_preferencia(prods: list, campo: str, operador: str,
 
 
 # ── EL ATERRIZAJE — de un valor al campo donde vive ─────────────────────────
-#
-# QUE RESUELVE, y son los dos patrones que produccion dio ocho veces el
-# 22-sep. El modelo hace bien el salto de las palabras del cliente al CONCEPTO
-# -"se traba con muchas pestañas" a memoria, "aparato con teclas" a teclado- y
-# falla en el salto siguiente, del concepto al CAMPO de esta tienda. Y no falla
-# por adivinar: elige de la lista que le damos, que es una sola para las 880
-# filas mientras los campos viven POR CATEGORIA.
-#
-# POR QUE LO HACE EL CODIGO Y NO EL MODELO. Es busqueda exhaustiva sobre un
-# espacio cerrado: dado un valor, en que campos del universo aparece. Eso se
-# calcula, no se razona. Es la regla 10.0 del proyecto aplicada a los campos:
-# la identidad la decide una funcion determinista, no el modelo.
-#
-# SOLO CORREN CUANDO ALGO YA FALLO, y por eso no hace falta indice: el camino
-# feliz no las toca. Sobre 880 productos y 20 campos son 17.600 comparaciones
-# de texto en el peor caso, y el peor caso es un filtro que iba a devolver cero.
-# A escala de 100.000 filas esto pide un indice invertido, y ese es el paso 2
-# de la FICHA 57 -la prueba a escala-, que no se adelanta acá.
 
 
 def campos_cargados(prods: list[dict], tienda_id: str) -> list[str]:
-    """Los campos filtrables que ESTE universo tiene con dato.
-
-    No es lo mismo que `campos_filtrables`, que son los del catalogo entero:
-    `color` esta cargado en 861 de los 880 productos y en CERO de los 19
-    procesadores. Preguntar por el color de un procesador no es preguntar por
-    algo que no vendemos.
-    """
-    # SE LEE CON `_valor_crudo` Y NO CON `p.get`, y la diferencia no es de
-    # estilo: campos como `conexion` los DERIVA `fuente_producto.enriquecer` y
-    # no estan en el dict que devuelve el catalogo. Leyendolos con `get` este
-    # indice veia vacio justo donde vive el dato mas util, y el primer test
-    # del K120 inalambrico lo destapo.
+    """Los campos filtrables que ESTE universo tiene con dato."""
+    # SE LEE CON `_valor_crudo` Y NO CON `p.get`, y la diferencia no es de estilo: campos como `conexion` los
+    # DERIVA `fuente_producto.enriquecer` y no estan en el dict que devuelve el catalogo.
     return sorted(campo for campo in campos_filtrables(tienda_id)
                   if any(str(_valor_crudo(p, campo) or "").strip()
                          for p in prods))
 
 
 def campos_con_el_valor(prods: list[dict], valor, tienda_id: str) -> list[str]:
-    """En que campos de ESTE universo aparece ese valor.
-
-    Es el aterrizaje al reves: en vez de pedirle al modelo que elija el campo,
-    el codigo busca donde vive el valor y se lo dice. Devuelve los campos, no
-    las filas: lo que el modelo necesita para corregir la consulta.
-    """
+    """En que campos de ESTE universo aparece ese valor."""
     v = _norm(valor)
     if not v:
         return []
@@ -996,9 +508,7 @@ def campos_con_el_valor(prods: list[dict], valor, tienda_id: str) -> list[str]:
 
 def _donde_si_vive(prods: list[dict], valor, tienda_id: str,
                    menos: str = "") -> str:
-    """La coletilla que se le agrega al motivo de un descarte. Vacia si el
-    valor no esta en ningun lado, porque una sugerencia inventada es peor que
-    ninguna."""
+    """La coletilla que se le agrega al motivo de un descarte."""
     donde = [c for c in campos_con_el_valor(prods, valor, tienda_id)
              if c != menos]
     if not donde:
@@ -1008,12 +518,8 @@ def _donde_si_vive(prods: list[dict], valor, tienda_id: str,
 
 
 def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
-    """Aplica la lista de filtros y devuelve el resultado ENTERO, no solo la
-    lista: que se aplico, que no se pudo aplicar y por que, y -si no quedo
-    nada- lo que mas condiciones cumple.
-
-    `filtros` son los moldes Pydantic de `herramientas.Filtro`.
-    """
+    """Aplica la lista de filtros y devuelve el resultado ENTERO, no solo la lista: que se aplico, que no se pudo
+    aplicar y por que, y -si no quedo nada- lo que mas condiciones cumple."""
     registro = campos_filtrables(tienda_id)
     aplicados, descartados, preferencias = [], [], []
     quedan = list(prods)
@@ -1026,17 +532,10 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
         tipo = registro.get(campo)
 
         if campo == SIN_CAMPO:
-            # EL MODELO USO LA ESCAPATORIA. No es un error: es el unico caso en
-            # que sabemos que el pedido del cliente no lo expresa la fuente. No
-            # se filtra por nada y se dice, para que el modelo no afirme sobre
-            # eso ni lo de por cumplido.
+            # EL MODELO USO LA ESCAPATORIA. No es un error: es el unico caso en que sabemos que el pedido del
+            # cliente no lo expresa la fuente.
             huecos.anotar(tienda_id, "sin_campo", SIN_CAMPO, str(valor))
-            # Y ACA EL ATERRIZAJE PAGA SOLO (22-sep-2026). `SIN_CAMPO` es la
-            # escapatoria que el modelo usa cuando no encuentra donde escribir
-            # algo; si ese valor SI vive en un campo del catalogo, el codigo lo
-            # sabe y se lo dice en vez de dejarlo con el hueco. El modelo no
-            # tiene que acertarle al nombre de nuestro esquema: alcanza con que
-            # escriba la palabra del cliente.
+            # Y ACA EL ATERRIZAJE PAGA SOLO (22-sep-2026).
             descartados.append({
                 "campo": SIN_CAMPO, "valor": str(valor),
                 "motivo": ("el catalogo no tiene ningun campo para eso: no se "
@@ -1052,24 +551,16 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                                 "motivo": f"operador desconocido: {operador}"})
             continue
         if str(valor).strip() == "":
-            # UNA CONDICION SIN VALOR NO ES UNA CONDICION, y hasta el 11-sep
-            # sobre un campo de TEXTO se aplicaba igual: `almacenamiento igual
-            # ''` no dejaba pasar a nadie y se llevaba puesto el catalogo
-            # entero, en silencio y sin un motivo escrito. El gemelo numerico
-            # -`garantia_meses menor ''`- si estaba tapado, dos guardas mas
-            # abajo, asi que el agujero era solo de este lado.
-            #
-            # Lo encontro el barrido de filtros el dia que por fin se corrio:
-            # la grilla estaba armada y contada desde el 12-ago y la ejecutaba
-            # una sesion a mano cuando se acordaba.
+            # UNA CONDICION SIN VALOR NO ES UNA CONDICION, y hasta el 11-sep sobre un campo de TEXTO se
+            # aplicaba igual: `almacenamiento igual ''` no dejaba pasar a nadie y se llevaba puesto el
+            # catalogo entero, en silencio y sin un motivo escrito.
             descartados.append({"campo": campo,
                                 "motivo": "la condicion vino sin valor: no se "
                                           "puede filtrar por nada"})
             continue
         if operador in ORDENAN:
-            # NO FILTRA: ORDENA. `quedan` sale con los mismos productos y en
-            # otro orden, asi que una preferencia jamas puede vaciar el
-            # resultado ni cambiar el veredicto.
+            # NO FILTRA: ORDENA. `quedan` sale con los mismos productos y en otro orden, asi que una
+            # preferencia jamas puede vaciar el resultado ni cambiar el veredicto.
             if tipo == "numero":
                 quedan, pegan, sin_dato = _preferencia_numerica(
                     quedan, campo, operador, valor)
@@ -1080,10 +571,9 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                                  "valor": valor, "cumplen": pegan,
                                  "sin_dato": sin_dato,
                                  "evaluados": len(quedan),
-                                 # COMO se ordeno, para que el renglon que lee
-                                 # el modelo no diga que 171 "cumplen" un
-                                 # numero: sobre un numero no se cumple, se
-                                 # esta mas cerca o mas lejos.
+                                 # COMO se ordeno, para que el renglon que lee el modelo no diga que 171
+                                 # "cumplen" un numero: sobre un numero no se cumple, se esta mas cerca o mas
+                                 # lejos.
                                  "por": ("cercania" if tipo == "numero"
                                          else "coincidencia")})
             continue
@@ -1098,23 +588,12 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                                 "motivo": f"'{valor}' no es un numero"})
             continue
 
-        # CONTRA CUANTOS SE EVALUO. Sin este numero, `sin_dato: 43` no se puede
-        # interpretar: no se sabe si son 43 de 200 -un dato incompleto- o 43 de
-        # 43 -la fuente no sabe NADA del tema-. Son dos respuestas distintas y
-        # hasta hoy salian iguales.
+        # CONTRA CUANTOS SE EVALUO. Sin este numero, `sin_dato: 43` no se puede interpretar: no se sabe si son
+        # 43 de 200 -un dato incompleto- o 43 de 43 -la fuente no sabe NADA del tema-.
         evaluados = len(quedan)
         cumplen = [p for p in quedan
                    if evaluar(p, campo, operador, valor, tipo) is True]
-        # "IGUAL G203" CONTRA "G203 LIGHTSYNC" (22-sep-2026). Medido en la
-        # tanda de charlas, CH5: el modelo escribio `modelo igual G203`, no
-        # pego con ninguno porque el modelo del catalogo es "G203 Lightsync",
-        # el motor dijo que no existe y el cliente leyo "el G203 no lo
-        # tenemos" con un Redragon ofrecido en su lugar. Un "no lo vendemos"
-        # falso sobre un producto que esta en el catalogo, que es lo que la
-        # regla 10.0 existe para impedir. Si el igual no pega con NINGUNO y el
-        # contiene si, se aplica el contiene y se anota: aterriza el valor en
-        # vez de negar el producto. Nunca agranda un resultado que ya tenia
-        # filas.
+        # "IGUAL G203" CONTRA "G203 LIGHTSYNC" (22-sep-2026).
         relajado = False
         if (not cumplen and operador == "igual" and tipo not in
                 ("numero", "si_no")):
@@ -1126,31 +605,7 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
                        if evaluar(p, campo, operador, valor, tipo) is None)
         sin_dato_total += sin_dato
         if evaluados and sin_dato == evaluados:
-            # EL CAMPO MUERTO EN ESTE UNIVERSO (22-sep-2026), Y HASTA HOY
-            # SALIA COMO "NO LO VENDEMOS".
-            #
-            # QUE PASABA. El hueco se anotaba —esta linea ya estaba— y despues
-            # se vaciaba `quedan` igual, asi que la consulta devolvia CERO y el
-            # veredicto salia `no_existe`. Medido en produccion, turno
-            # 2c36e750: el cliente dice "se me traba la compu cuando abro
-            # muchas pestañas", el modelo razona bien y pide memoria ram con
-            # `ram_ampliable igual si`, las 96 memorias no tienen ese campo
-            # cargado, y el turno termino contestando 202 caracteres de la FAQ.
-            # El modelo interpreto bien y el sistema contesto mal.
-            #
-            # ES LA MISMA DOCTRINA QUE `condicion_sin_vocabulario`, un escalon
-            # mas arriba: "un valor que la fuente no usa no puede devolver
-            # cero, porque cero se lee como no lo tenemos". Un CAMPO que esta
-            # vacio en todas las filas del universo tampoco puede. La condicion
-            # no se cumplio ni se dejo de cumplir: NO SE PUDO APLICAR.
-            #
-            # Y POR ESO `quedan` NO SE TOCA. El resto del pedido sobrevive, que
-            # es la regla que la boca CATALOGO ya le promete al modelo: un
-            # campo que no existe se dice y NO cancela el resto.
-            #
-            # EN EL CATALOGO DEL REPO: `color` esta en 861 de 880 productos y
-            # en CERO de los 19 procesadores. "Un procesador negro" devolvia
-            # cero y el bot contestaba que no lo vendemos.
+            # EL CAMPO MUERTO EN ESTE UNIVERSO (22-sep-2026), Y HASTA HOY SALIA COMO "NO LO VENDEMOS".
             huecos.anotar(tienda_id, "sin_dato", campo, str(valor))
             descartados.append({
                 "campo": campo, "valor": str(valor),
@@ -1175,23 +630,6 @@ def aplicar(prods: list[dict], filtros: list, tienda_id: str) -> dict:
 
 
 # ── RELEVANCIA — el criterio de orden que NO existia ────────────────────────
-#
-# MEDIDO EL 5-AGO, y es la falla mas cara del sistema. `descripcion` se usaba
-# para UNA sola cosa: el certificador de identidad, que matchea por tokens
-# contra nombre, marca y modelo. Si no certificaba un modelo puntual, la
-# descripcion se TIRABA ENTERA y el resultado salia de ordenar por precio.
-#
-#   "mouse gamer inalambrico bueno"        -> los 3 mouse mas baratos
-#   "notebook para diseño grafico"         -> las 3 notebooks mas baratas de 171
-#
-# Las palabras del cliente no tocaban un solo campo. El catalogo tiene `tags`,
-# `descripcion_rica` y `uso_recomendado` llenos en 880 de 880 y ninguno de los
-# tres se leia. Un chat de IA ordena por pertinencia y usa el precio como un
-# criterio mas; aca la pertinencia ERA el precio.
-#
-# Esto no es semantica ni embeddings: es contar coincidencias de palabra contra
-# los campos de texto de la ficha, con peso por campo. Cuesta cero tokens y
-# escala a 5.000 productos igual que a 880.
 _CAMPOS_RELEVANCIA = (
     ("nombre", 5.0), ("modelo", 4.0), ("marca", 3.0), ("tags", 3.0),
     ("uso_recomendado", 2.5), ("caracteristicas_extra", 2.0),
@@ -1199,29 +637,18 @@ _CAMPOS_RELEVANCIA = (
     ("descripcion", 1.0), ("descripcion_rica", 1.0), ("contenido_caja", 0.5),
 )
 
-# LOS CAMPOS QUE DICEN QUE ES LA COSA, y son otra cosa que los que dicen COMO
-# ES. Es la regla 10.0 aplicada al texto: identidad y caracteristica no se
-# mezclan. Que un producto SE LLAME "Mouse Logitech M170" lo hace un mouse; que
-# su descripcion mencione la palabra "notebook" no lo convierte en una.
-#
-# De aca sale el umbral de identidad, que es lo unico que puede decidir si algo
-# EXISTE. La relevancia no puede: es un ordenador, siempre devuelve los cinco
-# de arriba aunque el mejor tenga cero.
+# LOS CAMPOS QUE DICEN QUE ES LA COSA, y son otra cosa que los que dicen COMO ES.
 _CAMPOS_IDENTIDAD = ("nombre", "modelo", "marca", "tags", "categoria")
 
-# Palabras que aparecen en cualquier consulta y no discriminan nada. Sin esto
-# "un mouse PARA jugar" puntua alto en todo lo que diga "para" en su prosa.
+# Palabras que aparecen en cualquier consulta y no discriminan nada.
 _VACIAS = frozenset({
     "para", "que", "una", "uno", "unos", "unas", "con", "sin", "por", "los",
     "las", "del", "este", "esta", "esto", "algo", "alguna", "alguno", "mas",
     "menos", "muy", "pero", "como", "sea", "ser", "tenga", "tener", "quiero",
     "busco", "necesito", "dame", "mostrame", "tenes", "hay", "sirve", "anda",
     "bueno", "buena", "barato", "barata", "caro", "cara", "mejor", "peor",
-    # LAS PREPOSICIONES DE TOPE ENTRAN ACA DESDE LA FICHA 06, y las trajo un
-    # falso positivo medido: "hasta 100 mil" resolvia a `bateria contiene hast`,
-    # o sea que un tope de precio filtraba por la bateria. Una preposicion no
-    # nombra ningun valor del catalogo; que aparezca adentro de la prosa de un
-    # campo es una casualidad de la palabra, no un hecho del producto.
+    # LAS PREPOSICIONES DE TOPE ENTRAN ACA DESDE LA FICHA 06, y las trajo un falso positivo medido: "hasta 100
+    # mil" resolvia a `bateria contiene hast`, o sea que un tope de precio filtraba por la bateria.
     "hasta", "desde", "entre", "sobre", "cada", "todo", "toda", "todos",
     "cuanto", "cuantos", "cuesta", "sale", "vale", "precio"})
 
@@ -1243,22 +670,7 @@ def _texto_del_producto(prod: dict) -> list[tuple]:
 
 
 def relevancia(prod: dict, texto: str, raras: dict | None = None) -> float:
-    """Cuanto se parece este producto a lo que el cliente pidio, en palabras.
-
-    `raras` es el peso por palabra segun cuan poco comun sea entre los
-    CANDIDATOS. Sin eso la relevancia no discrimina y quedo medido por que:
-    ante "mouse gamer inalambrico" sobre la categoria mouse, la palabra "mouse"
-    matchea en el nombre, la categoria, los tags y la descripcion de LOS 45, o
-    sea suma la misma constante a todos, mientras que "gamer" e "inalambrico" -
-    las unicas que separan- pesaban lo mismo que ella. Los 171 notebooks daban
-    12,5 puntos exactos, uno por uno.
-
-    La palabra que aparece en casi todos los candidatos no informa nada; la que
-    aparece en pocos es justamente la que el cliente uso para elegir.
-
-    Cero NO descarta el producto, solo lo manda al fondo del orden. Descartar
-    por relevancia seria devolver vacio, que es la regla que no se rompe.
-    """
+    """Cuanto se parece este producto a lo que el cliente pidio, en palabras."""
     palabras = palabras_utiles(texto)
     puntos = _frase_corta(prod, texto)
     if not palabras:
@@ -1275,11 +687,7 @@ def relevancia(prod: dict, texto: str, raras: dict | None = None) -> float:
 
 
 def _frase_corta(prod: dict, texto: str) -> float:
-    """LO QUE LAS PALABRAS CORTAS DICEN JUNTAS (2-oct, guion 30). `palabras_utiles`
-    descarta lo de menos de tres letras, y "g pro x" quedaba en "pro": ganaba
-    una memoria Crucial Pro y el cliente leia que el G Pro X era una RAM. Un
-    tramo seguido de la consulta que lleva una palabra corta y aparece igual
-    en el nombre o el modelo es un nombre de modelo, y pesa por su largo."""
+    """LO QUE LAS PALABRAS CORTAS DICEN JUNTAS (2-oct, guion 30)."""
     ws = [w for w in _norm(texto).split() if w not in _VACIAS]
     if len(ws) < 2 or all(len(w) >= 3 for w in ws):
         return 0.0
@@ -1293,19 +701,7 @@ def _frase_corta(prod: dict, texto: str) -> float:
 
 
 def palabras_utiles(texto: str) -> list[str]:
-    """Las palabras de la consulta que pueden discriminar algo, RECORTADAS A SU
-    RAIZ cuando son largas.
-
-    La raiz no es un adorno: el cliente escribe "retroiluminado" y la ficha dice
-    "retroiluminacion"; escribe "inalambrico" y la spec dice "inalambrica";
-    escribe "mecanico" y el switch dice "mecanicos". Sin recortar, ninguna de
-    las tres matchea y la relevancia cae al precio con el dato cargado al lado.
-    Se recortan tres letras y nunca por debajo de cinco, que alcanza para que
-    dos palabras distintas no se pisen.
-
-    UNA PALABRA CON NUMEROS NO SE RECORTA (16-oct): es un codigo de modelo, no
-    una palabra con raiz. "wh-ch520" quedaba en "wh-ch" y pegaba igual con el
-    WH-CH720N."""
+    """Las palabras de la consulta que pueden discriminar algo, RECORTADAS A SU RAIZ cuando son largas."""
     fuera = []
     for w in dict.fromkeys(_norm(texto).split()):
         if len(w) < 3 or w in _VACIAS:
@@ -1316,15 +712,8 @@ def palabras_utiles(texto: str) -> list[str]:
 
 
 def palabras_de_identidad(prods: list[dict], texto: str) -> list[str]:
-    """Las palabras que nombran UN producto: las utiles, mas las cortas que el
-    catalogo usa en el campo `modelo` (16-oct). `palabras_utiles` tira lo de
-    menos de tres letras, y en un nombre de modelo eso es lo que identifica:
-    "MX Master 3S" quedaba en "maste" y pegaba con las fuentes Cooler Master;
-    "Galaxy Tab A9" con todas las Galaxy Tab; "JBL Go 3" con veinte JBL. Que una
-    palabra corta cuente lo decide el catalogo, no una lista. Con numero —"3s",
-    "a9", "3"— alcanza con que este en algun modelo. Sin numero tiene que venir
-    pegada a su vecina como en un modelo: "mx master" y "go 3" si; "mi
-    notebook" no, aunque exista el cargador Xiaomi "Mi 33W"."""
+    """Las palabras que nombran UN producto: las utiles, mas las cortas que el catalogo usa en el campo `modelo`
+    (16-oct)."""
     modelos = [" " + " ".join(w for w in re.split(r"[^a-z0-9]+", _norm(_valor_crudo(p, "modelo"))) if w) + " "
                for p in prods or []]
     sueltas = {w for m in modelos for w in m.split()}
@@ -1340,9 +729,7 @@ def palabras_de_identidad(prods: list[dict], texto: str) -> list[str]:
 
 
 def pesos_por_rareza(prods: list[dict], texto: str) -> dict:
-    """Cuanto vale cada palabra de la consulta, segun en cuantos candidatos
-    aparece. La que esta en mas del 60% no separa nada y se anula: es el nombre
-    del rubro que el cliente repitio, no su criterio de eleccion."""
+    """Cuanto vale cada palabra de la consulta, segun en cuantos candidatos aparece."""
     palabras = palabras_utiles(texto)
     if not palabras or not prods:
         return {}
@@ -1352,8 +739,7 @@ def pesos_por_rareza(prods: list[dict], texto: str) -> dict:
         n = sum(1 for p in prods
                 if any(_texto_contiene(v, w) for v, _ in _texto_del_producto(p)))
         frac = n / total
-        # 0 si esta en casi todos; 1 si esta en pocos. Lineal y sin magia: lo
-        # unico que importa es que la palabra comun deje de tapar a la rara.
+        # 0 si esta en casi todos; 1 si esta en pocos.
         fuera[w] = 0.0 if frac >= 0.6 else (1.0 - frac / 0.6)
     # Si TODAS las palabras eran comunes no se anula la consulta entera: se
     # devuelven todas con peso bajo y el desempate por precio hace el resto.
@@ -1363,18 +749,7 @@ def pesos_por_rareza(prods: list[dict], texto: str) -> dict:
 
 
 def lo_nombra(prod: dict, texto: str) -> bool:
-    """¿Este producto SE LLAMA algo de lo que el cliente pidio?
-
-    Mira solo los campos de identidad -nombre, modelo, marca, tags, categoria-
-    y nunca la prosa. Es la mitad que faltaba de la busqueda: `relevancia`
-    ORDENA, y un ordenador siempre devuelve los cinco de arriba, tenga el mejor
-    parecido cero o no. Preguntar "¿tenes zapatillas?" devolvia cinco mouse con
-    veredicto `existe`, que es la respuesta 2 dicha como la 3 al reves.
-
-    NO LLEVA NUMERO, y eso es a proposito: un umbral de puntaje habria que
-    recalibrarlo cada vez que cambia el catalogo o el peso de un campo. Esto
-    pregunta por el ESTADO -¿alguna ficha lo nombra?- y no envejece.
-    """
+    """¿Este producto SE LLAMA algo de lo que el cliente pidio?"""
     palabras = palabras_utiles(texto)
     if not palabras:
         return False
@@ -1394,25 +769,7 @@ def alguno_lo_nombra(prods: list[dict], texto: str) -> bool:
 
 
 def los_que_lo_nombran_entero(prods: list[dict], texto: str) -> list[dict]:
-    """LOS QUE SE LLAMAN TODO ESO, no alguna parte. El hermano estricto de
-    `lo_nombra`, y existe por la plata.
-
-    `lo_nombra` pregunta si ALGUNA palabra pega, que es lo que hace falta para
-    decidir si algo EXISTE: "¿tenes auriculares?" tiene que contestar. Para
-    poner un producto en una CUENTA la pregunta es otra y mas dura: ¿hay UNA
-    sola ficha que se llame asi? "auriculares" lo dicen 46 fichas y elegir una
-    seria inventarle plata al cliente; "Mouse Logitech G203 Lightsync Negro" lo
-    dice una sola.
-
-    TAMPOCO LLEVA NUMERO, por lo mismo que su hermano: pregunta por el ESTADO
-    -cuantas fichas se llaman asi- y no envejece con el catalogo.
-
-    Y EL NOMBRE ENTERO GANA, que es el desempate sin el cual esto no servia
-    para nada. `palabras_utiles` recorta las palabras cortas, asi que el nombre
-    completo de una notebook pega tambien con sus tres hermanas -la Slim 5 y la
-    Ryzen 7 tienen esas mismas palabras MAS otras-. La ficha que se llama
-    EXACTAMENTE asi no es una candidata mas: es la respuesta.
-    """
+    """LOS QUE SE LLAMAN TODO ESO, no alguna parte."""
     palabras = palabras_de_identidad(prods, texto)
     if not palabras:
         return []
@@ -1429,9 +786,7 @@ def los_que_lo_nombran_entero(prods: list[dict], texto: str) -> list[dict]:
 
 
 def clave_de_orden(prod: dict, campo: str, tienda_id: str):
-    """El valor comparable de un producto para ordenar por `campo`. None cuando
-    la ficha no lo dice: esos van al final, nunca al principio, porque un dato
-    faltante no es un cero."""
+    """El valor comparable de un producto para ordenar por `campo`."""
     from app.core.fuente_producto import valor_numerico
     tipo = campos_filtrables(tienda_id).get(campo)
     crudo = _valor_crudo(prod, campo)
@@ -1439,20 +794,14 @@ def clave_de_orden(prod: dict, campo: str, tienda_id: str):
         return None
     if tipo == "numero":
         return _a_numero(crudo)
-    # Un campo de texto puede igual traer una magnitud: "512GB", "75Hz",
-    # "24 meses". Si la trae se ordena por el numero; si no, alfabetico.
+    # Un campo de texto puede igual traer una magnitud: "512GB", "75Hz", "24 meses".
     n = valor_numerico(crudo)
     return n if n is not None else _norm(crudo)
 
 
 
 def orden_tiene_sentido(prods: list[dict], campo: str, tienda_id: str) -> bool:
-    """¿Ordenar por este campo ordena por ALGO?
-
-    Un campo de texto puede igual traer magnitudes -"512GB", "24 meses", "75Hz"-
-    y ahi el orden significa algo real. Si sus valores son etiquetas -"China",
-    "Negro", "Plastico"-, el orden es alfabetico y no responde a ninguna
-    pregunta que un cliente pueda hacer. Se mira el dato, no el nombre."""
+    """¿Ordenar por este campo ordena por ALGO?"""
     from app.core.fuente_producto import valor_numerico
     con_dato = [_valor_crudo(p, campo) for p in (prods or [])[:60]]
     con_dato = [v for v in con_dato if v not in (None, "", [], {})]
@@ -1464,11 +813,7 @@ def orden_tiene_sentido(prods: list[dict], campo: str, tienda_id: str) -> bool:
 
 def ordenar(prods: list[dict], campo: str, direccion: str,
             tienda_id: str) -> list[dict]:
-    """Ordena por cualquier campo del registro. Reemplaza al `orden`
-    barato|caro, que era este mismo mecanismo con UN campo clavado.
-
-    Los que no tienen el dato van al final en las dos direcciones: si el
-    cliente pide "el mas liviano", una ficha sin peso no puede ganar."""
+    """Ordena por cualquier campo del registro."""
     con, sin = [], []
     for p in prods:
         k = clave_de_orden(p, campo, tienda_id)
@@ -1483,8 +828,7 @@ def ordenar(prods: list[dict], campo: str, direccion: str,
 
 
 def cuantos_cumple(prod: dict, filtros: list, tienda_id: str) -> int:
-    """Cuantos de los filtros cumple este producto. Ordena el rescate cuando
-    ninguno los cumple todos: es el equivalente de `_grado` para los filtros."""
+    """Cuantos de los filtros cumple este producto."""
     registro = campos_filtrables(tienda_id)
     n = 0
     for f in (filtros or []):
@@ -1500,22 +844,8 @@ def cuantos_cumple(prod: dict, filtros: list, tienda_id: str) -> int:
 
 def rankear_por_cercania(prods: list[dict], filtros: list, tienda_id: str,
                          desempate: str = "precio_ars") -> tuple[list, int, int]:
-    """Cuando NINGUN producto cumple todas las condiciones: los ordena por
-    CUANTAS incumple, y dice cuantos empatan en el mejor puesto.
-
-    Reemplaza a `_grado`, que puntuaba "cuan chino es un producto" sumando 3
-    por la marca y 2 por la fabricacion. Eso era un JUICIO -cuanto pesa cada
-    cosa lo decide el cliente, no la fuente- y ademas no discriminaba: medido
-    el 5-ago, 19 mouse empataban en el mismo grado y el codigo devolvia tres
-    arbitrarios presentados como "los menos chinos".
-
-    EL EMPATE SE INFORMA, no se disimula. Si 19 productos estan realmente igual
-    de lejos, la respuesta honesta es decirlo y desempatar por un criterio
-    declarado. Inventar un gradiente mas fino para que salga un ganador es
-    exactamente la alucinacion que el sistema existe para evitar.
-
-    Devuelve (ordenados, empatados_en_el_mejor, incumplimientos_del_mejor).
-    """
+    """Cuando NINGUN producto cumple todas las condiciones: los ordena por CUANTAS incumple, y dice cuantos
+    empatan en el mejor puesto."""
     if not prods:
         return [], 0, 0
     total = len([f for f in (filtros or [])])
@@ -1524,15 +854,11 @@ def rankear_por_cercania(prods: list[dict], filtros: list, tienda_id: str,
     mejor = min(n for n, _ in puntuados)
     empatados = sum(1 for n, _ in puntuados if n == mejor)
     # Desempate DECLARADO: entre los que estan igual de cerca, el mas barato.
-    # Cualquier criterio sirve mientras se diga cual es; lo que no vale es un
-    # orden arbitrario presentado como ranking.
     puntuados.sort(key=lambda t: (t[0], t[1].get(desempate) or 0))
     return [p for _, p in puntuados], empatados, mejor
 
 
-# Como se nombra cada campo cuando el texto sale AL CLIENTE. Solo los que
-# aparecen de verdad en una condicion incumplida; para el resto se usa el nombre
-# del campo con los guiones bajos sacados, que se lee bien igual.
+# Como se nombra cada campo cuando el texto sale AL CLIENTE.
 _ETIQUETAS = {
     "origen": "origen", "pais_marca": "país de la marca",
     "pais_fabricacion": "país de fabricación", "marca": "marca",
@@ -1543,15 +869,7 @@ _ETIQUETAS = {
 
 
 def dato_que_falla(prod: dict, filtros: list, tienda_id: str) -> str:
-    """El VALOR REAL del primer campo que hace que este producto no cumpla, ya
-    escrito para el cliente.
-
-    Nace de un error que llego hasta el mensaje: el bloque pegaba la condicion
-    cruda y al cliente le llegaba "no cumple: origen no_contiene chin", con la
-    sintaxis interna y la raiz truncada adentro. Mostrar el dato en vez de la
-    condicion no solo saca la sintaxis: es mas util, porque el cliente ve la
-    ficha real y decide por su cuenta si le sirve.
-    """
+    """El VALOR REAL del primer campo que hace que este producto no cumpla, ya escrito para el cliente."""
     registro = campos_filtrables(tienda_id)
     for f in (filtros or []):
         campo = _norm(getattr(f, "campo", "") if not isinstance(f, dict)
@@ -1576,13 +894,7 @@ def dato_que_falla(prod: dict, filtros: list, tienda_id: str) -> str:
     return ""
 
 
-# COMO LO ESCRIBE EL CLIENTE REAL -> el rubro del catalogo. Sale de los
-# mensajes de Martin y de las charlas de WhatsApp, no de una lista imaginada.
-# Si el codigo no reconoce el rubro, la busqueda vuelve sin un solo producto.
-#
-# ACA SE ACUMULA LA EXPERIENCIA: cuando una charla real traiga una palabra
-# nueva, se agrega el renglon. La lista se valida contra las categorias REALES
-# antes de usarse.
+# COMO LO ESCRIBE EL CLIENTE REAL -> el rubro del catalogo.
 _COMO_LO_DICE_EL_CLIENTE = {
     "mause": "mouse", "mauses": "mouse", "maus": "mouse", "raton": "mouse",
     "auris": "auriculares", "auricular": "auriculares",
@@ -1601,8 +913,7 @@ _COMO_LO_DICE_EL_CLIENTE = {
 
 
 def _rubros_por_como_lo_dice(msg: str, reales: set) -> list[str]:
-    """Los rubros que el cliente nombro con SU palabra. `msg` ya viene
-    normalizado; `reales` son las categorias del catalogo, en minuscula."""
+    """Los rubros que el cliente nombro con SU palabra."""
     import re
     out = []
     for alias, cat in _COMO_LO_DICE_EL_CLIENTE.items():
@@ -1614,8 +925,7 @@ def _rubros_por_como_lo_dice(msg: str, reales: set) -> list[str]:
 
 
 def categorias_nombradas(mensaje: str, tienda_id: str) -> list[str]:
-    """Categorias REALES de la tienda nombradas en el mensaje. Mudada de
-    guia_pedido en la FICHA 36: el vivo la pedía, el resto del modulo no."""
+    """Categorias REALES de la tienda nombradas en el mensaje."""
     import re
     from app.storage.firestore_client import get_categories
     try:
@@ -1656,13 +966,7 @@ _NUM_PAL = {"un": 1, "una": 1, "uno": 1, "dos": 2, "tres": 3, "cuatro": 4,
 
 
 def cantidades_por_categoria(mensaje: str, tienda_id: str) -> list:
-    """[(cantidad, categoria_real)] de la PRIMERA mencion de cada rubro.
-
-    Las cantidades totales van primero y la distribucion despues: 'dos
-    auriculares... un auricular a Cordoba' cuenta 2, no 1. Mudada de
-    guia_pedido: el vivo la necesita para completar item→ciudad ANTES de
-    buscar y cotizar.
-    """
+    """[(cantidad, categoria_real)] de la PRIMERA mencion de cada rubro."""
     from app.storage.firestore_client import get_categories
     try:
         categorias = get_categories(tienda_id=tienda_id) or []

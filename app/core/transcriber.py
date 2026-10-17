@@ -8,10 +8,7 @@ log = get_logger(__name__)
 
 
 def transcribir_audio(audio_bytes: bytes, filename: str = "audio.ogg") -> str | None:
-    """Recibe bytes de audio y devuelve texto transcrito.
-
-    Retorna None si falla.
-    """
+    """Recibe bytes de audio y devuelve texto transcrito."""
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         log.error("transcriber_no_groq_key")

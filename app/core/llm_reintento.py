@@ -1,18 +1,4 @@
-"""
-REINTENTO DE LLAMADA LLM — red comun contra el hipo transitorio del proveedor.
-
-Nacio de un banco end-to-end (23-jul): un 429 en RAFAGA de Gemini hacia que el
-solver devolviera CERO fragmentos y el bot emitiera el fallback "dejame
-consultar y te confirmo", una promesa que nunca cumple. Ni el interprete ni el
-solver reintentaban. En produccion (clave paga) los 429 son rafagas que se
-recuperan en menos de un segundo: un backoff acotado los absorbe sin que el
-cliente vea nada.
-
-UN solo helper para las DOS llamadas (interprete y solver): consolidacion, no
-dos copias. Solo reintenta el error TRANSITORIO (429/5xx/timeout/overloaded);
-cualquier otro se re-lanza al toque, igual que antes. Acotado: agrega a lo sumo
-la suma de los backoffs cuando de verdad hay hipo, cero en el camino feliz.
-"""
+"""REINTENTO DE LLAMADA LLM — red comun contra el hipo transitorio del proveedor."""
 import asyncio
 import re
 
@@ -20,39 +6,12 @@ from app.logger import get_logger
 
 log = get_logger(__name__)
 
-# Marcas de error que SI conviene reintentar: cuota momentanea, 5xx, saturacion,
-# timeout. Se matchea sobre el texto del error (los SDK OpenAI-compat lo traen).
+# Marcas de error que SI conviene reintentar: cuota momentanea, 5xx, saturacion, timeout.
 _TRANSITORIO = ("429", "500", "502", "503", "504", "overloaded",
                 "unavailable", "timeout", "timed out", "quota", "rate limit")
 
 
 # ── LA LLAMADA NEGADA, PARA QUE UNA MEDICION NO MIENTA ─────────────────────
-#
-# POR QUE EXISTE (9-ago-2026, y costo una corrida entera). La clave paga se
-# quedo sin credito a mitad de una corrida de `objetivo.py --vivo`. Cinco de
-# quince turnos nunca le hablaron al modelo y salieron con el fallback "dejame
-# consultar", que la vara puntua CERO. El resultado -promedio 54, peor caso 0-
-# se leia como una regresion enorme del codigo, y no habia ninguna: el codigo
-# de esas cinco corridas jamas corrio.
-#
-# Una vara que confunde "el proveedor no contesto" con "el bot contesto mal"
-# manda a arreglar lo que no esta roto, que es la forma mas cara de perder un
-# dia. Aca se anota el hecho UNA vez, en el unico lugar por donde pasan las dos
-# llamadas al modelo, y el banco lo lee para marcar la corrida como INVALIDA en
-# vez de puntuarla.
-#
-# NO cambia el comportamiento del bot: solo cuenta. En produccion el contador
-# sube y nadie lo mira, que es exactamente lo que tiene que pasar.
-# NO ALCANZA CON MIRAR EL TEXTO "429", y se vio en la corrida siguiente. La
-# primera version buscaba palabras de cuota -"credits are depleted", "quota",
-# "429"- y dejo pasar un cero: `str(asyncio.TimeoutError())` es la cadena VACIA,
-# asi que el timeout no matcheaba nada y esa corrida se puntuo 0 igual que
-# antes. El hecho que importa no es COMO se llamo el error: es que la llamada al
-# modelo fallo definitivamente, y entonces el codigo que se queria medir nunca
-# corrio. Por eso se anota cuando se agotan los reintentos de un error
-# TRANSITORIO -cuota, 5xx, saturacion, timeout-, que es la misma definicion que
-# ya usa el reintento. Un error NO transitorio es un defecto de verdad y tiene
-# que puntuar como lo que es.
 _cupo: dict = {"veces": 0, "ultimo": ""}
 
 
@@ -63,8 +22,7 @@ def anotar_llamada_negada(e: BaseException) -> None:
 
 
 def sin_cupo() -> dict:
-    """Cuantas veces la llamada al modelo se cayo sin recuperarse, y con que
-    texto. El banco lo lee para marcar esa corrida como SIN MEDIR."""
+    """Cuantas veces la llamada al modelo se cayo sin recuperarse, y con que texto."""
     return dict(_cupo)
 
 
@@ -84,14 +42,7 @@ _RE_ESPERA = re.compile(r"retry(?:Delay)?[\"'\s:]*in?[\"'\s:]*([\d.]+)\s*s",
 
 
 def espera_sugerida(e: BaseException) -> float | None:
-    """Los segundos que el PROVEEDOR pide esperar, si los dice.
-
-    Nacio de medir la clave gratis de Gemini el 11-ago. Su 429 no es una rafaga
-    de un segundo como el de la clave paga: es la cuota de tokens por minuto
-    -250.000 de entrada- y el propio error trae `retryDelay: 18s`. Contra eso
-    el backoff ciego de 0,6 + 1,2 segundos no sirve de nada: gasta tres
-    llamadas, falla igual y el turno se cae. El numero esta en el error; se usa
-    ese en vez de adivinar."""
+    """Los segundos que el PROVEEDOR pide esperar, si los dice."""
     m = _RE_ESPERA.search(str(e) or "")
     if not m:
         return None
@@ -104,14 +55,8 @@ def espera_sugerida(e: BaseException) -> float | None:
 async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
                                intentos: int = 3, base_s: float = 0.6,
                                trace_id: str = "") -> str:
-    """Corre fn() (bloqueante) en un thread; si falla con error transitorio,
-    reintenta con backoff exponencial (base_s, 2*base_s, ...). Re-lanza el
-    ultimo error si se agotan los intentos o el error NO es transitorio. Con
-    timeout_s cada intento tiene su propio tope; sin el, no se impone timeout.
-
-    Si el proveedor dice cuanto hay que esperar, manda ese numero y no el
-    backoff, siempre que entre en el tope `LLM_ESPERA_MAX_S`. Si pide mas que
-    el tope se corta al toque: reintentar sin respetarlo es regalar llamadas."""
+    """Corre fn() (bloqueante) en un thread; si falla con error transitorio, reintenta con backoff exponencial
+    (base_s, 2*base_s, ...)."""
     from app.config import get_settings
     tope = float(get_settings().LLM_ESPERA_MAX_S)
     ultimo: BaseException | None = None
@@ -135,9 +80,8 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
                             error=str(e)[:80], trace_id=trace_id)
                 await asyncio.sleep(espera)
                 continue
-            # Se anota SOLO cuando los reintentos se agotaron: una rafaga de
-            # 429 que el backoff absorbe no ensucia nada y no tiene que
-            # invalidar una medicion que salio bien.
+            # Se anota SOLO cuando los reintentos se agotaron: una rafaga de 429 que el backoff absorbe no
+            # ensucia nada y no tiene que invalidar una medicion que salio bien.
             anotar_llamada_negada(e)
             raise
     assert ultimo is not None
@@ -145,18 +89,7 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
 
 
 def un_sistema(msgs: list) -> list:
-    """UN SOLO MENSAJE DE SISTEMA, al principio (7-oct-2026, FICHA 67).
-
-    La puerta OpenAI de Gemini se queda con el ULTIMO mensaje de sistema y tira
-    los anteriores, sin error. El tablero mandaba sus reglas y despues la
-    memoria como otro sistema: desde el segundo mensaje de cada charla, el
-    interprete, las preguntas de si o no y el redactor corrian sin sus
-    instrucciones. Medido: el interprete con 5.400 caracteres de reglas y
-    ejemplos informaba los mismos 298 tokens de entrada que sin ellos, y una
-    palabra secreta dicha en el primer sistema no la sabia el modelo.
-
-    Aca se juntan todos, en orden, antes de llamar. Vale para cualquier
-    proveedor: el que leia varios lee lo mismo en uno."""
+    """UN SOLO MENSAJE DE SISTEMA, al principio (7-oct-2026, FICHA 67)."""
     sistemas = [m.get("content") or "" for m in msgs if m.get("role") == "system"]
     if len(sistemas) < 2:
         return list(msgs)
@@ -169,21 +102,9 @@ def _settings():
     return get_settings()
 
 
-# ══════════════════════════════════════════════════════════════════════════
-# LA PUERTA AL MODELO
-# ══════════════════════════════════════════════════════════════════════════
-#
-# VIVE ACA DESDE QUE SE APAGO EL HUB (3-sep-2026), y la mudanza saca tres
-# ciclos de import de un movimiento. Estaba en `hub_venta`, y `cierre`,
-# `memoria_larga` y `main` la importaban de ahi con un import perezoso adentro
-# de una funcion, que es la forma de esconder un ciclo sin arreglarlo. Este
-# modulo ya era el unico lugar por donde pasan las dos llamadas -es donde vive
-# el reintento y la marca de la llamada negada-, asi que la puerta y el
-# reintento son una sola cosa y no dos.
-#
-# `settings` se lee adentro de cada funcion a proposito: este modulo lo importa
-# `app.config` en su propio camino, y leerlo arriba cerraria el ciclo que la
-# mudanza vino a abrir.
+# ══════════════════════════════════════════════════════════════════════════ LA PUERTA AL MODELO
+# ══════════════════════════════════════════════════════════════════════════ VIVE ACA DESDE QUE SE APAGO EL
+# HUB (3-sep-2026), y la mudanza saca tres ciclos de import de un movimiento.
 
 
 def _cliente():

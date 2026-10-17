@@ -1,26 +1,12 @@
-"""
-NOTIFICADOR al dueno.
-
-Cuando el validator bloquea una respuesta (o cuando una conversacion deriva
-por cualquier motivo), avisa al dueno por Telegram con tres datos:
-- que pregunto el cliente
-- que iba a contestar el bot
-- chat id del cliente para que el dueno le responda directo
-
-Usa el mismo token de Telegram del bot Verifika.
-El chat id del dueno se lee de la variable de entorno OWNER_TELEGRAM_CHAT_ID.
-Si no esta seteada, el notificador no hace nada (modo silencioso).
-
-Se llama en background, no bloquea la respuesta al cliente.
-"""
+"""NOTIFICADOR al dueno. Cuando el validator bloquea una respuesta (o cuando una conversacion deriva por
+cualquier motivo), avisa al dueno por Telegram con tres datos: - que pregunto el cliente - que iba a contestar
+el bot - chat id del cliente para que el dueno le responda directo Usa el mismo token de Telegram del bot
+Verifika."""
 import os
 import asyncio
 import httpx
 
-# structlog, como el resto de los modulos. El logger estandar de Python NO
-# acepta kwargs (log.info("x", tienda_id=...) tira TypeError) y ese crash,
-# dentro del try del envio, enmascaraba el resultado real de la notificacion
-# (bug visto en prod 11-jun: "Logger._log() got an unexpected keyword 'error'").
+# structlog, como el resto de los modulos.
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -44,12 +30,7 @@ async def notificar_lead(
     forma_pago: str = "",
     orden: str = "",
 ) -> bool:
-    """
-    Avisa al dueno por Telegram cuando hay un lead nuevo o capturado.
-    No bloquea, falla silencioso si algo sale mal.
-
-    estado puede ser intencion_detectada o capturado.
-    """
+    """Avisa al dueno por Telegram cuando hay un lead nuevo o capturado."""
     if not OWNER_CHAT_ID:
         return False
     if not TELEGRAM_TOKEN:

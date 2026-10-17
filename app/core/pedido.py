@@ -1,19 +1,4 @@
-"""EL PEDIDO — lo que el cliente pidio, como estado que maneja el codigo (1-oct-2026).
-
-POR QUE EXISTE. Un pedido como el del 70/30 —seis articulos, tres destinos y
-un teclado que no estaba en la lista— se resolvia en un solo turno, y cuando
-el interprete entendia mal, el error salia directo en el presupuesto. Ahora,
-si el codigo ve que lo repartido no cierra con lo pedido, no calcula: guarda
-el pedido y le pregunta al cliente si entendio bien. Con el si, calcula.
-
-LO QUE SE GUARDA SON LAS PIEZAS, la misma estructura validada que corre el
-codigo. Confirmar es volver a correr exactamente eso: el modelo no lo
-reescribe, asi que lo que el cliente aprobo es lo que se cuenta. Vive en
-`pedido_pendiente` de la conversacion; `{}` lo borra.
-
-Se confirma UNA vez por pedido: si el cliente corrige, se cuenta con la
-correccion y no se vuelve a preguntar. Asi no hay vuelta en circulo.
-"""
+"""EL PEDIDO — lo que el cliente pidio, como estado que maneja el codigo (1-oct-2026)."""
 import copy
 
 # Lo que un pedido guardado reemplaza al confirmarse: lo demas del mensaje
@@ -34,9 +19,7 @@ def pendiente(pedido) -> dict:
 
 
 def retomar(pedido: dict, piezas_del_turno: list) -> list:
-    """Las piezas guardadas, y del mensaje nuevo solo lo que no es del pedido.
-    Los numeros del mensaje nuevo se corren para que no choquen con los
-    guardados en depende_de."""
+    """Las piezas guardadas, y del mensaje nuevo solo lo que no es del pedido."""
     otras = [dict(p, n=int(p.get("n") or 0) + 100,
                   depende_de=[int(d) + 100 for d in p.get("depende_de") or []])
              for p in piezas_del_turno if p.get("tipo") not in DEL_PEDIDO]

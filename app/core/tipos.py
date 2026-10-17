@@ -1,10 +1,4 @@
-"""LOS VEINTE TIPOS — catalogo del banco, no del turno vivo.
-
-El agente de `app/core/agente.py` no lee esto. Lo importan
-`banco_pruebas/preguntas.py`, el censo de huecos y la sonda. Se queda aca
-porque el censo y esas herramientas lo necesitan; enchufarlo al turno vivo
-lo decide Martin.
-"""
+"""LOS VEINTE TIPOS — catalogo del banco, no del turno vivo."""
 
 # {tipo: (cuando aplica, molde de la respuesta)}
 TIPOS = {

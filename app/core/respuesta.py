@@ -1,28 +1,4 @@
-"""EL TURNO — el agente busca, el codigo certifica, cierra y recuerda (26-sep-2026).
-
-QUE REEMPLAZA. Al turno del interprete de la ficha 58: una llamada que
-traducia el mensaje a una ficha, el codigo que compilaba y el motor que
-buscaba una vez, con el redactor detras. Medido en el banco —fichas 59 a 62—,
-el modelo parte y resuelve la memoria de cabeza y se equivocaba al escribir un
-esquema grande; ahora busca solo con herramientas chicas. Todo eso vive en
-`app/core/agente.py`. No conviven: el interprete se borro en este commit.
-
-EL FLUJO, entero:
-  1. TABLERO  `tablero.turno`, desde el 30-sep: el modelo parte el mensaje en
-              piezas, el codigo corre las herramientas del agente —buscar,
-              producto, envio, politica, compatibilidad, cuenta, reservar— y
-              un redactor contesta solo con lo que volvio. FICHA 65.
-  2. NUMEROS  la guarda de procedencia de siempre: si quedo una cifra de plata
-              que ninguna herramienta devolvio, la respuesta no sale.
-  3. CIERRE   si el cliente decidio comprar, se toma el pedido y se manda el
-              link de pago. `leads` y `cierre` no se tocaron.
-  4. MEMORIA  se guarda la charla, lo que el cliente vio y el ultimo
-              presupuesto, igual que siempre.
-
-LO QUE EL MODELO NO PUEDE HACER, y lo garantiza el codigo, no el prompt:
-escribir una cifra que no salio de una herramienta, afirmar la identidad de un
-producto que el motor no certifico, e inventar una politica de la casa.
-"""
+"""EL TURNO — el agente busca, el codigo certifica, cierra y recuerda (26-sep-2026)."""
 import json
 import re
 import time
@@ -37,15 +13,7 @@ settings = get_settings()
 
 
 def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
-    """Las fichas que la respuesta NOMBRA, en el orden en que las nombra.
-
-    SE APAREA POR MODELO, que es la palabra que distingue un producto en una
-    respuesta —"el K120", "el G203"—, y no por el nombre entero, que el modelo
-    casi nunca copia tal cual. Un modelo de menos de tres letras no se busca:
-    aparear por parecido es la enfermedad que el MAPA_CABLEADO tiene numerada.
-    El mismo modelo en dos colores queda en el lugar donde se nombro, con el
-    color que la respuesta dice primero.
-    """
+    """Las fichas que la respuesta NOMBRA, en el orden en que las nombra."""
     import re
     from app.storage.firestore_client import get_product_by_id
     t = _norm_simple(texto)
@@ -59,10 +27,7 @@ def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
                               for m in re.finditer(re.escape(k), t)})
         if not apariciones:
             continue
-        # SI EL MODELO SE NOMBRA UNA VEZ, sus colores son UN renglon: "el G203
-        # en negro o blanco". SI SE NOMBRA POR COLOR -"1. G203 negro, 2. G203
-        # blanco"- cada color es su renglon, y la posicion es la de la
-        # aparicion que sigue su color. Manda lo que el cliente leyo.
+        # SI EL MODELO SE NOMBRA UNA VEZ, sus colores son UN renglon: "el G203 en negro o blanco".
         color = _norm_simple(prod.get("color"))
         i = apariciones[0]
         if len(apariciones) > 1 and color:
@@ -84,13 +49,8 @@ def _nombrados(texto: str, fichas: list, tienda_id: str) -> list:
 
 
 def _claves_modelo(modelo, tienda_id: str = "") -> list:
-    """Como se nombra un modelo en una respuesta: entero -"G Pro X
-    Superlight"- o por la parte que lleva numeros -"G203" de "G203
-    Lightsync"-, que es la que usan el cliente y el bot. Una palabra sin
-    numeros no alcanza: "Pro" o "Core" estan en veinte modelos.
-    LA PARTE IDENTIFICA SOLO SI ES DE ESE MODELO (16-oct, K21): "ddr4" u "8gb"
-    estan en otros modelos del catalogo, y nombrar una memoria Kingston daba por
-    nombradas las Patriot."""
+    """Como se nombra un modelo en una respuesta: entero -"G Pro X Superlight"- o por la parte que lleva numeros
+    -"G203" de "G203 Lightsync"-, que es la que usan el cliente y el bot."""
     import re
     m = _norm_simple(modelo)
     claves = [m] if len(m) >= 3 else []
@@ -110,22 +70,14 @@ def _norm_simple(t) -> str:
     return "".join(c for c in t if unicodedata.category(c) != "Mn")
 
 
-# LO QUE RESPONDIO A LO QUE EL CLIENTE PIDIO POR CRITERIO (2-oct, K18): "el mas
-# caro" mostraba cinco notebooks y la memoria los guardaba iguales, asi que
-# "sumame uno de cada uno" sumaba los cinco. La respuesta era el primero; los
-# otros eran contexto. La marca va pegada al id y `tablero._elegidos` la lee.
+# LO QUE RESPONDIO A LO QUE EL CLIENTE PIDIO POR CRITERIO (2-oct, K18): "el mas caro" mostraba cinco notebooks
+# y la memoria los guardaba iguales, asi que "sumame uno de cada uno" sumaba los cinco.
 RESPUESTA = " · fue la respuesta a lo que pidio"
 
 
 def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
                    tienda_id: str, respondidos: list = None) -> list:
-    """La lista de productos vistos despues de este turno.
-
-    LO NOMBRADO VA AL FINAL, EN SU ORDEN Y CON SU TURNO. Si la respuesta no
-    nombra ninguna ficha por su modelo —una charla sobre envio, o un nombre que
-    no se pudo aparear— se guardan las fichas como antes, para no perder el id:
-    olvidar es peor que recordar de mas.
-    """
+    """La lista de productos vistos despues de este turno."""
     nombrados = _nombrados(texto, fichas, tienda_id)
     nuevos = nombrados or [f for f in fichas or []
                            if str(f.get("id")) not in
@@ -133,8 +85,7 @@ def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
     ids = {str(f.get("id")) for f in nuevos}
     fuera = [p for p in vistos if str(p.get("id")) not in ids]
     for f in nuevos:
-        # EL PRECIO SE GUARDA: sin el, el turno siguiente no puede decir
-        # cuanto salia lo que ya se mostro.
+        # EL PRECIO SE GUARDA: sin el, el turno siguiente no puede decir cuanto salia lo que ya se mostro.
         fuera.append({"id": f.get("id"), "nombre": f.get("nombre"),
                       "precio": f.get("precio"),
                       "modelo": f.get("modelo") or "",
@@ -145,13 +96,7 @@ def _vistos_al_dia(vistos: list, fichas: list, texto: str, turno: int,
 
 
 def _senal(llamadas: list, mensaje: str) -> dict:
-    """La interpretacion MINIMA que pide el cierre: intencion y confianza.
-
-    Sale de dos lados. De lo que el agente HIZO —si llamo a `reservar` y el
-    producto quedo listo para cerrar, el cliente decidio comprar— y de la
-    marca determinista sobre el mensaje, que no depende de que el modelo se
-    acuerde de nada. Con que uno de los dos diga compra, alcanza.
-    """
+    """La interpretacion MINIMA que pide el cierre: intencion y confianza."""
     from app.core.leads import _RE_PIDE_COBRO
     if _RE_PIDE_COBRO.search(mensaje or ""):
         return {"intencion": "decision_compra", "confianza": 1.0,
@@ -174,9 +119,8 @@ def _lo_que_volvio(llamadas: list) -> tuple:
     def filas(r):
         for f in (r or {}).get("filas") or []:
             if f.get("id") and str(f["id"]) not in {str(x.get("id")) for x in fichas}:
-                # EL PRECIO TAMBIEN EN NUMERO: la guarda de plata suma con
-                # `precio_ars`, y sin el tiraba por inventada una suma correcta
-                # de dos precios que si volvieron.
+                # EL PRECIO TAMBIEN EN NUMERO: la guarda de plata suma con `precio_ars`, y sin el tiraba por
+                # inventada una suma correcta de dos precios que si volvieron.
                 ars = re.sub(r"\D", "", str(f.get("precio") or ""))
                 fichas.append({"id": f["id"], "nombre": f.get("nombre"), "precio": f.get("precio"),
                                **({"precio_ars": int(ars)} if ars else {})})
@@ -184,8 +128,7 @@ def _lo_que_volvio(llamadas: list) -> tuple:
             # tiene que poder volver a ellos por su id.
             for v in f.get("variantes") or []:
                 if v.get("id") and str(v["id"]) not in {str(x.get("id")) for x in fichas}:
-                    # Sin precio propio es el del renglon: la variante solo
-                    # lo trae cuando es otro.
+                    # Sin precio propio es el del renglon: la variante solo lo trae cuando es otro.
                     ars = re.sub(r"\D", "", str(v.get("precio") or f.get("precio") or ""))
                     from app.storage.firestore_client import get_product_by_id
                     prod = get_product_by_id(str(v["id"])) or {}
@@ -211,12 +154,7 @@ def _lo_que_volvio(llamadas: list) -> tuple:
 
 async def _cerrar(conv, user_id, canal, tienda_id, mensaje, texto, trace_id,
                   senal) -> tuple:
-    """CIERRE Y COBRO. La misma funcion de siempre: `leads` no se toco.
-
-    El bot que contesta bien y no toma el pedido no sirve para vender, asi que
-    esta etapa sobrevivio al apagon entera. Devuelve (texto, datos del cliente,
-    si ya se pregunto el cierre).
-    """
+    """CIERRE Y COBRO. La misma funcion de siempre: `leads` no se toco."""
     from app.core.cierre import extraer_datos_cliente, extraer_determinista
     from app.core.leads import _RE_PIDE_COBRO, procesar_mensaje_para_lead
     datos_previos = conv.get("datos_cliente_parciales") or {}
@@ -243,8 +181,7 @@ async def _cerrar(conv, user_id, canal, tienda_id, mensaje, texto, trace_id,
                 presupuesto_nuevo=False,
                 pregunta_cierre_hecha=bool(conv.get("pregunta_cierre_hecha")))
             rd = (meta.get("respuesta_directa") or "").strip()
-            # EL COBRO NO SE ENTREGA DOS VECES: se compara por el DATO -el CBU
-            # o el alias-, no por el texto.
+            # EL COBRO NO SE ENTREGA DOS VECES: se compara por el DATO -el CBU o el alias-, no por el texto.
             if rd and meta.get("accion") == "cobro_datos":
                 try:
                     from app.core.pago import datos_transferencia
@@ -275,9 +212,7 @@ async def _cerrar(conv, user_id, canal, tienda_id, mensaje, texto, trace_id,
 
 async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
                          canal: str, trace_id: str) -> str:
-    """Un turno completo. Devuelve el texto para el cliente.
-
-    Misma firma que el turno viejo: el orchestrator no cambia."""
+    """Un turno completo. Devuelve el texto para el cliente."""
     t0 = time.time()
     etapas: dict = {}
     from app.core import guardas_salida as gs
@@ -302,9 +237,8 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     fichas, envios, cuenta = _lo_que_volvio(llamadas)
     etapas["turno"] = int((time.time() - t) * 1000)
     if not llamadas:
-        # Se CUENTA cada turno que contesto sin consultar: no se bloquea —la
-        # guarda de procedencia ya impide que salga una cifra que no vio—,
-        # pero es como se sabe si el modelo busca o contesta de memoria.
+        # Se CUENTA cada turno que contesto sin consultar: no se bloquea —la guarda de procedencia ya impide
+        # que salga una cifra que no vio—, pero es como se sabe si el modelo busca o contesta de memoria.
         log.warning("turno_sin_buscar", trace_id=trace_id)
 
     texto = (r.get("texto") or "").strip()
@@ -317,10 +251,6 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
         log.warning("respuesta_sin_modelo", trace_id=trace_id)
     else:
         # ── 2. NUMEROS ──────────────────────────────────────────────────
-        # SOLO VALE LO DE ESTE TURNO: lo que devolvio cada herramienta y la
-        # ficha de la charla. La charla escrita no es fuente: ahi viven los
-        # presupuestos viejos (FICHA 69). Un monto sin fuente se saca con su
-        # renglon y el resto sale; la cuenta la pone el codigo por su marca.
         t = time.time()
         fuente = ficha + "\n" + json.dumps([x.get("vuelve") for x in llamadas], ensure_ascii=False, default=str)
         # EL PRESUPUESTO ANTERIOR VALE MIENTRAS EL PEDIDO NO CAMBIO: sin calculo en este turno, o con uno que da el
@@ -371,16 +301,13 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str,
     primero = next(iter(envios), "")
     localidad = (F.estable_de(primero, previa) or primero or previa) \
         if primero else previa
-    # LA CUENTA SOBREVIVE AL TURNO: `leads` lee `ultimo_presupuesto` para
-    # decidir si puede cerrar. Una cuenta que no se pudo hacer no pisa la
-    # anterior, que sigue siendo lo ultimo que el cliente vio.
+    # LA CUENTA SOBREVIVE AL TURNO: `leads` lee `ultimo_presupuesto` para decidir si puede cerrar.
     presupuesto = carrito = None
     if (cuenta or {}).get("total_ars") is not None:
         presupuesto = str(cuenta.get("detalle") or "")[:900] or None
         carrito = cuenta.get("items") or None
-    # CON VARIOS DESTINOS EL PRESUPUESTO ES EL TOTAL GENERAL (7-oct, K21): la
-    # ultima cuenta es un solo destino, y el cierre cobraba eso. Lo que va a
-    # cada destino ya queda en `grupos_envio`.
+    # CON VARIOS DESTINOS EL PRESUPUESTO ES EL TOTAL GENERAL (7-oct, K21): la ultima cuenta es un solo
+    # destino, y el cierre cobraba eso.
     general = next((x.get("vuelve") for x in reversed(llamadas) if x.get("herramienta") == "total_general"
                     and (x.get("vuelve") or {}).get("total_ars") is not None), None)
     if general:

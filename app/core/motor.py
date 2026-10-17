@@ -1,56 +1,12 @@
-"""
-EL MOTOR — la UNICA puerta por la que el modelo busca en la fuente.
-
-QUE CAMBIA, y es lo unico que cambia. Hasta hoy el codigo ADIVINABA que fichas
-ponerle delante al modelo: leia el mensaje crudo, sacaba palabras, y con eso
-elegia cinco productos. El modelo recibia el resultado de una busqueda que
-nunca pidio. Ahora la pide el.
-
-POR QUE. El codigo no razona, asi que no puede elegir. Medido el 11-sep sobre
-las funciones que adivinan: "que no sea de marca china" resolvia a
-`origen no_contiene marc` —la raiz de "marca", que esta en los 880 origenes—,
-o sea CERO productos y el bot contestando que no hay nada. No es un bug de esa
-funcion: es que traducir una frase a un campo es razonar, y eso lo hace el
-modelo o no lo hace nadie.
-
-LA FORMA DE LA BUSQUEDA ES CONSULTA ESTRUCTURADA, y se descarto el resto:
-
-  - PALABRA CLAVE SOLA no alcanza, y esta medido arriba.
-  - EMBEDDINGS quedan afuera por la regla 10.4: una cita tiene que poder
-    mapearse a un id. Un vecino cercano no se puede verificar mecanicamente, y
-    lo que no se verifica no sale al cliente.
-  - CONSULTA ESTRUCTURADA es el idioma nativo del modelo: campos y valores, que
-    es lo que ya escribe. El codigo la EJECUTA, determinista de punta a punta.
-
-El texto libre no se pierde: entra como UN campo mas de la consulta y lo resuelve
-la relevancia, que ya existe y ya pesa por rareza. Es un criterio, no el
-mecanismo.
-
-UNA SOLA PUERTA Y UN SOLO NOMBRE. No son tres motores. Son tres MAPAS
-—producto, envio, politicas— y un motor, porque el mecanismo de buscar es el
-mismo en los tres. Si aparece un segundo motor, es la complejidad volviendo.
-
-LO QUE ESTE MODULO NO HACE, a proposito:
-  - No razona. No mira el mensaje del cliente: mira la consulta que el modelo
-    escribio.
-  - No inventa identidad. Devuelve un veredicto y ante `ambiguo` no elige.
-  - No escribe un numero de plata. Devuelve la ficha con el precio ya escrito,
-    igual que `fuente._ficha_corta`, y quien lo pone en el texto es `numeros`.
-
-Y CASI TODO ESTO YA ESTABA. `aplicar`, `ordenar`, `rankear_por_cercania` y
-`relevancia` viven en `filtros_catalogo` y estan medidas: la grilla entera del
-barrido, 687 casos, da cero fallas. El motor las ENSAMBLA y les pone una puerta
-con contrato. No es una capa nueva encima; es la puerta que faltaba.
-"""
+"""EL MOTOR — la UNICA puerta por la que el modelo busca en la fuente."""
 import json
 
 from app.logger import get_logger
 
 log = get_logger(__name__)
 
-# Tope duro de filas por consulta. El modelo puede pedir menos, nunca mas: una
-# busqueda que devuelve cuarenta fichas inunda el prompt y ademas no sirve, que
-# es la leccion del catalogo entero que no entra.
+# Tope duro de filas por consulta. El modelo puede pedir menos, nunca mas: una busqueda que devuelve cuarenta
+# fichas inunda el prompt y ademas no sirve, que es la leccion del catalogo entero que no entra.
 TOPE_FILAS = 8
 
 # La salida del orden: la respuesta cuando el cliente no pidio ninguno.
@@ -59,50 +15,29 @@ SIN_ORDEN = "ninguno"
 
 FILAS_POR_DEFECTO = 5
 
-# Cuantas consultas entran en una llamada. Un pedido multiple —"dos auriculares,
-# dos mouse y dos memorias"— es UNA llamada con tres consultas, no tres turnos.
+# Cuantas consultas entran en una llamada.
 TOPE_CONSULTAS = 6
 
-# Hasta cuantos empatados siguen siendo UNA COSA con variantes -el mismo teclado
-# en negro, blanco, gris y azul- y no un termino generico. Pasados estos, que el
-# cliente haya nombrado una sola cosa y empaten veinte quiere decir que la
-# nombro ancho, y ahi mostrar la lista es mejor que repreguntar.
+# Hasta cuantos empatados siguen siendo UNA COSA con variantes -el mismo teclado en negro, blanco, gris y
+# azul- y no un termino generico.
 TOPE_AMBIGUO = 4
 
-# Cuantas cosas escritas por la casa vuelven en una llamada. El mismo tope que
-# usa `fuente`, y por el mismo motivo: ante un tema ambiguo se sirven TODOS los
-# candidatos en vez de elegir.
-#
-# SUBE DE 3 A 6 EL 20-sep Y NO ES AFLOJAR LA VARA: es la misma capacidad de
-# antes en un solo campo. Hasta hoy el modelo podia pedir 3 por `temas` y 3
-# por `criterio`, y los dos campos se fundieron en uno. Con 3 el mensaje que
-# pregunta garantia, cuotas y ademas para que sirve un mouse perdia una de las
-# tres, que es justo el defecto que esta tanda vino a cerrar.
+# Cuantas cosas escritas por la casa vuelven en una llamada.
 TOPE_TEMAS = 6
 
-# LOS TEMAS QUE EL ENVIO APAGA, y viven ACA desde el 13-sep. Con una tarifa
-# exacta cotizada, la politica publica apenas el RANGO -"de 5.000 a 12.000"- y
-# el modelo escribia el numero flojo teniendo el bueno al lado. El apagado
-# estaba en el turno, que era el que empujaba el envio; ahora las dos cosas se
-# piden por esta puerta y la decision vive donde se ven las dos.
+# LOS TEMAS QUE EL ENVIO APAGA, y viven ACA desde el 13-sep.
 TEMAS_DEL_ENVIO = ("costo_envio", "envios")
 
 
-# Cuantos pares de compatibilidad se evaluan en una llamada. Un armado -"¿la
-# placa entra en esta mother, y la memoria?"- son dos o tres pares; mas que eso
-# no es una pregunta de un cliente, es un barrido.
+# Cuantos pares de compatibilidad se evaluan en una llamada.
 TOPE_COMPAT = 4
 
-# Cuantas entradas de criterio vuelven en una llamada. El mismo tope que las
-# politicas: ante un tema ambiguo se sirven todos los candidatos en vez de
-# elegir, y tres alcanza para eso.
+# Cuantas entradas de criterio vuelven en una llamada.
 TOPE_CRITERIO = 3
 
 
 class _Cond:
-    """La condicion como la espera `filtros_catalogo.aplicar`, que lee por
-    atributo. El modelo manda JSON, o sea diccionarios; esto es el unico
-    adaptador y vive aca para que `aplicar` no tenga que saber de dos formas."""
+    """La condicion como la espera `filtros_catalogo.aplicar`, que lee por atributo."""
 
     __slots__ = ("campo", "operador", "valor")
 
@@ -113,11 +48,7 @@ class _Cond:
 
 
 def _equipos(tienda_id: str) -> str:
-    """Los equipos que el vocabulario de compatibilidad conoce, con la etiqueta
-    que lee un cliente. Salen de la FUENTE viva -`compatibilidad_vocabulario.
-    json`-, igual que el enum de campos: una tienda nueva trae los suyos sin
-    tocar una linea. Son doce y caben; el alias -"de apple", "la play"- lo
-    resuelve el codigo, asi que no hace falta escribirlos aca."""
+    """Los equipos que el vocabulario de compatibilidad conoce, con la etiqueta que lee un cliente."""
     try:
         from app.core.compatibilidad import vocabulario
         v = vocabulario(tienda_id)
@@ -134,8 +65,7 @@ def _equipos(tienda_id: str) -> str:
 
 
 def _universo(catalogo: list, categoria: str, tienda_id: str) -> tuple:
-    """El catalogo acotado al rubro que pidio el modelo. Si el rubro no existe
-    se dice y se busca en todo: acotar a la nada devolveria cero en silencio."""
+    """El catalogo acotado al rubro que pidio el modelo."""
     from app.core.filtros_catalogo import _norm
     cat = _norm(categoria)
     if not cat:
@@ -155,41 +85,13 @@ def _por_ids(catalogo: list, ids: list) -> list:
 
 
 def _con_la_cuenta(filas: list, unidades: int, trace_id: str = "") -> None:
-    """EL SUBTOTAL DE CADA LINEA, HECHO POR `calculadora` (13-sep-2026).
-
-    ES EL CALCULO DE ESTA BOCA, y el criterio de la FICHA 52: cada boca trae su
-    calculo adentro. Envio ya lo hacia —su tabla de tarifas es fuente y el
-    codigo deriva la del destino— y catalogo no tenia el suyo: "dos teclados de
-    esos" volvia con el precio unitario y la multiplicacion quedaba para el
-    modelo, que es justo lo que el modelo no tiene que hacer.
-
-    POR QUE LA HERRAMIENTA Y NO UN `precio * cantidad` ACA. Porque seria un
-    SEGUNDO lugar donde el repo hace cuentas de plata, y el dia que las dos se
-    separen nadie va a saber cual manda. `calculadora.calculate_total` es la
-    herramienta de la plata, esta escrita, esta medida, y desde el apagon del
-    11-sep NO LA LLAMABA NADIE desde `app/`: enchufarla aca no agrega una pieza,
-    revive la que estaba.
-
-    LO QUE NO HACE, y es la mitad que no le toca a esta boca: el total del
-    pedido, el envio y el descuento. Eso cruza bocas y vive en el retorno. Por
-    eso se llama con `items` y nada mas —sin `pago`, sin `destinos`, sin
-    `items_extra`— y de lo que devuelve se usa UNA cosa: el subtotal de cada
-    linea.
-
-    No devuelve nada: escribe sobre las filas. Si la cuenta falla, la fila
-    queda con su cantidad y sin subtotal, que es honesto; lo que no puede pasar
-    es que una cuenta rota tumbe la busqueda.
-    """
+    """EL SUBTOTAL DE CADA LINEA, HECHO POR `calculadora` (13-sep-2026)."""
     if unidades <= 1 or not filas:
         return
     from app.core.fuente import _plata
     try:
         from app.core.calculadora import calculate_total
-        # SIN VALIDAR STOCK: esto es una LISTA de opciones, no un pedido. El
-        # motivo entero y la medicion estan en `calculadora.calculate_total`.
-        # El stock de cada fila viaja igual en la ficha, asi que el modelo lo
-        # ve y lo puede decir; lo que no puede pasar es que un agotado deje sin
-        # subtotal a los otros cuatro.
+        # SIN VALIDAR STOCK: esto es una LISTA de opciones, no un pedido.
         r = calculate_total(items=[{"product_id": f.get("id"),
                                     "cantidad": unidades}
                                    for f in filas if f.get("id")],
@@ -215,47 +117,7 @@ def _con_la_cuenta(filas: list, unidades: int, trace_id: str = "") -> None:
 
 def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
                trace_id: str = "", catalogo: list | None = None) -> dict:
-    """LA CUENTA DEL RETORNO — lo que CRUZA bocas, calculado ANTES de redactar.
-
-    QUE ES Y POR QUE VIVE ACA. Cada boca trae su calculo adentro: catalogo
-    multiplica por la cantidad, envio saca la tarifa de su tabla. Pero el TOTAL
-    del pedido, el descuento por transferencia y el reparto entre medios de
-    pago no son de ninguna boca: cruzan todas. La FICHA 52 los pone en el
-    RETORNO, y el punto es el ANTES: el modelo escribe con el numero resuelto
-    en la mano en vez de dejar un hueco que el codigo tapa despues.
-
-    QUE CAMBIA. Hasta hoy `{{total}}` lo resolvia `numeros` SUMANDO las cifras
-    que ya estaban escritas en el mensaje. Esa suma no puede conocer el
-    descuento por transferencia ni el reparto 70/30, asi que el setenta treinta
-    no existia: `calculate_total` es la unica que llama a `pago_split`, y desde
-    el apagon del 11-sep el TOTAL del pedido no la llamaba nunca.
-
-    TODA LA PLATA LA HACE `calculadora`, incluido el envio. La tarifa no se
-    suma a mano aca: entra como `items_extra` por el mismo camino que la
-    calculadora ya tiene escrito, con el `concepto` que ella misma deriva de la
-    provincia. Un segundo lugar donde este repo sume plata es un segundo lugar
-    que se puede separar del primero.
-
-    LOS DESTINOS NO SE DECLARAN: salen de lo que la boca de envio YA cotizo en
-    esta misma llamada. Preguntarselos al modelo seria pedir dos veces el mismo
-    dato y abrir la puerta a que las dos respuestas no coincidan.
-
-    EL ID SE CERTIFICA ADENTRO, igual que en `_un_compat` (15-sep-2026, FICHA
-    54 punto 3.2). El modelo puede escribir el nombre que uso el cliente y el
-    codigo lo resuelve con la MISMA consulta de identidad; antes hacia falta
-    una vuelta previa para conseguir el id, y una vuelta cuesta del orden de
-    7.700 tokens. La regla 10.0 no se toca: el id lo certifica una funcion
-    determinista, no el modelo.
-
-    Y ACA LA AMBIGUEDAD NO TIENE ATAJO, que es la diferencia con la
-    compatibilidad. Alla dos candidatos pueden dar el mismo veredicto y
-    contestar sin elegir; aca cada candidato tiene SU precio, asi que un nombre
-    que pega con mas de uno no se cuenta: vuelve `sin_total` con los
-    candidatos, que es la respuesta 4 de la FICHA 52. Elegir seria inventarle
-    plata al cliente.
-
-    No lanza: una cuenta rota deja al turno sin total, nunca con uno inventado.
-    """
+    """LA CUENTA DEL RETORNO — lo que CRUZA bocas, calculado ANTES de redactar."""
     porid = {str(p.get("id")): p for p in (catalogo or [])}
     items, pedidos_como = [], []
     for x in (pedido or {}).get("items") or []:
@@ -279,9 +141,7 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
 
     from app.core.calculadora import calculate_total, cotizar_envio
 
-    # EL ENVIO ENTRA POR LA CALCULADORA, con el concepto que ella deriva de la
-    # provincia. Un destino que no clasifica no suma nada y tampoco rompe: la
-    # cuenta sale sin envio y el retorno lo dice por la boca de envio.
+    # EL ENVIO ENTRA POR LA CALCULADORA, con el concepto que ella deriva de la provincia.
     extras = []
     for fila in (envios or {}).get("filas") or []:
         destino = str(fila.get("destino") or "").strip()
@@ -300,9 +160,6 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
     reparto = [x for x in ((pedido or {}).get("reparto_pago") or [])
                if isinstance(x, dict) and x.get("medio")]
     # UN MEDIO QUE LA TIENDA NO TOMA NO ENTRA A LA CUENTA, Y SE DICE.
-    # Dejarlo entrar es peor que ignorarlo: `pago_split` lo trataria como
-    # transferencia y le aplicaria el descuento, o sea que el bot cotizaria
-    # mas barato por algo que no se puede pagar.
     from app.core.filtros_catalogo import _norm
     no_disp = [x for x in reparto
                if _norm(x.get("medio")) == "medio_no_disponible"]
@@ -310,9 +167,7 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
         reparto = [x for x in reparto if x not in no_disp]
 
     try:
-        # UN ENVIO POR DESTINO (1-oct): la calculadora cobra cada destino con
-        # su tarifa si sabe cuantos son. Sin `destinos` cobraba uno solo y
-        # "un mouse a Rosario y otro a Concordia" salia con un envio de menos.
+        # UN ENVIO POR DESTINO (1-oct): la calculadora cobra cada destino con su tarifa si sabe cuantos son.
         r = calculate_total(items=items, items_extra=extras or None,
                             pago=reparto or None, destinos=max(1, len(extras)))
     except Exception as e:  # noqa: BLE001 — una cuenta rota no tumba el turno
@@ -320,18 +175,16 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
                     error=f"{type(e).__name__}: {str(e)[:150]}")
         return {}
     if not r.get("ok"):
-        # EL MOTIVO VIAJA. Un total que no se pudo hacer y vuelve mudo se lee
-        # como un total de cero; con el motivo escrito el modelo dice que le
-        # falta para poder darlo, que es la respuesta 5 de las seis.
+        # EL MOTIVO VIAJA. Un total que no se pudo hacer y vuelve mudo se lee como un total de cero; con el
+        # motivo escrito el modelo dice que le falta para poder darlo, que es la respuesta 5 de las seis.
         return {"sin_total": str(r.get("mensaje_para_llm") or
                                  "no se pudo armar la cuenta")}
 
     from app.core.fuente import _plata
     fuera = {"total_ars": r.get("total_ars"),
              "total": _plata(r.get("total_ars")),
-             # LA PRESENTACION YA VIENE ESCRITA POR LA CALCULADORA, renglon por
-             # renglon, con el subtotal, el envio y el reparto. Reescribirla
-             # aca seria la segunda descripcion de lo mismo.
+             # LA PRESENTACION YA VIENE ESCRITA POR LA CALCULADORA, renglon por renglon, con el subtotal, el
+             # envio y el reparto.
              "detalle": r.get("presentacion") or ""}
     if r.get("total_final_ars") is not None:
         fuera["total_final_ars"] = r["total_final_ars"]
@@ -347,12 +200,8 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
             "el cliente nombro un medio de pago que la tienda no toma. Se "
             "cobra por transferencia, Mercado Pago o tarjeta. Decilo y no "
             "lo cuentes en el total.")
-    # QUE HAY ADENTRO DEL TOTAL, y no es adorno: es lo que el turno guarda como
-    # carrito para que el turno SIGUIENTE no lo rearme de cero. Medido el
-    # 15-sep en WhatsApp: tres turnos seguidos sobre el MISMO pedido dieron
-    # tres totales distintos -207.500, 284.000 y 395.000- porque cada uno
-    # eligio productos y cantidades por su cuenta. Sin esta lista, lo unico que
-    # sobrevive al turno es una cifra suelta que nadie puede verificar.
+    # QUE HAY ADENTRO DEL TOTAL, y no es adorno: es lo que el turno guarda como carrito para que el turno
+    # SIGUIENTE no lo rearme de cero.
     fuera["items"] = [
         {"id": i["product_id"], "cantidad": i["cantidad"],
          "nombre": (porid.get(i["product_id"]) or {}).get("nombre") or ""}
@@ -361,21 +210,7 @@ def _la_cuenta(pedido: dict, envios: dict, tienda_id: str,
 
 
 def _certificar_id(nombre: str, catalogo: list, tienda_id: str) -> dict:
-    """EL NOMBRE QUE USO EL CLIENTE, RESUELTO A UN ID. Devuelve {id, nombre} o
-    {sin_total: motivo} cuando no se puede certificar sin elegir.
-
-    LA VARA ES MAS DURA QUE LA DE `_un_compat`, Y LA DIFERENCIA ES LA PLATA.
-    Alla alcanza el veredicto de `_una`, porque dos candidatos pueden dar la
-    misma respuesta de compatibilidad. Aca cada candidato tiene SU precio, y
-    `_una` con `busco: uno` no alcanza: medido el 15-sep, "auriculares" le da
-    veredicto `existe` con el Zeus X Negro primero -46 fichas se llaman asi y
-    el orden desempata por parecido-. Contar eso seria elegir por el cliente.
-    Asi que se pide identidad ENTERA: una sola ficha que se llame todo eso.
-
-    NO ES UN MECANISMO NUEVO: es `lo_nombra`, el mismo certificador de
-    identidad, preguntado en su forma estricta. `_una` sigue siendo quien
-    escribe el motivo cuando no se puede certificar.
-    """
+    """EL NOMBRE QUE USO EL CLIENTE, RESUELTO A UN ID."""
     from app.core.filtros_catalogo import los_que_lo_nombran_entero
     exactos = los_que_lo_nombran_entero(catalogo, nombre)
     if len(exactos) == 1:
@@ -391,17 +226,14 @@ def _certificar_id(nombre: str, catalogo: list, tienda_id: str) -> dict:
     candidatos = (exactos or
                   [{"id": f.get("id"), "nombre": f.get("nombre")}
                    for f in filas])[:TOPE_AMBIGUO]
-    # CON SU PRECIO (2-oct, guion 28): "el HyperX Cloud II" en dos colores
-    # volvia sin un solo monto, y el cliente que pidio sumarlo no leia cuanto
-    # sale. El precio es de la ficha; elegir sigue siendo del cliente.
+    # CON SU PRECIO (2-oct, guion 28): "el HyperX Cloud II" en dos colores volvia sin un solo monto, y el
+    # cliente que pidio sumarlo no leia cuanto sale.
     precios = {str(p.get("id")): p.get("precio_ars") for p in catalogo}
     lista = [f"{c.get('nombre')} ({c.get('id')}"
              + (f", ${precios[str(c.get('id'))]:,}".replace(",", ".") if precios.get(str(c.get("id"))) else "")
              + ")" for c in candidatos]
-    # EL MISMO PRECIO NO ES "CADA UNO SALE DISTINTO" (16-oct): la Galaxy Tab A9
-    # en tres colores vale lo mismo, y el motivo le decia al redactor que no.
-    # Elegir sigue siendo del cliente; lo que cambia es que el precio se sabe.
-    # Solo si todos nombran entero lo pedido: "el G203 o el G305" no es uno.
+    # EL MISMO PRECIO NO ES "CADA UNO SALE DISTINTO" (16-oct): la Galaxy Tab A9 en tres colores vale lo mismo,
+    # y el motivo le decia al redactor que no.
     mismos = {precios.get(str(c.get("id"))) for c in candidatos}
     if exactos and len(candidatos) > 1 and len(mismos) == 1 and None not in mismos:
         return {"sin_total": f"'{nombre}' es uno de estos y todos salen lo "
@@ -416,15 +248,7 @@ def _certificar_id(nombre: str, catalogo: list, tienda_id: str) -> dict:
 
 
 def _no_vendemos(texto: str, categoria: str, tienda_id: str):
-    """Si lo que se pidio es una categoria que la tienda NO vende, decirlo con
-    la alternativa REAL al lado. None si no aplica.
-
-    Se le pasa lo que ESCRIBIO EL MODELO —el texto de la consulta y el rubro—,
-    no el mensaje crudo del cliente: el motor no mira el mensaje, mira la
-    consulta, y esa es la unica entrada que tiene. Un fallo de esta funcion no
-    puede tumbar la busqueda: sin fuente no se niega nada, que es la salida
-    honesta que `guia_compra` ya documenta.
-    """
+    """Si lo que se pidio es una categoria que la tienda NO vende, decirlo con la alternativa REAL al lado."""
     from app.core.guia_compra import categoria_no_vendida
     for frase in (f"{texto} {categoria}".strip(), texto, categoria):
         if not frase:
@@ -446,14 +270,7 @@ def _no_vendemos(texto: str, categoria: str, tienda_id: str):
 
 
 def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
-    """UNA consulta del modelo contra el catalogo. Devuelve el resultado
-    ENTERO: lo que trajo, cuantos habia, que no se pudo aplicar y por que.
-
-    NUNCA VUELVE VACIA SIN MOTIVO ESCRITO. Es la regla de Martin del 2-ago y la
-    razon por la que este contrato es mas grande que "una lista de productos":
-    un cero sin explicacion hace que el modelo le diga al cliente que no hay,
-    cuando lo que pasa es que la fuente no tiene el dato.
-    """
+    """UNA consulta del modelo contra el catalogo."""
     from app.core.fuente import _ficha_corta
     from app.core.filtros_catalogo import (alguno_lo_nombra, aplicar,
                                            dato_que_falla, ordenar,
@@ -472,12 +289,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         unidades = max(1, int(c.get("cantidad") or 1))
     except (TypeError, ValueError):
         unidades = 1
-    # EL DETALLE LO DECIDE `busco`, Y NADA MAS (14-sep-2026). Con `uno` el
-    # cliente pregunta por UN producto y quiere el parrafo; con `varios` pidio
-    # opciones, y la prosa de cinco fichas era el 63% del retorno. Las specs
-    # viajan enteras en los dos casos: el campo `specs` de la consulta se borro
-    # porque dejo de significar algo. El motivo entero esta en
-    # `fuente._ficha_corta`, con la medicion al lado.
+    # EL DETALLE LO DECIDE `busco`, Y NADA MAS (14-sep-2026).
     detalle = str(c.get("busco") or "") == "uno"
     specs_pedidas = None
 
@@ -488,12 +300,10 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     if c.get("ids"):
         filas_id = _por_ids(catalogo, c["ids"])
         filas = filas_id
-        # "DE ESOS, EL MAS BARATO" (22-sep-2026). Los ids son el universo y
-        # el orden se aplica ADENTRO: hasta hoy el orden se ignoraba con ids,
-        # asi que el extremo "de esos" solo se podia pedir buscando en el
-        # catalogo entero, y medido en la tanda de charlas —CH10— el bot
-        # contesto "de los que te mencione, el mas barato es el KB-110X"
-        # con un teclado que nunca habia mencionado.
+        # "DE ESOS, EL MAS BARATO" (22-sep-2026). Los ids son el universo y el orden se aplica ADENTRO: hasta
+        # hoy el orden se ignoraba con ids, asi que el extremo "de esos" solo se podia pedir buscando en el
+        # catalogo entero, y medido en la tanda de charlas —CH10— el bot contesto "de los que te mencione, el
+        # mas barato es el KB-110X" con un teclado que nunca habia mencionado.
         _o = c.get("ordenar_por") or {}
         if (_o.get("campo") and len(filas) > 1
                 and orden_tiene_sentido(filas, str(_o["campo"]), tienda_id)):
@@ -514,22 +324,10 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                 "motivo": "" if filas else "ninguno de esos ids esta en el catalogo"}
 
     # EL "NO LO VENDEMOS" VA PRIMERO, Y ESE ES EL PUNTO (13-sep-2026).
-    #
-    # Estaba escrito abajo, colgando de "si no quedo ninguno", y ahi NO CORRIA
-    # NUNCA: una consulta con `texto: celular` y sin condiciones deja el
-    # universo entero, la relevancia ordena los 880 y vuelven CINCO PRODUCTOS
-    # con veredicto `existe`. O sea que a "tenes celulares?" el motor contesta
-    # que si, con cinco cosas que no son celulares, y el modelo no tiene como
-    # saberlo. Es la respuesta 2 dicha como la 3 al reves, que la FICHA 52
-    # llama el defecto mas caro del nicho.
-    #
-    # La relevancia SIEMPRE devuelve algo: esa es su naturaleza y por eso no
-    # puede ser la que decida si existe. Lo decide la fuente, antes.
     no_lo_vendemos = _no_vendemos(texto, str(c.get("categoria") or ""),
                                   tienda_id)
     if no_lo_vendemos:
-        # LAS FILAS SON LAS DE LA ALTERNATIVA REAL, no las del parecido. Es la
-        # respuesta 3 entera: no hay ficha de eso, y esto SI tengo en su lugar.
+        # LAS FILAS SON LAS DE LA ALTERNATIVA REAL, no las del parecido.
         alt = no_lo_vendemos.get("en_su_lugar") or ""
         de_la_alt, _ = _universo(catalogo, alt, tienda_id) if alt else ([], "")
         filas_alt = [_ficha_corta(p, unidades, specs_pedidas, detalle)
@@ -550,9 +348,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     if aviso:
         no_aplicado.append({"campo": "categoria", "motivo": aviso})
     de_cuantos = len(universo)
-    # LO YA MOSTRADO QUEDA AFUERA cuando el cliente pide otras opciones (16-oct,
-    # C35). Sale el modelo entero, con todos sus colores: otro color del mismo
-    # no es otra opcion.
+    # LO YA MOSTRADO QUEDA AFUERA cuando el cliente pide otras opciones (16-oct, C35).
     fuera = {str(i) for i in c.get("fuera") or []}
     sacados = 0
     if fuera:
@@ -563,17 +359,8 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
         sacados = len(universo) - len(quedan_u)
         universo = quedan_u
 
-    # 2. LAS CONDICIONES. `aplicar` ya informa el tercer balde —los que no
-    #    tienen el dato— y los filtros que no se pudieron aplicar con su motivo.
-    # EL HUECO DE VALOR, ANTES DE FILTRAR (13-sep-2026). Si la fuente no
-    # escribe esa palabra en ese campo, la condicion no se aplica y se DICE con
-    # los valores reales al lado. Filtrarla daria cero, y un cero se lee como
-    # "no lo tenemos" cuando lo que pasa es que el modelo escribio `japon`
-    # donde la fuente dice `china, taiwan o corea segun linea`.
-    #
-    # Es la misma escuela que `SIN_CAMPO` y corre solo sobre los campos cuyo
-    # vocabulario se conoce entero. Sobre `modelo`, con 482 valores, el que
-    # contesta es el rescate por cercania, que ya existe.
+    # 2. LAS CONDICIONES. `aplicar` ya informa el tercer balde —los que no tienen el dato— y los filtros que
+    # no se pudieron aplicar con su motivo.
     from app.core.filtros_catalogo import condicion_sin_vocabulario
     crudas = []
     for x in (c.get("condiciones") or []):
@@ -597,19 +384,11 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     no_aplicado.extend(r["descartados"])
     quedan = r["productos"]
 
-    # LA PREFERENCIA SE DICE, Y ESE ES MEDIO ARREGLO (20-sep-2026). `prefiere`
-    # y `evita` ordenan y devuelven a todos, asi que si el modelo no se entera
-    # de que NO se filtro, escribe "estos no tienen partes chinas" sobre una
-    # lista donde los ultimos si las tienen. Un orden callado es una mentira
-    # con cara de dato. Va en `motivo`, que es el renglon que el modelo ya lee
-    # de cada resultado, y no en `no_aplicado`, que significa otra cosa: una
-    # condicion que la fuente NO PUDO cumplir.
+    # LA PREFERENCIA SE DICE, Y ESE ES MEDIO ARREGLO (20-sep-2026).
     for pref in r.get("preferencias") or []:
         donde = "primero" if pref["operador"] == "prefiere" else "al final"
         if pref.get("por") == "cercania":
-            # SOBRE UN NUMERO NO SE CUMPLE, SE ESTA CERCA. Decir "171 de 171
-            # lo cumplen" de un precio seria mentirle al modelo con la forma
-            # de un dato.
+            # SOBRE UN NUMERO NO SE CUMPLE, SE ESTA CERCA.
             cerca = "mas cerca" if pref["operador"] == "prefiere" else "mas lejos"
             notas.append(
                 f"{pref['campo']} NO se filtro, se ORDENO por cercania a "
@@ -625,12 +404,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
     empatados = 0
     veredicto = "existe"
 
-    # 3. EL RESCATE. Si ninguna cumple todo, se trae lo mas parecido y se dice
-    #    cual condicion falla. Devolver vacio seria decirle al cliente que no
-    #    existe lo que si existe con una condicion menos.
-    # EL RESCATE MIRA SOLO LO QUE FILTRA. Una preferencia no se puede
-    # "incumplir": no saco a nadie, asi que contarla como condicion fallada
-    # diria que un producto no cumple algo que nunca se le exigio.
+    # 3. EL RESCATE. Si ninguna cumple todo, se trae lo mas parecido y se dice cual condicion falla.
     from app.core.filtros_catalogo import ORDENAN
     duras = [x for x in conds if x.operador not in ORDENAN]
     rescate = False
@@ -645,9 +419,8 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
             notas.append(f"{empatados} estan igual de lejos y se desempato "
                          f"por precio")
 
-    # 4. EL ORDEN. Solo si ordenar por ese campo ordena por ALGO: sobre valores
-    #    que son etiquetas —"China", "Negro"— el orden es alfabetico y no
-    #    contesta ninguna pregunta que un cliente pueda hacer.
+    # 4. EL ORDEN. Solo si ordenar por ese campo ordena por ALGO: sobre valores que son etiquetas —"China",
+    # "Negro"— el orden es alfabetico y no contesta ninguna pregunta que un cliente pueda hacer.
     orden = c.get("ordenar_por") or {}
     campo_orden = str(orden.get("campo") or "")
     orden_aplicado = False
@@ -661,14 +434,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                 "campo": campo_orden,
                 "motivo": "ordenar por ese campo no ordena por nada: sus "
                           "valores son etiquetas, no magnitudes"})
-    # EL PARECIDO SE CALCULA SIEMPRE QUE HAYA TEXTO, Y ANTES COLGABA DEL ORDEN
-    # (13-sep-2026). Estaba escrito como `elif`, asi que una consulta con
-    # `ordenar_por` no calculaba puntajes y por lo tanto NO PODIA ver una
-    # ambiguedad de identidad. Medido sobre el catalogo vivo: "Teclado Logitech
-    # K380" con `busco: uno` devuelve `ambiguo` con los dos que pegan igual, y
-    # el MISMO pedido con un orden por precio devuelve `existe` con cinco y el
-    # modelo eligiendo. La obligacion de preguntar de la regla 10.0 se perdia
-    # por una perilla que no tiene nada que ver con la identidad.
+    # EL PARECIDO SE CALCULA SIEMPRE QUE HAYA TEXTO, Y ANTES COLGABA DEL ORDEN (13-sep-2026).
     puntos = {}
     if texto and quedan:
         raras = pesos_por_rareza(quedan, texto)
@@ -677,79 +443,17 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
             quedan = sorted(quedan, key=lambda p: (-puntos[id(p)],
                                                    p.get("precio_ars") or 0))
         # AMBIGUO ES DE IDENTIDAD, Y SOLO DE IDENTIDAD.
-        #
-        # Es la regla 10.0: ante `ambiguous` el modelo esta OBLIGADO a
-        # preguntar, no a elegir. Eso vale cuando el cliente nombro UNA cosa y
-        # el catalogo tiene dos que le pegan igual —el mismo teclado en negro y
-        # en blanco—: elegir ahi es inventar identidad.
-        #
-        # NO vale para un empate cualquiera. Que 171 notebooks esten igual de
-        # lejos de un precio imposible no es una ambiguedad: es que la
-        # condicion no se puede cumplir, y eso es `no_existe` con el rescate al
-        # lado. Confundir los dos haria que el bot repregunte donde tiene que
-        # contestar.
-        #
-        # LA MARCA LA DECLARA EL MODELO, Y ANTES ERA EL TOPE DE FILAS. Hasta el
-        # 11-sep la condicion era `cuantos == 1`, o sea que se leia la
-        # INTENCION del cliente desde una perilla de paginado. Dos agujeros
-        # medidos: el modelo que pedia cinco filas de un producto puntual no
-        # recibia la ambiguedad NUNCA —y ahi es donde elegir es inventar—, y
-        # cualquier consulta con `cuantos: 1` la recibia aunque el cliente
-        # hubiera pedido "el mas barato". Si el cliente nombro una cosa o pidio
-        # opciones es IDIOMA, y el idioma lo lee el modelo: ahora lo declara en
-        # `busco` y el codigo certifica el empate, que es lo unico que el
-        # codigo puede saber.
-        #
-        # EL EMPATE DEL RESCATE NO SE PISA. `empatados` puede venir cargado de
-        # arriba -"52 estan igual de lejos"- y eso es informacion del cliente:
-        # solo se lo reemplaza cuando de verdad hay una ambiguedad de
-        # identidad, nunca con un cero de paso.
-        # EL MEJOR PUNTAJE SE BUSCA CON `max`, no en la primera fila: con un
-        # orden explicito la primera es la mas barata, no la que mas pega.
-        # ── EL UMBRAL DE IDENTIDAD ──────────────────────────────────────
-        #
-        # QUE TAPA, medido el 14-sep sobre el catalogo vivo: `dron`,
-        # `bicicleta`, `zapatillas`, `guitarra`, `perfume`, `colchon` y
-        # `taladro` volvian `existe` con los MISMOS cinco mouse. Ocho falsos
-        # positivos sobre doce pedidos de cosas que la tienda no vende. El bot
-        # le decia que si al que pregunto por algo que no existe, que es el
-        # defecto mas caro del nicho.
-        #
-        # POR QUE NO LO TAPA `no_vendidas.json`: esa lista solo conoce las
-        # palabras que alguien escribio adentro. Perseguir esto con una lista
-        # de palabras es el camino que este repo ya recorrio tres veces y del
-        # que ya volvio.
-        #
-        # LA REGLA, y no tiene numero: si NINGUNA ficha del catalogo se LLAMA
-        # algo de lo que pidio, no existe. `relevancia` no puede decidirlo
-        # porque es un ordenador; `lo_nombra` mira identidad y nada mas.
-        #
-        # SOLO CORRE SIN RECORTE, y esa es la otra mitad. Si la consulta trajo
-        # una categoria o una condicion que SI se aplico, el universo ya esta
-        # acotado por algo real y el texto es una caracteristica, no una
-        # identidad: "teclado retroiluminado" no se llama asi en ninguna ficha
-        # y tiene que seguir contestando.
         sin_identidad = (not r.get("aplicados")
                          and de_cuantos == len(catalogo)
                          and not alguno_lo_nombra(quedan, texto))
         if sin_identidad:
             veredicto = "no_existe"
             if max(puntos.values()) <= 0 and not orden_aplicado:
-                # NI NOMBRADO NI MENCIONADO. Mostrar "lo mas parecido" aca
-                # seria mostrar los cinco mas baratos, que no se parecen a
-                # nada: es ruido adentro de la caja donde todo lo demas es
-                # dato certificado.
+                # NI NOMBRADO NI MENCIONADO. Mostrar "lo mas parecido" aca seria mostrar los cinco mas
+                # baratos, que no se parecen a nada: es ruido adentro de la caja donde todo lo demas es dato
+                # certificado.
                 quedan = []
-                # EL MOTIVO DICE EL HECHO Y NO CONCLUYE DE MAS. "Ninguna ficha
-                # lo nombra" no es lo mismo que "la tienda no lo vende": esa
-                # frase es de `no_vendidas`, que la tiene escrita y curada. Aca
-                # puede ser que el cliente lo diga con una palabra que la casa
-                # no escribe -"algo para jugar"-, y ahi lo que corresponde es
-                # volver a buscar por categoria, no decirle que no hay.
-                #
-                # LAS CATEGORIAS NO SE LISTAN ACA: ya viajan en el enum del
-                # esquema, en cada llamada. Escribirlas de nuevo seria la
-                # segunda copia de lo mismo.
+                # EL MOTIVO DICE EL HECHO Y NO CONCLUYE DE MAS.
                 notas.append(f"ninguna ficha del catalogo dice '{texto}': ni "
                              f"en el nombre, ni en la marca, ni en el modelo, "
                              f"ni en los tags, ni en la categoria, ni en la "
@@ -757,17 +461,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                              f"como lo escribe la tienda, volve a buscar con "
                              f"una categoria")
             elif orden_aplicado:
-                # EL ORDEN EXPLICITO PIDE UN EXTREMO, Y EL EXTREMO EXISTE
-                # AUNQUE LAS PALABRAS NO NOMBREN NADA. "Lo mas barato que
-                # tengas" no nombra un producto y tiene que contestar con los
-                # mas baratos; medido el 14-sep, el umbral sin esta rama se lo
-                # llevaba puesto y devolvia cero.
-                #
-                # EL VEREDICTO IGUAL ES `no_existe`, y ahi esta lo que salva
-                # "zapatillas mas baratas": las filas son el extremo real del
-                # catalogo, pero el motivo dice que ninguna se llama asi. El
-                # modelo contesta las dos cosas -eso no hay, esto es lo mas
-                # barato que si tengo- en vez de elegir una.
+                # EL ORDEN EXPLICITO PIDE UN EXTREMO, Y EL EXTREMO EXISTE AUNQUE LAS PALABRAS NO NOMBREN NADA.
                 notas.append(f"ninguna ficha se llama '{texto}'; estas son las "
                              f"del orden que pediste, no las que nombraste")
             else:
@@ -783,10 +477,7 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                 empatados = len(iguales)
                 notas.append(f"hay {empatados} que pegan igual con lo que "
                              f"pidio: no elijas, pregunta cual")
-                # SE SIRVEN TODOS LOS CANDIDATOS, no el primero. Decirle al
-                # modelo que hay dos y mostrarle uno es pedirle que pregunte
-                # por algo que no puede ver. Es la misma linea que ya tiene
-                # `certificar_temas` ante un tema ambiguo.
+                # SE SIRVEN TODOS LOS CANDIDATOS, no el primero.
                 quedan = iguales
                 tope = min(TOPE_FILAS, max(tope, empatados))
 
@@ -796,43 +487,6 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
                      else "el catalogo no tiene nada de eso")
 
     # LA FILA DEL RESCATE DICE POR QUE NO CUMPLE, Y ES EL DATO REAL.
-    #
-    # Medido el 11-sep sobre el catalogo vivo: "un mouse que no sea de
-    # fabricacion china" devuelve `no_existe` -los 52 lo son- con tres mouse al
-    # lado como lo mas parecido, y esas tres fichas viajan MUDAS: el campo por
-    # el que se filtro no esta en la ficha corta, porque `campos_ficha` trae los
-    # del rubro. O sea que el modelo recibe tres mouse sin un solo dato que lo
-    # contradiga y un motivo en prosa a un renglon de distancia. Ofrecer lo que
-    # el cliente acaba de excluir esta a un paso.
-    #
-    # Con esto cada fila del rescate lleva `no_cumple` con el VALOR de la ficha
-    # —"origen: Marca Genius de Taiwan. Fabricado en China."—, asi el modelo
-    # puede decir la verdad entera: no tengo ninguno sin eso, y estos son los
-    # que hay. Y el cliente decide, que es lo que no puede hacer si no lo ve.
-    #
-    # `dato_que_falla` ya estaba escrita para esto, con su caso y su fecha, y no
-    # la llamaba nadie: quedo suelta cuando se apago el bloque que la usaba.
-    # EL CAMPO POR EL QUE SE PREGUNTO VIAJA EN CADA FILA (20-sep-2026).
-    #
-    # ES EL MISMO DEFECTO QUE `no_cumple` YA CERRABA, y lo que se vio el 20-sep
-    # es que lo cerraba SOLO EN EL RESCATE. Medido contra el catalogo vivo: una
-    # busqueda de auriculares con condicion sobre `pais_fabricacion` devuelve
-    # filas con id, nombre, categoria, stock, precio, modelo, specs y
-    # caracteristicas_extra, y NI UN DATO del pais. El modelo tiene que hablar
-    # del origen y no tiene el origen delante.
-    #
-    # Y LOS OPERADORES DE GRADO LO DESTAPARON. Con `prefiere` y `evita` el
-    # veredicto es siempre `existe`, asi que el rescate —que es quien estampaba
-    # `no_cumple`— no corre nunca, y las filas volvieron a viajar mudas. Una
-    # preferencia sin el valor al lado es peor que un filtro: el modelo recibe
-    # una lista ordenada y no puede decir por que ni cuales cumplen.
-    #
-    # LO MISMO PARA EL ORDEN: si se ordeno por peso, el peso viaja. Ordenar por
-    # un campo que el modelo no ve es pedirle que confie en la fila de arriba.
-    #
-    # NO PISA NADA: si la ficha del rubro ya trae el campo, se respeta el que
-    # estaba. Y lo que no tiene dato cargado no se inventa: se omite, que es la
-    # diferencia entre "no lo tiene" y "no lo sabemos".
     from app.core.filtros_catalogo import SIN_CAMPO as _SIN, _valor_crudo
     campos_pedidos = [c.campo for c in conds if c.campo != _SIN]
     if campo_orden:
@@ -867,9 +521,8 @@ def _una(consulta: dict, catalogo: list, tienda_id: str) -> dict:
 
 def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
             sin_criterio, cuenta=None, afirma=None) -> dict:
-    """El retorno, con UNA sola forma. Las cajas que nadie pidio no viajan: una
-    clave vacia en cada turno es ruido adentro de la caja donde todo lo demas
-    es dato certificado."""
+    """El retorno, con UNA sola forma. Las cajas que nadie pidio no viajan: una clave vacia en cada turno es
+    ruido adentro de la caja donde todo lo demas es dato certificado."""
     fuera = {"resultados": resultados, "politicas": temas,
              "temas_sin_resolver": sin_resolver}
     if compat:
@@ -888,49 +541,8 @@ def _salida(resultados, temas, sin_resolver, compat, envios, criterio,
 
 
 # ── LO QUE EL CLIENTE AFIRMA ────────────────────────────────────────────────
-#
-# UNA SOLA CASILLA PARA DOS COSAS QUE PARECIAN DISTINTAS, y esa es toda la
-# idea. El cliente afirma algo; lo que cambia es contra que se puede
-# verificar:
-#
-#   SOBRE UN PRODUCTO NUESTRO   "el teclado K120 inalambrico ese"
-#                               hay ficha: se verifica y se contesta con el
-#                               dato real. Es la PREMISA FALSA, el eje F2, y
-#                               la FICHA 57 §5.1 la llama el unico vector que
-#                               hoy pasaria por todos los candados: la
-#                               alucinacion no la trae el modelo, la trae el
-#                               CLIENTE, y aceptarla es mentir con sus
-#                               palabras.
-#
-#   SOBRE ALGO SUYO             "mi notebook tiene 8 giga", "ya tengo el cable"
-#                               no hay ficha contra que cotejar, y eso NO es un
-#                               error: es una fuente de verdad que el cliente
-#                               aporta y que vale para el resto de la charla.
-#
-# QUE LA MISMA CASILLA RESUELVA LAS DOS ES LO QUE LA HACE BARATA: al modelo no
-# se le pide que decida de cual de los dos casos se trata. Anota lo que el
-# cliente dijo y el CODIGO decide, que es la regla 10.0 aplicada a las
-# afirmaciones: la identidad la decide una funcion determinista.
-#
-# LOS CUATRO VEREDICTOS, y `no_consta` es tan valido como los otros:
-#
-#   confirma      la ficha lo dice
-#   contradice    la ficha dice OTRA cosa en ese mismo campo, y va el dato real
-#   no_consta     ese campo esta vacio en la ficha, o nadie en el catalogo usa
-#                 esa palabra. NO se puede negar por ausencia
-#   del_cliente   no se resolvio a ningun producto: es dato suyo
-#
-# POR QUE `no_consta` Y NO "contradice" ANTE UNA FICHA MUDA. Ausencia de
-# evidencia no es evidencia de ausencia, y confundirlas seria inventar una
-# negacion — el mismo defecto que el campo muerto diciendo "no lo vendemos",
-# que se acaba de arreglar un piso mas abajo.
-#
-# Y NO SE COMPARA POR PARECIDO. La verificacion la hace `evaluar`, la misma
-# funcion con la que se resuelve cualquier condicion del catalogo, con sus
-# tres respuestas de siempre: True, False y None. No hay ranking ni umbral.
 
-# Cuantas afirmaciones se verifican en una llamada. Mas que esto no es un
-# cliente hablando: es un formulario.
+# Cuantas afirmaciones se verifican en una llamada.
 TOPE_AFIRMA = 4
 
 
@@ -947,12 +559,9 @@ def _una_afirmacion(pedido: dict, catalogo: list, tienda_id: str) -> dict:
                 "motivo": "la afirmacion vino sin contenido"}
     # 1 · ¿DE QUE HABLA? La identidad la decide el certificador de siempre.
     fichas = los_que_lo_nombran_entero(catalogo, sobre) if sobre else []
-    # NOMBRAR UN RUBRO NO ES NOMBRAR UNA FICHA, y es lo que cazo el primer test
-    # de "mi notebook": `los_que_lo_nombran_entero` devuelve 191, porque "mi"
-    # no es una palabra util y "notebook" lo dicen todas. Pasado `TOPE_AMBIGUO`
-    # el cliente nombro ANCHO —es el mismo criterio con el que el motor decide
-    # que una cosa con variantes dejo de serlo— y sobre un rubro entero no hay
-    # ficha contra que cotejar: es dato suyo.
+    # NOMBRAR UN RUBRO NO ES NOMBRAR UNA FICHA, y es lo que cazo el primer test de "mi notebook":
+    # `los_que_lo_nombran_entero` devuelve 191, porque "mi" no es una palabra util y "notebook" lo dicen
+    # todas.
     if len(fichas) > TOPE_AMBIGUO:
         fichas = []
     if not fichas:
@@ -977,18 +586,14 @@ def _una_afirmacion(pedido: dict, catalogo: list, tienda_id: str) -> dict:
                 visto = "confirma"
                 break
             if r is False and visto is None:
-                # CON `_valor_crudo` Y NO CON `get`: `conexion` y varios mas
-                # los DERIVA `fuente_producto.enriquecer` y no estan en el
-                # dict del catalogo. Con `get` el dato real salia `None`, o
-                # sea que se le mandaba al modelo "el dato real es None" —peor
-                # que no decir nada, porque suena a dato—.
+                # CON `_valor_crudo` Y NO CON `get`: `conexion` y varios mas los DERIVA
+                # `fuente_producto.enriquecer` y no estan en el dict del catalogo.
                 visto = "contradice"
                 real = f"{campo}: {_valor_crudo(f, campo)}"
         porficha.append((visto or "no_consta", real, f))
     veredictos = {v for v, _, _ in porficha}
-    # UNA AMBIGUEDAD DE IDENTIDAD NO IMPIDE VERIFICAR, y es el caso medido: "el
-    # K120" son dos fichas —negra y blanca— y las dos contestan lo mismo sobre
-    # si es inalambrico. Preguntar cual solo hace falta si difieren.
+    # UNA AMBIGUEDAD DE IDENTIDAD NO IMPIDE VERIFICAR, y es el caso medido: "el K120" son dos fichas —negra y
+    # blanca— y las dos contestan lo mismo sobre si es inalambrico.
     if len(veredictos) > 1:
         return {**base, "veredicto": "ambiguo",
                 "motivo": "'" + sobre + "' puede ser mas de uno y no todos "
@@ -1011,25 +616,8 @@ def _una_afirmacion(pedido: dict, catalogo: list, tienda_id: str) -> dict:
 
 
 def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
-    """UN par de compatibilidad, certificado. Devuelve {producto, con,
-    veredicto, motivo} con veredicto en compatible / incompatible / ambiguo /
-    sin_dato.
-
-    EL VEREDICTO LO ESCRIBE EL CODIGO Y EL MOTIVO TAMBIEN. Es el modulo
-    `compatibilidad`, que estaba entero y no lo llamaba NADIE desde el turno:
-    la tabla se estampa en cada ficha al leer el catalogo -`fuente_producto.
-    enriquecer`- y despues se tiraba, porque `_ficha_corta` no la muestra. El
-    dato existia, el cable no. De ahi salia que la compatibilidad la contestara
-    el modelo de memoria, que es la alucinacion del 29-jul -"anda con cualquier
-    notebook", dicho sobre una RAM de escritorio-.
-
-    `sin_dato` NO ES UN ERROR: es la respuesta 2 de la FICHA 52 y se sirve tal
-    cual. Un hueco que el modelo completa es peor que un hueco.
-
-    AMBIGUO ES LA REGLA 10.0 otra vez: "de apple" son macOS e iOS a la vez y
-    elegir uno seria decidir por el cliente, asi que vuelven los dos y se
-    pregunta.
-    """
+    """UN par de compatibilidad, certificado. Devuelve {producto, con, veredicto, motivo} con veredicto en
+    compatible / incompatible / ambiguo / sin_dato."""
     pid = str((pedido or {}).get("producto") or "").strip()
     con = str((pedido or {}).get("con") or "").strip()
     base = {"producto": pid, "con": con}
@@ -1044,55 +632,18 @@ def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
     prod = porid.get(pid)
     if not prod:
         # ── EL DOS PASOS SE RESUELVE ADENTRO (15-sep-2026, FICHA 54, 3.2) ──
-        #
-        # QUE PASABA. `producto` exigia un id que el modelo YA hubiera
-        # recibido, asi que "el teclado K380 anda con mi PS5" costaba dos
-        # vueltas: buscar el K380, recibir el id, y recien ahi preguntar. En la
-        # practica ni eso: medido el 15-sep, el paso uno volvio `ambiguo` -hay
-        # dos K380- y el turno se quedo ahi, que ante un ambiguo es correcto,
-        # pero el cliente nunca supo si andaba con la PS5. El campo
-        # `compatibilidad` no se pidio en NINGUNA de las tres corridas.
-        #
-        # LA REGLA 10.0 NO SE TOCA, y esto es exactamente lo que dice: la
-        # identidad la decide UNA FUNCION DETERMINISTA con tres veredictos, y
-        # la herramienta consume un id CERTIFICADO. Lo que cambia es QUIEN
-        # certifica: antes el modelo tenia que traer el id de una vuelta
-        # anterior, ahora lo certifica el codigo aca mismo. El modelo sigue sin
-        # decidir identidad; sigue sin poder inventar un producto.
-        #
-        # Y ES EL MISMO CAMINO DE IDENTIDAD, no uno nuevo: se llama a `_una`
-        # con `busco: uno`, que es la consulta que el modelo escribiria. Un
-        # segundo mecanismo de "cual producto es este" seria la cosa suelta que
-        # la regla 2 prohibe, y ademas se desincronizaria del primero.
         cert = _una({"texto": pid, "busco": "uno", "cuantos": TOPE_AMBIGUO},
                     catalogo, tienda_id)
         filas = cert.get("filas") or []
         if cert.get("veredicto") == "ambiguo" or len(filas) > 1:
             # AMBIGUO DE IDENTIDAD. No se elige nunca: eso es la regla 10.0.
-            #
-            # PERO LA PREGUNTA PUEDE NO NECESITAR LA IDENTIDAD, y ahi esta la
-            # otra mitad de esa misma regla: identidad y compatibilidad son
-            # DOS EJES. Medido el 15-sep con el caso del banco: "el teclado
-            # K380 anda con mi PS5" da dos candidatos -el negro y el blanco- y
-            # los dos dan el MISMO veredicto contra la PS5, porque el color no
-            # cambia con que anda. Preguntarle al cliente cual de los dos para
-            # despues contestarle lo mismo es fricción sin dato adentro.
-            #
-            # Asi que se evaluan TODOS los candidatos y solo se repregunta si
-            # el veredicto cambia entre ellos, que es cuando la identidad SI
-            # hace falta para contestar. La identidad sigue sin resolverse: no
-            # se elige un producto, se dice que para todos la respuesta es la
-            # misma.
             candidatos = [porid.get(str(f.get("id"))) for f in
                           filas[:TOPE_AMBIGUO]]
             candidatos = [c for c in candidatos if c]
             juicios = [_evaluar(c, con, porid, tienda_id) for c in candidatos]
             distintos = {j["veredicto"] for j in juicios}
-            # SI EL VEREDICTO COMUN ES `ambiguo` LA REPREGUNTA ES OTRA: esa
-            # ambiguedad es del OTRO lado del par -"de apple" son macOS e iOS-
-            # y su motivo ya dice que hay que preguntar cual equipo tiene. Se
-            # devuelve tal cual: agregarle "no hace falta preguntar cual
-            # producto" seria contestar una pregunta con la otra.
+            # SI EL VEREDICTO COMUN ES `ambiguo` LA REPREGUNTA ES OTRA: esa ambiguedad es del OTRO lado del
+            # par -"de apple" son macOS e iOS- y su motivo ya dice que hay que preguntar cual equipo tiene.
             if distintos == {"ambiguo"}:
                 return {**base, **juicios[0], "pedido_como": pid}
             if len(distintos) == 1 and juicios:
@@ -1131,14 +682,7 @@ def _un_compat(pedido: dict, catalogo: list, tienda_id: str) -> dict:
 
 
 def _evaluar(prod: dict, con: str, porid: dict, tienda_id: str) -> dict:
-    """EL EJE DE COMPATIBILIDAD, CON LA IDENTIDAD YA RESUELTA. Devuelve
-    {veredicto, motivo} y, segun el caso, contra que se evaluo.
-
-    Esta partido de `_un_compat` porque se llama DOS VECES: una con el
-    producto certificado, y una por candidato cuando el nombre del cliente
-    pega con varios. Una segunda copia de estas reglas seria la cosa suelta
-    que la regla 2 prohibe.
-    """
+    """EL EJE DE COMPATIBILIDAD, CON LA IDENTIDAD YA RESUELTA."""
     from app.core.compatibilidad import (etiqueta_plataforma, evaluar,
                                          evaluar_par, plataformas_del_mensaje)
     # EL OTRO PRODUCTO PRIMERO. Un id del catalogo es identidad certificada; un
@@ -1175,25 +719,10 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
            envios: list | None = None, localidad_previa: str = "",
            criterio: list | None = None, cuenta: dict | None = None,
            reparto_pago: list | None = None) -> dict:
-    """LA PUERTA. Catalogo, politicas, compatibilidad, envio y el criterio de la
-    casa, en una llamada.
-
-    `localidad_previa` es lo unico que entra de la charla, y no es una
-    excepcion: es el dato con el que la tabla desambigua una localidad
-    -"Los Condores" con "cordoba" al lado-. El destino lo NOMBRA el modelo.
-
-    No lanza: un error de busqueda deja al bot sin fichas, nunca mudo.
-    """
+    """LA PUERTA. Catalogo, politicas, compatibilidad, envio y el criterio de la casa, en una llamada."""
     from app.core.fuente import cotizar_destinos, criterio_de, politicas_de
 
-    # EL ENVIO PRIMERO, PORQUE APAGA UNA POLITICA. Con la tarifa exacta de un
-    # destino cotizada, la politica del RANGO no se sirve: son dos caminos para
-    # el mismo numero y gana el flojo. El apagado vivia en el turno, que era
-    # quien empujaba el envio; ahora las dos cosas entran por aca y la decision
-    # vive donde se ven las dos.
-    # LAS DOS FORMAS, y la vieja no se rompe. Desde el 20-sep el modelo manda
-    # objetos con `destino` y `va`; un texto pelado sigue valiendo y es lo que
-    # llega desde la memoria de una charla vieja.
+    # EL ENVIO PRIMERO, PORQUE APAGA UNA POLITICA.
     nombres, el_va = [], {}
     for e in (envios or []):
         if isinstance(e, dict):
@@ -1211,9 +740,8 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         try:
             fuera_envios = cotizar_destinos(nombres, tienda_id,
                                             localidad_previa) or {}
-            # EL VINCULO VUELVE PEGADO A SU TARIFA. Separados, el modelo tiene
-            # tres montos y tres frases y los aparea de memoria, que es la
-            # junta blanda que este repo ya tiene numerada cuatro veces.
+            # EL VINCULO VUELVE PEGADO A SU TARIFA. Separados, el modelo tiene tres montos y tres frases y los
+            # aparea de memoria, que es la junta blanda que este repo ya tiene numerada cuatro veces.
             for fila in fuera_envios.get("filas") or []:
                 if fila.get("destino") in el_va:
                     fila["va"] = el_va[fila["destino"]]
@@ -1222,12 +750,7 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                         error=f"{type(e).__name__}: {str(e)[:120]}")
     cotizado = any(f.get("monto_ars") for f in fuera_envios.get("filas") or [])
 
-    # LA VALVULA DE ESCAPE NO SE CERTIFICA, SE CONTESTA. `SIN_TEMA` es el valor
-    # que el enum le deja escribir al modelo cuando el cliente pregunto algo de
-    # la casa que la lista no cubre. Mandarlo al certificador seria pedirle que
-    # le busque señas a una frase nuestra, y con las raices de cuatro letras
-    # pegaria con cualquier cosa; va derecho a `sin_resolver`, que es la caja
-    # que ya significa "eso la casa no lo tiene escrito".
+    # LA VALVULA DE ESCAPE NO SE CERTIFICA, SE CONTESTA.
     from app.core.fuente import SIN_TEMA
     pedidos = [t for t in (temas or []) if t != SIN_TEMA]
     fuera_temas, sin_resolver = [], []
@@ -1239,18 +762,16 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
             r = politicas_de(pedidos[:TOPE_TEMAS], tienda_id)
             fuera_temas = list(r["politicas"])
             sin_resolver += r["sin_resolver"]
-            # EL TEMA QUE LA FAQ NO CONTESTA VUELVE POR SU BOCA, no rotulado
-            # como politica: el reparto por area lo hace `fuente`, que es la
-            # que sabe de que archivo salio cada texto.
+            # EL TEMA QUE LA FAQ NO CONTESTA VUELVE POR SU BOCA, no rotulado como politica: el reparto por
+            # area lo hace `fuente`, que es la que sabe de que archivo salio cada texto.
             criterios = list(r.get("criterio") or [])
         except Exception as e:  # noqa: BLE001 — sin politica no se inventa una
             log.warning("motor_temas_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:120]}")
 
-    # EL RAMAL A CRITERIO. La boca no necesita el catalogo -su fuente es
-    # `base_conocimiento.json`- asi que se resuelve antes de leerlo, igual que
-    # las politicas: preguntar para que sirve un mouse no tiene por que costar
-    # una lectura de 880 fichas.
+    # EL RAMAL A CRITERIO. La boca no necesita el catalogo -su fuente es `base_conocimiento.json`- asi que se
+    # resuelve antes de leerlo, igual que las politicas: preguntar para que sirve un mouse no tiene por que
+    # costar una lectura de 880 fichas.
     if criterio:
         try:
             rc = criterio_de(list(criterio)[:TOPE_CRITERIO], tienda_id)
@@ -1266,11 +787,10 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
             log.warning("motor_criterio_error", trace_id=trace_id,
                         error=f"{type(e).__name__}: {str(e)[:120]}")
 
-    # EL APAGADO DEL ENVIO SE APLICA A LAS DOS ENTRADAS, y esto es lo que hay
-    # que cuidar al sumar un campo que tambien puede devolver politicas: con la
-    # tarifa exacta cotizada, la politica del RANGO no se sirve, y filtrando
-    # solo lo que entro por `temas` el mismo numero flojo volvia a entrar por
-    # `criterio`, que es la regla 2 rota por la puerta de atras.
+    # EL APAGADO DEL ENVIO SE APLICA A LAS DOS ENTRADAS, y esto es lo que hay que cuidar al sumar un campo que
+    # tambien puede devolver politicas: con la tarifa exacta cotizada, la politica del RANGO no se sirve, y
+    # filtrando solo lo que entro por `temas` el mismo numero flojo volvia a entrar por `criterio`, que es la
+    # regla 2 rota por la puerta de atras.
     if cotizado:
         fuera_temas = [p for p in fuera_temas
                        if p["tema"] not in TEMAS_DEL_ENVIO]
@@ -1278,20 +798,11 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
     if (not consultas and not compat and not afirma
             and not (cuenta or {}).get("items")):
         # SOLO POLITICAS, SOLO ENVIO O SOLO CRITERIO ES UNA LLAMADA VALIDA.
-        # `afirma` entra en la condicion porque verificar lo que el cliente da
-        # por sentado NECESITA el catalogo, igual que la compatibilidad: sin
-        # ficha no hay contra que cotejar. Se olvido en el primer cableado y
-        # la caja volvia vacia en el unico caso en que el cliente afirma algo
-        # sin pedir nada mas —que es justo como llega la premisa falsa—.
-        # "¿Cual es la politica de garantia?" y "¿para que me sirve?" no
-        # necesitan tocar el catalogo, y obligar a inventar una consulta vacia
-        # para preguntarlo seria pedirle al modelo que aprenda nuestra plomeria.
         return _salida([], fuera_temas, sin_resolver, [], fuera_envios,
                        criterios, sin_criterio)
 
-    # LA COMPATIBILIDAD TAMBIEN NECESITA EL CATALOGO, y por eso la lectura no
-    # cuelga mas de `consultas`: el par se evalua sobre las fichas reales, que
-    # son las que traen la tabla estampada.
+    # LA COMPATIBILIDAD TAMBIEN NECESITA EL CATALOGO, y por eso la lectura no cuelga mas de `consultas`: el
+    # par se evalua sobre las fichas reales, que son las que traen la tabla estampada.
     from app.storage.firestore_client import get_all_products
     try:
         catalogo = get_all_products(tienda_id=tienda_id) or []
@@ -1305,9 +816,8 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
         r["motivo"] = "no se pudo leer el catalogo"
         return r
 
-    # EL RAMAL DE LO QUE EL CLIENTE AFIRMA. Una afirmacion rota no tumba el
-    # resto: vuelve `no_consta`, que es la salida honesta de esta boca y no
-    # una negacion. El motivo entero esta en `_una_afirmacion`.
+    # EL RAMAL DE LO QUE EL CLIENTE AFIRMA. Una afirmacion rota no tumba el resto: vuelve `no_consta`, que es
+    # la salida honesta de esta boca y no una negacion.
     afirmaciones = []
     for pedido in (afirma or [])[:TOPE_AFIRMA]:
         try:
@@ -1337,37 +847,12 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                  "motivo": "eso no se pudo verificar"})
 
     # LA CONSULTA REPETIDA SE EJECUTA UNA SOLA VEZ (13-sep-2026).
-    #
-    # MEDIDO: 6 repetidas sobre 31 en la tanda del tablero, y la causa NO era
-    # la que decia el comentario de `_anotar` -"entre vuelta y vuelta el modelo
-    # no ve lo que ya pidio"-. Ese texto se escribio antes de que `hallazgos`
-    # empezara a mandarle "Buscaste: ..." de vuelta, asi que hoy SI lo ve. Las
-    # repetidas son otra cosa y se ven en el crudo: el modelo manda dos
-    # consultas IDENTICAS en la MISMA llamada -"monitor, varios" dos veces-, y
-    # ahi no hay vuelta de por medio que valga.
-    #
-    # POR ESO EL ARREGLO ES DETERMINISTA Y VIVE ACA. Pedirselo al prompt seria
-    # gastar tokens en cada turno para que el modelo se acuerde de algo que el
-    # codigo puede garantizar. Ejecutar dos veces lo mismo cuesta la busqueda
-    # al pedo Y las filas duplicadas adentro del retorno, que es lo caro.
-    #
-    # NO SE DESCARTA EN SILENCIO: la consulta repetida vuelve en su lugar, con
-    # las mismas filas y un renglon que lo dice. El modelo mando N consultas y
-    # tiene que recibir N resultados; un hueco en la lista lo obligaria a
-    # adivinar cual falto. Y el numero sigue contandose en `informe`, que es
-    # donde se mira si esto empeora.
-    # EL NUMERO DE LA CONSULTA VIVE EN `vistas`, NO ADENTRO DEL RESULTADO. Un
-    # `_n` colgado del dict se le va al modelo dentro del retorno, y un campo
-    # que no significa nada para el que lee es ruido que hay que aprender a
-    # ignorar, justo en la caja donde todo lo demas es dato certificado.
     vistas: dict = {}
     fuera = []
     for c in (consultas or [])[:TOPE_CONSULTAS]:
         seña = json.dumps(c, ensure_ascii=False, sort_keys=True, default=str)
         if seña in vistas:
-            # SIN LAS FILAS, y ahi esta el ahorro de verdad. Copiarlas seria
-            # mandarle al modelo las mismas cinco fichas dos veces adentro del
-            # mismo retorno, que es justo el gasto que esto viene a sacar.
+            # SIN LAS FILAS, y ahi esta el ahorro de verdad.
             fuera.append({
                 "veredicto": vistas[seña][0]["veredicto"],
                 "filas": [], "cuantos_habia": vistas[seña][0]["cuantos_habia"],
@@ -1388,18 +873,12 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                           "cuantos_habia": 0, "no_aplicado": [], "sin_dato": 0,
                           "empatados": 0,
                           "motivo": "esa consulta no se pudo ejecutar"})
-    # LA CUENTA VA ULTIMA, Y ESE ES SU LUGAR: es lo unico que cruza bocas, asi
-    # que necesita que las otras ya hayan contestado. Con los envios de esta
-    # misma llamada ya cotizados, la tarifa entra a la cuenta sin volver a
-    # pedirsela a nadie.
+    # LA CUENTA VA ULTIMA, Y ESE ES SU LUGAR: es lo unico que cruza bocas, asi que necesita que las otras ya
+    # hayan contestado.
     la_cuenta = {}
     if cuenta:
         try:
-            # EL REPARTO ENTRA POR ARRIBA Y SE APLICA ADENTRO. El campo
-            # subio al primer nivel del tablero, pero la cuenta lo sigue
-            # leyendo de donde siempre: se junta aca y `_la_cuenta` no se
-            # entera del cambio. Lo que el modelo haya anotado adentro de
-            # `cuenta` sigue valiendo, asi que una llamada vieja no se rompe.
+            # EL REPARTO ENTRA POR ARRIBA Y SE APLICA ADENTRO.
             if reparto_pago and not (cuenta or {}).get("reparto_pago"):
                 cuenta = dict(cuenta or {})
                 cuenta["reparto_pago"] = reparto_pago
@@ -1426,9 +905,7 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
 
 
 def fichas_de(resultado: dict) -> list[dict]:
-    """Las fichas de todas las consultas, sin repetir. Es lo que la guarda de
-    procedencia necesita: un numero que no este en estas fichas no sale al
-    cliente, y da igual en cual de las consultas aparecio."""
+    """Las fichas de todas las consultas, sin repetir."""
     fuera, vistos = [], set()
     for r in (resultado or {}).get("resultados") or []:
         for f in r.get("filas") or []:

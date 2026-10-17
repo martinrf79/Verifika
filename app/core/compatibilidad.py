@@ -1,33 +1,4 @@
-"""
-COMPATIBILIDAD — el eje que hasta hoy contestaba el modelo de memoria.
-
-El reparto de poder es el mismo de siempre: el CODIGO decide, el modelo redacta.
-La identidad la decide el certificador; la plata, el verificador de montos; la
-spec, la fuente. La compatibilidad no tenia dueño: el criterio jurado dice "se
-responde con la ficha, no de memoria", pero la ficha no traia ni el conector ni
-el zocalo ni el sistema, asi que el modelo razonaba solo. De ahi salio la
-alucinacion que cazo el juez el 29-jul -"es compatible con cualquier notebook",
-dicha sobre una memoria RAM de escritorio, que en una notebook no entra-.
-
-Ahora hay dato: `compatibilidad.csv`, una fila por MODELO, atada al vocabulario
-CERRADO de `compatibilidad_vocabulario.json`. Este modulo lo lee y responde las
-dos preguntas que hace un cliente, las dos deterministas:
-
-  1. "¿anda con lo que YO tengo?"  -> `evaluar(prod, plataforma)`
-  2. "¿este va con este otro?"     -> `evaluar_par(prod_a, prod_b)`, que cruza
-     lo que uno REQUIERE contra lo que el otro PROVEE.
-
-Tres veredictos de primera clase, igual que el certificador: `compatible`,
-`incompatible` y `sin_dato`. `sin_dato` NO es un error, es el resultado honesto:
-se le dice al cliente que no esta confirmado y que se verifica antes de comprar,
-que es exactamente lo que pide el criterio jurado. Lo que NO puede pasar es que
-el hueco lo llene el modelo.
-
-La regla de INCOMPATIBLE es por FAMILIA, no por lista de pares: si los dos lados
-declaran la misma familia (socket, ranura de memoria) con valores distintos, no
-entra y punto. Sin esa nocion habria que cargar 482x482 pares; con ella, sumar
-un producto es una fila.
-"""
+"""COMPATIBILIDAD — el eje que hasta hoy contestaba el modelo de memoria."""
 import csv
 import json
 import os
@@ -53,9 +24,8 @@ def _norm(s) -> str:
 
 
 def _ruta(tienda_id: str | None, archivo: str) -> str | None:
-    """Ruta a un archivo de la tienda resuelta por scandir: el tienda_id puede
-    venir de un path param HTTP y nunca se concatena crudo (mismo criterio que
-    fuente_producto)."""
+    """Ruta a un archivo de la tienda resuelta por scandir: el tienda_id puede venir de un path param HTTP y
+    nunca se concatena crudo (mismo criterio que fuente_producto)."""
     tid = tienda_id or tienda_por_defecto()
     base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
     try:
@@ -70,9 +40,8 @@ def _ruta(tienda_id: str | None, archivo: str) -> str | None:
 
 
 def vocabulario(tienda_id: str | None = None) -> dict:
-    """El vocabulario cerrado: {plataformas: {id: {...}}, conectores: {id: {...}},
-    familias: {id: familia}, alias: {palabra: id}}. Si el archivo falta se
-    devuelve vacio y todo el modulo queda en no-op honesto."""
+    """El vocabulario cerrado: {plataformas: {id: {...}}, conectores: {id: {...}}, familias: {id: familia},
+    alias: {palabra: id}}."""
     tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_VOCAB:
         return _CACHE_VOCAB[tid]
@@ -114,9 +83,7 @@ def vocabulario(tienda_id: str | None = None) -> dict:
 
 
 def tabla(tienda_id: str | None = None) -> dict:
-    """{(marca, modelo, categoria): {campo: [valores]}} desde compatibilidad.csv.
-    Se valida contra el vocabulario al cargar: un id que no existe se DESCARTA y
-    se loguea, asi un typo en la planilla no se convierte en una respuesta."""
+    """{(marca, modelo, categoria): {campo: [valores]}} desde compatibilidad.csv."""
     tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_TABLA:
         return _CACHE_TABLA[tid]
@@ -161,9 +128,7 @@ def tabla(tienda_id: str | None = None) -> dict:
 
 
 def compat_de(prod: dict, tienda_id: str | None = None) -> dict:
-    """La fila de compatibilidad de un producto, o {} si el modelo no esta
-    cargado. Se busca por (marca, modelo, categoria), la misma clave con la que
-    trabaja la capa de specs por modelo."""
+    """La fila de compatibilidad de un producto, o {} si el modelo no esta cargado."""
     if not isinstance(prod, dict):
         return {}
     ya = prod.get("compat")
@@ -177,10 +142,7 @@ def compat_de(prod: dict, tienda_id: str | None = None) -> dict:
 # ── LECTURA DEL MENSAJE: que equipo declaro el cliente ───────────────────────
 def plataformas_del_mensaje(mensaje: str,
                             tienda_id: str | None = None) -> list[str]:
-    """Los equipos que el cliente nombro, por alias del vocabulario. El alias
-    AMBIGUO no resuelve solo: "de apple" son macos e ios a la vez, y elegir uno
-    seria decidir por el cliente. Se devuelven los dos y el que pregunta decide
-    si alcanza para responder o hay que repreguntar."""
+    """Los equipos que el cliente nombro, por alias del vocabulario."""
     m = _norm(mensaje)
     if not m:
         return []
@@ -207,11 +169,7 @@ def etiqueta_conector(cid: str, tienda_id: str | None = None) -> str:
 # ── LOS DOS VEREDICTOS ────────────────────────────────────────────
 def evaluar(prod: dict, plataforma: str,
             tienda_id: str | None = None) -> tuple[str, str]:
-    """¿Este producto anda con el equipo que tiene el cliente?
-
-    Devuelve (veredicto, motivo) con veredicto en compatible / incompatible /
-    sin_dato. El motivo es la frase para el cliente, armada desde el vocabulario:
-    la escribe el CODIGO, no el modelo."""
+    """¿Este producto anda con el equipo que tiene el cliente?"""
     compat = compat_de(prod, tienda_id)
     if not compat or not plataforma:
         return "sin_dato", ""
@@ -235,14 +193,8 @@ def evaluar(prod: dict, plataforma: str,
 
 def evaluar_par(prod_a: dict, prod_b: dict,
                 tienda_id: str | None = None) -> tuple[str, str]:
-    """¿Estos dos productos van juntos? Cruza lo que uno REQUIERE contra lo que
-    el otro PROVEE, en las dos direcciones.
-
-    Por FAMILIA, que es lo que evita cargar pares a mano:
-      - familia que los dos declaran y comparten un valor -> compatible
-      - familia que los dos declaran sin ningun valor en comun -> incompatible
-      - familia que solo declara uno -> no alcanza para afirmar: sin_dato
-    """
+    """¿Estos dos productos van juntos? Cruza lo que uno REQUIERE contra lo que el otro PROVEE, en las dos
+    direcciones."""
     ca, cb = compat_de(prod_a, tienda_id), compat_de(prod_b, tienda_id)
     if not ca or not cb:
         return "sin_dato", ""
@@ -251,11 +203,10 @@ def evaluar_par(prod_a: dict, prod_b: dict,
     na = str(prod_a.get("nombre") or "el primero")
     nb = str(prod_b.get("nombre") or "el segundo")
 
-    # EL NO EXPLICITO MANDA, y va primero. Si la CATEGORIA de uno es una
-    # plataforma que el otro declara no compatible, no hay cruce de familias que
-    # valga: es el caso exacto de la memoria RAM de escritorio contra la
-    # notebook, que por familias daba sin_dato -la notebook no declara ranuras de
-    # memoria- y es justo el que hay que negar sin dudar.
+    # EL NO EXPLICITO MANDA, y va primero. Si la CATEGORIA de uno es una plataforma que el otro declara no
+    # compatible, no hay cruce de familias que valga: es el caso exacto de la memoria RAM de escritorio contra
+    # la notebook, que por familias daba sin_dato -la notebook no declara ranuras de memoria- y es justo el
+    # que hay que negar sin dudar.
     for compat, otro_prod, quien, otro in ((ca, prod_b, na, nb),
                                            (cb, prod_a, nb, na)):
         cat_otro = _norm(otro_prod.get("categoria")).replace(" ", "_")

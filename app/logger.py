@@ -4,17 +4,8 @@ import structlog
 
 
 def _gcp_fields(logger, method_name, event_dict):
-    """Mapea los campos de structlog a los que Cloud Logging entiende.
-
-    structlog emite el nivel como "level" (minuscula) y el mensaje como "event".
-    Cloud Logging, para fijar la severidad del LogEntry, lee el campo "severity"
-    (MAYUSCULA); como no lo encontraba, archivaba TODOS los logs del bot con
-    severidad DEFAULT, por debajo de INFO, y cualquier consulta con
-    severity>=INFO los descartaba (estuvimos "ciegos" sin verlo). Aca:
-    - severity = level en mayuscula, para que el filtro por severidad funcione.
-    - message = event, para que la linea se lea en la consola de Cloud Logging.
-    Se CONSERVA "event" intacto: los filtros jsonPayload.event siguen andando.
-    """
+    """Mapea los campos de structlog a los que Cloud Logging entiende. structlog emite el nivel como "level"
+    (minuscula) y el mensaje como "event"."""
     lvl = event_dict.get("level")
     if lvl and "severity" not in event_dict:
         event_dict["severity"] = str(lvl).upper()
@@ -36,11 +27,8 @@ def setup_logging():
         ],
         wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
         logger_factory=structlog.PrintLoggerFactory(),
-        # SIN cache: con cache, el logger de un modulo queda pegado a la
-        # configuracion del primer uso y ya no escucha una reconfiguracion. Eso
-        # dejaba SORDO al observador del banco (los radares del camino vivo no
-        # se capturaban) segun que test importara app.main antes. El ahorro que
-        # daba el cache son microsegundos contra una llamada al LLM.
+        # SIN cache: con cache, el logger de un modulo queda pegado a la configuracion del primer uso y ya no
+        # escucha una reconfiguracion.
         cache_logger_on_first_use=False,
     )
 

@@ -1,8 +1,4 @@
-"""CATEGORIA NO VENDIDA — el codigo niega lo que la tienda no vende.
-
-La llama `motor.buscar`. Si el cliente pide un rubro que no esta en el
-catalogo, vuelve `not_found` con la alternativa real, no con cinco mouse.
-"""
+"""CATEGORIA NO VENDIDA — el codigo niega lo que la tienda no vende."""
 import re
 import unicodedata
 
@@ -22,37 +18,11 @@ def _singular(w: str) -> str:
 
 
 # ── CERTIFICADOR DE CATEGORIA (17-jul, consigna 43) ────────────────────────────────────
-# El certificador de identidad decide sobre PRODUCTOS; nadie decidia sobre la
-# CATEGORIA. Cuando el cliente pide una categoria que la tienda NO vende
-# (celular, consola, televisor), el universo del generador queda vacio y el
-# modelo rellenaba siguiendo la premisa (comparo dos telefonos fantasma en la
-# consigna). Con esto lo decide el CODIGO antes de llamar al modelo: honesto
-# "no lo vendemos" + la alternativa real mas cercana. La tabla es finita y se
-# amplia desde el radar de logs; palabras ambiguas ("play", "telefono" como
-# dato de contacto) quedan AFUERA a proposito.
-#
-# FUENTE DE VERDAD: la lista vive en data/clientes/<tienda_id>/no_vendidas.json.
-# Sumar un caso es agregar una linea a ESE json, no tocar codigo.
-#
-# La copia entera que estaba aca abajo como "fallback minimo" se BORRO el 3-ago:
-# eran las mismas veintitres entradas escritas dos veces, y una lista de esas
-# nunca queda igual a la otra por mucho tiempo. Si el archivo falta, el mapa
-# queda vacio y el bot no niega una categoria por un dato que no leyo, que es la
-# salida honesta; una copia vieja en codigo le haria negar mal y con confianza.
-#
-# CACHE POR TIENDA (FICHA 25, 26-ago-2026). Hasta hoy era una unica variable
-# global: la primera tienda que llamaba esto cacheaba SU no_vendidas.json y
-# CUALQUIER otra tienda de la misma instancia leia esa lista, aunque fuera de
-# otro rubro. `categoria_no_vendida` ya recibia `tienda_id` de su llamador —el
-# dato estaba, nadie lo usaba para elegir el archivo. No hay caso hoy porque
-# solo existe una tienda; el bug queda mudo hasta que exista una segunda.
 _NO_VENDIDAS_CACHE: dict[str, dict[str, str | None]] = {}
 
 
 def _no_vendidas(tienda_id: str | None = None) -> dict[str, str | None]:
-    """Lee la fuente de verdad (no_vendidas.json) de UNA tienda y la cachea por
-    tienda_id. Si el archivo falta o esta roto devuelve vacio: sin fuente no se
-    niega nada."""
+    """Lee la fuente de verdad (no_vendidas.json) de UNA tienda y la cachea por tienda_id."""
     from app.core.contexto_turno import get_current_tienda
     from app.config import get_settings
     tid = tienda_id or get_current_tienda() or get_settings().TIENDA_ID
@@ -74,8 +44,7 @@ def _no_vendidas(tienda_id: str | None = None) -> dict[str, str | None]:
     return _NO_VENDIDAS_CACHE[tid]
 
 
-# El cliente nombra algo que no vendemos para preguntar si lo NUESTRO le sirve
-# con eso. Es una pregunta de compatibilidad, no un pedido de compra.
+# El cliente nombra algo que no vendemos para preguntar si lo NUESTRO le sirve con eso.
 _RE_COMPATIBILIDAD = re.compile(
     r"\b(?:sirve|sirven|anda|andan|funciona|funcionan|va|van|compatible|"
     r"compatibles|conecta|conectan|entra|entran)\b[^.?!]{0,25}?"
@@ -86,10 +55,8 @@ _RE_COMPATIBILIDAD = re.compile(
 
 def categoria_no_vendida(mensaje: str,
                          tienda_id: str | None = None) -> tuple[str, str | None] | None:
-    """(palabra pedida, categoria alternativa REAL o None) si el mensaje pide
-    una categoria que la tienda no vende; None si no aplica. Si el mensaje
-    ademas nombra una categoria REAL, no aplica: ese turno lo conduce el
-    generador con el universo normal (responde lo que si hay)."""
+    """(palabra pedida, categoria alternativa REAL o None) si el mensaje pide una categoria que la tienda no
+    vende; None si no aplica."""
     # Puntuacion a espacios: sin esto "ps5?" o "celulares?" (signo pegado al
     # final) no matchean el borde de palabra y el no honesto no salia.
     m = " " + re.sub(r"[^\w]+", " ", _norm(mensaje)) + " "
@@ -97,10 +64,8 @@ def categoria_no_vendida(mensaje: str,
     pedida = next((p for p in no_vendidas if f" {p} " in m), None)
     if not pedida:
         return None
-    # NO es un pedido de compra si lo nombra para preguntar COMPATIBILIDAD:
-    # "el mas barato sirve para PS5?" pregunta por el mouse, no pide una PS5.
-    # Contestarle "PS5 no trabajamos" es un despropósito y encima tapa la
-    # respuesta real (banco 29-jul, guion 54 turno 2).
+    # NO es un pedido de compra si lo nombra para preguntar COMPATIBILIDAD: "el mas barato sirve para PS5?"
+    # pregunta por el mouse, no pide una PS5.
     if _RE_COMPATIBILIDAD.search(m):
         return None
     reales = [str(c) for c in (get_categories(tienda_id=tienda_id) or [])]

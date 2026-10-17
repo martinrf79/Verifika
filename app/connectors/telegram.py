@@ -53,11 +53,7 @@ class TelegramConnector(BaseConnector):
             return None
 
     def parse_incoming(self, payload: dict) -> tuple[str, str] | None:
-        """Parsea el webhook de Telegram.
-
-        Devuelve tupla chat_id, contenido.
-        Contenido puede ser texto plano o marcador audio file_id para audios.
-        """
+        """Parsea el webhook de Telegram. Devuelve tupla chat_id, contenido."""
         message = payload.get("message")
         if not message:
             return None

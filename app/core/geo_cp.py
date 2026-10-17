@@ -1,23 +1,5 @@
-"""
-GEO_CP — resolutor determinista de PROVINCIA y CODIGO POSTAL desde el texto del
-cliente, con la tabla completa de localidades de Argentina.
-
-Fuente: data/geo/codigos_postales_ar.csv (Correo Argentino, ~16 mil localidades,
-provincia + localidad + CP). Es dato de referencia estatico: vive en el repo y se
-carga en memoria una vez, igual que el catalogo. NO va a Firestore (es igual para
-todas las tiendas) y no cambia entre sesiones.
-
-Para que sirve: cuando el cliente da PROVINCIA + LOCALIDAD (el flujo que pide el
-bot), este modulo devuelve la provincia canonica y un CP representativo. Con eso
-envio.py clasifica la zona (caba/gba/interior) y cotiza la tarifa EXACTA de la
-provincia. Reemplaza las listas parciales hechas a mano por la tabla completa.
-
-Precision sobre cobertura: 2 mil localidades existen en mas de una provincia
-('25 de mayo', 'san martin'); esas SOLO se resuelven si la provincia esta en el
-texto. Sin provincia, unicamente se resuelve una localidad INEQUIVOCA (una sola
-provincia) y con guarda contra la altura de calle, asi 'calle san martin 1234' no
-se toma como el pueblo San Martin.
-"""
+"""GEO_CP — resolutor determinista de PROVINCIA y CODIGO POSTAL desde el texto del cliente, con la tabla completa
+de localidades de Argentina."""
 import csv
 import re
 import unicodedata
@@ -56,12 +38,6 @@ for _s in _PROV_CSV_A_SLUG.values():
         _PROV_ALIASES[_s] = _s
 
 # EL TOPE SALE DE LA TABLA, NO DE UNA CONSTANTE (12-ago-2026, barrido completo).
-# Estaba clavado en 5 "localidades de hasta 5 palabras", y la tabla tiene 27 de
-# SEIS y 2 de SIETE: esas 29 no podian matchear enteras nunca, asi que el
-# segmentador las partia y se quedaba con un pedazo -'san juan junin de los
-# andes' se leia 'san juan' y declaraba la provincia de Cuyo por un pueblo de
-# Neuquen-. Es el mismo criterio que el resto del repo: el limite lo dice la
-# fuente viva, no un numero escrito a mano que envejece cuando la tabla cambia.
 _MAX_NGRAM = 5  # piso; `_cargar` lo sube a lo que diga la tabla
 
 _LOC: dict = {}          # loc_norm -> {prov_slug: cp_int}
@@ -104,28 +80,7 @@ def _cargar():
 
 
 def _provincia_en_texto(t: str, hits=None):
-    """slug de la provincia nombrada en el texto, o None. Frase mas larga gana.
-
-    EL NOMBRE DE PROVINCIA QUE ES PARTE DE UNA LOCALIDAD NO ES UNA PROVINCIA
-    (12-ago-2026, barrido de las 16.164 localidades de la tabla). La busqueda era
-    un regex sobre el texto pelado, sin saber donde empieza y donde termina una
-    localidad, asi que "aguas corrientes" declaraba Corrientes, "fortin chaco"
-    declaraba Chaco, "cantera san luis" declaraba San Luis y "el potrero de los
-    cordoba" declaraba Cordoba. 102 localidades resolvian a una provincia que no
-    es la suya, y las que ademas nombran su provincia de verdad -"campo san juan,
-    Cordoba"- se iban derecho a la tarifa equivocada.
-
-    LA REGLA ES LA MISMA QUE YA GOBIERNA ESTE ARCHIVO: el match mas largo gana.
-    `_localidades_en_texto` ya segmenta por maximal munch para no degradar 'villa
-    maria' a 'maria'; aca se usa esa misma segmentacion para decidir si la
-    palabra 'corrientes' es la provincia o es la segunda mitad de un pueblo.
-
-    Se descarta SOLO cuando la localidad que la contiene es ESTRICTAMENTE mas
-    larga. Con el mismo largo no hay nada que desempatar y manda la provincia:
-    'corrientes', 'misiones' y 'buenos aires' son a la vez el nombre de un pueblo
-    y el de la provincia, y el cliente que los escribe pelados esta nombrando la
-    provincia. Esa lectura no se toca.
-    """
+    """slug de la provincia nombrada en el texto, o None."""
     if hits is None:
         _, hits = _localidades_en_texto(t)
     palabras = t.split()
@@ -144,11 +99,8 @@ def _provincia_en_texto(t: str, hits=None):
 
 
 def _localidades_en_texto(t: str):
-    """Segmenta el texto por 'maximal munch': recorre de izquierda a derecha y en
-    cada posicion toma el nombre de localidad MAS LARGO que matchea, y salta esas
-    palabras. Asi 'villa maria' se toma entero: si esa localidad es ambigua, NO
-    se degrada a 'maria' (una localidad distinta) y no se inventa una provincia.
-    Devuelve (palabras, [(localidad_norm, inicio, fin_palabra)])."""
+    """Segmenta el texto por 'maximal munch': recorre de izquierda a derecha y en cada posicion toma el nombre de
+    localidad MAS LARGO que matchea, y salta esas palabras."""
     palabras = t.split()
     hits = []
     i = 0
@@ -169,24 +121,11 @@ def _localidades_en_texto(t: str):
 
 
 def _por_prefijo(t: str, prov: str):
-    """CP de la unica localidad de `prov` cuyo nombre EMPIEZA con lo que
-    escribio el cliente, o None si no hay exactamente una.
-
-    Es el nombre de uso comun contra el nombre oficial: 'san nicolas' contra
-    'san nicolas de los arroyos'. Se prueban los fragmentos del mensaje de mas
-    largo a mas corto —asi 'san nicolas' le gana a 'san'— y se exige:
-      - al menos DOS palabras, porque con una sola el prefijo caza cualquier
-        cosa ('san' abre docenas de localidades);
-      - que el prefijo termine en palabra completa, para no cortar al medio;
-      - UN solo candidato en esa provincia. Con dos o mas no se elige: ahi
-        preguntar es lo correcto.
-    """
-    # EL NOMBRE DE LA PROVINCIA SALE DEL TEXTO ANTES DE BUSCAR, y esto no es
-    # cosmetico: sin sacarlo, "villa, Buenos Aires" -que nombra la provincia y
-    # ninguna localidad- encontraba una localidad que EMPIEZA con "buenos
-    # aires" y le estampaba su CP. O sea, le inventaba el destino al cliente,
-    # que es lo unico que este sistema no puede hacer. Se vio en la prueba del
-    # arreglo, antes de que saliera.
+    """CP de la unica localidad de `prov` cuyo nombre EMPIEZA con lo que escribio el cliente, o None si no hay
+    exactamente una."""
+    # EL NOMBRE DE LA PROVINCIA SALE DEL TEXTO ANTES DE BUSCAR, y esto no es cosmetico: sin sacarlo, "villa,
+    # Buenos Aires" -que nombra la provincia y ninguna localidad- encontraba una localidad que EMPIEZA con
+    # "buenos aires" y le estampaba su CP.
     limpio = t
     for frase in sorted(_PROV_ALIASES, key=len, reverse=True):
         limpio = re.sub(r"(^| )" + re.escape(frase) + r"( |$)", " ", limpio)
@@ -206,10 +145,7 @@ def _por_prefijo(t: str, prov: str):
 
 
 def es_lugar_conocido(texto: str) -> bool:
-    """True si el texto nombra una localidad de la tabla o una provincia.
-    Puerta para los candidatos a destino que salen por regex del mensaje
-    libre: 'la otra direccion' o 'tres destinos' NO son lugares (charla real
-    19-jul: cotizaron igual porque la provincia sticky los completaba)."""
+    """True si el texto nombra una localidad de la tabla o una provincia."""
     _cargar()
     t = _norm(texto)
     if not t:
@@ -219,24 +155,12 @@ def es_lugar_conocido(texto: str) -> bool:
     return bool(_localidades_en_texto(t)[1])
 
 
-# `lugares_en_texto` SE BORRO EL 13-sep-2026, y no porque estuviera mal: partia
-# "uno a Cordoba capital y otro a Posadas" en dos lugares contra la tabla, sin
-# perseguir prosa, y ese multidestino sigue andando. Lo que cambio es QUIEN
-# parte el mensaje: desde que el envio se pide por el motor, los destinos los
-# NOMBRA el modelo con las palabras del cliente y el codigo cotiza cada uno.
-# Quedo sin llamador el mismo dia, y una funcion viva que nadie llama es
-# exactamente lo que el censo cuenta. Esta entera en git, 12-sep-2026.
+# `lugares_en_texto` SE BORRO EL 13-sep-2026, y no porque estuviera mal: partia "uno a Cordoba capital y otro
+# a Posadas" en dos lugares contra la tabla, sin perseguir prosa, y ese multidestino sigue andando.
 
 
 def resolver(texto: str):
-    """(prov_slug, cp) desde el texto del cliente, o (None, None).
-
-    Con PROVINCIA en el texto: elige la localidad que pertenezca a esa provincia
-    y devuelve su CP (desambigua las localidades repetidas). Con la provincia sola
-    tambien devuelve (prov, None): alcanza para la tarifa de la provincia.
-
-    SIN provincia: solo resuelve una localidad INEQUIVOCA (una sola provincia) y
-    que no sea una altura de calle (no la sigue un numero). Asi no inventa."""
+    """(prov_slug, cp) desde el texto del cliente, o (None, None)."""
     _cargar()
     t = _norm(texto)
     if not t:
@@ -251,31 +175,10 @@ def resolver(texto: str):
             if prov in _LOC[loc]:
                 return prov, _LOC[loc][prov]
         # EL NOMBRE CORTO, que es como habla el cliente (11-ago-2026).
-        #
-        # EL CASO REAL, de la charla de Martin: pidio un envio a "San Nicolás,
-        # Buenos Aires" y el turno entero se cayo —no cotizo, no armo el
-        # presupuesto, y le pidio el CODIGO POSTAL de una ciudad que esta en la
-        # tabla—. La causa: en las 16.164 localidades la de Buenos Aires figura
-        # con su nombre oficial, "san nicolas de los arroyos", y "san nicolas"
-        # a secas existe pero en OTRAS SIETE provincias, ninguna Buenos Aires.
-        #
-        # POR QUE SOLO SE VE EN BUENOS AIRES. En el resto del pais la provincia
-        # sola ya alcanza para la tarifa y el fallback de abajo salva el turno.
-        # Buenos Aires es la unica donde la tarifa depende de la zona —CABA y
-        # GBA contra interior— asi que sin localidad no se puede cotizar. Es la
-        # provincia mas poblada: el error pega justo donde mas duele.
-        #
-        # LO QUE LO HACE SEGURO: se acepta solo si el prefijo resuelve a UNA
-        # sola localidad de esa provincia. Con dos o mas no se elige ninguna y
-        # el turno pregunta, que es cuando preguntar esta bien. Medido con un
-        # barrido sobre la tabla entera: los nombres cortos ambiguos se
-        # descartan solos y "san nicolas"/"san martin" en Buenos Aires dan un
-        # unico candidato.
         cp = _por_prefijo(t, prov)
         if cp is not None:
             return prov, cp
-        # Provincia nombrada pero sin localidad de esa provincia: la provincia
-        # sola ya sirve para la tarifa.
+        # Provincia nombrada pero sin localidad de esa provincia: la provincia sola ya sirve para la tarifa.
         return prov, None
 
     # Sin provincia: solo una localidad inequivoca y no pegada a una altura.

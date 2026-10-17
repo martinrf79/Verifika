@@ -1,22 +1,4 @@
-"""
-LA CALCULADORA — la cuenta y la tarifa de envio, selladas por codigo.
-
-Se llamaba `tools.py` hasta el 3-ago y ese nombre era una trampa: al lado vive
-`herramientas.py`, que es la MISMA palabra en el otro idioma, y no son lo mismo.
-`herramientas.py` es el menu que ve el modelo -moldes Pydantic, enums de la
-fuente, validacion de argumentos-. Esto de aca es la cuenta: `calculate_total`
-arma el presupuesto renglon por renglon y `cotizar_envio` resuelve la tarifa por
-zona. Es el unico lugar donde nace un peso.
-
-No se fusionaron en un solo archivo a proposito. No son dos capas que compiten:
-una es el adaptador de cara al modelo y la otra es la aritmetica, y meter
-quinientas lineas de calculo adentro del menu de herramientas no haria que el
-bot venda mejor ni que alucine menos. Lo que si costaba caro era el nombre, que
-invitaba a editar el archivo equivocado; eso se arreglo.
-
-Multi-tenant: cada funcion resuelve la tienda actual desde `contexto_turno`
-(ContextVar). El LLM no ve ese parametro; lo setea el hub antes del turno.
-"""
+"""LA CALCULADORA — la cuenta y la tarifa de envio, selladas por codigo."""
 from app.storage.firestore_client import (
     get_all_products,
     get_product_by_id,
@@ -34,35 +16,17 @@ settings = get_settings()
 
 
 # ────────────────────────────────────────────────────────────
-# 1) BUSCAR PRODUCTOS (con búsqueda híbrida)
-# ────────────────────────────────────────────────────────────
 
-# search_products y find_within_budget se borraron el 29-jul. Eran las tools de
-# busqueda libre del solver viejo; en el camino atado la recuperacion es otra y
-# es determinista: recall_modelos arma el enum del interprete y universo_productos
-# arma el conjunto de productos del turno. Con ellas se fue app/storage/search.py
-# entero, la busqueda hibrida que en los hechos nunca corrio en produccion.
+# search_products y find_within_budget se borraron el 29-jul.
 
 # ────────────────────────────────────────────────────────────
-# 2) DETALLE
-# ────────────────────────────────────────────────────────────
 
 
 
-# ────────────────────────────────────────────────────────────
-# 3) CALCULAR TOTAL
 # ────────────────────────────────────────────────────────────
 
 def _efecto_porcentaje(tema: str, concepto: str, valor: dict) -> str:
-    """
-    Decide como impacta un extra porcentual en el total.
-    - descuento: resta del subtotal (ej descuento por transferencia).
-    - recargo: suma al subtotal (ej recargo por financiacion).
-    - informativo: no toca el total, solo se informa el monto calculado (ej sena
-      de reserva, que es un pago parcial, no un descuento ni un recargo).
-    Prioriza un campo explicito valor['efecto'] si viene cargado en la FAQ.
-    Si no, infiere por el nombre del tema o del concepto.
-    """
+    """Decide como impacta un extra porcentual en el total."""
     explicito = (valor.get("efecto") or "").strip().lower()
     if explicito in ("descuento", "recargo", "informativo"):
         return explicito
@@ -112,8 +76,7 @@ def _label_extra(e: dict) -> str:
     if es_desc:
         return f"Descuento: -{_money(monto)}"
     if modalidad == "informativo":
-        # Dato no monetario (ej cuotas). NO es plata, no lleva $. Se muestra como
-        # condicion legible: "Cuotas sin interes: hasta 6 cuotas".
+        # Dato no monetario (ej cuotas). NO es plata, no lleva $.
         concepto_legible = str(e.get("concepto", "")).replace("_", " ").strip()
         unidad = str(e.get("unidad", "")).strip()
         val = e.get("valor_num", "")
@@ -121,19 +84,16 @@ def _label_extra(e: dict) -> str:
     return f"{concepto}: {_money(monto)}"
 
 
-# Unidades que SI son dinero. Un extra "fijo" solo suma al total si su unidad es
-# monetaria. Una unidad como "cuotas" es una cantidad, no pesos: nunca se suma.
+# Unidades que SI son dinero. Un extra "fijo" solo suma al total si su unidad es monetaria.
 _UNIDADES_MONETARIAS = {"", "ars", "pesos", "peso", "$"}
 
-# Techo de destinos separados de un pedido (multi-destino). Generoso para una
-# compra real y a la vez guarda contra un numero disparatado del modelo.
+# Techo de destinos separados de un pedido (multi-destino).
 _MAX_DESTINOS = 10
 
 
 def _render_presentacion(detalle, extras, subtotal,
                          total_ars=None, total_min=None, total_max=None) -> str:
-    """Arma el presupuesto en texto, por codigo. El Solver lo copia tal cual,
-    asi ningun numero sale de la cabeza del modelo."""
+    """Arma el presupuesto en texto, por codigo."""
     lineas = ["Presupuesto:"]
     for d in detalle:
         lineas.append(
@@ -152,11 +112,9 @@ def _render_presentacion(detalle, extras, subtotal,
 
 def _subtotales_por_grupo(grupos: list, locs: list,
                           cat_precios: dict) -> dict:
-    """{localidad: subtotal_del_paquete} cuando cada localidad mapea a UN
-    grupo declarado por el cliente y cada categoria tiene UN solo precio en
-    el pedido. {} ante cualquier ambiguedad: el que llama sigue con el
-    promedio. Es la pieza de plata de grupos_envio (pendiente 10-jul; charla
-    real 19-jul: el promedio regalo el envio del paquete chico)."""
+    """{localidad: subtotal_del_paquete} cuando cada localidad mapea a UN grupo declarado por el cliente y cada
+    categoria tiene UN solo precio en el pedido. {} ante cualquier ambiguedad: el que llama sigue con el
+    promedio."""
     import unicodedata
 
     def _n(s):
@@ -199,44 +157,23 @@ def calculate_total(items: list[dict] | None = None,
                     pago: list[dict] | None = None,
                     grupos: list[dict] | None = None,
                     validar_stock: bool = True) -> dict:
-    """`validar_stock=False` es para MOSTRAR, no para vender (14-sep-2026).
-
-    UNA LISTA DE OPCIONES NO ES UN PEDIDO, y confundirlas costo dos turnos
-    reales medidos. El motor le pide a esta funcion el subtotal de las CINCO
-    filas que va a mostrar, todas con la cantidad que nombro el cliente. Con la
-    validacion prendida, UN producto agotado devuelve `ok: False` y se lleva
-    puestos los subtotales de los otros cuatro, que si tienen stock. Medido el
-    13 y el 14-sep en la misma charla: el G502 Hero con stock 0 mato la cuenta
-    de los otros cuatro mouse, y el G413 la de los otros cuatro teclados. El
-    cliente pidio precios, no comprar los cinco.
-
-    Con el TOTAL de un pedido la validacion se queda prendida, que es donde
-    significa algo: ahi el cliente si va a llevar esas unidades.
-    """
+    """`validar_stock=False` es para MOSTRAR, no para vender (14-sep-2026)."""
     log.info(f"calculate_total INICIO items={items} items_extra={items_extra} "
              f"destinos={destinos} pago={pago}")
-    # PAGO DIVIDIDO POR PORCENTAJE: si el cliente reparte el total entre medios
-    # (50/50, 70/30, etc.), el descuento por transferencia lo dueña el split, NO
-    # el items_extra. Se saca un descuento_transferencia que el solver haya
-    # pasado para no aplicarlo dos veces; el reparto lo aplica abajo con el pct
-    # real de la FAQ.
+    # PAGO DIVIDIDO POR PORCENTAJE: si el cliente reparte el total entre medios (50/50, 70/30, etc.), el
+    # descuento por transferencia lo dueña el split, NO el items_extra.
     if pago:
         items_extra = [e for e in (items_extra or [])
                        if (e.get("faq_tema") or "").strip().lower()
                        != "descuento_transferencia"]
-    # Envios separados (multi-destino): el costo de envio se cobra una vez por
-    # destino. Piso 1 (un solo envio, como funcionaba antes) y un techo sano para
-    # no inventar multiplicadores absurdos si el modelo manda un numero disparatado.
-    # Antes se capaba en 3 EN SILENCIO y el cuarto destino viajaba gratis (E13).
+    # Envios separados (multi-destino): el costo de envio se cobra una vez por destino.
     try:
         n_envios = max(1, min(int(destinos or 1), _MAX_DESTINOS))
     except (TypeError, ValueError):
         n_envios = 1
     if not items:
-        # El Solver no paso items: si hay un carrito vigente en el ESTADO del turno
-        # (lo dejo un calculate_total anterior), se parte de ahi. Asi "cuanto es el
-        # total" sobre el pedido ya armado no responde "no tengo pedido". Solo actua
-        # cuando el modelo no manda nada; si manda items, se respetan tal cual.
+        # El Solver no paso items: si hay un carrito vigente en el ESTADO del turno (lo dejo un
+        # calculate_total anterior), se parte de ahi.
         from app.core.estado_venta import get_current_estado
         _seed = [{"product_id": c.get("id"), "cantidad": c.get("cantidad", 1)}
                  for c in (get_current_estado().get("carrito") or []) if c.get("id")]
@@ -246,9 +183,8 @@ def calculate_total(items: list[dict] | None = None,
     if not items:
         return {
             "ok": False,
-            # Redactado en voz cliente-segura a proposito: el Solver a veces
-            # pega este texto TAL CUAL en la respuesta (visto 12-jun con
-            # "cuanto era el total de mi pedido?" sin pedido vigente), asi que
+            # Redactado en voz cliente-segura a proposito: el Solver a veces pega este texto TAL CUAL en la
+            # respuesta (visto 12-jun con "cuanto era el total de mi pedido?" sin pedido vigente), asi que
             # tiene que poder leerse como respuesta al cliente sin verguenza.
             "mensaje_para_llm": (
                 "No tengo un pedido armado para sumar. Decime que productos "
@@ -267,22 +203,14 @@ def calculate_total(items: list[dict] | None = None,
     Devuelve total_ars cuando todo es fijo, o total_min_ars y total_max_ars
     cuando algun extra es de modalidad rango.
     """
-    # Capa defensiva (unico camino, sin flag): normaliza y valida los inputs del
-    # modelo antes de calcular. Rechaza cantidades cero o negativas, normaliza el
-    # concepto de FAQ, fusiona el mismo producto mandado en dos lineas y deduplica
-    # un extra identico. Asi un input sucio del modelo no ensucia el total.
+    # Capa defensiva (unico camino, sin flag): normaliza y valida los inputs del modelo antes de calcular.
     from app.core.calc_defensiva import normalizar_inputs
     items, items_extra, _err = normalizar_inputs(items, items_extra)
     if _err:
         return {"ok": False, "mensaje_para_llm": _err}
 
-    # REGLA CERO mecanica: con un pedido VIGENTE, los items solo pueden venir de
-    # ids CERTIFICADOS (el carrito, los productos ya mostrados o los devueltos
-    # por una tool de ESTE turno). Un id inferido de memoria muta la identidad
-    # del pedido en silencio: visto en el banco, el solver pidio el total con el
-    # NX-7000 cuando el carrito era el DX-110 y el cliente recibio numeros
-    # reales del producto equivocado. Sin carrito no se restringe (el flujo de
-    # primer turno arma el pedido con lo que la busqueda del turno devuelve).
+    # REGLA CERO mecanica: con un pedido VIGENTE, los items solo pueden venir de ids CERTIFICADOS (el carrito,
+    # los productos ya mostrados o los devueltos por una tool de ESTE turno).
     from app.core.estado_venta import get_current_estado, get_ids_certificados
     _est = get_current_estado()
     _carrito = [c for c in (_est.get("carrito") or []) if c.get("id")]
@@ -309,12 +237,8 @@ def calculate_total(items: list[dict] | None = None,
                 f"OTRO producto, primero resolvelo con search_products o "
                 f"get_product_details y despues sumalo.")}
 
-    # PEDIDO SELLADO DEL TURNO (guia_pedido, 8-jul): el interprete ya extrajo el
-    # pedido de este turno y el codigo lo calculo entero. Un calculate_total del
-    # solver que AGREGA productos fuera del pedido sellado (+carrito) muta el
-    # pedido en silencio: visto en el banco, el solver sumo un microfono de
-    # $76.500 que el cliente nunca eligio. Quitar o repetir items sellados esta
-    # bien (subconjunto); agregar, no.
+    # PEDIDO SELLADO DEL TURNO (guia_pedido, 8-jul): el interprete ya extrajo el pedido de este turno y el
+    # codigo lo calculo entero.
     _sellado = {str(i).upper() for i in (_est.get("pedido_sellado_turno") or [])}
     if _sellado:
         _extras_pedido = sorted(
@@ -376,12 +300,8 @@ def calculate_total(items: list[dict] | None = None,
         from app.storage.firestore_client import get_all_faq
         faqs = get_all_faq(tienda_id=tid)
         extras_no_validos = []
-        # El ENVIO no se calcula aca. Su UNICA fuente es cotizar_envio, que deduce
-        # zona y tarifa de la localidad. La calculadora separa el envio del resto de
-        # extras (descuentos, recargos, sena, cuotas), que SI salen de la FAQ, y mas
-        # abajo le pide el costo a cotizar_envio. Que el modelo haya pasado un
-        # concepto de envio es solo la senal de "incluir envio"; el concepto se
-        # IGNORA, lo resuelve el codigo. Asi el costo de envio nace en un solo lugar.
+        # El ENVIO no se calcula aca. Su UNICA fuente es cotizar_envio, que deduce zona y tarifa de la
+        # localidad.
         pide_envio = any(
             (e.get("faq_tema") or "").strip().lower() == "costo_envio"
             for e in items_extra)
@@ -402,8 +322,7 @@ def calculate_total(items: list[dict] | None = None,
                 continue
             unidad = (valor.get("unidad") or "").strip().lower()
             if unidad == "porcentaje":
-                # El monto guardado es un porcentaje, no pesos. Se calcula sobre
-                # el subtotal de productos ya acumulado en total.
+                # El monto guardado es un porcentaje, no pesos.
                 pct = int(valor.get("monto", 0))
                 base = total
                 monto_calc = round(base * pct / 100)
@@ -434,7 +353,6 @@ def calculate_total(items: list[dict] | None = None,
                     })
                 else:
                     # Unidad NO monetaria (ej cuotas): es una cantidad, no pesos.
-                    # NO se suma al total ni se muestra con $. Se reporta como dato.
                     extras_detalle.append({
                         "faq_tema": tema, "concepto": concepto,
                         "modalidad": "informativo", "valor_num": m,
@@ -455,10 +373,8 @@ def calculate_total(items: list[dict] | None = None,
             else:
                 extras_no_validos.append(f"{tema}:{concepto} (modalidad invalida)")
         if extras_no_validos:
-            # Veredicto + opciones: sin la lista de extras validos el modelo
-            # improvisa una disculpa y mata el cierre (visto en el molino
-            # multiturno con el descuento por transferencia). Con la lista,
-            # reintenta con el par exacto. Unico camino, sin flag.
+            # Veredicto + opciones: sin la lista de extras validos el modelo improvisa una disculpa y mata el
+            # cierre (visto en el molino multiturno con el descuento por transferencia).
             cuantitativas = {
                 t: [v.get("concepto") for v in (f.get("valores") or [])]
                 for t, f in faqs.items()
@@ -470,38 +386,21 @@ def calculate_total(items: list[dict] | None = None,
             return {"ok": False, "mensaje_para_llm": msg}
 
         # ── ENVIO: lo cotiza cotizar_envio (unica fuente), la calculadora solo lo
-        #    TOMA y lo cobra una vez por destino. Se le pasa el subtotal real, asi
-        #    el envio gratis por umbral lo decide tambien cotizar_envio, no esta
-        #    funcion. Si no hay zona (falta direccion), se devuelve ok False con el
-        #    pedido de cotizar_envio: nunca se inventa un costo de envio.
         if pide_envio:
             from app.core.estado_venta import get_envio_localidades
-            # Envio gratis por umbral en MULTI-destino: el umbral se mira POR
-            # DESTINO, no por la suma del pedido. Los items no declaran a que
-            # destino van, asi que se usa el promedio (suma/destinos): solo
-            # libera el envio si el reparto claramente supera el umbral. Antes 4
-            # destinos chicos sumados daban "todo gratis" (visto en real 2-jul).
+            # Envio gratis por umbral en MULTI-destino: el umbral se mira POR DESTINO, no por la suma del
+            # pedido.
             _sub_umbral = total if n_envios <= 1 else total // n_envios
-            # DESTINOS DISTINTOS, TARIFAS DISTINTAS: si este turno se cotizaron
-            # varias localidades, cada destino cobra SU tarifa real (Cordoba +
-            # Rosario suma 7500 + 6000, no dos veces la ultima). Con una sola
-            # localidad conocida, los n destinos van a esa tarifa, como antes.
+            # DESTINOS DISTINTOS, TARIFAS DISTINTAS: si este turno se cotizaron varias localidades, cada
+            # destino cobra SU tarifa real (Cordoba + Rosario suma 7500 + 6000, no dos veces la ultima).
             _locs = get_envio_localidades()
             if not _locs:
                 # Memoria del pedido: destinos cotizados en turnos ANTERIORES.
-                # Sin esto, "y el total de todo?" un turno despues de cotizar
-                # dos destinos no encuentra ninguna localidad y vuelve a pedir
-                # un CP que el cliente ya dio (visto en el banco de charlas).
                 from app.core.estado_venta import get_current_estado
                 _locs = [str(l).strip() for l in
                          (get_current_estado().get("localidades_envio") or [])
                          if str(l or "").strip()]
-            # DESTINO UNICO (sticky del estado): el cliente dijo "mandalo todo
-            # a X" / "me mude". Todo va a UN lugar; un destino viejo que el
-            # solver re-cotice desde el historial queda OBSOLETO y no se
-            # cobra (visto en el banco 8-jul: mudanza Mendoza->Salta cobro dos
-            # envios). Se queda con el destino de la MEMORIA si esta entre los
-            # cotizados; si no, con el ultimo cotizado del turno.
+            # DESTINO UNICO (sticky del estado): el cliente dijo "mandalo todo a X" / "me mude".
             from app.core.estado_venta import get_current_estado as _gce_du
             if _gce_du().get("destino_unico") and len(_locs) > 1:
                 _mem_du = [str(l).strip() for l in
@@ -518,13 +417,10 @@ def calculate_total(items: list[dict] | None = None,
                 n_envios = 1
                 _sub_umbral = total
 
-            # DESTINOS SIN COTIZAR NO SE COBRAN NI SE INVENTAN: si el solver
-            # declara MAS destinos que localidades cotizadas (turno + memoria),
-            # antes se rellenaba duplicando la ultima tarifa (E13, para no
-            # regalar el envio) — pero eso COBRO DE MAS en real: tras "mandalo
-            # todo a Salta" (UN destino) el solver mando destinos=2 y el total
-            # sumo dos envios de $9.000 (banco 8-jul). Ahora se pide cotizar el
-            # destino faltante: ni capa en silencio (E13) ni duplica tarifa.
+            # DESTINOS SIN COTIZAR NO SE COBRAN NI SE INVENTAN: si el solver declara MAS destinos que
+            # localidades cotizadas (turno + memoria), antes se rellenaba duplicando la ultima tarifa (E13,
+            # para no regalar el envio) — pero eso COBRO DE MAS en real: tras "mandalo todo a Salta" (UN
+            # destino) el solver mando destinos=2 y el total sumo dos envios de $9.000 (banco 8-jul).
             if _locs and n_envios > len(_locs):
                 log.warning(f"calculate_total destinos_sin_cotizar "
                             f"declarados={n_envios} cotizados={len(_locs)}")
@@ -542,11 +438,9 @@ def calculate_total(items: list[dict] | None = None,
                 _locs = _locs[-1:] or [None]
             _cuentas = [1] * len(_locs)
             _cuentas[-1] += max(0, n_envios - len(_locs))
-            # UMBRAL POR GRUPO (grupos_envio, pendiente del 10-jul, cerrado
-            # 19-jul): si el cliente dijo QUE va a cada destino, el envio
-            # gratis se decide con el subtotal REAL de cada paquete, no con
-            # el promedio (que regalaba el envio del paquete chico). Todo-o-
-            # nada: ante cualquier ambiguedad sigue el promedio de siempre.
+            # UMBRAL POR GRUPO (grupos_envio, pendiente del 10-jul, cerrado 19-jul): si el cliente dijo QUE va
+            # a cada destino, el envio gratis se decide con el subtotal REAL de cada paquete, no con el
+            # promedio (que regalaba el envio del paquete chico).
             _sub_grupo: dict = {}
             if grupos and n_envios > 1 and len(grupos) == len(_locs):
                 _sub_grupo = _subtotales_por_grupo(grupos, _locs, _cat_precios)
@@ -635,10 +529,6 @@ def calculate_total(items: list[dict] | None = None,
             },
         }
     # ── PAGO DIVIDIDO POR PORCENTAJE: el CODIGO dueña TODA la cuenta ──────────
-    # base = productos + envio (el descuento por transferencia ya se saco de los
-    # extras arriba; lo aplica el reparto a lo que no es Mercado Pago). Una sola
-    # funcion cubre cualquier reparto: 50/50, 70/30, tres medios, etc. El solver
-    # no calcula ni una cifra: pasa 'pago' y el codigo devuelve el bloque sellado.
     base_total = total + extra_min
     if pago and not hay_rango:
         from app.core.pago_split import calcular_split, descuento_de, render_split
@@ -648,11 +538,8 @@ def calculate_total(items: list[dict] | None = None,
             _pres = _render_presentacion(
                 detalle, extras_detalle, total, total_ars=base_total)
             _pres = _pres + "\n\n" + render_split(_split)
-            # El proof del split respalda TODOS los montos de la presentacion:
-            # renglones, subtotal y EXTRAS (envio). Sin el envio en el proof,
-            # el verificador lo tomaba por no respaldado y lo "autocorregia"
-            # a un valor de la FAQ (visto 11-jul: envio La Plata $6.000
-            # cotizado bien y pisado a $5.000 en el mensaje final).
+            # El proof del split respalda TODOS los montos de la presentacion: renglones, subtotal y EXTRAS
+            # (envio).
             _montos_proof = ([base_total, _split["total_final_ars"],
                               _split["descuento_total_ars"], total]
                              + [p["monto_ars"] for p in _split["partes"]]
@@ -718,19 +605,11 @@ def calculate_total(items: list[dict] | None = None,
 
 
 # ────────────────────────────────────────────────────────────
-# 4) ENCONTRAR DENTRO DE PRESUPUESTO
+
 # ────────────────────────────────────────────────────────────
 
 # ────────────────────────────────────────────────────────────
-# 5) COMPARAR
-# ────────────────────────────────────────────────────────────
 
-# ────────────────────────────────────────────────────────────
-# 6) RECOMENDAR
-# ────────────────────────────────────────────────────────────
-
-# ────────────────────────────────────────────────────────────
-# 7) FAQ
 # ────────────────────────────────────────────────────────────
 
 
@@ -748,25 +627,15 @@ def calculate_total(items: list[dict] | None = None,
 
 
 # ────────────────────────────────────────────────────────────
-# 8) LISTAR CATALOGO
-# ────────────────────────────────────────────────────────────
 
-# Helper
-# ────────────────────────────────────────────────────────────
+# Helper ────────────────────────────────────────────────────────────
 
 
 
-# ────────────────────────────────────────────────────────────
-# REGISTRY: schemas y mapeo de funciones
 # ────────────────────────────────────────────────────────────
 
 def _umbral_envio_gratis(valores: list) -> int:
-    """Umbral de envio gratis desde la FAQ costo_envio: UNICA fuente, el MISMO dato
-    que se le dice al cliente. Lo saca del concepto envio_gratis (campo estructurado
-    umbral_ars/base_ars/monto_min, o el numero de su 'condicion', ej 'compra mayor a
-    250000'). Cae al default de plataforma SOLO si la FAQ no lo trae. Asi el numero
-    que el codigo aplica y el que el bot publica nunca pueden divergir (era el bug:
-    FAQ 250000 vs setting 300000)."""
+    """Umbral de envio gratis desde la FAQ costo_envio: UNICA fuente, el MISMO dato que se le dice al cliente."""
     for v in valores or []:
         if str(v.get("concepto", "")).lower() != "envio_gratis":
             continue
@@ -782,17 +651,13 @@ def _umbral_envio_gratis(valores: list) -> int:
 
 def cotizar_envio(localidad: str | None = None,
                   subtotal: int | None = None) -> dict:
-    """Cotiza el envio de forma determinista: el CODIGO clasifica la zona desde el
-    codigo postal o la localidad (no el modelo) y devuelve la tarifa de la tienda.
-
-    localidad: texto con el codigo postal, la localidad y/o la provincia del cliente.
-    subtotal: subtotal de productos, para aplicar envio gratis por umbral si supera.
-    """
+    """Cotiza el envio de forma determinista: el CODIGO clasifica la zona desde el codigo postal o la localidad
+    (no el modelo) y devuelve la tarifa de la tienda. localidad: texto con el codigo postal, la localidad y/o
+    la provincia del cliente. subtotal: subtotal de productos, para aplicar envio gratis por umbral si supera."""
     from app.core.envio import clasificar_zona
 
-    # Si el Solver no paso localidad pero el cliente YA dio su direccion (esta en el
-    # ESTADO del turno), se usa esa para clasificar la zona. Asi no se le vuelve a
-    # pedir el codigo postal que ya dio. Solo actua cuando el modelo no manda nada.
+    # Si el Solver no paso localidad pero el cliente YA dio su direccion (esta en el ESTADO del turno), se usa
+    # esa para clasificar la zona.
     if not (localidad or "").strip():
         from app.core.estado_venta import get_current_estado
         _dc = get_current_estado().get("datos_cliente") or {}
@@ -801,9 +666,8 @@ def cotizar_envio(localidad: str | None = None,
             log.info(f"cotizar_envio direccion_estado={_dir[:60]}")
             localidad = _dir
 
-    # Disclaimer de envio (determinista): el Solver lo cierra como oracion aparte y
-    # EXACTA, asi no se mezcla con su redaccion ni promete un precio grabado. Cubre
-    # la realidad inflacionaria sin asustar al cliente. No aplica a envio gratis.
+    # Disclaimer de envio (determinista): el Solver lo cierra como oracion aparte y EXACTA, asi no se mezcla
+    # con su redaccion ni promete un precio grabado.
     _NOTA_ENVIO = (
         " Cerra la parte del envio con esta frase EXACTA, como oracion aparte: "
         "\"Envío orientativo, puede variar al confirmar la compra.\"")
@@ -811,17 +675,13 @@ def cotizar_envio(localidad: str | None = None,
     tid = get_current_tienda()
     zona = clasificar_zona(localidad or "")
     if zona is None and (localidad or "").strip():
-        # PROVINCIA DE LA CHARLA: si el cliente ya dio la provincia (en este
-        # mensaje o en turnos anteriores, sticky en el estado), una localidad
-        # ambigua o desconocida se reintenta como "localidad, provincia" (la
-        # tabla resuelve ambiguas solo con la provincia en el texto). Caso real
-        # 8-jul: 'Los Condores' fallaba con 'todos en provincia de Cordoba'
-        # dicho en el MISMO mensaje, y el bot re-pedia el CP que ya tenia.
+        # PROVINCIA DE LA CHARLA: si el cliente ya dio la provincia (en este mensaje o en turnos anteriores,
+        # sticky en el estado), una localidad ambigua o desconocida se reintenta como "localidad, provincia"
+        # (la tabla resuelve ambiguas solo con la provincia en el texto).
         from app.core.estado_venta import get_current_estado
         _prov = (get_current_estado().get("provincia_envio") or "").strip()
-        # La provincia sticky NO completa basura (charla real 19-jul: "la otra
-        # direccion" + "santa fe" cotizaba como destino valido): el reintento
-        # corre solo si el texto nombra un lugar de la tabla geo.
+        # La provincia sticky NO completa basura (charla real 19-jul: "la otra direccion" + "santa fe"
+        # cotizaba como destino valido): el reintento corre solo si el texto nombra un lugar de la tabla geo.
         from app.core.geo_cp import es_lugar_conocido
         if _prov and es_lugar_conocido(localidad):
             _con_prov = f"{localidad}, {_prov}"
@@ -860,9 +720,8 @@ def cotizar_envio(localidad: str | None = None,
         }
     valores = faq.get("valores") or []
 
-    # Envio gratis por umbral: sale de la FAQ costo_envio (UNICA fuente, el mismo
-    # numero que el bot le dice al cliente), con el default de plataforma solo como
-    # respaldo. Si el subtotal lo supera, es gratis.
+    # Envio gratis por umbral: sale de la FAQ costo_envio (UNICA fuente, el mismo numero que el bot le dice al
+    # cliente), con el default de plataforma solo como respaldo.
     umbral = _umbral_envio_gratis(valores)
     if subtotal and isinstance(subtotal, (int, float)) and subtotal > umbral:
         return {
@@ -877,11 +736,8 @@ def cotizar_envio(localidad: str | None = None,
             "proof": {"tipo": "envio", "valores": [0], "resultado": 0},
         }
 
-    # Tarifa EXACTA por provincia (unico camino, sin flag): si la provincia se
-    # determina con certeza, se devuelve su monto fijo en vez del rango generico de
-    # interior. La fuente de verdad es config.py (ENVIO_INTERIOR_POR_PROVINCIA); una
-    # tabla en Firestore 'tarifas_envio' pisa ese default por tienda. Si la provincia
-    # no se determina, cae al colapso por tope de abajo: nunca se adivina la zona.
+    # Tarifa EXACTA por provincia (unico camino, sin flag): si la provincia se determina con certeza, se
+    # devuelve su monto fijo en vez del rango generico de interior.
     if zona == "interior":
         from app.core.envio import clasificar_provincia
         from app.storage.firestore_client import get_config
@@ -931,13 +787,8 @@ def cotizar_envio(localidad: str | None = None,
     modalidad = (valor.get("modalidad") or "fijo").lower()
     if modalidad == "rango":
         mn, mx = int(valor.get("monto_min", 0)), int(valor.get("monto_max", 0))
-        # MATAR EL RANGO EN LA FUENTE: sin tarifa exacta por provincia, el interior
-        # devuelve UN numero fijo (el tope publicado monto_max: dato real, nunca
-        # inventado) en vez de un rango. Asi el Solver no tiene rango dentro del cual
-        # inventar una cifra (el caso $7.500), la melliza tiene un valor exacto que
-        # enforce y el total sale unico. Conservador: cobra el tope, y el disclaimer
-        # avisa que puede variar; cargar tarifas_envio por provincia lo afina hacia
-        # abajo cuando la tienda quiera tarifas mas finas.
+        # MATAR EL RANGO EN LA FUENTE: sin tarifa exacta por provincia, el interior devuelve UN numero fijo
+        # (el tope publicado monto_max: dato real, nunca inventado) en vez de un rango.
         monto = mx
         return {
             "ok": True, "zona": zona, "concepto": valor.get("concepto"),
@@ -969,8 +820,4 @@ def cotizar_envio(localidad: str | None = None,
 
 
 
-# TOOLS_REGISTRY y get_tools_schema se borraron el 29-jul: eran el contrato de
-# TOOL CALLING del solver viejo. El camino atado no llama tools, emite fragmentos
-# con responseSchema y el codigo ejecuta lo que hace falta. Lo unico que quedo
-# del vocabulario de tools son los NOMBRES, que generador_v2 sigue usando como
-# etiqueta de traza para que evidencia.py arme la evidencia del turno.
+# TOOLS_REGISTRY y get_tools_schema se borraron el 29-jul: eran el contrato de TOOL CALLING del solver viejo.

@@ -1,26 +1,6 @@
-"""UNA PREGUNTA, ESTAS FAMILIAS.
+"""UNA PREGUNTA, ESTAS FAMILIAS. Una pregunta mezcla varias."""
 
-Una pregunta mezcla varias. Eso es lo normal, no un caso raro.
-Pedido, precio, garantia y si le sirve a la notebook pueden ir
-en la misma frase. El sistema tiene que nombrar cada una, con
-el mismo nombre en todos lados.
-
-Esto NO es el interprete de veinte campos. Ese se borro el 1-ago
-porque entendia peor. Esto es el catalogo de lo que una pregunta
-PUEDE abrir, para que la maquinaria deje de hablar idiomas distintos.
-
-De donde sale cada familia:
-
-  declaracion  lo declara registrar_pedido en la llamada uno
-  memoria      ya estaba en el estado de la charla
-  cierre       lo detecta el codigo de cierre, no el molde
-
-La oferta no esta aca: la abre el codigo, no el cliente.
-"""
-
-# Lo que el molde ya nombra, en el orden de una venta. Los nombres
-# son EXACTOS los de registrar_pedido. Sin apodo. El orden del molde
-# es otro; el candado compara el conjunto, no la fila.
+# Lo que el molde ya nombra, en el orden de una venta.
 DECLARACION = (
     "items",
     "stock",
@@ -45,8 +25,6 @@ NO_ES_PREGUNTA = ("oferta",)
 
 
 # Piezas de memoria. Los nombres SON las claves de construir_estado.
-# Una pregunta puede reabrirlas. Las dos de contexto no: viajan de
-# fondo y no se contestan como si el cliente las hubiera preguntado.
 MEMORIA_PIEZAS = (
     "productos_vistos",
     "carrito",
@@ -68,8 +46,6 @@ MEMORIA_CONTEXTO = (
 
 
 # Los veinte campos del interprete muerto, en el orden de su schema.
-# Cada uno cae en una familia viva o en None: murio con el interprete
-# y no se reactiva. El motivo de los None esta en MURIO_CON_EL_INTERPRETE.
 DEL_VIEJO = {
     "respondiendo_a": MEMORIA,
     "productos_consultados": "items",
@@ -103,12 +79,7 @@ MURIO_CON_EL_INTERPRETE = {
 
 def abiertas(declarado: dict | None, *, memoria: bool = False,
              cierre: bool = False) -> tuple[str, ...]:
-    """Familias que esta pregunta abre. Mezclar varias es lo normal.
-
-    memoria y cierre se pasan desde afuera. Detectarlos es la etapa
-    siguiente, no este catalogo: un turno 2 no abre memoria solo por
-    existir historial.
-    """
+    """Familias que esta pregunta abre. Mezclar varias es lo normal. memoria y cierre se pasan desde afuera."""
     d = declarado or {}
     fuera = []
     for campo in DECLARACION:

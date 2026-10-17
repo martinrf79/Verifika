@@ -1,14 +1,4 @@
-"""
-CIERRE DE VENTA — captura estructurada del pedido y los datos del cliente.
-
-Cuando el cliente confirma la compra, el bot necesita cuatro datos para cerrar:
-nombre, telefono, direccion y forma de pago. Este modulo los extrae del mensaje
-con el modelo, que es interpretacion, no aritmetica, y arma los mensajes de
-pedir lo que falta y de confirmacion final. El telefono ademas tiene respaldo
-deterministico por regex.
-
-Va dentro del circuito de leads.
-"""
+"""CIERRE DE VENTA — captura estructurada del pedido y los datos del cliente."""
 import json
 import re
 import unicodedata
@@ -20,16 +10,7 @@ from app.core.leads import extraer_telefono
 log = get_logger(__name__)
 settings = get_settings()
 
-# LO QUE SE LE PIDE AL CLIENTE PARA CERRAR. Solo el NOMBRE (Martin, 1-ago,
-# sobre la charla real donde el bot pidio nombre completo, DNI y una direccion
-# por destino en el PRIMER mensaje). Pedir un formulario antes de que el cliente
-# se decida espanta la venta, y el DNI ni siquiera lo necesitamos: el modelo se
-# lo invento, nunca estuvo en esta lista.
-#
-# El telefono ya lo tenemos del canal y se completa solo. La direccion y la
-# forma de pago se coordinan en el contacto, no se exigen de entrada: por eso
-# salen de aca. Se siguen GUARDANDO si el cliente las dice -el extractor las
-# sigue leyendo-, pero ya no frenan el cierre.
+# LO QUE SE LE PIDE AL CLIENTE PARA CERRAR.
 CAMPOS_REQUERIDOS = ["nombre"]
 
 # Los datos que igual se leen y se guardan cuando aparecen, aunque no se pidan.
@@ -37,10 +18,6 @@ CAMPOS_OPCIONALES = ["telefono", "direccion", "forma_pago"]
 CAMPOS_EXTRAIBLES = CAMPOS_REQUERIDOS + CAMPOS_OPCIONALES
 
 # ── GATILLO DE CIERRE (arreglo D) ────────────────────────────────────────────
-# El sistema hace UNA pregunta de cierre cuando ya hay intencion suficiente. La
-# respuesta del cliente decide de forma DETERMINISTA, sin depender de la confianza
-# del LLM: cualquier respuesta que no sea un no claro dispara el lead fuerte; un no
-# lo toma un humano. Asi el gatillo no se cuelga esperando que el modelo reclasifique.
 _NEG_INICIO_RE = re.compile(r"^\s*(no|nop|nel|nah|negativo|jamas)\b", re.IGNORECASE)
 _NEG_FRASES_RE = re.compile(
     r"(todav[ií]a\s+no|ahora\s+no|no\s+por\s+ahora|no\s+gracias|no\s+me\s+interesa|"
@@ -49,12 +26,7 @@ _NEG_FRASES_RE = re.compile(
     re.IGNORECASE)
 
 
-# UNA CORRECCION DEL PEDIDO NO ES UN NO A LA VENTA. "no, el teclado sacalo,
-# dejame solo los mouse" empieza con "no" y es exactamente lo contrario a un
-# rechazo: el cliente esta ajustando lo que va a comprar. Cazado por el banco
-# repetido, cuarta tanda: el cierre lo leia como desinteres, le avisaba al dueño
-# que el lead estaba tibio y le pegaba al cliente "cuando quieras retomar, aca
-# estoy" abajo del presupuesto que le acababa de pasar.
+# UNA CORRECCION DEL PEDIDO NO ES UN NO A LA VENTA.
 _CORRIGE_PEDIDO_RE = re.compile(
     r"\b(?:sac[aá]\w*|quit[aá]\w*|elimin[aá]\w*|borr[aá]\w*|agreg[aá]\w*|"
     r"sum[aá]\w*|pon[eé]\w*|cambi[aá]\w*|dej[aá]\w*|mejor|en\s+vez\s+de|"
@@ -63,11 +35,7 @@ _CORRIGE_PEDIDO_RE = re.compile(
 
 
 def es_no_interesado(respuesta: str) -> bool:
-    """True si la respuesta del cliente denota un no o falta de interes. Determinista:
-    detecta la negacion al inicio ('no', 'no gracias') o frases de postergacion
-    ('todavia no', 'mas adelante', 'lo pienso'). Todo lo demas NO es un no.
-
-    Y una correccion del pedido NUNCA es un no, aunque arranque con "no"."""
+    """True si la respuesta del cliente denota un no o falta de interes."""
     t = (respuesta or "").strip()
     if not t:
         return False
@@ -78,11 +46,7 @@ def es_no_interesado(respuesta: str) -> bool:
     return bool(_NEG_FRASES_RE.search(t))
 
 
-# Una duda o pregunta del cliente NO es una confirmacion de compra. Marcadores:
-# el signo de pregunta, o cues de duda/interrogacion (estas seguro, en serio, cuanto,
-# como, cuando, donde). Sin esto, una pregunta como "estas seguro que el envio llega
-# a Santa Ana?" se tomaba como un si y el bot saltaba a pedir datos (apuro real visto
-# en prod 1-jul).
+# Una duda o pregunta del cliente NO es una confirmacion de compra.
 _PREGUNTA_RE = re.compile(
     r"[¿?]|\b(seguro\s+que|est[aá]s?\s+seguro|est[aá]n\s+seguros?|en\s+serio|"
     r"de\s+verdad|es\s+cierto|es\s+verdad|me\s+lo\s+confirm|lo\s+confirm[aá]s|"
@@ -92,24 +56,18 @@ _PREGUNTA_RE = re.compile(
 
 
 def parece_pregunta(mensaje: str) -> bool:
-    """True si el mensaje es una pregunta o una duda del cliente. Determinista:
-    detecta el signo de pregunta o cues de duda. Una pregunta se contesta, no
-    cierra la venta."""
+    """True si el mensaje es una pregunta o una duda del cliente."""
     return bool(_PREGUNTA_RE.search(mensaje or ""))
 
 
 def dispara_lead_fuerte(pregunta_hecha: bool, respuesta: str) -> bool:
-    """Gatillo del lead fuerte: solo dispara si el turno pasado se hizo la pregunta
-    de cierre Y la respuesta no es un no NI una pregunta. Sin pregunta previa no
-    dispara; un no lo toma un humano; una duda la contesta el bot y el cierre queda
-    pendiente."""
+    """Gatillo del lead fuerte: solo dispara si el turno pasado se hizo la pregunta de cierre Y la respuesta no
+    es un no NI una pregunta."""
     return (bool(pregunta_hecha) and not es_no_interesado(respuesta)
             and not parece_pregunta(respuesta))
 
-# COMO SE NOMBRA CADA DATO QUE FALTA. Sale de la fuente, igual que la frase que
-# lo contiene: si Martin quiere pedir "un celular" en vez de "un telefono de
-# contacto", lo cambia en el json y nadie toca Python. El literal de al lado es
-# la red por si el archivo faltara.
+# COMO SE NOMBRA CADA DATO QUE FALTA. Sale de la fuente, igual que la frase que lo contiene: si Martin quiere
+# pedir "un celular" en vez de "un telefono de contacto", lo cambia en el json y nadie toca Python.
 _ETIQUETAS_RESPALDO = {
     "nombre": "tu nombre y apellido",
     "telefono": "un telefono de contacto",
@@ -136,14 +94,8 @@ Reglas:
 
 
 # ── RESPALDOS DETERMINISTAS (sin LLM) ───────────────────────────────────────
-# El codigo manda en los datos: forma de pago y direccion se pueden reconocer por
-# patron con alta precision. Asi un dato dicho dentro de un mensaje de OTRA
-# intencion (ej "presupuestame Cordoba con pago transferencia") igual se captura,
-# sin depender de que el modelo lo saque ni de la puerta de intencion.
 
-# Palabra de pago -> forma normalizada. Se matchea por palabra completa. La sigla
-# 'mp' SOLO cuenta como Mercado Pago en contexto de pago (con mp, pago con mp): asi
-# '48 mp de resolucion' de una camara no se toma como forma de pago (E9).
+# Palabra de pago -> forma normalizada. Se matchea por palabra completa.
 _FORMAS_PAGO = [
     (r"transferenc", "transferencia"),
     (r"\bmercado\s*pago\b", "mercado pago"),
@@ -156,9 +108,6 @@ _FORMAS_PAGO = [
 ]
 
 # Negacion de una forma de pago: 'no quiero transferencia', 'nunca por tarjeta'.
-# La forma NEGADA se descarta, asi 'no quiero transferencia, prefiero efectivo'
-# captura efectivo y no la rechazada (E8). 'sin' queda afuera a proposito: 'pago
-# sin recargo con transferencia' no niega la transferencia.
 _NEG_PAGO = re.compile(r"\b(?:no|nunca|tampoco)\b|nada\s+de|prefiero\s+no",
                        re.IGNORECASE)
 
@@ -174,9 +123,7 @@ def _sin_acentos(s: str) -> str:
 
 
 def extraer_forma_pago(mensaje: str) -> str:
-    """Forma de pago por frase clave, normalizada. '' si no hay ninguna clara.
-    Descarta la forma que viene NEGADA ('no quiero transferencia') y, entre las que
-    quedan, devuelve la primera del mensaje: asi gana la elegida, no la rechazada."""
+    """Forma de pago por frase clave, normalizada."""
     txt = _sin_acentos((mensaje or "").lower())
     candidatos: list[tuple[int, str]] = []
     for patron, forma in _FORMAS_PAGO:
@@ -194,9 +141,8 @@ def extraer_forma_pago(mensaje: str) -> str:
 
 
 def extraer_direccion(mensaje: str) -> str:
-    """Direccion SOLO cuando hay una cue word de domicilio cerca de un numero, para
-    no confundir cantidades/precios con un domicilio. Conservador (precision sobre
-    cobertura); el resto lo saca el LLM. Si hay varias, las une con ' | '."""
+    """Direccion SOLO cuando hay una cue word de domicilio cerca de un numero, para no confundir
+    cantidades/precios con un domicilio."""
     txt = mensaje or ""
     if not re.search(_DIR_CUE, _sin_acentos(txt.lower())):
         return ""
@@ -220,9 +166,7 @@ def extraer_direccion(mensaje: str) -> str:
 
 
 def extraer_determinista(mensaje: str) -> dict:
-    """Datos sacables SIN LLM (telefono, forma de pago, direccion con cue). Pensado
-    para correr en CADA turno: barato, alta precision, no atado a la intencion.
-    Devuelve solo los campos que reconocio (no pone vacios)."""
+    """Datos sacables SIN LLM (telefono, forma de pago, direccion con cue)."""
     datos: dict = {}
     tel = extraer_telefono(mensaje)
     if tel:
@@ -237,10 +181,7 @@ def extraer_determinista(mensaje: str) -> dict:
 
 
 def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
-    """Extrae los datos presentes en el mensaje. Devuelve dict con los cuatro
-    campos, vacios los que no esten. Misma puerta al modelo que el resto del
-    turno: `llm_reintento._cliente`. Si esa llamada falla, el respaldo
-    determinista de abajo rellena lo que se pueda por patron."""
+    """Extrae los datos presentes en el mensaje."""
     datos = {c: "" for c in CAMPOS_EXTRAIBLES}
     try:
         from app.core.llm_reintento import _cliente, _modelo
@@ -271,7 +212,6 @@ def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
         log.warning("cierre_extractor_error", trace_id=trace_id, error=str(e)[:150])
 
     # Respaldo deterministico: telefono, forma de pago y direccion por patron.
-    # Solo rellena lo que el LLM dejo vacio; nunca pisa lo que el modelo si saco.
     for campo, valor in extraer_determinista(mensaje).items():
         if valor and not datos.get(campo):
             datos[campo] = valor
@@ -284,15 +224,7 @@ def faltantes(lead: dict) -> list[str]:
 
 
 def mensaje_pedir_datos(falt: list[str], insistencia: int = 0) -> str:
-    """El pedido de datos del cierre.
-
-    `insistencia` es cuantas veces YA se pidieron estos mismos campos. La
-    primera vez se pide entero; de la segunda en adelante se dice distinto y
-    mas corto. Antes esta funcion devolvia siempre el mismo bloque, asi que un
-    cliente que tardaba dos turnos en pasar sus datos recibia el parrafo
-    identico dos y tres veces seguidas: la repeticion mas visible que tenia el
-    bot, y el banco no la veia porque probaba el otro modo de cierre.
-    """
+    """El pedido de datos del cierre. `insistencia` es cuantas veces YA se pidieron estos mismos campos."""
     from app.core.guia_venta_prosa import mensaje
     pend = [_etiqueta(c) for c in falt if c in _ETIQUETAS_RESPALDO]
     pend = [p for p in pend if p]
@@ -321,9 +253,8 @@ def mensaje_confirmacion(lead: dict, presupuesto: str = "") -> str:
     nombre = str(lead.get("nombre", "")).split(" ")[0] if lead.get("nombre") else ""
     partes = [mensaje("cierre_tomamos_pedido", "Listo{nombre}, tomamos tu pedido.",
                       nombre=(f" {nombre}" if nombre else ""))]
-    # EL TITULO SOLO SI HAY CUENTA. De aca nacio el "Resumen:" huerfano que le
-    # llego a Martin en TRES charlas: el titulo se pegaba y el bloque se podaba
-    # despues, dejando la promesa sin nada abajo.
+    # EL TITULO SOLO SI HAY CUENTA. De aca nacio el "Resumen:" huerfano que le llego a Martin en TRES charlas:
+    # el titulo se pegaba y el bloque se podaba despues, dejando la promesa sin nada abajo.
     if (presupuesto or "").strip():
         partes.append(mensaje("cierre_titulo_resumen", "Resumen:") + "\n" + presupuesto)
     direccion = str(lead.get("direccion", "")).strip()

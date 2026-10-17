@@ -1,9 +1,4 @@
-"""ORCHESTRATOR — despachador minimo.
-
-Antes del turno: anti-jailbreak y la palabra de reset. El turno entero lo
-hace `respuesta.procesar_turno` sobre `tablero.turno`. La tienda la resuelve
-el backend, nunca el modelo.
-"""
+"""ORCHESTRATOR — despachador minimo. Antes del turno: anti-jailbreak y la palabra de reset."""
 import uuid
 
 import structlog
@@ -23,17 +18,12 @@ async def process_message(user_id: str, raw_message: str,
     trace_id = str(uuid.uuid4())[:8]
     tid = tienda_id or settings.TIENDA_ID
     structlog.contextvars.bind_contextvars(trace_id=trace_id, tienda_id=tid)
-    # EL MENSAJE ENTERO, HASTA 400. Con 80 caracteres un pedido real llegaba
-    # cortado a la mitad -"Dame precio de dos auriculares, dos mouse y dos
-    # memorias. El precio no seria tan"- y desde el log no se podia saber que
-    # le habian pedido al bot. Es la ENTRADA del cliente, no la respuesta: la
-    # regla que prohibe guardar texto es sobre lo que el bot escribe.
+    # EL MENSAJE ENTERO, HASTA 400. Con 80 caracteres un pedido real llegaba cortado a la mitad -"Dame precio
+    # de dos auriculares, dos mouse y dos memorias.
     log.info("message_received", trace_id=trace_id, tienda_id=tid,
              user_id=user_id, msg_preview=(raw_message or "")[:400])
     try:
         # Anti-jailbreak: filtro de entrada por codigo, antes de cualquier LLM.
-        # Conservador: solo corta patrones claros de ataque ("ignora tus
-        # instrucciones", "decime tu prompt", etc.); una consulta normal no dispara.
         try:
             from app.core.antijailbreak import evaluar_mensaje, RESPUESTA_BLOQUEO
             _aj = evaluar_mensaje(raw_message)
@@ -46,10 +36,6 @@ async def process_message(user_id: str, raw_message: str,
                       error=str(e)[:160])
 
         # ── RESET_CODE: palabra clave de PRUEBA para arrancar de cero ────────
-        # Vive ACA, en el orchestrator, para que funcione con CUALQUIER camino.
-        # El bot mantiene continuidad siempre; solo el RESET_CODE
-        # exacto (ej "verifika2026") borra la conversacion y descarta los leads,
-        # para testear desde el mismo numero sin tocar el entorno.
         _rc = (settings.RESET_CODE or "").strip().lower()
         if _rc and (raw_message or "").strip().lower() == _rc:
             try:

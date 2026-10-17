@@ -1,24 +1,4 @@
-"""
-LINK DE PAGO — Mercado Pago Checkout Pro, generado por CODIGO al cerrar la venta.
-
-Flag LINK_PAGO. Cuando el lead queda capturado (venta cerrada), el codigo genera
-una preferencia de pago con el TOTAL VERIFICADO del presupuesto que armo la
-calculadora y agrega el link al mensaje de confirmacion. El LLM no interviene:
-ni elige el monto ni arma el link, solo se transporta.
-
-Reglas duras:
-- El monto sale EXCLUSIVAMENTE del bloque que escribio calculate_total (texto
-  generado por codigo, con PROOF), leido por `monto_a_cobrar`: la parte del
-  reparto si hay pago dividido, la seña si la cuenta marca un pago parcial, y
-  el "Total: $X" si no hay ninguno de los dos. Si el total es un rango ("entre
-  X e Y") NO se genera link: un link con monto adivinado es peor que no
-  mandarlo.
-- El access token de Mercado Pago es dato de la tienda: config/mp_access_token
-  en Firestore, o MP_ACCESS_TOKEN por entorno como respaldo. Sin token, el flag
-  no hace nada (silencioso).
-- Cualquier error deja la venta seguir sin link: el link es un plus, nunca
-  bloquea el cierre.
-"""
+"""LINK DE PAGO — Mercado Pago Checkout Pro, generado por CODIGO al cerrar la venta."""
 import os
 import re
 
@@ -33,61 +13,33 @@ log = get_logger(__name__)
 _MP_API = "https://api.mercadopago.com/checkout/preferences"
 
 # Ultima linea "Total: $1.234.567" de la presentacion (codigo, formato estable).
-# "Total FINAL" entra a proposito: cuando hay pago dividido con descuento, el
-# total final es lo que el cliente paga de verdad, y el "Total" de arriba es el
-# de antes del descuento. Cobrar el de arriba es cobrar de mas.
 _TOTAL_RE = re.compile(r"total(?:\s+final)?:?\s*\$?\s*([\d\.]+)\s*$",
                        re.IGNORECASE | re.MULTILINE)
 
-# Un renglon del bloque "Pago dividido:" tal como lo escribe `render_split`:
-#   "- transferencia (65%): $146.250 - 10% descuento = $131.625"
-#   "- mercado pago (35%): $78.750"
-# Se captura el medio y el ULTIMO monto del renglon, que es el que se cobra:
-# con descuento el que vale es el de despues del "=".
+# Un renglon del bloque "Pago dividido:" tal como lo escribe `render_split`: "- transferencia (65%): $146.250
+# - 10% descuento = $131.625" "- mercado pago (35%): $78.750" Se captura el medio y el ULTIMO monto del
+# renglon, que es el que se cobra: con descuento el que vale es el de despues del "=".
 _RE_RENGLON_SPLIT = re.compile(
     r"^\s*-\s*(?P<medio>[^(]+?)\s*\(\s*[\d.,]+\s*%\s*\)\s*:\s*"
     r"(?P<montos>.*\S)\s*$", re.IGNORECASE | re.MULTILINE)
 _RE_PLATA = re.compile(r"\$\s*([\d\.]+)")
 
 
-# EL PAGO PARCIAL, MUDADO DE `invariantes` (3-sep-2026). Era la unica funcion de
-# ese modulo que usaba el camino vivo: el resto era termometro y se apago junto
-# con el grafo. Se muda ENTERA y TAL CUAL, con su regex y su comentario, en vez
-# de dejar un modulo de una sola funcion viva.
-#
-# "Sena 20%: $42.200 (pago parcial)" — lo escribe `_label_extra` de la
-# calculadora y es la marca de que el cliente NO paga el total ahora.
+# EL PAGO PARCIAL, MUDADO DE `invariantes` (3-sep-2026).
 _RE_PAGO_PARCIAL = re.compile(
     r"^\s*[^:\n]{2,40}?\s*:\s*\$(?P<monto>[\d\.]+)\s*\(pago parcial\)\s*$",
     re.IGNORECASE | re.MULTILINE)
 
 
 def _pago_parcial(mensaje: str) -> int | None:
-    """Lo que el cliente paga AHORA cuando la cuenta lleva una seña. None si la
-    cuenta no marca ningun pago parcial."""
+    """Lo que el cliente paga AHORA cuando la cuenta lleva una seña."""
     m = _RE_PAGO_PARCIAL.search(mensaje or "")
     return int(str(m.group("monto")).replace(".", "")) if m else None
 
 
 def montos_por_medio(presentacion: str) -> dict:
-    """{medio: monto a cobrar} leido del bloque "Pago dividido:" que escribe el
-    codigo. {} si no hay pago dividido.
-
-    EL ERROR QUE ESTO CIERRA, y es de PLATA, leido del WhatsApp real del
-    10-ago. Martin pidio el pago 65% transferencia y 35% Mercado Pago, la
-    cuenta lo hizo bien -"transferencia (65%): $146.250 - 10% descuento =
-    $131.625"- y abajo, en los datos para transferir, el bot le puso
-    **"Monto: $225.000"**. O sea que le pidio el TOTAL ENTERO por
-    transferencia: un 71% de mas sobre lo que le correspondia, y ademas mas que
-    el total final de $210.375.
-
-    La causa: el cobro se armaba con `extraer_total_verificado`, que lee la
-    ultima linea "Total" y no sabe nada del reparto. El reparto lo calculaba
-    bien `pago_split` y despues nadie lo miraba a la hora de cobrar.
-
-    Se lee del bloque YA ESCRITO, no se recalcula: si se recalculara habria dos
-    cuentas del mismo numero y podrian diferir, que es la falla que este repo ya
-    pago con el patron de la cuenta escrito dos veces."""
+    """{medio: monto a cobrar} leido del bloque "Pago dividido:" que escribe el codigo. {} si no hay pago
+    dividido."""
     out: dict = {}
     for m in _RE_RENGLON_SPLIT.finditer(str(presentacion or "")):
         plata = _RE_PLATA.findall(m.group("montos"))
@@ -101,24 +53,7 @@ def montos_por_medio(presentacion: str) -> dict:
 
 
 def monto_a_cobrar(presentacion: str, medio: str) -> int | None:
-    """Lo que hay que cobrar POR ESTE MEDIO, AHORA. Con pago dividido, la parte
-    que le toca; con seña, la seña; si no, el total. None si no hay numero
-    confiable.
-
-    LA SEÑA SE AGREGO EL 12-AGO, y la encontro el barrido del codigo, no una
-    charla: con "Sena 20%: $42.200 (pago parcial)" escrito en la cuenta, esto
-    devolvia el TOTAL, $211.000. El bot le mandaba al cliente la cuenta que dice
-    que reserva con el 20% y, tres renglones abajo, "Monto: $211.000". Es el
-    mismo error del 10-ago en otra costura: la cuenta decia una cosa y el cobro
-    pedia otra, cada modulo en verde por su lado.
-
-    El orden no es casual. El reparto manda sobre la seña porque es mas
-    especifico: si el cliente reparte el pago entre dos medios, cada via ya
-    tiene su numero. La seña manda sobre el total. Ninguno se recalcula: los
-    tres se LEEN del bloque que ya escribio la calculadora.
-
-    `medio` es el del cliente: 'cbu' o 'mp', como los devuelve
-    `elegir_medio_pago`."""
+    """Lo que hay que cobrar POR ESTE MEDIO, AHORA."""
     partes = montos_por_medio(presentacion)
     if partes:
         for nombre, monto in partes.items():
@@ -132,8 +67,7 @@ def monto_a_cobrar(presentacion: str, medio: str) -> int | None:
 
 
 def extraer_total_verificado(presentacion: str) -> int | None:
-    """Total unico de la presentacion de la calculadora. None si no hay total o
-    si el total es un rango (no se adivina el monto de un cobro)."""
+    """Total unico de la presentacion de la calculadora."""
     texto = str(presentacion or "")
     if not texto.strip():
         return None
@@ -196,16 +130,10 @@ async def crear_link_pago(monto_ars: int, titulo: str,
 async def link_pago_para_lead(presupuesto: str, lead: dict,
                               tienda_id: str | None,
                               trace_id: str | None = None) -> str | None:
-    """Punto unico que usa el cierre: monto verificado -> link, o None.
-
-    CON PAGO DIVIDIDO EL LINK COBRA LA PARTE DE MERCADO PAGO, no el total: es
-    el mismo error de plata que tenia la transferencia, del otro lado del
-    reparto. Sin pago dividido, el total, como siempre."""
+    """Punto unico que usa el cierre: monto verificado -> link, o None."""
     total = monto_a_cobrar(presupuesto, "mp")
     if not total:
-        # Motivo al log: sin presupuesto en memoria, o total en rango (envio
-        # sin zona exacta). Con el PROVIDER on esto deberia ser raro: el total
-        # con envio queda cerrado en cuanto se conoce la zona.
+        # Motivo al log: sin presupuesto en memoria, o total en rango (envio sin zona exacta).
         _txt = str(presupuesto or "")
         motivo = ("vacio" if not _txt.strip()
                   else "rango" if "entre" in _txt.lower()
@@ -220,9 +148,6 @@ async def link_pago_para_lead(presupuesto: str, lead: dict,
 
 
 # ── COBRO POR MEDIO ELEGIDO: CBU (transferencia) o link de Mercado Pago ───────
-# En modo 'venta' el bot cobra solo. El medio lo decide la FORMA DE PAGO que el
-# cliente ya eligio, no el modelo: transferencia -> CBU/alias de la tienda,
-# Mercado Pago -> link. Un solo lugar arma el cobro, para las dos vias.
 
 def _money(n) -> str:
     """Entero a formato argentino con separador de miles: 1247400 -> '1.247.400'."""
@@ -248,8 +173,7 @@ def elegir_medio_pago(forma_pago: str) -> str:
 
 
 def datos_transferencia(tienda_id: str | None) -> dict:
-    """CBU, alias, titular y banco de la tienda desde la config. Es config
-    operativa de la tienda (no un secreto), igual que la tarifa de envio."""
+    """CBU, alias, titular y banco de la tienda desde la config."""
     out: dict = {}
     for k in ("cbu", "alias", "titular_cuenta", "banco"):
         try:
@@ -258,9 +182,8 @@ def datos_transferencia(tienda_id: str | None) -> dict:
             v = None
         if v:
             out[k] = str(v).strip()
-    # Fallback DEMO: si la tienda todavia no cargo ni CBU ni alias, se usan los
-    # datos de demostracion (config.py, marcados como tal) para que el bot igual
-    # mande la modalidad de transferencia. La config real de la tienda los pisa.
+    # Fallback DEMO: si la tienda todavia no cargo ni CBU ni alias, se usan los datos de demostracion
+    # (config.py, marcados como tal) para que el bot igual mande la modalidad de transferencia.
     if not out.get("cbu") and not out.get("alias"):
         s = get_settings()
         out = {"cbu": s.DEMO_CBU, "alias": s.DEMO_ALIAS,
@@ -269,8 +192,7 @@ def datos_transferencia(tienda_id: str | None) -> dict:
 
 
 def mensaje_transferencia(datos: dict, monto=None) -> str:
-    """Texto con los datos de transferencia de la tienda. '' si no hay ni CBU ni
-    alias configurados: sin dato real no se inventa nada, el cierre cae al humano."""
+    """Texto con los datos de transferencia de la tienda."""
     datos = datos or {}
     if not datos.get("cbu") and not datos.get("alias"):
         return ""
@@ -296,14 +218,11 @@ def mensaje_transferencia(datos: dict, monto=None) -> str:
 async def instruccion_cobro(presupuesto: str, lead: dict,
                             tienda_id: str | None,
                             trace_id: str | None = None) -> str:
-    """Texto de cobro para el cierre en modo venta, segun la forma de pago del
-    cliente: CBU/alias para transferencia, link de Mercado Pago para MP. '' si no
-    hay como cobrar sin humano (efectivo, o faltan datos). Un solo lugar arma las
-    dos vias, para que ambos puntos del cierre cobren igual."""
+    """Texto de cobro para el cierre en modo venta, segun la forma de pago del cliente: CBU/alias para
+    transferencia, link de Mercado Pago para MP."""
     medio = elegir_medio_pago(lead.get("forma_pago", ""))
     if medio == "cbu":
-        # LA PARTE QUE VA POR TRANSFERENCIA, no el total. Ver `montos_por_medio`:
-        # el 10-ago esto le pidio $225.000 a un cliente que debia $131.625.
+        # LA PARTE QUE VA POR TRANSFERENCIA, no el total.
         total = monto_a_cobrar(presupuesto or lead.get("orden", ""), "cbu")
         return mensaje_transferencia(datos_transferencia(tienda_id), total)
     if medio == "efectivo":
@@ -312,7 +231,6 @@ async def instruccion_cobro(presupuesto: str, lead: dict,
     url = await link_pago_para_lead(
         presupuesto or lead.get("orden", ""), lead, tienda_id, trace_id)
     if not url:
-        # Sin token real de Mercado Pago cae al link de DEMO, asi en la demo el bot
-        # igual manda un enlace. En produccion el token genera el link verdadero.
+        # Sin token real de Mercado Pago cae al link de DEMO, asi en la demo el bot igual manda un enlace.
         url = get_settings().DEMO_LINK_PAGO
     return f"Podés pagar acá: {url}" if url else ""

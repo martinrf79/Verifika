@@ -1,34 +1,4 @@
-"""EL TABLERO — el turno en tres pasos, calibrado en el laboratorio (30-sep-2026).
-
-ES EL TURNO VIVO DESDE EL 30-SEP: `respuesta.procesar_turno` lo llama en vez
-de `agente.turno`. Las herramientas y la completitud siguen en `agente`. Se
-mide por el clon con `sonda_charlas --vara todas`.
-
-LA ENTRADA: el historial, el mensaje, la tienda, y el estado de la charla con
-su ficha, los dos de `ficha_charla`. Vuelve el texto, las llamadas con lo que
-devolvio cada herramienta y el uso. Por eso lo de alrededor —la guarda de
-plata, la memoria, el cierre— es el de produccion sin tocar, y mudar es
-cambiar una funcion por otra.
-
-LOS TRES PASOS, y por que cada uno es como es (FICHA 65, laboratorio):
-
-  1. INTERPRETAR. Dos llamadas en paralelo. Una parte el mensaje en piezas
-     con el tablero: las acciones con una linea, cuatro reglas de partir que
-     sugirio el propio modelo, y el vocabulario de la tienda como listas
-     cerradas del esquema de salida. La otra contesta cinco preguntas de si o
-     no. Temperatura cero y salida forzada: el JSON es siempre valido y los
-     nombres siempre existen.
-  2. EL CODIGO. Corre las mismas herramientas del agente, en orden de
-     dependencia. Si lo que marcaron las preguntas de si o no, o lo que lee
-     `agente.faltantes` en el mensaje, no esta en las piezas, se le pide UNA
-     correccion al interprete. Si falta un dato del cliente o la referencia es
-     ambigua, se repregunta. El modelo detecta esas cosas siempre; armar la
-     estructura no, y por eso la arma el codigo.
-  3. REDACTAR. El redactor no ve el catalogo ni las herramientas: ve solo lo
-     que devolvio el codigo. Lo que no esta ahi no figura. Es la primera
-     capa contra la alucinacion; la segunda es la guarda de plata de
-     `respuesta`, que es la de siempre.
-"""
+"""EL TABLERO — el turno en tres pasos, calibrado en el laboratorio (30-sep-2026)."""
 import asyncio
 import json
 import re
@@ -82,9 +52,7 @@ PREGUNTAS = ("Sos el interprete de una tienda online de tecnologia de Argentina.
              "Del ULTIMO mensaje del cliente, contesta si o no a cada pregunta:\n"
              + "\n".join(f"{k}: {v}" for k, v in BANDERAS.items()))
 
-# LAS GUIAS: procedimientos que el codigo suma a la correccion SOLO cuando la
-# pregunta de si o no los detecto. Medido el 30-sep: los doce dificiles pasan
-# de 24 a 33 de 36 sin tocar los de control, y el mensaje simple no los paga.
+# LAS GUIAS: procedimientos que el codigo suma a la correccion SOLO cuando la pregunta de si o no los detecto.
 GUIAS = {
     "condicional": "GUIA · CONDICIONES. 1. Separa la condicion —lo que hay que averiguar— de la accion —lo que se hace "
                    "segun el resultado—. 2. La condicion es una pieza del tipo que la averigua: producto para stock, "
@@ -119,10 +87,7 @@ Te paso el ultimo mensaje del cliente y los HECHOS que consulto el sistema para 
 
 # ══ EL ESQUEMA DE SALIDA: el vocabulario de la tienda como listas cerradas ═
 
-# EL RUBRO QUE LA TIENDA NO VENDE TAMBIEN ES UNA RESPUESTA (1-oct, K12). Con la
-# lista cerrada el interprete tenia que elegir un rubro de la tienda, y
-# "celulares" salia como notebook: el cliente leia notebooks Samsung que no
-# pidio. `not_found` es un resultado valido, regla 10.0.
+# EL RUBRO QUE LA TIENDA NO VENDE TAMBIEN ES UNA RESPUESTA (1-oct, K12).
 NO_LO_VENDE = "no lo vende la tienda"
 
 def _vocabulario(tienda_id: str) -> tuple:
@@ -198,30 +163,23 @@ def _con_esquema(sistema: str, formato: dict, esquema: dict) -> str:
 
 
 def con_ejemplos(sistema: str, mensaje: str, estado: dict = None) -> str:
-    """LOS EJEMPLOS RESUELTOS MAS PARECIDOS AL MENSAJE, al final del prompt del
-    interprete (FICHA 67, 7-oct). Los elige el codigo: `app/core/ejemplos.py`.
-    Con un pedido vigente en el estado de la charla van primero los de ese estado."""
+    """LOS EJEMPLOS RESUELTOS MAS PARECIDOS AL MENSAJE, al final del prompt del interprete (FICHA 67, 7-oct)."""
     from app.core.ejemplos import bloque
     b = bloque(mensaje, estado="pedido" if pedido_vigente(estado) else "")
     return sistema + "\n\n" + b if b else sistema
 
 
-# ══ LA ATADURA: el vocabulario de la tienda lo garantiza el codigo ══════════
-# (2-oct) Hasta hoy la lista cerrada la garantizaba el esquema estricto del
-# proveedor, y un modelo que da JSON a secas —DeepSeek directo— podia nombrar un
-# rubro, un campo o un tema que la tienda no tiene, o contestar "no" como texto
-# a una pregunta de si o no, que en Python es verdadero. Ahora cada pieza pasa
-# por aca con cualquier modelo: lo que no existe se lleva al valor mas cercano
-# o se descarta, y lo descartado se le devuelve UNA vez al modelo con el error.
+# ══ LA ATADURA: el vocabulario de la tienda lo garantiza el codigo ══════════ (2-oct) Hasta hoy la lista
+# cerrada la garantizaba el esquema estricto del proveedor, y un modelo que da JSON a secas —DeepSeek directo—
+# podia nombrar un rubro, un campo o un tema que la tienda no tiene, o contestar "no" como texto a una
+# pregunta de si o no, que en Python es verdadero.
 
 OPERADORES = ("contiene", "no_contiene", "igual", "mayor", "menor", "prefiere", "evita")
 _SI = ("true", "si", "sí", "yes", "1")
 
 
 def _cercano(valor, opciones) -> str:
-    """El valor de la lista que el modelo quiso nombrar, o vacio. Primero igual
-    sin tildes ni mayusculas; despues un unico prefijo —"precio" es
-    "precio_ars"—; despues por parecido de letras."""
+    """El valor de la lista que el modelo quiso nombrar, o vacio."""
     import difflib
     v = A._n(valor).strip().replace(" ", "_")
     if not v:
@@ -450,11 +408,8 @@ def a_herramienta(pz: dict) -> tuple:
     if t == "envio":
         return "envio", {"destinos": pz.get("destinos") or []}
     if t in ("politica", "verificar") or (t in ("repreguntar", "explicar") and pz.get("tema")):
-        # Una repregunta o una explicacion con un tema de la tienda —"como
-        # pago" leido como falta el medio— tambien lleva lo que dice la tienda
-        # (2-oct, guion 32).
-        # El tema que eligio el modelo va adelante de la pregunta: `politica`
-        # suma los del indice. Si no coinciden, se sirven los dos —la red—.
+        # Una repregunta o una explicacion con un tema de la tienda —"como pago" leido como falta el medio—
+        # tambien lleva lo que dice la tienda (2-oct, guion 32).
         return "politica", {"pregunta": f"{(pz.get('tema') or '').replace('_', ' ')} {pz.get('texto') or ''}".strip()}
     if t == "compatibilidad":
         return "compatibilidad", {"producto": pz.get("producto") or "", "con": pz.get("con") or ""}
@@ -492,16 +447,13 @@ _GENERICAS = {"mouse", "teclado", "auriculares", "auricular", "monitor", "notebo
 
 
 def _certificado(nombre: str, tienda_id: str, llamadas: list, vistos: list = None) -> str:
-    """El id del producto si la identidad es UNA —regla 10.0—; si no, el nombre
-    tal cual, y la cuenta devuelve la ambiguedad para preguntar. `vistos` son
-    los ids que el bot ya nombro en la charla, en orden."""
+    """El id del producto si la identidad es UNA —regla 10.0—; si no, el nombre tal cual, y la cuenta devuelve la
+    ambiguedad para preguntar."""
     if not nombre or _ID.fullmatch(nombre.strip()):
         return nombre
     r = ejecutar("producto", {"nombre": nombre}, tienda_id)
-    # UNA FILA CERTIFICA SOLO SI NOMBRA TODO LO QUE SE PIDIO: el 30-sep "MX
-    # Master 3S negro" volvia con un gabinete primero. Se mira cada fila y sus
-    # colores; si queda una sola, ese es el id. Si no, va el nombre y la
-    # cuenta devuelve la ambiguedad para preguntar.
+    # UNA FILA CERTIFICA SOLO SI NOMBRA TODO LO QUE SE PIDIO: el 30-sep "MX Master 3S negro" volvia con un
+    # gabinete primero.
     pedido = [w for w in re.findall(r"[a-z0-9]+", A._n(nombre)) if len(w) > 1 and w not in _GENERICAS]
     from app.storage.firestore_client import get_product_by_id
     hits = []
@@ -518,11 +470,8 @@ def _certificado(nombre: str, tienda_id: str, llamadas: list, vistos: list = Non
                                           or "").strip() == A._n(nombre).strip()]
     if len(exacto) == 1:
         return exacto[0]
-    # LO QUE EL BOT YA MOSTRO ES ESA FICHA (7-oct, K18, decidido por Martin):
-    # "la ROG Strix G16" sin color nombra tres fichas. Si la charla mostro una
-    # sola, es esa. Si mostro el modelo con sus colores y todos salen lo mismo,
-    # es la primera que nombro el bot, la que la busqueda puso adelante. Con
-    # precios distintos sigue siendo una duda para el cliente.
+    # LO QUE EL BOT YA MOSTRO ES ESA FICHA (7-oct, K18, decidido por Martin): "la ROG Strix G16" sin color
+    # nombra tres fichas.
     en_charla = sorted((pid for pid in hits if pid in (vistos or [])), key=lambda pid: vistos.index(pid))
     if len(hits) > 1 and en_charla:
         precios = {(get_product_by_id(pid, tienda_id=tienda_id) or {}).get("precio_ars") for pid in en_charla}
@@ -535,8 +484,7 @@ _ANTES_DE_LUGAR = {"de", "en", "a", "para", "desde", "hacia"}
 
 
 def _lugar_en(texto: str) -> str:
-    """Una localidad o provincia nombrada en texto libre: "soy de Mendoza". Solo la que viene despues de una
-    preposicion de lugar: la tabla tiene "El Segundo", y "el segundo me gusta" era un destino (15-oct, Z08)."""
+    """Una localidad o provincia nombrada en texto libre: "soy de Mendoza"."""
     from app.core.geo_cp import es_lugar_conocido
     palabras = re.findall(r"[^\W\d_]+", texto or "")
     for largo in (3, 2, 1):
@@ -549,8 +497,7 @@ def _lugar_en(texto: str) -> str:
 
 
 def _destino(pz: dict, piezas: list, mensaje: str, historial: list, estado: dict) -> str:
-    """El destino de la pieza; si no lo trae, el que el cliente dijo en este
-    mensaje o antes. Lo que el cliente dijo sigue valiendo: objetivo 3."""
+    """El destino de la pieza; si no lo trae, el que el cliente dijo en este mensaje o antes."""
     for d in (pz.get("destinos") or []) + [d for p in piezas if p.get("tipo") == "envio"
                                            for d in p.get("destinos") or []]:
         if str(d).strip():
@@ -566,8 +513,7 @@ def _destino(pz: dict, piezas: list, mensaje: str, historial: list, estado: dict
 
 
 def _es_rubro(nombre: str, tienda_id: str) -> str:
-    """El rubro si el "producto" que escribio el interprete es un rubro y nada
-    mas: "auriculares", "memorias". Un rubro no es un producto, es una busqueda."""
+    """El rubro si el "producto" que escribio el interprete es un rubro y nada mas: "auriculares", "memorias"."""
     n = A._n(nombre).strip()
     if not n:
         return ""
@@ -583,24 +529,16 @@ def _es_rubro(nombre: str, tienda_id: str) -> str:
 
 
 def _normalizar(piezas: list, tienda_id: str) -> list:
-    """Lo que el interprete parte bien y nombra mal, ordenado antes de correr.
-    Medido el 1-oct con `laboratorio referencia`:
-    - un rubro escrito como producto —"dos auriculares"— se busca;
-    - una condicion o un orden sueltos, sin rubro ni producto —"lo menos
-      chino posible", "los mas baratos"—, valen para todas las busquedas del
-      mensaje: combinacion 24;
-    - el reparto del pago pegado a otra pieza va a la cuenta;
-    - la cuenta y la compra corren al final, despues de lo que buscan."""
+    """Lo que el interprete parte bien y nombra mal, ordenado antes de correr."""
     piezas = [dict(p) for p in piezas]
     for p in piezas:
         if p.get("tipo") == "producto" and not _ID.fullmatch(str(p.get("producto") or "")):
             r = _es_rubro(p.get("producto") or "", tienda_id)
             if r:
                 p.update({"tipo": "buscar", "rubro": r, "producto": ""})
-    # EL ORDEN QUE COMPARTE EL MENSAJE VALE PARA TODAS SUS BUSQUEDAS, como la
-    # condicion de la regla 1: "dos mouse, dos teclados y dos auriculares, los
-    # mas baratos" salia con el orden en dos de las tres (1-oct, K07). Solo si
-    # dos o mas lo traen y ninguna trae otro.
+    # EL ORDEN QUE COMPARTE EL MENSAJE VALE PARA TODAS SUS BUSQUEDAS, como la condicion de la regla 1: "dos
+    # mouse, dos teclados y dos auriculares, los mas baratos" salia con el orden en dos de las tres (1-oct,
+    # K07).
     con_orden = [json.dumps(p["orden"], sort_keys=True) for p in piezas if p.get("tipo") == "buscar"
                  and (p.get("rubro") or p.get("producto")) and (p.get("orden") or {}).get("campo")]
     if len(con_orden) > 1 and len(set(con_orden)) == 1:
@@ -653,11 +591,9 @@ def _palabras(texto: str) -> set:
 
 
 def _de_la_busqueda(nombre: str, busquedas: list, usados: dict, pendientes: int) -> str:
-    """LA SEGUNDA VUELTA (1-oct). Un item de la cuenta que no es un producto
-    —"auriculares", "el mouse mas liviano", "articulo mas barato 1"— sale de
-    una busqueda que este mismo turno ya corrio: la de palabras mas parecidas, y
-    de ella la fila que sigue, con stock. Asi "los dos mas baratos" son la
-    primera y la segunda fila. El id lo pone el codigo, nunca el modelo."""
+    """LA SEGUNDA VUELTA (1-oct). Un item de la cuenta que no es un producto —"auriculares", "el mouse mas
+    liviano", "articulo mas barato 1"— sale de una busqueda que este mismo turno ya corrio: la de palabras mas
+    parecidas, y de ella la fila que sigue, con stock."""
     if not busquedas:
         return ""
     pal = _palabras(nombre)
@@ -671,9 +607,8 @@ def _de_la_busqueda(nombre: str, busquedas: list, usados: dict, pendientes: int)
         i = min(range(len(busquedas)), key=lambda j: usados.get(j, 0))
     else:
         i = puntos.index(max(puntos))
-    # LA FILA SIGUIENTE SOLO SI SE PIDIERON VARIOS DISTINTOS (8-oct, K21): "los
-    # dos mas baratos" son dos productos; "el mas economico de cada clase" para
-    # dos destinos es el mismo, dos veces. Lo dice la cantidad de la busqueda.
+    # LA FILA SIGUIENTE SOLO SI SE PIDIERON VARIOS DISTINTOS (8-oct, K21): "los dos mas baratos" son dos
+    # productos; "el mas economico de cada clase" para dos destinos es el mismo, dos veces.
     if int(busquedas[i][0].get("cantidad") or 1) <= 1:
         return _fila_con_stock(busquedas[i][1], 0)[0]
     pid, usados[i] = _fila_con_stock(busquedas[i][1], usados.get(i, 0))
@@ -681,8 +616,7 @@ def _de_la_busqueda(nombre: str, busquedas: list, usados: dict, pendientes: int)
 
 
 def _fila_con_stock(out: dict, desde: int = 0) -> tuple:
-    """(id, siguiente) de la primera fila desde `desde` que tiene stock, en ella
-    o en otro color. Sin ninguna, ("", fin)."""
+    """(id, siguiente) de la primera fila desde `desde` que tiene stock, en ella o en otro color."""
     filas = (out or {}).get("filas") or []
     for k, f in enumerate(filas[desde:], desde):
         opciones = [{"id": f.get("id"), "stock": f.get("stock")}] + list(f.get("variantes") or [])
@@ -714,11 +648,7 @@ def _resolver_items(items: list, tienda_id: str, llamadas: list, ctx: dict) -> l
 
 
 def _destinos_del_turno(pz: dict, piezas: list) -> list:
-    """Los destinos de una cuenta: un envio por destino. Los suyos si los trae,
-    en la pieza o en su texto —"un auricular y un mouse a Cordoba"—. Si es la
-    unica cuenta del mensaje, todos los que el mensaje cotiza. Con varias
-    cuentas, cada una con el suyo: el 1-oct cada una de tres cuentas llevo los
-    tres envios."""
+    """Los destinos de una cuenta: un envio por destino."""
     propios = [str(d) for d in pz.get("destinos") or [] if str(d).strip()]
     varias = sum(p.get("tipo") == "cuenta" for p in piezas) > 1
     if not propios and varias and pz.get("texto"):
@@ -731,8 +661,7 @@ def _destinos_del_turno(pz: dict, piezas: list) -> list:
 
 
 _FALTA_LUGAR = re.compile(r"destin|envi|direcc|localidad|ciudad|domicilio|calle|lugar")
-# El esquema no tiene nulo para "falta": el modelo escribe "ninguna" y era una
-# pregunta al cliente.
+# El esquema no tiene nulo para "falta": el modelo escribe "ninguna" y era una pregunta al cliente.
 _NADA = re.compile(r"|ningun[oa]?|nada|no|none|null|n/?a|-")
 
 
@@ -742,9 +671,8 @@ def respondidos_en(estado: dict) -> set:
 
 
 def respondidos(busquedas: list) -> list:
-    """Lo que respondio cada busqueda por criterio de este turno: con orden,
-    las primeras filas hasta la cantidad pedida, uno si no dijo cuantos, con
-    sus colores. Sin orden no hay una respuesta: hay una lista."""
+    """Lo que respondio cada busqueda por criterio de este turno: con orden, las primeras filas hasta la cantidad
+    pedida, uno si no dijo cuantos, con sus colores."""
     out = []
     for pz, res in busquedas or []:
         if not isinstance(pz, dict) or not (pz.get("orden") or {}).get("campo"):
@@ -755,10 +683,8 @@ def respondidos(busquedas: list) -> list:
 
 
 def _elegidos(items: list, llamadas: list, estado: dict, tienda_id: str, resueltos: set = None) -> list:
-    """LA CUENTA SUMA LO QUE EL CLIENTE ELIGIO, NO LO QUE EL BOT MOSTRO (30-sep,
-    M10): ante "cuanto es todo" el interprete metia los doce productos de la
-    lista. Elegido es lo que el cliente nombro, lo reservado y lo que ya estaba
-    en el pedido. Si el filtro deja la cuenta vacia, queda como vino."""
+    """LA CUENTA SUMA LO QUE EL CLIENTE ELIGIO, NO LO QUE EL BOT MOSTRO (30-sep, M10): ante "cuanto es todo" el
+    interprete metia los doce productos de la lista."""
     from app.storage.firestore_client import get_product_by_id
     dijo = A._n(CLIENTE_DIJO.get())
     reservados = {str((x.get("vuelve") or {}).get("id")) for x in llamadas if x.get("herramienta") == "reservar"}
@@ -781,10 +707,7 @@ def _elegidos(items: list, llamadas: list, estado: dict, tienda_id: str, resuelt
 
 
 def _un_color_por_modelo(items: list, tienda_id: str) -> list:
-    """UN MODELO EN VARIOS COLORES ES UNA OPCION (1-oct, K18). La ficha
-    muestra cada renglon con sus colores, y ante "sumame uno de cada uno" el
-    interprete metia el negro y el blanco. Si el cliente no nombro el color,
-    de cada modelo queda uno: el primero con stock."""
+    """UN MODELO EN VARIOS COLORES ES UNA OPCION (1-oct, K18)."""
     from app.storage.firestore_client import get_product_by_id
     dijo = A._n(CLIENTE_DIJO.get())
     grupos: dict = {}
@@ -806,9 +729,8 @@ def _reparto(rep):
     if not rep:
         return None
     rep = [r for r in rep if isinstance(r, dict)]
-    # EL MEDIO LO NOMBRA EL CLIENTE O NO HAY MEDIO (1-oct): ante "dividi el
-    # presupuesto en setenta treinta" el interprete escribio efectivo y
-    # tarjeta, y el cliente leyo medios que nunca dijo.
+    # EL MEDIO LO NOMBRA EL CLIENTE O NO HAY MEDIO (1-oct): ante "dividi el presupuesto en setenta treinta" el
+    # interprete escribio efectivo y tarjeta, y el cliente leyo medios que nunca dijo.
     dijo = A._n(CLIENTE_DIJO.get())
     rep = [{**r, "medio": r.get("medio") if _palabras(str(r.get("medio") or "")) & _palabras(dijo)
             or r.get("medio") == "el resto" else f"parte {i}"} for i, r in enumerate(rep, 1)]
@@ -872,9 +794,8 @@ def _rubro_de(nombre: str, tienda_id: str) -> str:
         return r
     pid = nombre if _ID.fullmatch(nombre.strip()) else _certificado(nombre, tienda_id, [])
     if not _ID.fullmatch(str(pid)):
-        # "TECLADO MAS BARATO" ES DEL RUBRO TECLADO (7-oct, K06 y K07): el
-        # interprete describe el item con el rubro adentro. Sin esto el reparto
-        # que cerraba se contaba sin destino y el turno frenaba a confirmar.
+        # "TECLADO MAS BARATO" ES DEL RUBRO TECLADO (7-oct, K06 y K07): el interprete describe el item con el
+        # rubro adentro.
         nombrados = _rubros_nombrados(nombre, tienda_id)
         return nombrados[0] if len(nombrados) == 1 else ""
     from app.storage.firestore_client import get_product_by_id
@@ -892,27 +813,13 @@ def _rubros_nombrados(texto: str, tienda_id: str) -> list:
 
 
 def _conservar(piezas: list, tienda_id: str, mensaje: str = "") -> dict:
-    """LOS ARTICULOS SE CONSERVAN (1-oct, K20). Cuando el cliente pide una lista
-    —"dos auriculares, dos mouse y dos memorias"— y la reparte en destinos, lo
-    repartido tiene que cerrar con la lista. El modelo parte bien cada destino
-    pero no cuenta: un teclado que no estaba entraba a Concordia y una memoria
-    quedaba sin destino, sin que nadie lo dijera.
-
-    Cuenta por rubro lo pedido —la cantidad de cada busqueda— contra lo que
-    llevan las cuentas. Si un item no es de ningun rubro pedido y a la lista le
-    falta exactamente esa cantidad, se toma lo que falta en su lugar y se dice.
-    Lo que no cierra se informa: sin destino o fuera de la lista. Un rubro que
-    el cliente nombro y no esta en la lista ni en ninguna cuenta —el
-    interprete ya puso otro en su lugar— tambien se dice. Cambia las
-    piezas en el lugar y vuelve lo que el redactor tiene que decir; vacio si
-    cierra o si no hay lista con cantidades."""
+    """LOS ARTICULOS SE CONSERVAN (1-oct, K20)."""
     cuentas = [p for p in piezas if p.get("tipo") == "cuenta" and p.get("items")]
     pedido: dict = {}
     for p in piezas:
         if p.get("tipo") == "buscar" and p.get("rubro") and int(p.get("cantidad") or 0) > 0:
-            # EL MAXIMO, NO LA SUMA: la revision repite la pieza del rubro —"ver
-            # si hay" y "precio de"— y la suma daba cuatro auriculares pedidos.
-            # Contar de menos solo debilita el aviso; contar de mas lo inventa.
+            # EL MAXIMO, NO LA SUMA: la revision repite la pieza del rubro —"ver si hay" y "precio de"— y la
+            # suma daba cuatro auriculares pedidos.
             pedido[p["rubro"]] = max(pedido.get(p["rubro"], 0), int(p["cantidad"]))
     if len(cuentas) < 2 or not pedido:
         return {}
@@ -960,10 +867,7 @@ def _conservar(piezas: list, tienda_id: str, mensaje: str = "") -> dict:
 
 
 def _total_general(bloques: list, reparto, tienda_id: str) -> dict:
-    """EL TOTAL GENERAL Y EL REPARTO SOBRE ESE TOTAL (1-oct, K20). Con un
-    presupuesto por destino el cliente pide "dividi en setenta treinta" una vez:
-    es sobre todo. La suma la hace el codigo con los totales que ya dio la
-    cuenta de cada destino, y el reparto, la misma funcion de siempre."""
+    """EL TOTAL GENERAL Y EL REPARTO SOBRE ESE TOTAL (1-oct, K20)."""
     from app.core.pago_split import calcular_split, descuento_de, render_split
     from app.core.calculadora import _money
     totales = [int(c["total_ars"]) for c in bloques]
@@ -981,8 +885,7 @@ def _total_general(bloques: list, reparto, tienda_id: str) -> dict:
 
 
 def _reparto_en_cuentas(piezas: list) -> list:
-    """Las piezas con el reparto pegado a la primera cuenta, donde lo busca
-    el codigo al retomar el pedido."""
+    """Las piezas con el reparto pegado a la primera cuenta, donde lo busca el codigo al retomar el pedido."""
     rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
     out = [dict(p) for p in piezas]
     cuenta = next((p for p in out if p.get("tipo") == "cuenta"), None)
@@ -995,10 +898,9 @@ _EXCLUYEN = ("no_contiene", "evita")
 
 
 def busquedas_de(criterio: str) -> list:
-    """Las ultimas busquedas del cliente, leidas de los renglones que escribe
-    `busqueda_vigente` en `criterio_cliente`: "buscar mouse, marca no_contiene
-    Genius" vuelve como {"rubro": "mouse", "condiciones": [...]}. "toda la
-    tienda" es sin rubro. Lo lee `ficha_charla.estado`, una vez por turno."""
+    """Las ultimas busquedas del cliente, leidas de los renglones que escribe `busqueda_vigente` en
+    `criterio_cliente`: "buscar mouse, marca no_contiene Genius" vuelve como {"rubro": "mouse", "condiciones":
+    [...]}."""
     out = []
     for renglon in re.findall(r"^buscar (.+)$", criterio or "", re.M):
         rubro, *partes = renglon.split(", ")
@@ -1025,11 +927,7 @@ def exclusiones_vigentes(busquedas: list) -> list:
 
 
 def _sobre_lo_buscado(piezas: list, estado: dict) -> list:
-    """"EL MAS BARATO DE ESOS TECLADOS" SE ELIGE EN LA BUSQUEDA, NO EN LO
-    MOSTRADO (7-oct, K17). El bot muestra unos pocos de una busqueda que trajo
-    mas. El interprete marca `sobre_lo_buscado` y el codigo le suma a la pieza
-    las condiciones de esa busqueda; el orden lo pone la pieza y el minimo lo
-    calcula el buscador, no el modelo mirando una lista."""
+    """"EL MAS BARATO DE ESOS TECLADOS" SE ELIGE EN LA BUSQUEDA, NO EN LO MOSTRADO (7-oct, K17)."""
     vigentes = busquedas_vigentes(estado)
     out = []
     for p in piezas:
@@ -1053,20 +951,12 @@ def exclusiones_de(piezas: list) -> list:
 
 
 def _heredar_exclusiones(piezas: list, estado: dict, mensaje: str, del_mensaje: list = None) -> list:
-    """LA EXCLUSION SIGUE VALIENDO HASTA QUE EL CLIENTE LA SUELTE (2-oct, K17).
-    "Que no sea Genius ni Logitech" y despues "y teclados?": la busqueda nueva
-    salia sin la exclusion y el bot mostraba Logitech. La memoria la tenia
-    como texto y el interprete no siempre la copiaba. Ahora la copia el
-    codigo: solo lo que EXCLUYE, que es preferencia del cliente y vale para
-    cualquier rubro; lo que elige —"auriculares JBL"— es de esa busqueda y no
-    se hereda. Se suelta si el mensaje dice que la marca no importa o vuelve
-    a nombrar lo excluido."""
+    """LA EXCLUSION SIGUE VALIENDO HASTA QUE EL CLIENTE LA SUELTE (2-oct, K17)."""
     m = A._n(mensaje)
     vigentes = [] if A._SUELTA.search(m) else [c for c in exclusiones_vigentes(busquedas_vigentes(estado))
                                                if A._n(c["valor"]) not in m]
-    # Lo que la primera lectura de ESTE mensaje excluia tampoco se pierde en
-    # la revision: el 2-oct, K17, la correccion paso las exclusiones a una
-    # pieza verificar y dejo la busqueda limpia.
+    # Lo que la primera lectura de ESTE mensaje excluia tampoco se pierde en la revision: el 2-oct, K17, la
+    # correccion paso las exclusiones a una pieza verificar y dejo la busqueda limpia.
     vigentes += [c for c in del_mensaje or [] if c not in vigentes]
     if not vigentes:
         return piezas
@@ -1156,28 +1046,21 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
         if pz.get("tipo") == "buscar" and pz.get("rubro") == NO_LO_VENDE:
             hecho["resultado"] = {"veredicto": "no_existe", "motivo": "la tienda no vende ese rubro"}
             ctx["no_vende"].append((pz, {}))
-        # LO QUE VENDE LA TIENDA LO DICE EL CODIGO (2-oct, K12 y K19): "que
-        # venden?" llega como saber general, y "y algo parecido?" despues de
-        # un rubro que no hay, como no lo vende. Sin la lista el redactor no
-        # tenia de donde decir que si hay, y contestaba de memoria o nada.
-        # Y una verificacion sin producto —"no tenes teclados?"— tambien: sin la
-        # lista, el redactor le daba la razon al cliente (3-oct, produccion).
+        # LO QUE VENDE LA TIENDA LO DICE EL CODIGO (2-oct, K12 y K19): "que venden?" llega como saber general,
+        # y "y algo parecido?" despues de un rubro que no hay, como no lo vende.
         if pz.get("tipo") == "explicar" or pz.get("rubro") == NO_LO_VENDE \
                 or (pz.get("tipo") == "verificar" and not pz.get("producto")):
             hecho["la_tienda_vende"] = _vocabulario(tienda_id)[0]
         if pz.get("depende_de"):
             hecho["depende_de_la_parte"] = pz["depende_de"]
-        # LO QUE EL MENSAJE YA DICE NO FALTA (1-oct): el interprete pone el
-        # destino en "falta" aunque el cliente lo haya nombrado, y el bot le
-        # preguntaba por la direccion que ya habia dado.
+        # LO QUE EL MENSAJE YA DICE NO FALTA (1-oct): el interprete pone el destino en "falta" aunque el
+        # cliente lo haya nombrado, y el bot le preguntaba por la direccion que ya habia dado.
         falta = "" if _NADA.fullmatch(A._n(str(pz.get("falta") or "")).strip()) else pz.get("falta")
         if falta and not (_FALTA_LUGAR.search(A._n(falta)) and _destino(
                 pz, piezas, ctx["mensaje"], ctx["historial"], ctx["estado"])):
             hecho["pregunta_al_cliente"] = falta
         if h:
-            # LA CONSULTA REPETIDA NO SE VUELVE A HACER, PERO SU RESULTADO SI
-            # LLEGA AL REDACTOR. Sin esto, la correccion dejaba la parte sin
-            # datos y el redactor inventaba para llenar el hueco (30-sep).
+            # LA CONSULTA REPETIDA NO SE VUELVE A HACER, PERO SU RESULTADO SI LLEGA AL REDACTOR.
             clave = json.dumps([h, args], sort_keys=True, default=str)
             if clave not in vistas:
                 out = ejecutar(h, args, tienda_id)
@@ -1199,9 +1082,7 @@ def correr_piezas(piezas: list, tienda_id: str, llamadas: list, vuelta: int, ctx
 
 
 def _hecho_total_general(bloques: list, rep, tienda_id: str, llamadas: list, vuelta: int, ctx: dict) -> dict:
-    """El total general como llamada —la guarda de plata ve sus montos— y como
-    hecho para el redactor. Deja en `ctx["bloques"]` que va a cada destino,
-    para que el turno siguiente lo encuentre en el estado de la charla."""
+    """El total general como llamada —la guarda de plata ve sus montos— y como hecho para el redactor."""
     from app.storage.firestore_client import get_product_by_id
     tg = _total_general([c for _, c in bloques], rep, tienda_id)
     llamadas.append({"vuelta": vuelta, "herramienta": "total_general",
@@ -1241,10 +1122,8 @@ def bloques_vigentes(estado: dict) -> list:
 
 
 def pedido_vigente(estado: dict) -> list:
-    """EL PEDIDO QUE EL CLIENTE YA TIENE, como lo dejo el codigo (7-oct, K21):
-    los presupuestos por destino, o el pedido de un destino con su lugar. Cada
-    bloque es {"destino", "items": [{"producto": id, "cantidad"}]}. Vacio si
-    no hay pedido."""
+    """EL PEDIDO QUE EL CLIENTE YA TIENE, como lo dejo el codigo (7-oct, K21): los presupuestos por destino, o el
+    pedido de un destino con su lugar."""
     e = estado or {}
     if e.get("por_destino"):
         return bloques_vigentes(e)
@@ -1276,12 +1155,7 @@ def ids_de_la_charla(estado: dict) -> list:
 
 
 def _con_lo_mostrado(pedido: list, estado: dict, tienda_id: str) -> list:
-    """EL MISMO PEDIDO CON LO QUE EL BOT ACABA DE MOSTRAR (7-oct, K21). "Quiero
-    los mas economicos de cada clase", el bot los muestra, y "sip": mismos
-    destinos y cantidades, y cada articulo cambia por el mostrado de su rubro.
-    El interprete escribia los productos el mismo y elegia la variante sin
-    stock o uno que nadie mostro; ahora los pone el codigo. De cada renglon va
-    el primer color con stock para lo que se lleva en todo el pedido."""
+    """EL MISMO PEDIDO CON LO QUE EL BOT ACABA DE MOSTRAR (7-oct, K21)."""
     from app.storage.firestore_client import get_product_by_id
 
     def prod(pid):
@@ -1303,9 +1177,7 @@ def _con_lo_mostrado(pedido: list, estado: dict, tienda_id: str) -> list:
 
 
 def _reparto_leido(piezas: list, mensaje: str) -> list:
-    """El reparto que el mensaje dice con porcentaje y medio, en la cuenta que
-    lo perdio (7-oct, K21). Solo completa: si ninguna pieza trae reparto y hay
-    una cuenta o una pieza sobre el pedido. No crea cuentas."""
+    """El reparto que el mensaje dice con porcentaje y medio, en la cuenta que lo perdio (7-oct, K21)."""
     rep = A.reparto_del_mensaje(mensaje)
     if not rep or any(p.get("reparto_pago") for p in piezas):
         return piezas
@@ -1317,10 +1189,7 @@ def _reparto_leido(piezas: list, mensaje: str) -> list:
 
 
 def _cambios_al_pedido(pedido: list, items: list, tienda_id: str) -> list:
-    """LO QUE EL CLIENTE CAMBIA DEL PEDIDO LO APLICA EL CODIGO (16-oct, K11). "Mejor 2, y mandalos a Rosario": el
-    interprete lo leia bien y el pedido guardado lo pisaba. Solo cambia cantidad y destino de lo que YA esta en el
-    pedido, nombrado por su id o por un nombre que da uno solo del pedido. Lo que no esta no entra por aca: el
-    interprete a veces repite el pedido con otro producto (K21, 9-oct)."""
+    """LO QUE EL CLIENTE CAMBIA DEL PEDIDO LO APLICA EL CODIGO (16-oct, K11)."""
     from app.storage.firestore_client import get_product_by_id
     out = [{"destino": b["destino"], "items": [dict(i) for i in b["items"]]} for b in pedido]
     ids = {i["producto"] for b in out for i in b["items"]}
@@ -1355,13 +1224,7 @@ def _cambios_al_pedido(pedido: list, items: list, tienda_id: str) -> list:
 
 
 def _sobre_el_pedido(piezas: list, estado: dict, tienda_id: str = "") -> list:
-    """EL PEDIDO LO PONE EL CODIGO, NO EL INTERPRETE (7-oct, K21). Con el
-    pedido ya presupuestado, "si", "me llamo Julio" o "70 por ciento
-    transferencia" no nombran articulos. El interprete rearmaba el pedido en
-    cada mensaje y lo perdia: una cuenta con un destino solo, un articulo de
-    mas, la compra del primero. Ahora marca `sobre_el_pedido` y el codigo
-    pone cada bloque guardado: una cuenta por destino con el reparto que pida,
-    y si compra, una reserva por articulo."""
+    """EL PEDIDO LO PONE EL CODIGO, NO EL INTERPRETE (7-oct, K21)."""
     pedido = pedido_vigente(estado)
     if not pedido or not any(p.get("sobre_el_pedido") for p in piezas):
         return piezas
@@ -1408,9 +1271,8 @@ def _ids_recientes(estado: dict) -> list:
 
 
 def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, vuelta: int) -> dict:
-    """Si el cliente pide un total y ninguna pieza lo trajo, la cuenta la arma
-    el codigo: lo certificado en este turno o, si no hay, lo que el bot nombro
-    en su ultimo mensaje. El modelo lo detecta siempre; armarla no."""
+    """Si el cliente pide un total y ninguna pieza lo trajo, la cuenta la arma el codigo: lo certificado en este
+    turno o, si no hay, lo que el bot nombro en su ultimo mensaje."""
     ids = []
     cant = {str(i.get("producto")): i.get("cantidad") or 1 for p in piezas for i in p.get("items") or []}
     for x in llamadas:
@@ -1422,9 +1284,8 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
             ids.append(str(v["id"]))
             # LA CANTIDAD RESERVADA ES LA DE LA CUENTA (15-oct, K11): "sumame 3" reservaba 3 y contaba 1.
             cant[str(v["id"])] = int((x.get("args") or {}).get("cantidad") or v.get("cantidad") or 1)
-    # LA SEGUNDA VUELTA TAMBIEN ACA: si este turno solo busco —"dos auriculares
-    # y dos mouse, los mas baratos, sumame todo"—, la cuenta sale de lo que
-    # encontro cada busqueda, con la cantidad que pidio el cliente.
+    # LA SEGUNDA VUELTA TAMBIEN ACA: si este turno solo busco —"dos auriculares y dos mouse, los mas baratos,
+    # sumame todo"—, la cuenta sale de lo que encontro cada busqueda, con la cantidad que pidio el cliente.
     if not ids:
         for pz, out in ctx.get("busquedas") or []:
             pid = _fila_con_stock(out)[0]
@@ -1432,10 +1293,8 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
                 ids.append(pid)
                 cant[pid] = pz.get("cantidad") or 1
     rep = next((p.get("reparto_pago") for p in piezas if p.get("reparto_pago")), None)
-    # LOS PRESUPUESTOS POR DESTINO SOBREVIVEN AL TURNO (1-oct, K07): "decime
-    # mitad transferencia y mitad mercado pago" despues de tres destinos es
-    # sobre los tres. Se rearma cada bloque y el total general, con el reparto
-    # nuevo.
+    # LOS PRESUPUESTOS POR DESTINO SOBREVIVEN AL TURNO (1-oct, K07): "decime mitad transferencia y mitad
+    # mercado pago" despues de tres destinos es sobre los tres.
     grupos = bloques_vigentes(ctx["estado"]) if not ids else []
     if len(grupos) > 1:
         bloques = []
@@ -1464,9 +1323,7 @@ def _cuenta_del_codigo(piezas: list, llamadas: list, tienda_id: str, ctx: dict, 
 
 
 def _calculos(hechos: list, llamadas: list) -> dict:
-    """NINGUN MONTO CALCULADO LO ESCRIBE EL MODELO (15-oct, FICHA 69). Cada
-    cuenta y total general del turno lleva un id; en los HECHOS su detalle se
-    cambia por la marca, y `numeros` pone el bloque exacto donde va la marca."""
+    """NINGUN MONTO CALCULADO LO ESCRIBE EL MODELO (15-oct, FICHA 69)."""
     calc, ids = {}, {}
     for x in llamadas:
         v = x.get("vuelve") or {}
@@ -1490,9 +1347,7 @@ def _calculos(hechos: list, llamadas: list) -> dict:
 
 def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, historial: list,
               tienda_id: str) -> str:
-    """Lo que el mensaje pide y las piezas no traen, dicho como pedido de
-    correccion. Vacio si esta todo. Es la MISMA lectura de completitud del
-    agente, mas lo que marcaron las preguntas de si o no."""
+    """Lo que el mensaje pide y las piezas no traen, dicho como pedido de correccion."""
     partes = []
     tipos = {p.get("tipo") for p in piezas}
     if banderas.get("condicional") and not any(p.get("depende_de") for p in piezas) \
@@ -1531,11 +1386,7 @@ def _revision(piezas: list, banderas: dict, llamadas: list, mensaje: str, histor
 
 
 def busqueda_vigente(busquedas: list) -> str:
-    """LO QUE EL CLIENTE BUSCO, COMO SE INTERPRETO (1-oct, K17, K18, M03). La
-    memoria guardaba lo que el bot mostro y no lo que el cliente pidio: "y el
-    mas barato?" despues de "el mas caro que vendes" heredaba el rubro del
-    producto mostrado, y "y teclados?" perdia el "que no sea Genius ni
-    Logitech". Esto sobrevive al turno y el interprete lo lee en la ficha."""
+    """LO QUE EL CLIENTE BUSCO, COMO SE INTERPRETO (1-oct, K17, K18, M03)."""
     renglones = []
     for pz, _ in busquedas or []:
         if not isinstance(pz, dict):
@@ -1616,18 +1467,11 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
     guardado = PD.pendiente(estado.get("pendiente"))
     ctx = {"mensaje": mensaje, "historial": historial, "estado": estado, "tienda_id": tienda_id,
            "reparto_vigente": estado.get("reparto") or None,
-           # EL TOTAL PEDIDO LO DICEN LAS PIEZAS (7-oct, K01). Habia una
-           # pregunta de si o no aparte, y cuando no coincidia con las piezas
-           # mandaba ella: la revision agregaba una cuenta y el bot se
-           # disculpaba por un total que el cliente no pidio, porque "en total
-           # serian cuatro articulos" es cuantos son, no cuanto suman. Una sola
-           # lectura: la pieza cuenta del interprete, o el reparto del pago.
+           # EL TOTAL PEDIDO LO DICEN LAS PIEZAS (7-oct, K01).
            "pide_total": any(p.get("tipo") == "cuenta" or p.get("sobre_el_pedido") for p in piezas)
                          or A._pide_reparto(mensaje),
            "puede_confirmar": not guardado}
-    # EL PEDIDO GUARDADO SE RETOMA CON EL SI DEL CLIENTE. Si en vez de aceptar
-    # corrige y el interprete rearmo las cuentas, cuenta la correccion. Si el
-    # mensaje es de otra cosa, el pedido sigue esperando.
+    # EL PEDIDO GUARDADO SE RETOMA CON EL SI DEL CLIENTE.
     consumido = False
     if guardado and (banderas.get("confirma_resumen") or any(p.get("tipo") == "cuenta" for p in piezas)):
         consumido = True
@@ -1660,9 +1504,8 @@ async def turno(historial: list, mensaje: str, tienda_id: str, trace_id: str = "
         h = _cuenta_del_codigo(piezas, llamadas, tienda_id, ctx, 3)
         if h:
             hechos.append(h)
-    # LO QUE EL MODELO DETECTA Y NO ARMA, LO ARMA EL CODIGO: si falta un dato
-    # del cliente o la referencia es ambigua y ninguna pieza lo pregunta, se
-    # pregunta.
+    # LO QUE EL MODELO DETECTA Y NO ARMA, LO ARMA EL CODIGO: si falta un dato del cliente o la referencia es
+    # ambigua y ninguna pieza lo pregunta, se pregunta.
     if not ctx.get("pedido") and (banderas.get("falta_dato_cliente") or banderas.get("referencia_ambigua")) \
             and not any(p.get("tipo") == "repreguntar" or p.get("falta") for p in piezas):
         hechos.append({"pregunta_al_cliente": "falta un dato del cliente o no se sabe a cual se refiere: "

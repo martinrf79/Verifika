@@ -1,26 +1,4 @@
-"""EL ESTADO DE LA CHARLA Y SU FICHA — lo que el codigo sabe de la charla, como datos (15-oct-2026, FICHA 69).
-
-POR QUE EXISTE. En el banco, el interprete traduce bien cuando la charla le
-llega con el pedido por destino, lo mostrado con todo lo que la tienda sabe de
-cada producto y las exclusiones que siguen valiendo. Lo que le llegaba en
-produccion era un texto con nombre y precio pelados, el destino de cada
-articulo perdido, las exclusiones enterradas en el texto de la busqueda y una
-instruccion pegada a cada bloque. Y el codigo releia ese mismo texto con
-expresiones regulares en diez lugares: lo que el texto no decia, no existia.
-
-QUE ES. Dos cosas, y una sale de la otra:
-  `estado`  el documento de la conversacion leido UNA vez, como datos: el
-            pedido, lo mostrado con su id, lo que busco el cliente, el destino,
-            el reparto y el pedido que espera el si. Lo leen los lectores del
-            tablero; ninguno vuelve a leer un texto.
-  `texto`   la ficha que lee el modelo, renderizada desde el estado. Los datos
-            van solos; como leerlos se dice una vez, arriba.
-
-LO QUE FALTA. El documento todavia guarda el pedido en dos campos
-—`grupos_envio` y `carrito_vigente`— y lo buscado como texto, en
-`criterio_cliente`. El estado los junta al leer; que se escriban como uno es
-el paso siguiente del plan.
-"""
+"""EL ESTADO DE LA CHARLA Y SU FICHA — lo que el codigo sabe de la charla, como datos (15-oct-2026, FICHA 69)."""
 import re
 
 from app.logger import get_logger
@@ -97,8 +75,7 @@ _ID = re.compile(r"[A-Z]{3}\d{4}")
 
 
 def _items(items, clave: str) -> list:
-    """Los articulos con id, como los corre la cuenta: {"producto", "cantidad"}. El id esta en `producto` en los
-    bloques por destino y en `id` en lo que se conto."""
+    """Los articulos con id, como los corre la cuenta: {"producto", "cantidad"}."""
     return [{"producto": str(i.get(clave)), "cantidad": int(i.get("cantidad") or 1)}
             for i in items or [] if isinstance(i, dict) and _ID.fullmatch(str(i.get(clave)))]
 
@@ -120,8 +97,7 @@ def _mostrado(vistos: list) -> tuple:
 
 
 def estado(conv: dict) -> dict:
-    """EL ESTADO DE LA CHARLA, leido una vez del documento. El pedido es uno solo: con varios destinos, los
-    presupuestos por destino; con uno, lo que se conto y el lugar al que va."""
+    """EL ESTADO DE LA CHARLA, leido una vez del documento."""
     from app.core import pedido as PD
     from app.core import tablero as T
     conv = conv or {}

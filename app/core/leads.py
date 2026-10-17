@@ -1,16 +1,4 @@
-"""
-LEADS - captura automatica de leads de venta, modo hibrido dos niveles.
-
-Detecta dos tipos de intencion.
-
-Intencion FUERTE, el cliente ya decidio. Frases como lo quiero, lo llevo,
-dale cerrado. El bot pide nombre y telefono y avisa al dueno con prioridad.
-
-Intencion TIBIA, el cliente esta evaluando. Frases como hacen envios,
-como pago, tienen stock. El bot sigue conversando normal, el dueno recibe
-aviso informativo en silencio.
-
-"""
+"""LEADS - captura automatica de leads de venta, modo hibrido dos niveles."""
 import os
 import re
 import time
@@ -29,13 +17,7 @@ LEAD_VENTANA_SEGUNDOS = 24 * 60 * 60
 
 UMBRAL_LEAD_FUERTE = float(os.getenv("INTERPRETER_UMBRAL_ALTA", "0.85"))
 
-# UN SOLO JUEZ: la decision de cierre la toma el interpretador (decision_compra
-# con confianza alta). Se borraron los dos jueces que se pisaban con el: el regex
-# de "pedir link" (_RE_PIDE_LINK) y el detector legacy por palabras
-# (detectar_intencion). Cuando el interprete ve interes pero NO una decision
-# confirmada y recien se mostro un precio, el bot hace UNA pregunta suave de
-# cierre; un "si" a esa pregunta vuelve como decision_compra y cierra. Asi todo
-# conflicto cae en la pregunta, no en un juez paralelo.
+# UN SOLO JUEZ: la decision de cierre la toma el interpretador (decision_compra con confianza alta).
 def _pregunta_cierre() -> str:
     from app.core.guia_venta_prosa import mensaje
     return mensaje("cierre_pregunta_seguimos",
@@ -44,21 +26,9 @@ def _pregunta_cierre() -> str:
 
 PREGUNTA_CIERRE = _pregunta_cierre()
 
-# EL TEXTO YA NO VIVE ACA. Estas tres respuestas las emite el CODIGO cuando el
-# flujo lo decide -el cliente dice que no, el pedido ya estaba tomado, se deriva
-# a una persona- y hasta hoy eran constantes sueltas de este modulo que salian al
-# cliente sin pasar por ninguna puerta. Ahora son celdas del indice, con id, asi
-# que el turno puede REGISTRAR que se dijeron. Los nombres se conservan para no
-# romper a quien las importa.
-#
-#   no_interesado    : el "no" al cierre, suave y sin insistir (arreglo D).
-#   pedido_ya_tomado : corta el loop real de la charla Monte Ralo, donde el
-#                      cliente confirmaba, el lead ya estaba tomado y el solver
-#                      re-mandaba el presupuesto en cada "si".
-#   handoff_humano   : la decision de compra que toma una persona.
-# LOS TRES TEXTOS OPERATIVOS, leidos de la fuente (11-sep-2026). Estaban en
-# `indice.OPERATIVAS`, que no hacia mas que envolver este mismo `mensaje()`; el
-# indice se apago con el resto del camino viejo.
+# EL TEXTO YA NO VIVE ACA. Estas tres respuestas las emite el CODIGO cuando el flujo lo decide -el cliente
+# dice que no, el pedido ya estaba tomado, se deriva a una persona- y hasta hoy eran constantes sueltas de
+# este modulo que salian al cliente sin pasar por ninguna puerta.
 MENSAJE_NO_INTERESADO = _msj(
     "no_interesado",
     "Perfecto, sin problema. Cuando quieras retomar, acá estoy. Igual le paso "
@@ -86,11 +56,7 @@ RE_TELEFONO = re.compile(
 RE_TELEFONO_GENERICO = re.compile(r"\b\d{8,13}\b")
 
 
-# SWITCH DE VERSION DEL BOT (A/B), un solo lugar para prenderla. Las dos versiones
-# del producto se eligen con una config simple: "A" o "B" (o los nombres largos).
-#   Version A = lead fuerte: el bot capta el interes y avisa, cierra un humano.
-#   Version B = venta: el bot cierra la venta y manda el cobro (link o CBU).
-# Los nombres internos (lead/venta/off) siguen valiendo para no romper lo que andaba.
+# SWITCH DE VERSION DEL BOT (A/B), un solo lugar para prenderla.
 _ALIAS_MODO = {
     "a": "lead", "version_a": "lead", "opcion_a": "lead", "lead": "lead",
     "b": "venta", "version_b": "venta", "opcion_b": "venta", "venta": "venta",
@@ -99,9 +65,7 @@ _ALIAS_MODO = {
 
 
 def _normalizar_modo(v: str) -> str:
-    """Traduce el valor de config al modo interno: acepta 'A'/'B' (el switch de
-    version) o los nombres largos. '' si el valor no se reconoce, para que el
-    llamador caiga al default sin inventar un modo."""
+    """Traduce el valor de config al modo interno: acepta 'A'/'B' (el switch de version) o los nombres largos."""
     clave = (v or "").strip().lower().replace(" ", "_")
     return _ALIAS_MODO.get(clave, "")
 
@@ -118,12 +82,8 @@ def _insistencia(lead: dict, falt: list) -> int:
 
 
 def modo_cierre(tienda_id: str) -> str:
-    """Modalidad del cierre para la tienda. La config por tienda en Firestore
-    ('modo_cierre') pisa el default de config.py. Se setea con el switch de version:
-      A o 'lead'  = version A: capta el lead y avisa al usuario, cierra un humano.
-      B o 'venta' = version B: el bot cierra y manda el cobro (link de Mercado Pago
-                    o CBU segun la forma de pago).
-      off         = el cierre no actua; el bot vende igual, sin captar lead."""
+    """Modalidad del cierre para la tienda. La config por tienda en Firestore ('modo_cierre') pisa el default de
+    config.py."""
     try:
         from app.storage.firestore_client import get_config
         v = get_config("modo_cierre", tienda_id=tienda_id)
@@ -175,10 +135,7 @@ def get_lead_activo(user_id: str, canal: str, tienda_id: str) -> dict | None:
 
 
 def descartar_leads_activos(user_id: str, canal: str, tienda_id: str) -> int:
-    """Marca como 'descartado' los leads recientes del usuario en este canal.
-    Lo usa "nueva compra": sin esto, un lead viejo a medio llenar sobrevive al
-    reset de la conversacion y se completa con la direccion nueva, mezclando
-    nombre, pedido y pago de otra compra. Devuelve cuantos descarto."""
+    """Marca como 'descartado' los leads recientes del usuario en este canal."""
     try:
         leads_ref = _tienda_ref(tienda_id).collection("leads")
         cutoff_ts = time.time() - LEAD_VENTANA_SEGUNDOS
@@ -242,11 +199,8 @@ async def _finalizar_cierre(lead_id: str, merged: dict, tienda_id: str,
                             user_id: str, canal: str, mensaje: str,
                             presupuesto: str, trace_id: str,
                             modo: str = "venta") -> dict:
-    """Cierra la venta con un lead que ya tiene los cuatro datos: avisa al
-    dueño, arma la confirmacion y, SOLO en modo 'venta', agrega el link de pago
-    real. Devuelve el meta con accion lead_capturado. Mismo camino que el
-    cierre normal (Caso uno), reusado cuando el mensaje disparador ya trajo
-    todo."""
+    """Cierra la venta con un lead que ya tiene los cuatro datos: avisa al dueño, arma la confirmacion y, SOLO en
+    modo 'venta', agrega el link de pago real."""
     log.info("lead_capturado_completo", lead_id=lead_id, tienda_id=tienda_id,
              user_id=user_id, trace_id=trace_id)
     try:
@@ -263,9 +217,7 @@ async def _finalizar_cierre(lead_id: str, merged: dict, tienda_id: str,
     from app.core import cierre
     respuesta_cierre = cierre.mensaje_confirmacion(
         merged, merged.get("orden", ""))
-    # Link de pago SOLO en modo 'venta': total verificado de la calculadora. En
-    # modo 'lead' cierra avisando al usuario, sin link. Si no hay total unico o
-    # falta el token de Mercado Pago, cierra igual sin link.
+    # Link de pago SOLO en modo 'venta': total verificado de la calculadora.
     if modo == "venta":
         try:
             from app.core.pago import instruccion_cobro
@@ -280,10 +232,8 @@ async def _finalizar_cierre(lead_id: str, merged: dict, tienda_id: str,
 
 
 def _contacto_del_canal(user_id: str, canal: str) -> str:
-    """En WhatsApp/Telegram el contacto del cliente ES el id del canal: su numero
-    de WhatsApp o su chat de Telegram. El cliente NO tipea su telefono, asi que
-    exigirselo lo manda a un loop de 'me falta un telefono' que nunca completa,
-    aunque ya haya dado nombre y direccion. Se usa el user_id como contacto."""
+    """En WhatsApp/Telegram el contacto del cliente ES el id del canal: su numero de WhatsApp o su chat de
+    Telegram."""
     return (user_id or "").strip()
 
 
@@ -301,29 +251,16 @@ async def procesar_mensaje_para_lead(
     presupuesto_nuevo: bool = False,
     pregunta_cierre_hecha: bool = False,
 ) -> tuple[str | None, dict]:
-    """
-    Logica del cierre (aditivo). Juez UNICO: el interpretador.
-
-    Caso uno, hay lead esperando datos, completamos y cerramos.
-    Caso dos, decision de compra confirmada (interpretador), captamos el lead.
-    Caso tres, hay interes y recien se mostro un precio: una pregunta suave de
-        cierre. Un "si" vuelve como decision_compra y cae en el Caso dos.
-    Caso cuatro, nada que hacer.
-
-    El modo de la tienda manda: 'off' no actua, 'lead' capta sin link, 'venta'
-    capta y manda el link de Mercado Pago.
-    """
+    """Logica del cierre (aditivo). Juez UNICO: el interpretador."""
     meta = {"accion": "ninguna"}
     modo = modo_cierre(tienda_id)
     if modo == "off":
         return None, meta
     lead_activo = get_lead_activo(user_id, canal, tienda_id)
 
-    # ENTREGA DE DATOS DE COBRO A PEDIDO (charla real 20-jul: "Pasame los
-    # enlaces" devolvia fichas de producto): si el cliente pide el link o el
-    # CBU y hay pedido o presupuesto sobre la mesa, el cobro se entrega
-    # directo, en cualquier modo. Van las DOS vias (transferencia y link):
-    # cubre el pago dividido y el cliente elige.
+    # ENTREGA DE DATOS DE COBRO A PEDIDO (charla real 20-jul: "Pasame los enlaces" devolvia fichas de
+    # producto): si el cliente pide el link o el CBU y hay pedido o presupuesto sobre la mesa, el cobro se
+    # entrega directo, en cualquier modo.
     if _RE_PIDE_COBRO.search(mensaje or ""):
         _presu_cobro = (presupuesto or "").strip() or str(
             (lead_activo or {}).get("orden") or "")
@@ -331,9 +268,8 @@ async def procesar_mensaje_para_lead(
             try:
                 from app.core import pago as P
                 bloques = []
-                # Acá van las DOS vías, así que cada una cobra SU parte cuando
-                # hay pago dividido: si las dos mandaran el total, el cliente
-                # veria dos veces el importe entero y pagaria el doble.
+                # Acá van las DOS vías, así que cada una cobra SU parte cuando hay pago dividido: si las dos
+                # mandaran el total, el cliente veria dos veces el importe entero y pagaria el doble.
                 t_transf = P.mensaje_transferencia(
                     P.datos_transferencia(tienda_id),
                     P.monto_a_cobrar(_presu_cobro, "cbu"))
@@ -362,11 +298,8 @@ async def procesar_mensaje_para_lead(
     # Caso uno, lead activo esperando datos
     if lead_activo and lead_activo.get("estado") == "datos_solicitados":
         from app.core import cierre
-        # Si el cliente PIVOTEA a una pregunta nueva (precio, info de producto) en
-        # vez de aportar datos, hay que CONTESTARLE, no seguir empujando el cierre
-        # ni extraer datos de una consulta. Ej: "cuanto sale el X con envio a
-        # Cordoba" no es un domicilio, es una cotizacion. El cierre se retoma
-        # cuando el cliente realmente aporta datos o confirma.
+        # Si el cliente PIVOTEA a una pregunta nueva (precio, info de producto) en vez de aportar datos, hay
+        # que CONTESTARLE, no seguir empujando el cierre ni extraer datos de una consulta.
         _intent = (interpretacion or {}).get("intencion")
         if _intent in ("pregunta_especifica", "exploracion") and \
                 not extraer_telefono(mensaje):
@@ -390,10 +323,7 @@ async def procesar_mensaje_para_lead(
         merged = {**lead_activo, **cambios}
         falt = cierre.faltantes(merged)
         if falt:
-            # Cuantas veces ya se pidieron ESTOS mismos campos. Si la lista
-            # cambio -el cliente aporto algo- el pedido arranca de cero otra
-            # vez; si es la misma, el texto se dice distinto y mas corto en vez
-            # de repetir el bloque entero (ver cierre.mensaje_pedir_datos).
+            # Cuantas veces ya se pidieron ESTOS mismos campos.
             insistencia = _insistencia(lead_activo, falt)
             cambios["datos_pedidos_campos"] = list(falt)
             cambios["datos_pedidos_veces"] = insistencia + 1
@@ -422,8 +352,6 @@ async def procesar_mensaje_para_lead(
         respuesta_cierre = cierre.mensaje_confirmacion(
             merged, merged.get("orden", ""))
         # Link de pago SOLO en modo 'venta': total verificado de la calculadora.
-        # En modo 'lead' cierra avisando al usuario, sin link. Si no hay total
-        # unico o falta el token de Mercado Pago, la venta cierra igual sin link.
         if modo == "venta":
             try:
                 from app.core.pago import instruccion_cobro
@@ -442,9 +370,7 @@ async def procesar_mensaje_para_lead(
             "respuesta_directa": respuesta_cierre,
         }
 
-    # JUEZ UNICO: el interpretador. Dispara fuerte SOLO con decision_compra
-    # confirmada y confianza alta. No hay jueces paralelos (se borraron el regex
-    # de link y el detector legacy por palabras).
+    # JUEZ UNICO: el interpretador. Dispara fuerte SOLO con decision_compra confirmada y confianza alta.
     intencion_llm = (interpretacion or {}).get("intencion")
     confianza_llm = (interpretacion or {}).get("confianza", 0.0)
     if intencion_llm == "decision_compra" and confianza_llm >= UMBRAL_LEAD_FUERTE:
@@ -457,11 +383,7 @@ async def procesar_mensaje_para_lead(
              intencion_llm=intencion_llm, confianza_llm=confianza_llm,
              nivel_mapeado=nivel)
 
-    # GATILLO DETERMINISTA DE CIERRE (arreglo D). Si el turno PASADO se hizo la
-    # pregunta de cierre, la respuesta del cliente decide sin depender de la
-    # confianza del LLM: un no lo toma un humano y cerramos suave; cualquier otra
-    # respuesta dispara el lead fuerte. Es el gatillo acordado: una sola pregunta,
-    # y con la respuesta ya hay decision.
+    # GATILLO DETERMINISTA DE CIERRE (arreglo D).
     if pregunta_cierre_hecha and nivel != "fuerte":
         from app.core import cierre as _cierre
         if _cierre.es_no_interesado(mensaje):
@@ -475,15 +397,8 @@ async def procesar_mensaje_para_lead(
                 log.warning("notificar_lead_failed", error=str(e)[:120])
             return None, {"accion": "no_interesado",
                           "respuesta_directa": MENSAJE_NO_INTERESADO}
-        # ATADO AL ENUM (22-jul). El cierre fuerte lo dispara la INTENCION del
-        # interprete (decision_compra), NO un heuristico de texto. Antes cerraba
-        # ante "todo lo que no fuera un no", asi que una PREGUNTA como "me alcanza
-        # o me paso" -con el interprete caido a intencion=otra por un JSON fallido-
-        # se leia como un si y capturaba el lead (falso cierre, banco guion 59).
-        # Ahora, tras la pregunta de cierre: solo una decision_compra confirma
-        # (aunque la confianza no llegue al umbral; la pregunta manda sobre el
-        # score). Una pregunta o cualquier otra intencion NO cierra: el solver la
-        # contesta y la oferta de cierre queda PENDIENTE para el proximo turno.
+        # ATADO AL ENUM (22-jul). El cierre fuerte lo dispara la INTENCION del interprete (decision_compra),
+        # NO un heuristico de texto.
         if intencion_llm != "decision_compra" or _cierre.parece_pregunta(mensaje):
             log.info("cierre_gatillo_pausado_pregunta", trace_id=trace_id,
                      intencion_llm=intencion_llm)
@@ -492,53 +407,28 @@ async def procesar_mensaje_para_lead(
         frase = "respuesta_afirmativa_pregunta_cierre"
         log.info("cierre_gatillo_determinista_fuerte", trace_id=trace_id)
 
-    # Caso tres, PREGUNTA SUAVE DE CIERRE. Cuando NO hay decision confirmada pero
-    # recien se mostro un precio nuevo y el interprete ve interes (no exploracion
-    # ni posventa), el bot suma una pregunta suave a la respuesta del Solver. Es
-    # la red ante la duda: un "si" en el turno siguiente vuelve como
-    # decision_compra y cae en el Caso dos. Solo cuando hay presupuesto NUEVO,
-    # asi no se repite turno a turno.
-    # LA PREGUNTA MANDA SOBRE EL SCORE (3-jul): una decision_compra que NO llego
-    # a la confianza del umbral tampoco puede quedar en NADA. Si ya hay un
-    # presupuesto mostrado (nuevo o de memoria), se hace LA pregunta del sistema
-    # y la respuesta del cliente decide determinista (gatillo D), sin depender de
-    # que el score justo supere 0.85. Antes ese caso solo cerraba si el score
-    # acompañaba (visto en la charla real del 1-jul).
+    # Caso tres, PREGUNTA SUAVE DE CIERRE. Cuando NO hay decision confirmada pero recien se mostro un precio
+    # nuevo y el interprete ve interes (no exploracion ni posventa), el bot suma una pregunta suave a la
+    # respuesta del Solver.
     hay_presupuesto = bool(str(presupuesto).strip())
     if (nivel == "ninguna"
             and (presupuesto_nuevo
                  or (intencion_llm == "decision_compra" and hay_presupuesto))
             and intencion_llm in ("pregunta_especifica", "aporta_dato",
                                   "decision_compra")):
-        # EL CIERRE LO OWNS EL SOLVER (Martin, 23-jul: "encargar por enum al
-        # solver"). Antes se pegaba la pregunta enlatada PREGUNTA_CIERRE encima de
-        # la respuesta del solver, y a veces la entorpecia o sonaba robotica. El
-        # solver ya invita a avanzar en su propia prosa; aca SOLO se MARCA que la
-        # oferta de cierre esta sobre la mesa (accion pregunta_cierre), para que el
-        # "si" del proximo turno cierre por el gatillo determinista. No se estampa
-        # nada: sin respuesta_directa, el texto del solver queda intacto.
+        # EL CIERRE LO OWNS EL SOLVER (Martin, 23-jul: "encargar por enum al solver").
         log.info("cierre_pregunta_suave", trace_id=trace_id,
                  intencion_llm=intencion_llm, confianza_llm=confianza_llm)
         return None, {"accion": "pregunta_cierre"}
 
     # Caso dos, intencion fuerte
     if nivel == "fuerte":
-        # PRIMER TURNO SIN APURO (Martin, 23-jul + regla 20-jul). Una decision de
-        # compra que llega SIN una oferta de cierre previa (pregunta_cierre_hecha)
-        # es la PRIMERA expresion de intencion ("quiero dos mouse"), no una
-        # confirmacion de un pedido cerrado. NO se cierra ni se estampa "tomamos
-        # tu pedido" de una (apuro real que reporto Martin en prod): se MARCA la
-        # oferta y el SOLVER muestra el presupuesto e invita en su prosa. El "si"
-        # del proximo turno, ya con pregunta_cierre_hecha, entra por el gatillo D
-        # y ahi si cierra. La confirmacion de una oferta previa
-        # (respuesta_afirmativa_pregunta_cierre) NO cae aca: cierra normal.
+        # PRIMER TURNO SIN APURO (Martin, 23-jul + regla 20-jul).
         if not pregunta_cierre_hecha and frase.startswith("interpretador_decision_compra"):
             log.info("cierre_primer_turno_sin_apuro", trace_id=trace_id,
                      frase=frase)
             return None, {"accion": "pregunta_cierre"}
-        # Regla de orden: no cerrar sin precio mostrado. Si todavia no hay
-        # presupuesto, registramos el interes en silencio y dejamos que el
-        # Solver responda el precio. El cierre queda para el turno siguiente.
+        # Regla de orden: no cerrar sin precio mostrado.
         if not str(presupuesto).strip():
             lead_id = crear_lead(
                 user_id=user_id, canal=canal, tienda_id=tienda_id,
@@ -558,11 +448,7 @@ async def procesar_mensaje_para_lead(
                 log.warning("notificar_lead_failed", error=str(e)[:120])
             return None, {"accion": "tibia_registrada", "lead_id": lead_id}
 
-        # VERSION A (modo 'lead'): el lead fuerte YA se logra acá. El cliente
-        # confirmo, hay precio mostrado, se avisa al dueño y se guarda lo que
-        # haya (el telefono es el contacto del canal). NO se piden datos ni
-        # documento: el bot deja el lead anotado y SIGUE conversando con la
-        # respuesta natural del Solver. Cerrar la coordinacion lo hace un humano.
+        # VERSION A (modo 'lead'): el lead fuerte YA se logra acá.
         if modo == "lead":
             from app.core import cierre
             # Si ya hay un lead fuerte captado activo, no se re-avisa ni se crea
@@ -599,11 +485,8 @@ async def procesar_mensaje_para_lead(
                     orden=presupuesto, ultimo_mensaje=mensaje)
             except Exception as e:
                 log.warning("notificar_lead_failed", error=str(e)[:120])
-            # CIERRE DISTINTO al captar (arreglo del loop Monte Ralo): antes no
-            # devolvia respuesta y el solver re-mandaba el presupuesto una y otra
-            # vez ante cada "si". Ahora el bot confirma que tomo el pedido, con el
-            # resumen, y avisa que un humano coordina pago y envio. Asi el destino
-            # sin resolver tampoco frena: lo coordina la persona.
+            # CIERRE DISTINTO al captar (arreglo del loop Monte Ralo): antes no devolvia respuesta y el solver
+            # re-mandaba el presupuesto una y otra vez ante cada "si".
             return None, {"accion": "lead_fuerte_captado", "lead_id": lead_id,
                           "respuesta_directa": cierre.mensaje_confirmacion(
                               {**sembrados, "orden": presupuesto}, presupuesto)}
@@ -619,15 +502,11 @@ async def procesar_mensaje_para_lead(
                  tienda_id=tienda_id, user_id=user_id,
                  frase=frase, trace_id=trace_id)
 
-        # Siembra inicial (unico camino, sin flag): el mensaje que dispara el
-        # cierre suele traer datos ya ("envio a Los Condores medio de pago
-        # mercado pago"). Sin esto se piden de cero y el cliente repite lo que ya
-        # dijo. Se siembra el lead con lo presente; si estan los cuatro, cierra
-        # ya; si falta algo, pide SOLO lo que falta.
+        # Siembra inicial (unico camino, sin flag): el mensaje que dispara el cierre suele traer datos ya
+        # ("envio a Los Condores medio de pago mercado pago").
         from app.core import cierre
-        # Siembra con TODO lo acumulado en turnos anteriores mas lo de este turno,
-        # asi una direccion o un pago dados ANTES de la decision de compra ya estan
-        # y no se vuelven a pedir.
+        # Siembra con TODO lo acumulado en turnos anteriores mas lo de este turno, asi una direccion o un pago
+        # dados ANTES de la decision de compra ya estan y no se vuelven a pedir.
         prev = {k: v for k, v in (datos_previos or {}).items()
                 if v and k in cierre.CAMPOS_EXTRAIBLES}
         sembrados = {**prev, **{k: v for k, v in (datos_turno or {}).items() if v}}

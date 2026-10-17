@@ -1,35 +1,4 @@
-"""
-GUARDAS DE SALIDA — las TRES cosas que no pueden depender del prompt.
-
-De las cinco que vivian aca quedaron dos, y no por recorte de tiempo: con el hub
-de herramientas las otras tres perdieron sentido. La tercera es del 16-sep y es
-de otra familia: las dos de abajo ponen algo que falta, esa MIRA lo que el
-modelo afirmo.
-
-  1. HONESTIDAD DE BOT. Si el cliente pregunta si habla con una maquina, la
-     respuesta lo dice. El prompt solo no alcanzo nunca -en el banco el modelo
-     esquivaba la pregunta-, asi que el codigo antepone la verdad. No es una
-     mejora de venta, es lo minimo que le debemos al que escribe.
-  2. SALUDO Y AVISO. El primer mensaje de la charla abre con una linea fija que
-     avisa que es un asistente automatico. Es una obligacion, no un criterio de
-     redaccion, asi que la pone el codigo y va UNA sola vez. Ademas recorta el
-     saludo que el modelo escribe por su cuenta, para no saludar dos veces ni
-     abrir con "hola" en el turno cinco.
-  3. LA GUARDA DE ESTADO. Si la respuesta afirma sobre un campo del catalogo
-     que el turno nunca tuvo delante, queda el renglon. NACE MUDA: mira y no
-     toca. El caso y el motivo, abajo, arriba de la funcion.
-
-LAS QUE SE BORRARON el 2-ago, con su motivo:
-  - RESPUESTA HUECA y ANUNCIO SIN CONTENIDO: juzgaban el texto DESPUES de
-    escrito, midiendo largo y coletillas. Eran la capa que corrige al modelo, que
-    es justo lo que el diseno nuevo saca: si la herramienta trajo el dato, esta
-    en el JSON delante del modelo; si no lo trajo, la respuesta honesta ES corta.
-  - PRESUPUESTO SIN MODELOS: ya se habia borrado el 29-jul por romper una charla
-    real; su fallback vivia aca.
-  - FALLBACK CON CURADA: existia para cuando una guarda bloqueaba el turno. Sin
-    guardas que bloqueen, no hay turno que rescatar. La politica curada sale
-    ahora por la herramienta `consultar_temas`, que es su lugar.
-"""
+"""GUARDAS DE SALIDA — las TRES cosas que no pueden depender del prompt."""
 import re
 import unicodedata
 
@@ -64,9 +33,6 @@ def business_name(tienda_id: str | None) -> str:
 
 
 # ── 2. SALUDO Y AVISO DEL PRIMER MENSAJE ────────────────────────────────────
-# Saludo que el modelo escribe al arranque de SU texto: se recorta cuando el
-# codigo antepone el oficial. Solo saludos inequivocos; "buenas" pelado NO
-# matchea, para no comerse un "Buenas noticias...".
 _RE_SALUDO_SOLVER = re.compile(
     r"^[¡!]*\s*(hola+|buen(as)?\s+(tardes|noches|d[ií]as?))\b[\s,.!:]*",
     re.IGNORECASE)
@@ -82,9 +48,7 @@ _RE_BIENVENIDA_SOLVER = re.compile(
     re.IGNORECASE)
 
 
-# Aperturas de saludo a mitad de charla, mas anchas que las del turno 1. Estas
-# EXIGEN un cierre de puntuacion, para no comerse una frase legitima: "¡Qué tal!"
-# se recorta, "Qué tal te parece este mouse" no.
+# Aperturas de saludo a mitad de charla, mas anchas que las del turno 1.
 _RE_SALUDO_MEDIO = re.compile(
     r"^[¡!]*\s*(?:hola+|buen(?:as)?\s+(?:tardes|noches|d[ií]as?)|"
     r"qu[eé]\s+tal|c[oó]mo\s+(?:va|and[aá]s|est[aá]s)|"
@@ -93,15 +57,7 @@ _RE_SALUDO_MEDIO = re.compile(
 
 
 def sin_saludo_del_modelo(respuesta: str) -> str:
-    """Recorta el saludo que el modelo escribe por su cuenta a mitad de charla.
-
-    En el turno 1 el saludo lo pone el CODIGO (con_saludo_inicial, abajo) y ahi
-    se recorta el del modelo para no saludar dos veces. Del turno 2 en adelante
-    no se recortaba nada, y el modelo abre igual: "¡Hola! Entiendo
-    perfectamente...", "¡Qué tal! Te entiendo..." en el turno 2, 3 y 5 (banco
-    29-jul, guiones 03 y 54). Un vendedor no te saluda cinco veces en la misma
-    charla; suena a bot y es de lo que Martin viene marcando hace meses.
-    """
+    """Recorta el saludo que el modelo escribe por su cuenta a mitad de charla."""
     cuerpo = _RE_SALUDO_MEDIO.sub("", (respuesta or "").strip(), count=1).strip()
     if not cuerpo:
         return respuesta
@@ -126,20 +82,7 @@ def con_saludo_inicial(respuesta: str, business_name: str) -> str:
 
 
 def linea_saludo(business_name: str) -> str:
-    """LA LINEA OBLIGATORIA del primer mensaje, en UNA sola definicion.
-
-    LA OBLIGACION ES DECIR QUE ES UN BOT, NO VENDER EL SERVICIO. La segunda
-    oracion que traia -"Te ayudo con precios, stock y envíos al instante"- eran
-    48 caracteres de folleto en el mensaje donde el cliente todavia no pregunto
-    nada, y encima abajo viene la respuesta que YA le da precios, stock y
-    envios. Martin la marco como lo primero que sobra (7-ago). Lo que no se
-    toca es el aviso de que es automatico: eso es una obligacion.
-
-    ES UNA FUNCION Y NO TEXTO SUELTO ADENTRO porque cualquier cosa que decida
-    sobre el mensaje final tiene que poder preguntar cual es la linea
-    obligatoria, sin volver a escribirla. Escrita en dos lados se despegarian, y
-    esa es la falla que este repo ya pago dos veces -el patron de la poda el
-    31-jul, la regex del reparto el 6-ago-."""
+    """LA LINEA OBLIGATORIA del primer mensaje, en UNA sola definicion."""
     from app.core.guia_venta_prosa import mensaje
     return mensaje("saludo_inicial",
                    "¡Hola! Soy el asistente automático de {negocio}."
@@ -147,47 +90,14 @@ def linea_saludo(business_name: str) -> str:
 
 
 # ── 3. LA GUARDA DE ESTADO — afirmar sobre un campo que el turno no miro ─────
-#
-# EL CASO, MEDIDO DOS VECES EN WHATSAPP, el 15 y el 16-sep-2026: el bot contesto
-# que no tiene el pais de fabricacion. El campo esta cargado en 880 de 880
-# productos y viaja en el tablero, en la leyenda, con sus cinco valores. No lo
-# consulto y contesto igual.
-#
-# POR QUE NO ES LA GUARDA DE `numeros`, que ya existe y funciona: esa mira
-# CIFRAS. "No tenemos ese dato" no lleva ninguna, asi que pasa entera. La cifra
-# inventada tiene candado desde el 11-sep; la afirmacion inventada no tiene
-# ninguno.
-#
-# LA CONDICION ES DE ESTADO Y NO DE VOCABULARIO, y esa es la regla 4 de la FICHA
-# 55 §5. No se persigue la frase: perseguir prosa con una lista de frases ya
-# fracaso tres veces en este repo —fueron 4 nodos, despues 18, despues 46—. Lo
-# que se mira es un NOMBRE DE CAMPO, que es un token verificable igual que una
-# cifra: la lista sale de `campos_filtrables` sobre la fuente viva, no la
-# escribe nadie, y no crece con el catalogo sino con la variedad. Es el mismo
-# argumento que ya sostiene la leyenda del tablero.
-#
-# NACE MUDA (FICHA 55 §4.3 y §5.2). Escribe su renglon y no toca una sola
-# respuesta. Recien cuando la pelicula muestre que el renglon coincide con lo
-# que se lee en la charla real se decide si frena, y con que recorte: hoy un
-# campo de una palabra —`color`, `marca`, `stock`— aparece en cualquier
-# respuesta legitima, y "te lo puedo buscar por color" no es una afirmacion
-# sobre la fuente. Frenar con eso adentro seria cambiar un defecto por otro mas
-# caro. Asi nacio el indice viejo y asi se revierte gratis.
 
-# Los conectores que pueden aparecer entre las palabras de un campo cuando el
-# modelo lo escribe en castellano: `pais_fabricacion` sale como "pais de
-# fabricacion". Es un conjunto CERRADO de cinco preposiciones y articulos, la
-# gramatica minima para unir dos sustantivos, y no crece: no es una lista de
-# frases, que es lo que este repo tiene prohibido.
+# Los conectores que pueden aparecer entre las palabras de un campo cuando el modelo lo escribe en castellano:
+# `pais_fabricacion` sale como "pais de fabricacion".
 _UNEN = r"(?:\s+(?:de|del|la|el|en))*\s+"
 
 
 def _patron_de_campo(campo: str):
-    """El campo del catalogo como lo escribiria un vendedor. `garantia_meses`
-    pega con "garantia meses" y con "garantia en meses"; `color`, con "color".
-
-    Se compara sobre el texto NORMALIZADO —minusculas y sin acentos— asi que
-    "país de fabricación" y "pais de fabricacion" son lo mismo."""
+    """El campo del catalogo como lo escribiria un vendedor."""
     partes = [re.escape(p) for p in _norm(campo).split("_") if p]
     if not partes:
         return None
@@ -195,10 +105,7 @@ def _patron_de_campo(campo: str):
 
 
 def campos_nombrados(texto: str, campos) -> list:
-    """Los campos del catalogo que el texto nombra. Determinista y sin
-    ranking: o el nombre esta, o no esta. Nada de aparear por palabras
-    compartidas, que es la enfermedad que el MAPA_CABLEADO ya tiene numerada
-    cuatro veces —D3, D4, D6 y D16—."""
+    """Los campos del catalogo que el texto nombra."""
     plano = _norm(texto)
     fuera = []
     for campo in campos or ():
@@ -210,17 +117,7 @@ def campos_nombrados(texto: str, campos) -> list:
 
 def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
                      trace_id: str = "") -> list:
-    """Los campos que la respuesta nombra y que el turno NUNCA tuvo delante.
-
-    `tocados` son los campos que el turno SI miro, y se juntan de los dos
-    lados por los que un campo puede llegarle al modelo: los que alguna
-    consulta uso como condicion u orden, y los que vinieron cargados en las
-    fichas que volvieron. Un campo que entro por cualquiera de los dos esta
-    respaldado y no se cuenta.
-
-    DEVUELVE LA LISTA Y NO TOCA EL TEXTO. La pieza nace muda a proposito; el
-    motivo entero esta arriba.
-    """
+    """Los campos que la respuesta nombra y que el turno NUNCA tuvo delante."""
     try:
         from app.core.filtros_catalogo import campos_filtrables
         campos = set(campos_filtrables(tienda_id) or {})
@@ -233,51 +130,22 @@ def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
     sin_respaldo = sorted(campos_nombrados(
         texto, campos - {str(t) for t in (tocados or ())}))
     if sin_respaldo:
-        # EL RENGLON ES LA PIEZA. Sale con el campo y con cuantos campos tuvo
-        # el turno en la mano, que es lo que permite leer el falso positivo:
-        # un turno que no busco nada y nombra un campo no es lo mismo que uno
-        # que trajo diez fichas y nombro el unico que no miro.
+        # EL RENGLON ES LA PIEZA. Sale con el campo y con cuantos campos tuvo el turno en la mano, que es lo
+        # que permite leer el falso positivo: un turno que no busco nada y nombra un campo no es lo mismo que
+        # uno que trajo diez fichas y nombro el unico que no miro.
         log.warning("afirmo_sin_mirar", trace_id=trace_id,
                     campos=sin_respaldo[:6], tocados=len(tocados or ()))
     return sin_respaldo
 
 
 # QUE CAMPO SE CORRIGE, Y LA RESPUESTA ES: CUALQUIERA QUE LA FUENTE TENGA.
-#
-# HUBO UN RECORTE Y DURO UNA CHARLA. El 16-sep se corregia solo un campo de dos
-# o mas palabras, con el argumento de que uno de una sola —`color`, `marca`— es
-# castellano comercial y "te lo puedo buscar por color" no es una afirmacion
-# sobre la fuente. Sonaba bien y era una proxy floja: esa misma tarde, a las
-# 19:47, el modelo afirmo sobre `origen` —una palabra, campo real, cargado en
-# 880 de 880— y la correccion no se disparo. El recorte dejo pasar exactamente
-# el caso para el que la pieza existe.
-#
-# POR QUE SACARLO NO ES REPLEGARSE. Los dos costos no se parecen. Un falso
-# positivo cuesta UNA vuelta, una vez por turno, y el bloque que se le manda no
-# es un reto: es el dato del campo. Ante "te lo puedo buscar por color" el
-# modelo recibe los valores reales de `color` y o busca mejor o repregunta
-# mejor. Un falso negativo cuesta lo que se leyo el 16-sep: el cliente se lleva
-# una mentira sobre la tienda.
-#
-# LO QUE QUEDA ES EL UNICO FILTRO DURO: que la fuente TENGA ese campo. Si no lo
-# tiene, la negacion del modelo era correcta y el codigo no le discute una
-# verdad. Ese filtro no es una heuristica —se le pregunta a la fuente—, que es
-# la diferencia con el que se saca.
 
-# Cuantas correcciones se hacen por turno. UNA. Cada una cuesta una vuelta al
-# modelo, y una segunda seria perseguir al modelo hasta que diga lo que
-# queremos, que es otra cosa y no se hace.
+# Cuantas correcciones se hacen por turno.
 TOPE_CORRECCIONES = 1
 
 
 def para_corregir(sin_respaldo, tienda_id: str) -> tuple:
-    """El campo que vale la pena devolverle al modelo, con lo que la fuente
-    dice de el. `(None, "")` si no hay ninguno.
-
-    UN SOLO FILTRO, y se lo contesta la fuente: que tenga algo escrito de ese
-    campo. El motivo de que sea uno solo esta arriba, con el caso que se llevo
-    puesto al otro.
-    """
+    """El campo que vale la pena devolverle al modelo, con lo que la fuente dice de el."""
     from app.core.filtros_catalogo import que_dice_la_fuente_de
     for campo in sin_respaldo or ():
         dice = que_dice_la_fuente_de(str(campo), tienda_id)
@@ -288,32 +156,7 @@ def para_corregir(sin_respaldo, tienda_id: str) -> tuple:
 
 def correccion_de_estado(texto: str, tocados, tienda_id: str,
                          trace_id: str = "") -> str:
-    """EL BLOQUE QUE VUELVE AL MODELO cuando afirmo sobre un campo que no miro.
-    Cadena vacia si no hay nada que corregir.
-
-    POR QUE DEVOLVER EL DATO Y NO TIRAR LA RESPUESTA. Tirarla deja al cliente
-    sin contestar por una frase de mas, que es un remedio peor: la guarda de
-    plata puede hacerlo porque una cifra inventada contamina el mensaje entero,
-    y una afirmacion sobre un campo no. Y editar la frase esta prohibido: la
-    prosa es del modelo, y cortarla por palabras es el solver de fragmentos que
-    se borro el 2-ago.
-
-    ASI QUE SE HACE LO QUE LA FICHA 55 §1-bis YA DECIDIO: la negacion la escribe
-    el codigo y el modelo la COPIA. El mecanismo no es nuevo —es el hueco de
-    valor, que ya funciona y aparecio solo en la tanda del 13-sep— aplicado a lo
-    que el modelo AFIRMA en vez de a lo que BUSCA.
-
-    EL CASO, medido en WhatsApp el 16-sep-2026 a las 12:05 UTC. El cliente pidio
-    seis productos con "las menos partes chinas posibles". El modelo mando
-    cuatro consultas SIN una sola condicion —tiro la restriccion entera— y
-    contesto "no contamos con informacion sobre el pais de fabricacion", con el
-    campo cargado en 880 de 880 y con sus cinco valores en el tablero que el
-    mismo tenia delante. Y esa negacion falsa se llevo puesto el resto del
-    turno: no dio un solo precio de las veinte fichas que habia traido, no pidio
-    la cuenta del setenta treinta, y no marco que el cliente nombro un teclado
-    que no habia pedido. **No fueron cuatro defectos: fue uno, y los otros tres
-    colgaban de el.**
-    """
+    """EL BLOQUE QUE VUELVE AL MODELO cuando afirmo sobre un campo que no miro."""
     sin = afirmo_sin_mirar(texto, tocados, tienda_id, trace_id)
     if not sin:
         return ""

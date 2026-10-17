@@ -1,14 +1,4 @@
-"""
-FastAPI app principal — v4 multi-tenant + observabilidad.
-
-Endpoints:
-- GET  /                    → health check
-- GET  /health              → health detallado
-- GET  /admin/health/{tienda_id}  → health por tienda (multi-tenant)
-- POST /webhook/telegram    → recibe mensajes de Telegram (tienda default)
-- POST /webhook/whatsapp    → recibe mensajes de WhatsApp Cloud API (Meta)
-- GET  /webhook/whatsapp    → verificación inicial Meta
-"""
+"""FastAPI app principal — v4 multi-tenant + observabilidad."""
 import os
 import asyncio
 import secrets
@@ -35,13 +25,6 @@ log = get_logger(__name__)
 settings = get_settings()
 
 # Procesar el mensaje DENTRO del request del webhook, no en segundo plano.
-# Cloud Run estrangula la CPU apenas el request devolvio su respuesta; si el
-# trabajo pesado corre en background (despues del 200), lo hace con la CPU
-# estrangulada y se arrastra. Procesando dentro del request, la CPU sigue
-# asignada y el flujo corre a velocidad plena, como en local. El webhook tarda
-# un poco mas en devolver el 200, pero la idempotencia (already_processed)
-# cubre cualquier reintento de Telegram/Meta. Default false: comportamiento
-# actual (background). Poner PROCESAR_EN_REQUEST=true para activar.
 PROCESAR_EN_REQUEST = os.getenv("PROCESAR_EN_REQUEST", "false").lower() == "true"
 
 # ───────────────────────── Sentry (opcional) ─────────────────────────
@@ -67,15 +50,7 @@ app = FastAPI(title="Agente Multi-Canal", version="4.0.0")
 
 @app.on_event("startup")
 async def _declarar_config_efectiva():
-    """QUE CONFIGURACION CORRE DE VERDAD, escrito en el log al arrancar.
-
-    Las envs del servicio en Cloud Run no se pueden leer desde afuera sin
-    permiso de administrador, asi que hasta hoy nadie podia confirmar en que
-    modo de cierre corre el bot vivo ni con que modelo, salvo entrando a la
-    consola. Los logs SI se leen. Con esta linea, cada revision deja escrito
-    con que arranco, y el banco imprime lo mismo en su banner: si las dos no
-    coinciden, el banco esta probando otro sistema. No expone secretos, solo
-    dice si estan puestos."""
+    """QUE CONFIGURACION CORRE DE VERDAD, escrito en el log al arrancar."""
     try:
         from app.core.leads import modo_cierre
         log.info("config_efectiva",
@@ -91,14 +66,8 @@ async def _declarar_config_efectiva():
 
 @app.on_event("startup")
 async def _precalentar_cache():
-    """
-    Precarga catálogo y FAQ de la tienda default al arrancar la instancia, así
-    la PRIMERA consulta real no paga la lectura a Firestore (3-4s) dentro del
-    camino del mensaje. El guardián y la evidencia leen esos caches en cada
-    turno; sin precalentar, el primer mensaje de una instancia nueva los carga
-    en frío. No bloqueante: si Firestore falla, el server arranca igual. Detrás
-    de flag PRECALENTAR_CACHE (default true). Poner false para desactivar.
-    """
+    """Precarga catálogo y FAQ de la tienda default al arrancar la instancia, así la PRIMERA consulta real no
+    paga la lectura a Firestore (3-4s) dentro del camino del mensaje."""
     if os.getenv("PRECALENTAR_CACHE", "true").lower() != "true":
         log.info("precalentar_cache_desactivado")
         return
@@ -114,18 +83,15 @@ async def _precalentar_cache():
 
 
 def _prosa(clave: str, respaldo: str) -> str:
-    """Un texto fijo al cliente, de la FUENTE. Mismo criterio que `_sobrecarga`:
-    el literal que va al lado es la red por si el archivo faltara, y el candado
-    de `tests/test_prosa_en_la_fuente.py` exige que sea identico al de la
-    fuente para que no se despeguen."""
+    """Un texto fijo al cliente, de la FUENTE. Mismo criterio que `_sobrecarga`: el literal que va al lado es la
+    red por si el archivo faltara, y el candado de `tests/test_prosa_en_la_fuente.py` exige que sea identico
+    al de la fuente para que no se despeguen."""
     from app.core.guia_venta_prosa import mensaje
     return mensaje(clave, respaldo)
 
 
 def _sobrecarga() -> str:
-    """Lo que se le dice al cliente cuando el turno se cayo por un blip del LLM.
-    El texto vive en la fuente, como toda la prosa desde el 3-ago; el literal es
-    la red si el archivo faltara, porque este es justo el camino de los fallos."""
+    """Lo que se le dice al cliente cuando el turno se cayo por un blip del LLM."""
     from app.core.guia_venta_prosa import mensaje
     return mensaje("sobrecarga",
                    "Perdón, estoy con mucha demanda en este momento. "
@@ -144,25 +110,16 @@ async def health():
         "version": "4.0.0",
         "telegram_configured": bool(settings.TELEGRAM_TOKEN),
         "groq_configured": bool(settings.GROQ_API_KEY),
-        # LA VERDAD, no el flag. Hasta el 30-jul esto declaraba
-        # "llm_provider: openai" y el modelo de Groq, mientras el turno entero
-        # corria en Gemini: el health del sistema mintiendo sobre en que corre.
-        # El turno entero entra por llm_reintento._cliente, Gemini.
+        # LA VERDAD, no el flag. Hasta el 30-jul esto declaraba "llm_provider: openai" y el modelo de Groq,
+        # mientras el turno entero corria en Gemini: el health del sistema mintiendo sobre en que corre.
         "solver_provider": "gemini",
         "solver_model": settings.GEMINI_MODEL,
         "sentry_enabled": bool(SENTRY_DSN),
         "default_tienda": settings.TIENDA_ID,
-        # QUE MODO DE CIERRE CORRE DE VERDAD. La env del servicio no se puede
-        # leer desde afuera y la config de tienda la pisa, asi que hasta hoy
-        # nadie sabia si el bot vivo capta lead (A) o cobra (B). El banco
-        # imprime el suyo en cada corrida: si los dos no dicen lo mismo, el
-        # banco esta probando otro cierre que el que atiende a los clientes.
+        # QUE MODO DE CIERRE CORRE DE VERDAD. La env del servicio no se puede leer desde afuera y la config de
+        # tienda la pisa, asi que hasta hoy nadie sabia si el bot vivo capta lead (A) o cobra (B).
         "modo_cierre": _modo_cierre_efectivo(),
-        # QUE SABE CONTESTAR EL SISTEMA, contado por fuente. Mismo criterio que
-        # arriba: el health dice la verdad de lo que hay cargado. Si una fuente
-        # deja de cargar se ve el cero aca, en vez de descubrirlo semanas
-        # despues por una respuesta vacia -que es exactamente lo que paso con
-        # los 23 temas de FAQ que el interprete no podia nombrar-.
+        # QUE SABE CONTESTAR EL SISTEMA, contado por fuente.
         "fuente": _inventario_fuente(),
     }
 
@@ -177,9 +134,7 @@ def _modo_cierre_efectivo() -> str:
 
 
 def _inventario_fuente() -> dict:
-    """Cuantos productos y cuantos temas ve el servicio. Lo contaba el indice,
-    que se apago el 11-sep-2026; se cuenta de la fuente, que es donde vive el
-    numero. Tolerante: el health nunca se cae por esto."""
+    """Cuantos productos y cuantos temas ve el servicio."""
     try:
         from app.storage.firestore_client import get_all_faq, get_all_products
         return {
@@ -191,24 +146,7 @@ def _inventario_fuente() -> dict:
 
 
 def _rechazo_admin(request: Request):
-    """LA PUERTA DE ADMIN, una sola. Devuelve la respuesta de rechazo, o None
-    si el pedido pasa.
-
-    Hasta el 4-ago-2026 los cuatro endpoints de admin leian ADMIN_TOKEN del
-    entorno CON UN VALOR POR DEFECTO: un token fuerte escrito en el repo,
-    sirviendo de contraseña real en produccion si la env no estaba puesta. Dos
-    de esos endpoints ESCRIBEN -upload-catalog y upload-faq-, o sea que con esa
-    palabra, que estaba en el codigo, se pisaba el catalogo de 880 productos y
-    la FAQ entera. `tests/test_admin_auth.py` no deja que vuelva.
-
-    Ahora si `ADMIN_TOKEN` no esta configurado la puerta queda CERRADA, no
-    abierta con una clave conocida: se contesta 503 y no se atiende. Un admin
-    que no anda se nota y se arregla; uno que atiende con la contraseña del
-    repo no se nota nunca.
-
-    Ojo al deployar: si `agente-bot` no tiene `ADMIN_TOKEN` cableado desde el
-    secreto `admin-token`, estos cuatro endpoints pasan a contestar 503.
-    """
+    """LA PUERTA DE ADMIN, una sola. Devuelve la respuesta de rechazo, o None si el pedido pasa."""
     esperado = os.getenv("ADMIN_TOKEN", "")
     if not esperado:
         log.error("admin_sin_token_configurado", ruta=str(request.url.path))
@@ -243,19 +181,13 @@ async def health_tienda(tienda_id: str, request: Request):
         return JSONResponse({"error": str(e)[:200]}, status_code=500)
 
 
-# EL DIAGNOSTICO DE LATENCIA SE APAGO (11-sep-2026). Media el costo de mandar
-# las herramientas y el prompt grande del camino de dos llamadas, que ya no
-# existe. El turno nuevo loguea sus propias etapas en `turno_ok`: fuente,
-# modelo, numeros y memoria, con sus ms. Un diagnostico que mide un camino
-# apagado es peor que no tenerlo.
+# EL DIAGNOSTICO DE LATENCIA SE APAGO (11-sep-2026).
 
 
 async def _process_and_reply_telegram(chat_id: str, text: str):
-    """Un turno por Telegram. Se BORRO por error en el barrido de codigo muerto
-    del 29-jul (commit a0cd2f9) y el webhook quedo llamando a un nombre que ya no
-    existia: cualquier mensaje por Telegram tiraba NameError y el cliente no
-    recibia nada. No se noto porque el canal vivo es WhatsApp. Restaurado tal
-    cual estaba."""
+    """Un turno por Telegram. Se BORRO por error en el barrido de codigo muerto del 29-jul (commit a0cd2f9) y el
+    webhook quedo llamando a un nombre que ya no existia: cualquier mensaje por Telegram tiraba NameError y el
+    cliente no recibia nada."""
     try:
         connector = get_telegram_connector()
 
@@ -286,8 +218,7 @@ async def _process_and_reply_telegram(chat_id: str, text: str):
         if SENTRY_DSN:
             import sentry_sdk
             sentry_sdk.capture_exception(e)
-        # Mismo criterio que WhatsApp: no dejar al cliente sin respuesta ante un
-        # blip transitorio del LLM. Envio en su propio try.
+        # Mismo criterio que WhatsApp: no dejar al cliente sin respuesta ante un blip transitorio del LLM.
         try:
             await get_telegram_connector().send_message(
                 chat_id,
@@ -351,18 +282,11 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
             log.info("whatsapp_audio_transcribed", user_id=user_id, chars=len(text))
 
         response = await process_message(user_id, text, tienda_id=tienda_id, canal="whatsapp")
-        # EN PARTES, no en un bloque: el cliente empieza a leer antes. La memoria
-        # ya guardo el texto completo adentro de process_message, asi que partir
-        # el ENVIO no cambia lo que la charla recuerda.
+        # EN PARTES, no en un bloque: el cliente empieza a leer antes.
         from app.connectors.base import enviar_respuesta
         await enviar_respuesta(connector, user_id, response)
     except Exception as e:
-        # CON EL TRACEBACK, y hace falta: sin el, este log dice QUE se rompio y
-        # no DONDE. El 25-ago un `'str' object has no attribute 'get'` dejo un
-        # turno mudo en medio de una grabacion y hubo que salir a adivinar en
-        # que modulo caia. La regla 5 del CLAUDE.md pide observabilidad; un
-        # error sin linea no la cumple. Se recorta porque en Cloud Logging la
-        # entrada tiene tope, y las ultimas lineas son las que importan.
+        # CON EL TRACEBACK, y hace falta: sin el, este log dice QUE se rompio y no DONDE.
         import traceback as _tb
         log.error("whatsapp_processing_error", error=str(e),
                   tipo=type(e).__name__,
@@ -371,9 +295,8 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
         if SENTRY_DSN:
             import sentry_sdk
             sentry_sdk.capture_exception(e)
-        # No dejar al cliente en silencio ante un blip transitorio (ej. 503 del
-        # proveedor de LLM por sobrecarga): mandamos un fallback amable. El envio
-        # va en su propio try para que un fallo de envio no vuelva a romper.
+        # No dejar al cliente en silencio ante un blip transitorio (ej. 503 del proveedor de LLM por
+        # sobrecarga): mandamos un fallback amable.
         try:
             await get_whatsapp_connector_for_tienda(
                 whatsapp_token, phone_number_id).send_message(
@@ -385,11 +308,8 @@ async def _process_and_reply_whatsapp(tienda_id: str, user_id: str,
 
 @app.get("/webhook/whatsapp")
 async def whatsapp_verify(request: Request):
-    """
-    Verificación inicial de Meta. Acepta CUALQUIER verify_token que coincida
-    con alguna tienda registrada en tiendas_index, o con WHATSAPP_VERIFY_TOKEN
-    global (compatibilidad).
-    """
+    """Verificación inicial de Meta. Acepta CUALQUIER verify_token que coincida con alguna tienda registrada en
+    tiendas_index, o con WHATSAPP_VERIFY_TOKEN global (compatibilidad)."""
     params = dict(request.query_params)
     mode = params.get("hub.mode")
     token = params.get("hub.verify_token")
@@ -415,10 +335,7 @@ async def whatsapp_verify(request: Request):
 
 @app.post("/webhook/whatsapp")
 async def whatsapp_webhook(request: Request, background: BackgroundTasks):
-    """
-    Recibe webhook de Meta Cloud API. Resuelve la tienda por phone_number_id
-    presente en el payload. Cada cliente tiene su propia config.
-    """
+    """Recibe webhook de Meta Cloud API. Resuelve la tienda por phone_number_id presente en el payload."""
     payload = await request.json()
     log.info("whatsapp_webhook_received")
 
@@ -462,23 +379,12 @@ async def whatsapp_webhook(request: Request, background: BackgroundTasks):
 
 
 # ADMIN: la carga inicial vivia aca y se BORRO el 3-ago-2026.
-# `POST /admin/load-data` escribia 100 productos SINTETICOS de
-# data/productos.json -ids MON-001- y una FAQ de 8 temas escrita a mano,
-# sobre la tienda default, con el token 'cargar2026' hardcodeado como
-# valor por defecto. Firestore estaba intacto -verificado el 3-ago: 880
-# productos y 50 temas de FAQ, cero diferencias contra el repo- pero una
-# sola llamada pisaba el catalogo real. La carga se hace por
-# /admin/upload-catalog/{tienda_id} y /admin/upload-faq/{tienda_id}, que
-# reciben la fuente del repo y piden la tienda explicita.
 
 
 # ────────────────── ADMIN: subir catálogo y FAQ por tienda (HTTP, sin redeploy) ──────────────────
 
 def _csv_to_dicts(content_bytes: bytes) -> tuple[list[dict], list[str]]:
-    """
-    Parsea CSV a lista de dicts. Devuelve (filas, errores).
-    Detecta separador (coma o punto y coma) y limpia BOM/espacios.
-    """
+    """Parsea CSV a lista de dicts. Devuelve (filas, errores)."""
     import csv
     import io
     errores: list[str] = []
@@ -508,16 +414,7 @@ def _csv_to_dicts(content_bytes: bytes) -> tuple[list[dict], list[str]]:
 
 
 def _validate_producto_row(row: dict) -> tuple[dict | None, str | None]:
-    """
-    Valida una fila de productos. Devuelve (producto_normalizado, error).
-    Minimo obligatorio: id, nombre, categoria, precio_ars, stock.
-
-    El producto que se guarda lo arma `fuente_producto.normalizar_producto`:
-    conserva TODAS las columnas del CSV (esta funcion se quedaba con 6 de 20 y
-    dejaba a la ficha sin procedencia, garantia, contenido de la caja ni
-    specs), depura la spec fantasma y estampa el mapa `specs`. Una sola puerta
-    de ingesta, la misma que usa scripts/crear_cliente.py.
-    """
+    """Valida una fila de productos. Devuelve (producto_normalizado, error)."""
     pid = (row.get("id") or "").strip()
     nombre = (row.get("nombre") or "").strip()
     categoria = (row.get("categoria") or "").strip().lower()
@@ -550,11 +447,7 @@ def _validate_producto_row(row: dict) -> tuple[dict | None, str | None]:
 
 
 def _validate_faq_row(row: dict) -> tuple[tuple[str, dict] | None, str | None]:
-    """
-    Valida una fila de FAQ. Devuelve ((tema_id, data), error).
-    Campos esperados: tema, keywords, respuesta.
-    Keywords: string separado por comas.
-    """
+    """Valida una fila de FAQ. Devuelve ((tema_id, data), error)."""
     tema = (row.get("tema") or "").strip().lower()
     keywords_raw = (row.get("keywords") or "").strip()
     respuesta = (row.get("respuesta") or "").strip()
@@ -576,15 +469,7 @@ async def upload_catalog(
     file: UploadFile = File(...),
     upsert: bool = Query(False, description="Si True, mantiene productos viejos. Por defecto reemplaza."),
 ):
-    """
-    Sube un CSV de productos para una tienda.
-    Por defecto REEMPLAZA todo el catálogo (borra los viejos antes).
-    Con ?upsert=true mantiene los viejos y solo agrega/actualiza por id.
-
-    Headers: X-Admin-Token
-    Body: multipart/form-data, field 'file' = archivo .csv
-    CSV columns: id,nombre,categoria,precio_ars,stock,descripcion
-    """
+    """Sube un CSV de productos para una tienda."""
     if (rechazo := _rechazo_admin(request)) is not None:
         return rechazo
 
@@ -647,12 +532,7 @@ async def upload_catalog(
                  cargados=cargados, borrados=borrados,
                  errores=len(errores) + len(errores_carga))
 
-        # COHERENCIA DE LOS DATOS, en la puerta por donde entran. Lo de las 57
-        # fichas que le mentian al cliente no fue un bug de codigo, fue el
-        # catalogo, y no habia nada mirandolo. Se AVISA, no se bloquea: el
-        # catalogo ya quedo cargado y la purga de ingesta neutraliza la prosa
-        # contradicha, asi que rechazar la carga entera seria peor. Lo que no
-        # puede pasar es que entre en silencio.
+        # COHERENCIA DE LOS DATOS, en la puerta por donde entran.
         incoherencias = []
         try:
             from app.core.coherencia_datos import revisar_todo
@@ -690,13 +570,7 @@ async def upload_faq(
     file: UploadFile = File(...),
     upsert: bool = Query(False, description="Si True, mantiene FAQ vieja. Por defecto reemplaza."),
 ):
-    """
-    Sube un CSV de FAQ para una tienda.
-    Por defecto REEMPLAZA toda la FAQ. Con ?upsert=true solo agrega/actualiza.
-
-    CSV columns: tema,keywords,respuesta
-    keywords: palabras separadas por coma dentro de la misma celda
-    """
+    """Sube un CSV de FAQ para una tienda. Por defecto REEMPLAZA toda la FAQ."""
     if (rechazo := _rechazo_admin(request)) is not None:
         return rechazo
 

@@ -1,24 +1,4 @@
-"""
-MEMORIA LARGA (8-jul) — el resumen acumulativo de la charla vieja.
-
-El historial vivo se corta a HISTORY_LIMIT turnos y lo anterior se PERDIA: el
-bot no podia retomar una charla vieja (C2), leer una contradiccion lejana (C3)
-ni recuperar un dato dado muchos turnos atras (C4). Los datos DUROS ya
-persisten estructurados (carrito, vistos, localidades, datos del cliente,
-presupuesto); lo que faltaba es el HILO conversacional.
-
-El arreglo: cuando el recorte del historial descarta turnos, esos turnos se
-FUNDEN en el campo `summary` de la conversacion (ya existia, iba vacio). El
-resumen es acumulativo: cada actualizacion integra lo nuevo a lo anterior. Lo
-redacta el modelo del solver (una llamada corta, SOLO en los turnos donde la
-charla desborda el tope); si el LLM falla, una red DETERMINISTA compacta los
-turnos descartados en lineas crudas, para que la memoria nunca quede en cero.
-
-El resumen es CONTEXTO, no fuente de datos: precio, stock, total y politica
-siguen saliendo sellados del catalogo, la FAQ y la calculadora; los
-verificadores auditan el mensaje final como siempre. Por eso un resumen
-imperfecto no puede inyectar una alucinacion de valor.
-"""
+"""MEMORIA LARGA (8-jul) — el resumen acumulativo de la charla vieja."""
 import asyncio
 
 from app.config import get_settings
@@ -27,14 +7,12 @@ from app.logger import get_logger
 log = get_logger(__name__)
 settings = get_settings()
 
-# Tope de tamaño del resumen persistido: acumulativo pero acotado. Si crece de
-# mas, se queda con la cola (lo mas reciente pesa mas en una venta).
+# Tope de tamaño del resumen persistido: acumulativo pero acotado.
 _MAX_CHARS = 1500
 
 
 def _compactar_determinista(resumen_previo: str, descartados: list[dict]) -> str:
-    """Red sin LLM: los turnos descartados entran como lineas crudas compactas
-    al final del resumen previo. Bounded por _MAX_CHARS (se conserva la cola)."""
+    """Red sin LLM: los turnos descartados entran como lineas crudas compactas al final del resumen previo."""
     lineas = [resumen_previo.strip()] if (resumen_previo or "").strip() else []
     for t in descartados or []:
         rol = "Cliente" if t.get("role") == "user" else "Bot"
@@ -47,8 +25,7 @@ def _compactar_determinista(resumen_previo: str, descartados: list[dict]) -> str
 
 async def actualizar_resumen(resumen_previo: str, descartados: list[dict],
                              trace_id: str | None = None) -> str:
-    """Funde los turnos descartados del historial en el resumen acumulado.
-    Devuelve el resumen nuevo (o el previo intacto si no hay nada que fundir)."""
+    """Funde los turnos descartados del historial en el resumen acumulado."""
     descartados = [t for t in (descartados or [])
                    if isinstance(t, dict) and str(t.get("content") or "").strip()]
     if not descartados:
@@ -70,13 +47,9 @@ async def actualizar_resumen(resumen_previo: str, descartados: list[dict],
         f"TURNOS VIEJOS A INTEGRAR:\n{viejos}")
 
     def _call() -> str:
-        # MISMO cliente que el solver VIVO. Colgaba de `agent._get_client`, que
-        # seguia el flag LLM_PROVIDER -entonces en openai- mientras el camino
-        # vivo entero es Gemini: con la clave de OpenAI vencida esta llamada
-        # tiraba 401 y el resumen NUNCA se actualizaba. O sea que la memoria
-        # larga estaba rota justo donde mas importa, en la charla larga, y en
-        # silencio: el except de abajo la deja en "" y el turno sigue. Es la
-        # misma falla que tenia la reescritura de la guardia de promesas.
+        # MISMO cliente que el solver VIVO. Colgaba de `agent._get_client`, que seguia el flag LLM_PROVIDER
+        # -entonces en openai- mientras el camino vivo entero es Gemini: con la clave de OpenAI vencida esta
+        # llamada tiraba 401 y el resumen NUNCA se actualizaba.
         from app.core.llm_reintento import _cliente as _cliente_gemini
         modelo = settings.GEMINI_MODEL or "gemini-3.1-flash-lite"
         kwargs = {"model": modelo,

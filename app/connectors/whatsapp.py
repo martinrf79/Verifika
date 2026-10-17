@@ -1,7 +1,4 @@
-"""
-Conector WhatsApp Cloud API (Meta directo).
-Multi-tenant: cada tienda provee su propio access_token y phone_number_id.
-"""
+"""Conector WhatsApp Cloud API (Meta directo)."""
 import httpx
 from app.logger import get_logger
 
@@ -74,11 +71,7 @@ def get_whatsapp_connector_for_tienda(access_token: str,
 
 
 def parse_whatsapp_payload(payload: dict) -> tuple[str, str, str, str] | None:
-    """
-    Parsea webhook de Meta Cloud API.
-    Devuelve (phone_number_id, user_id, text_o_marcador, message_id) o None.
-    Para audios devuelve marcador __AUDIO__:media_id en el campo texto.
-    """
+    """Parsea webhook de Meta Cloud API. Devuelve (phone_number_id, user_id, text_o_marcador, message_id) o None."""
     try:
         entry = payload.get("entry", [{}])[0]
         change = entry.get("changes", [{}])[0]

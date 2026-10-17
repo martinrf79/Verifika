@@ -1,25 +1,4 @@
-"""
-FUENTE DE PRODUCTO (27-jul) — la fuente de verdad del producto, COMPLETA y en
-UN solo lugar. Antes el producto era el texto suelto del CSV y cada consumidor
-lo re-adivinaba con substring: la ficha no podia contestar una spec y el
-guardia de honestidad daba falsos positivos ('gb' de la RAM hacia pasar por
-respondido el almacenamiento). Aca el texto se convierte UNA vez en un mapa
-`specs` estructurado, atado a `specs_preguntables.json`, y de ahi lo consumen
-la ficha, el guardia de honestidad y el inventario.
-
-Tres reglas:
-  1. NO INVENTA. Todo valor sale del texto que ya trae la fuente
-     (caracteristicas_extra, descripcion, nombre, modelo, contenido_caja) o de
-     una columna. Si el dato no esta, la spec NO aparece en el mapa: ese hueco
-     es la senal para el honesto "la ficha no lo especifica".
-  2. ESCALA. El trabajo es por CATEGORIA (22 en la tienda de referencia), no
-     por producto: sumar una spec o una categoria es editar el json, nunca
-     tocar codigo ni tocar las 880 filas. El enriquecido de 880 productos
-     corre en milisegundos, una vez por refresco de cache.
-  3. UNA SOLA PUERTA. La ingesta (endpoint admin y script de carga) y la
-     lectura del catalogo pasan por aca, asi la fuente del repo, la de
-     Firestore y la que ve el bot son la MISMA.
-"""
+"""FUENTE DE PRODUCTO (27-jul) — la fuente de verdad del producto, COMPLETA y en UN solo lugar."""
 import json
 import os
 import re
@@ -34,10 +13,7 @@ log = get_logger(__name__)
 # spec compacta de fabrica (caracteristicas_extra) manda sobre la prosa.
 CAMPOS_TEXTO = ("caracteristicas_extra", "nombre", "modelo", "descripcion",
                 "descripcion_rica", "contenido_caja", "uso_recomendado",
-                # ultimo, menor prioridad: de aca sale la garantia REAL del
-                # producto. Sin este campo, "de cuanto es la garantia" lo
-                # contestaba la FAQ con su minimo generico -"6 meses"- para una
-                # notebook que tiene 12 (charla real 28-jul).
+                # ultimo, menor prioridad: de aca sale la garantia REAL del producto.
                 "garantia_detalle")
 
 # Columnas numericas del catalogo: se coercionan al ingerir para que el mismo
@@ -53,13 +29,7 @@ def _norm(s) -> str:
 
 
 def _patron_clave(clave: str) -> str:
-    """El patron de una clave de pregunta, tolerante al PLURAL y al espaciado.
-
-    El cliente no escribe la clave tal cual: pregunta "son resistentes al
-    agua", no "resistente al agua", y el match literal lo dejaba pasar con el
-    dato cargado en la fuente. Cada palabra de cuatro letras o mas admite una
-    's' final y los espacios admiten varios.
-    """
+    """El patron de una clave de pregunta, tolerante al PLURAL y al espaciado."""
     palabras = [p for p in re.split(r"\s+", clave.strip()) if p]
     if not palabras:
         return r"(?!)"
@@ -68,13 +38,10 @@ def _patron_clave(clave: str) -> str:
 
 
 def _ruta_config(tienda_id: str | None) -> str | None:
-    """Ruta al specs_preguntables.json de la tienda, o None si no existe.
-
-    tienda_id puede llegar de un path param HTTP (endpoints /admin/*/{tienda_id})
-    y NUNCA se pega al texto crudo para armar una ruta: se busca la carpeta
-    entre las que YA existen en disco (os.scandir) y se compara el nombre, asi
-    la ruta que se abre sale siempre del propio filesystem, no de concatenar
-    el string que mando el cliente."""
+    """Ruta al specs_preguntables.json de la tienda, o None si no existe. tienda_id puede llegar de un path param
+    HTTP (endpoints /admin/*/{tienda_id}) y NUNCA se pega al texto crudo para armar una ruta: se busca la
+    carpeta entre las que YA existen en disco (os.scandir) y se compara el nombre, asi la ruta que se abre
+    sale siempre del propio filesystem, no de concatenar el string que mando el cliente."""
     tid = tienda_id or tienda_por_defecto()
     base = os.path.join(os.path.dirname(__file__), "..", "..", "data", "clientes")
     try:
@@ -88,14 +55,7 @@ def _ruta_config(tienda_id: str | None) -> str | None:
 
 
 def specs_config(tienda_id: str | None = None) -> list[dict]:
-    """Las specs preguntables de la tienda, compiladas y cacheadas.
-
-    Cada entrada devuelta: id, etiqueta, aplica_a (set de categorias, vacio =
-    todas), rx_pregunta (como lo pregunta el cliente), extraer (lista de
-    (regex, aplica_a) que SACAN el valor) y rx_ficha (deteccion de respaldo).
-    Si el archivo falta o esta roto se devuelve lista vacia: el consumidor cae
-    a su red vieja y el bot sigue vivo.
-    """
+    """Las specs preguntables de la tienda, compiladas y cacheadas."""
     tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_CONFIG:
         return _CACHE_CONFIG[tid]
@@ -120,9 +80,7 @@ def specs_config(tienda_id: str | None = None) -> list[dict]:
                 patron = e.get("patron") if isinstance(e, dict) else e
                 aplica = {_norm(c) for c in ((e.get("aplica_a") or [])
                                              if isinstance(e, dict) else [])}
-                # campos: acota en QUE campo de la ficha vale el patron. Sin el,
-                # todos. Sirve para no leer una spec de un texto que la nombra
-                # "segun version" (el contenido de la caja no es una spec).
+                # campos: acota en QUE campo de la ficha vale el patron.
                 campos = tuple(c for c in ((e.get("campos") or [])
                                            if isinstance(e, dict) else []))
                 if not patron:
@@ -179,8 +137,7 @@ _CACHE_MODELO: dict[str, dict] = {}
 
 
 def specs_por_categoria(tienda_id: str | None = None) -> dict:
-    """CAPA 2: {categoria: {spec: valor}} + reglas condicionales. Lo cierto para
-    la categoria entera, que no hace falta cargar producto por producto."""
+    """CAPA 2: {categoria: {spec: valor}} + reglas condicionales."""
     tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_CATEGORIA:
         return _CACHE_CATEGORIA[tid]
@@ -204,11 +161,7 @@ def specs_por_categoria(tienda_id: str | None = None) -> dict:
 
 
 def specs_por_modelo(tienda_id: str | None = None) -> dict:
-    """CAPA 3: {(marca, modelo, categoria): {spec: valor}} desde
-    `specs_por_modelo.csv`. Es el dato que varia de un modelo a otro y que NO
-    se puede deducir: autonomia, lector de huella, thunderbolt, puertos. Se
-    llena una vez por MODELO (482 en la tienda de referencia), no por
-    producto, y la celda vacia sigue saliendo honesta."""
+    """CAPA 3: {(marca, modelo, categoria): {spec: valor}} desde `specs_por_modelo.csv`."""
     tid = tienda_id or tienda_por_defecto()
     if tid in _CACHE_MODELO:
         return _CACHE_MODELO[tid]
@@ -233,9 +186,7 @@ def specs_por_modelo(tienda_id: str | None = None) -> dict:
 
 
 def aplica(spec: dict, categoria: str) -> bool:
-    """La spec tiene sentido para esa categoria. Sin aplica_a aplica a todas, y
-    sin categoria tampoco se descarta: no saber no es motivo para callar una
-    pregunta del cliente."""
+    """La spec tiene sentido para esa categoria."""
     if not spec.get("aplica_a") or not _norm(categoria):
         return True
     return _norm(categoria) in spec["aplica_a"]
@@ -254,23 +205,7 @@ def _tokens(s: str) -> set:
 
 
 def depurar_ficha(prod: dict) -> dict:
-    """Saca de la ficha la SPEC FANTASMA que arrastra el catalogo.
-
-    El CSV pega a cada producto, ademas de su spec, la del primero de su
-    categoria: la notebook Ryzen 7 dice 'Ryzen 7 16GB 512GB SSD, Core i5 16GB
-    512GB SSD' y el SSD de 2TB dice '2TB, 500GB'. Eso no es una repeticion
-    inofensiva: son DOS valores distintos en la misma ficha, y de ahi sale que
-    el bot le pase al cliente la capacidad del producto equivocado.
-
-    Regla determinista, sin tocar el CSV: si hay mas de un segmento y alguno
-    esta AVALADO por el nombre o el modelo del propio producto, se queda solo
-    el avalado. Si ninguno esta avalado no hay con que decidir y se conserva
-    todo (asi 'sensor optico' de un mouse, que no figura en el nombre, no se
-    pierde). Ademas se colapsa la spec repetida IDENTICA dentro de la
-    descripcion ('Core i5 16GB 512GB SSD, Core i5 16GB 512GB SSD'), que hasta
-    ahora se tapaba recien al renderizar y viajaba sucia a todo lo demas.
-    Idempotente.
-    """
+    """Saca de la ficha la SPEC FANTASMA que arrastra el catalogo."""
     if not isinstance(prod, dict):
         return prod
     extra = str(prod.get("caracteristicas_extra") or "").strip()
@@ -303,23 +238,8 @@ _UNIDADES_FAMILIA = {"tb", "gb", "mb", "kb", "kg", "g", "mg", "hz", "khz",
 
 
 def _valores_de(texto: str) -> set:
-    """{(familia, numero)} de un texto. La FAMILIA es la parte de letras que
-    acompaña al numero: 'ddr4' -> ('ddr','4'), '550W' -> ('w','550'), '16GB' ->
-    ('gb','16'). Dos valores de la misma familia con distinto numero son el
-    mismo dato dicho de dos maneras, o sea que uno de los dos miente.
-
-    DOS COSAS QUE APRENDIO A LA MALA, las dos cazadas por el chequeo de
-    coherencia de datos apenas se lo apunto contra el catalogo real:
-
-    1. El cero final NO se recorta en un entero. Estaba normalizando decimales
-       ('1.50' -> '1.5') con un rstrip suelto, y de paso convertia '500W' en 5W y
-       '80GB' en 8GB. O sea que la guarda daba por IGUALES 8GB y 80GB, y dejaba
-       pasar justo la contradiccion que tiene que cazar.
-    2. Una sola letra solo vale como unidad si va DESPUES del numero. Con la
-       letra de adelante, la 'W1' de la fuente 'EVGA 500 W1' se leia como 1 watt
-       y chocaba contra sus 500W reales, y el '2X' del 'Ventus 2X' contra el
-       'GDDR6X'. Los prefijos de verdad -DDR, GDDR- tienen dos letras o mas.
-    """
+    """{(familia, numero)} de un texto. La FAMILIA es la parte de letras que acompaña al numero: 'ddr4' ->
+    ('ddr','4'), '550W' -> ('w','550'), '16GB' -> ('gb','16')."""
     out = set()
     for pre, num, suf in _RE_TOKEN_VALOR.findall(_norm(texto)):
         if suf and suf in _UNIDADES_FAMILIA:
@@ -335,27 +255,7 @@ def _valores_de(texto: str) -> set:
 
 
 def purgar_prosa_contradicha(prod: dict, tienda_id: str | None = None) -> dict:
-    """Saca de la prosa de la ficha el dato que CONTRADICE la planilla curada.
-
-    Es el hermano de `depurar_ficha`. Aquella saca la spec de OTRO producto que
-    el CSV pega a cada ficha; esta saca la que es directamente falsa. El catalogo
-    trae `caracteristicas_extra` como PLANTILLA por categoria: las quince fuentes
-    dicen '550W', las quince motherboards dicen 'DDR4' y las dieciocho placas de
-    video dicen '8GB GDDR6'. O sea que la Corsair RM850e le dice 550 al cliente,
-    y la B650 con ranuras DDR5 le dice DDR4, contradiciendo a la planilla del
-    propio repo, que para esa placa tiene cargado 'DDR5'.
-
-    No es un detalle de redaccion: esa prosa viaja al cliente por el campo
-    `caracteristicas` de la ficha y al prompt del solver, o sea que el sistema
-    entero razona sobre un dato falso. Y con la tabla de compatibilidad encima
-    es peor: la ficha diria DDR4 donde la compatibilidad dice DDR5.
-
-    La regla no adivina: compara contra `specs_por_modelo.csv`, que es dato
-    CURADO. Si un segmento de la prosa trae un valor de la misma familia con
-    distinto numero que el de la planilla, el segmento se va -manda la planilla,
-    igual que en `_completar_capas`-. Lo que la planilla no cubre no se toca.
-    Idempotente.
-    """
+    """Saca de la prosa de la ficha el dato que CONTRADICE la planilla curada."""
     if not isinstance(prod, dict):
         return prod
     extra = str(prod.get("caracteristicas_extra") or "").strip()
@@ -367,10 +267,8 @@ def purgar_prosa_contradicha(prod: dict, tienda_id: str | None = None) -> dict:
     if not curado:
         return prod
     categoria = _norm(prod.get("categoria"))
-    # QUIEN decide que el segmento habla de esa spec: el EXTRACTOR de la propia
-    # spec, no una comparacion de unidades. Sin eso, los '128GB' de almacenamiento
-    # de una tablet chocaban contra los '4GB' de RAM de la planilla -misma unidad,
-    # otro dato- y se borraba un valor correcto. El extractor ya sabe distinguir.
+    # QUIEN decide que el segmento habla de esa spec: el EXTRACTOR de la propia spec, no una comparacion de
+    # unidades.
     falsos: list[tuple] = []
     for spec in specs_config(tienda_id):
         valor_curado = curado.get(spec["id"], "")
@@ -387,10 +285,8 @@ def purgar_prosa_contradicha(prod: dict, tienda_id: str | None = None) -> dict:
                 vals = _valores_de(dicho)
                 if vals and not (vals & ciertos):
                     falsos.append((m.start(), m.end(), dicho))
-        # EXCLUYENTES: lo que no es un numero. Una refrigeracion es por aire o es
-        # liquida, nunca las dos, y las quince fichas de cooler dicen 'aire'
-        # aunque la planilla tenga cargada 'liquida'. Los pares viven en
-        # specs_preguntables.json, no aca: sumar uno es editar el json.
+        # EXCLUYENTES: lo que no es un numero. Una refrigeracion es por aire o es liquida, nunca las dos, y
+        # las quince fichas de cooler dicen 'aire' aunque la planilla tenga cargada 'liquida'.
         curado_n = _norm(valor_curado)
         for par in (spec.get("excluyentes") or []):
             if not any(v in curado_n for v in par):
@@ -420,14 +316,7 @@ def purgar_prosa_contradicha(prod: dict, tienda_id: str | None = None) -> dict:
 
 
 def extraer_specs(prod: dict, tienda_id: str | None = None) -> dict:
-    """{spec_id: valor} con lo que la fuente REALMENTE dice de este producto.
-
-    Gana el primer patron que matchea, en el orden del json, buscado campo por
-    campo. Un patron con su propio aplica_a solo corre para esas categorias
-    (asi '128GB' es almacenamiento en una tablet y no en una notebook, donde el
-    almacenamiento lleva SSD y los 16GB son la RAM). Lo que no matchea NO se
-    inventa: queda afuera, y ese hueco es el que dispara el honesto.
-    """
+    """{spec_id: valor} con lo que la fuente REALMENTE dice de este producto."""
     if not isinstance(prod, dict):
         return {}
     textos = campos_ficha(prod)
@@ -459,18 +348,12 @@ def extraer_specs(prod: dict, tienda_id: str | None = None) -> dict:
 
 def _completar_capas(out: dict, prod: dict, categoria: str,
                      tienda_id: str | None) -> dict:
-    """Completa lo que la ficha del producto no dijo, en orden de autoridad:
-    ficha del producto > tabla por MODELO > default de CATEGORIA > regla
-    condicional. Nunca pisa un valor que ya salio de la ficha, y lo que ninguna
-    capa responde queda vacio: ese hueco es el honesto."""
+    """Completa lo que la ficha del producto no dijo, en orden de autoridad: ficha del producto > tabla por
+    MODELO > default de CATEGORIA > regla condicional."""
     ids_validos = {s["id"] for s in specs_config(tienda_id)}
     del_modelo = specs_por_modelo(tienda_id).get(
         (_norm(prod.get("marca")), _norm(prod.get("modelo")), categoria)) or {}
-    # LO CARGADO A MANO GANA SOBRE LO INFERIDO DEL TEXTO. La planilla por modelo
-    # es dato curado; el mapa de arriba sale de una expresion regular sobre la
-    # prosa del catalogo, que a veces trae un valor de plantilla igual para toda
-    # la categoria -los 24 monitores decian 75Hz-. Si no, un dato mal puesto en
-    # la ficha no habria forma de corregirlo sin tocar el CSV de productos.
+    # LO CARGADO A MANO GANA SOBRE LO INFERIDO DEL TEXTO.
     for sid, valor in del_modelo.items():
         if sid in ids_validos and valor:
             out[sid] = valor
@@ -504,10 +387,7 @@ _RE_MAGNITUD = re.compile(
 
 
 def valor_numerico(texto) -> float | None:
-    """El numero comparable de un valor de spec. '512GB SSD' -> 512,
-    '2TB' -> 2048, '75Hz' -> 75, '550W' -> 550. Devuelve None si el valor no es
-    una magnitud (por ejemplo 'si, lector de huella integrado'), y esa spec
-    simplemente no entra como atributo ordenable."""
+    """El numero comparable de un valor de spec."""
     if isinstance(texto, (int, float)):
         return float(texto)
     m = _RE_MAGNITUD.search(str(texto or ""))
@@ -521,9 +401,8 @@ def valor_numerico(texto) -> float | None:
 
 
 def derivar_tags(prod: dict) -> str:
-    """Tags minimos cuando la fuente no los trae: el buscador puntua por tags
-    y un catalogo sin ellos pierde el match por sinonimo. No reemplaza a los
-    tags curados del CSV, solo evita el hueco."""
+    """Tags minimos cuando la fuente no los trae: el buscador puntua por tags y un catalogo sin ellos pierde el
+    match por sinonimo."""
     partes = []
     for campo in ("categoria", "marca", "modelo", "nombre", "color"):
         for w in re.split(r"[\s,]+", _norm(prod.get(campo))):
@@ -534,11 +413,7 @@ def derivar_tags(prod: dict) -> str:
 
 
 def normalizar_producto(row: dict, tienda_id: str | None = None) -> dict:
-    """La fila del CSV convertida en el producto COMPLETO que se guarda y se
-    lee. Conserva TODAS las columnas (el endpoint viejo se quedaba con 6 de 20
-    y la ficha se quedaba sin procedencia, garantia, contenido de la caja ni
-    specs), coerciona los numeros, completa tags si faltan y estampa el mapa
-    specs. Es la unica puerta de ingesta."""
+    """La fila del CSV convertida en el producto COMPLETO que se guarda y se lee."""
     prod = {k: v for k, v in (row or {}).items()
             if k and not str(k).startswith("_")}
     for k in list(prod):
@@ -564,9 +439,7 @@ def normalizar_producto(row: dict, tienda_id: str | None = None) -> dict:
 
 
 def _compat_de(prod: dict, tienda_id: str | None) -> dict:
-    """CAPA 4: la fila de `compatibilidad.csv` de este modelo. Import adentro
-    para no atar la ingesta al modulo: si falta la tabla, el producto queda sin
-    compat y la compatibilidad se contesta honesta, igual que una spec vacia."""
+    """CAPA 4: la fila de `compatibilidad.csv` de este modelo."""
     try:
         from app.core.compatibilidad import compat_de
         return compat_de({**prod, "compat": None}, tienda_id) or {}
@@ -576,10 +449,7 @@ def _compat_de(prod: dict, tienda_id: str | None) -> dict:
 
 
 def enriquecer(productos: list, tienda_id: str | None = None) -> list:
-    """Completa la lista leida del catalogo: al que no trae el mapa specs se lo
-    estampa en memoria. Asi el catalogo YA cargado en Firestore responde specs
-    sin re-subirlo, y una tienda nueva queda igual desde la ingesta. Costo:
-    O(productos x specs) una vez por refresco de cache, milisegundos en 880."""
+    """Completa la lista leida del catalogo: al que no trae el mapa specs se lo estampa en memoria."""
     if not productos:
         return productos
     completados = 0

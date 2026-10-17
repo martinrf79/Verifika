@@ -1,28 +1,4 @@
-"""
-ENVIO POR ZONA — motor determinista de envio (codigo generico + datos de tienda).
-
-Problema (caso canonico cajon_equivocado): hoy el MODELO elige el concepto de
-envio (envio_caba_gba vs envio_interior), y puede meter el cajon equivocado:
-cobrar tarifa de CABA a una direccion de Cordoba Capital, o dejarse arrastrar por
-el cliente ("Cordoba es como Buenos Aires, cobrame CABA").
-
-Solucion: que el CODIGO clasifique la zona desde el CODIGO POSTAL, que es la fuente
-de verdad oficial. La geografia argentina es un motor GENERICO igual para toda
-tienda; la TARIFA por zona es DATO de la tienda (FAQ costo_envio). El modelo nunca
-elige la zona: la resuelve el codigo por el CP literal.
-
-Jerarquia de certeza (de mas a menos confiable), NO se adivina:
-1. CPA completo (letra + 4 digitos + 3 letras, ej C1425ABC): la PRIMERA LETRA es
-   la provincia segun ISO 3166-2:AR (oficial, verificado). Cobertura total del pais.
-2. CP de 4 digitos CON marcador ("CP 5000", "codigo postal 1832"): por rango.
-   Solo con marcador, porque un 4 digitos suelto puede ser ALTURA de calle
-   (Cabildo 2000) y no un CP.
-3. Nombre de provincia/ciudad/partido conocido.
-4. Nada reconocible -> None (indeterminada): el codigo pide el dato, no adivina.
-
-clasificar_zona(texto) -> 'caba' | 'gba' | 'interior' | None.
-Codigo puro, sin LLM, sin Firestore. Detras del flag ENVIO_POR_ZONA.
-"""
+"""ENVIO POR ZONA — motor determinista de envio (codigo generico + datos de tienda)."""
 import re
 import unicodedata
 from typing import Optional
@@ -35,9 +11,8 @@ log = get_logger(__name__)
 def _norm(texto: str) -> str:
     t = unicodedata.normalize("NFKD", str(texto or "")) \
         .encode("ascii", "ignore").decode().lower()
-    # La puntuacion pegada rompe el match por palabra completa ("rosario," no
-    # matchea "rosario"): se vuelve espacio. El punto y los dos puntos se
-    # conservan porque los usan los marcadores de CP ("c.p.", "cp: 5000").
+    # La puntuacion pegada rompe el match por palabra completa ("rosario," no matchea "rosario"): se vuelve
+    # espacio.
     t = re.sub(r"[,;()!?¡¿]", " ", t)
     return re.sub(r"\s+", " ", t).strip()
 
@@ -59,17 +34,12 @@ _CPA_RE = re.compile(r"\b([a-z])(\d{4})[a-z]{3}\b", re.IGNORECASE)
 _CP_MARCADO_RE = re.compile(
     r"\b(?:cp|c\.p\.|codigo postal|cod postal|cod\. postal)\s*[:n°]?\s*(\d{4})\b",
     re.IGNORECASE)
-# CPA corto (letra + 4 digitos, ej C1425) SOLO con marcador. El marcador evita
-# chocar con codigos de producto (ej G203). Cubre el formato que la propia tool
-# le pide al cliente. La letra manda como provincia; el numero desempata BsAs.
+# CPA corto (letra + 4 digitos, ej C1425) SOLO con marcador.
 _CPA_CORTO_MARCADO_RE = re.compile(
     r"\b(?:cp|c\.p\.|codigo postal|cod postal|cod\. postal)\s*[:n°]?\s*"
     r"([a-z])\s*(\d{4})\b",
     re.IGNORECASE)
-# CP PELADO: el mensaje ENTERO es un codigo postal, sin
-# marcador. Es la respuesta natural del cliente cuando el bot le PIDE el CP
-# ("5000", "X5000", "es 1425"). Solo full-match del texto: un numero suelto
-# dentro de una frase sigue sin contar (puede ser altura de calle o cantidad).
+# CP PELADO: el mensaje ENTERO es un codigo postal, sin marcador.
 _CP_SOLO_RE = re.compile(
     r"^(?:(?:mi|el)\s+)?(?:cp|c\.p\.|codigo postal|cod postal|cod\. postal)?"
     r"\s*(?:es\s+)?([a-z])?\s*(\d{4})\s*([a-z]{3})?$",
@@ -77,13 +47,7 @@ _CP_SOLO_RE = re.compile(
 
 
 def _cp_solo(t: str):
-    """(letra, cp4) si el texto normalizado ENTERO es un CP pelado, sino None.
-    Camino vivo: es la respuesta natural del cliente cuando el bot le PIDE el CP
-    ('5000', 'X5000', 'mi cp es 1425'). El regex es full-match del texto entero,
-    asi un numero suelto dentro de una frase (altura de calle, cantidad) NO se
-    toma como CP. Antes esto estaba detras de un flag muerto (CP_COMPLETO, que ni
-    existia en config) que dejaba la funcion inalcanzable: el bot repreguntaba el
-    CP que el cliente ya habia dado pelado."""
+    """(letra, cp4) si el texto normalizado ENTERO es un CP pelado, sino None."""
     m = _CP_SOLO_RE.match(t)
     if not m:
         return None
@@ -92,10 +56,7 @@ def _cp_solo(t: str):
 
 
 def _zona_por_4digitos(n: int) -> Optional[str]:
-    """Zona por el CP de 4 digitos (sistema viejo). Rangos del area metropolitana:
-    1000-1499 CABA, 1500-1899 conurbano (GBA), 1900 en adelante y 2000-9999 son
-    interior. Es la aproximacion estandar del AMBA; lo de afuera es interior seguro
-    (ninguna otra provincia entra en la tarifa metropolitana)."""
+    """Zona por el CP de 4 digitos (sistema viejo)."""
     if 1000 <= n <= 1499:
         return "caba"
     if 1500 <= n <= 1899:
@@ -106,10 +67,8 @@ def _zona_por_4digitos(n: int) -> Optional[str]:
 
 
 def _zona_por_provincia(prov: str, cp4: Optional[int]) -> Optional[str]:
-    """Provincia (de la letra CPA) -> zona. CABA es caba; el resto de las
-    provincias es interior con certeza (no entran en tarifa metropolitana).
-    Buenos Aires es la unica ambigua: conurbano (GBA) vs interior bonaerense, se
-    desempata por el rango del CP de 4 digitos."""
+    """Provincia (de la letra CPA) -> zona. CABA es caba; el resto de las provincias es interior con certeza (no
+    entran en tarifa metropolitana)."""
     if prov == "caba":
         return "caba"
     if prov == "buenos_aires":
@@ -168,11 +127,8 @@ def _zona_por_nombre(t: str) -> Optional[str]:
         return re.search(r"(^| )" + re.escape(frase) + r"( |$)", t) is not None
 
     def _c_calle(frase: str) -> bool:
-        """Como _c, pero NO cuenta si el nombre viene seguido de un numero de calle
-        ('san martin 1234'): eso es una direccion, no la localidad. Sin esto un
-        nombre de partido o barrio que ademas es una calle comun en todo el pais
-        (san martin, belgrano) clasificaba una zona equivocada a partir de una
-        altura de calle suelta, sin provincia. Ante la duda, mejor pedir el dato."""
+        """Como _c, pero NO cuenta si el nombre viene seguido de un numero de calle ('san martin 1234'): eso es
+        una direccion, no la localidad."""
         if not _c(frase):
             return False
         return not re.search(
@@ -186,16 +142,12 @@ def _zona_por_nombre(t: str) -> Optional[str]:
     for c in _CIUDADES_INTERIOR:
         if _c_calle(c):
             return "interior"
-    # Ciudades de la tabla ciudad->provincia: toda ciudad ahi listada es interior
-    # (o interior bonaerense). Va ANTES que los partidos GBA para que una calle
-    # homonima no gane: "calle san martin 45, rio tercero" es Cordoba, no el
-    # partido General San Martin (bug visto en prod 11-jun).
+    # Ciudades de la tabla ciudad->provincia: toda ciudad ahi listada es interior (o interior bonaerense).
     for c in _CIUDAD_PROVINCIA:
         if _c_calle(c):
             return "interior"
-    # Respuesta directa al colchon "Capital, Gran Buenos Aires o interior?": el
-    # cliente nombra la zona en criollo y el codigo la toma tal cual. Va DESPUES de
-    # provincia/ciudad para no pisar "Cordoba Capital".
+    # Respuesta directa al colchon "Capital, Gran Buenos Aires o interior?": el cliente nombra la zona en
+    # criollo y el codigo la toma tal cual.
     if _c("interior") or _c("interior del pais"):
         return "interior"
     for w in ("gran buenos aires", "gran bs as", "conurbano", "gba"):
@@ -214,7 +166,6 @@ def _zona_por_nombre(t: str) -> Optional[str]:
 
 
 # ── Ciudad conocida -> provincia (para la tarifa por provincia). Solo ciudades
-# inequivocas; ante ambiguedad NO esta en la tabla y se cae al rango generico. ──
 _CIUDAD_PROVINCIA = {
     "rosario": "santa fe", "santa fe": "santa fe", "rafaela": "santa fe",
     "venado tuerto": "santa fe",
@@ -249,10 +200,7 @@ _CIUDAD_PROVINCIA = {
 }
 
 
-# CP de 4 digitos -> provincia, SOLO los bloques inequivocos del sistema del
-# correo (cabecera de provincia). Los rangos donde conviven provincias (1900-2999
-# litoral/BsAs, 6000-8999 BsAs/La Pampa/Patagonia norte) quedan AFUERA a
-# proposito: mejor rango honesto que provincia equivocada (cajon equivocado).
+# CP de 4 digitos -> provincia, SOLO los bloques inequivocos del sistema del correo (cabecera de provincia).
 _PROVINCIA_POR_CP4 = (
     (1000, 1499, "caba"),
     (3000, 3099, "santa fe"),
@@ -274,22 +222,15 @@ _PROVINCIA_POR_CP4 = (
     (5700, 5799, "san luis"),
     (5800, 5999, "cordoba"),
     (9000, 9299, "chubut"),
-    # Tierra del Fuego (Ushuaia 9410, Tolhuin 9412, Rio Grande 9420) esta
-    # incrustada dentro del bloque de Santa Cruz: va PRIMERO porque gana el
-    # primer rango que matchea.
+    # Tierra del Fuego (Ushuaia 9410, Tolhuin 9412, Rio Grande 9420) esta incrustada dentro del bloque de
+    # Santa Cruz: va PRIMERO porque gana el primer rango que matchea.
     (9410, 9420, "tierra del fuego"),
     (9300, 9499, "santa cruz"),
 )
 
-# Bloques EXTRA verificados, anclados en cabeceras conocidas del correo:
-# La Plata 1900, Rosario 2000 / San Lorenzo 2200, Rafaela 2300 / Ceres 2340,
-# San Francisco 2400 / Morteros 2421, Pergamino 2700 / Zarate 2800,
+# Bloques EXTRA verificados, anclados en cabeceras conocidas del correo: La Plata 1900, Rosario 2000 / San
+# Lorenzo 2200, Rafaela 2300 / Ceres 2340, San Francisco 2400 / Morteros 2421, Pergamino 2700 / Zarate 2800,
 # Junin 6000, Tandil 7000 / Azul 7300 / Mar del Plata 7600, Bahia Blanca 8000.
-# Quedan AFUERA a proposito los bloques donde conviven provincias: 25xx
-# (Cañada de Gomez SF vs Marcos Juarez Cba), 29xx (San Nicolas BA vs Villa
-# Constitucion SF), 61xx-63xx (Rufino SF, Laboulaye Cba, La Pampa), 64xx-69xx
-# y 82xx-85xx (BA sur, La Pampa, Neuquen y Rio Negro entrelazados). Para esos,
-# rango honesto antes que provincia equivocada.
 _PROVINCIA_POR_CP4_EXT = (
     (1500, 1899, "buenos_aires"),
     (1900, 1999, "buenos_aires"),
@@ -314,13 +255,7 @@ def _provincia_por_cp4(n: int) -> Optional[str]:
 
 
 def clasificar_provincia(texto: str) -> Optional[str]:
-    """Determina la PROVINCIA de una direccion, solo desde fuentes ciertas:
-    1. Letra del CPA (norma oficial ISO 3166-2:AR).
-    2. Nombre de provincia en el texto.
-    3. Ciudad inequivoca de la tabla.
-    4. CP de 4 digitos con marcador, solo en bloques inequivocos del correo.
-    Devuelve el slug canonico ('cordoba', 'santa fe', 'buenos_aires', ...) o
-    None si no hay certeza: el caller cae a la tarifa generica, no adivina."""
+    """Determina la PROVINCIA de una direccion, solo desde fuentes ciertas: 1."""
     t = _norm(texto)
     if not t:
         return None
@@ -342,9 +277,8 @@ def clasificar_provincia(texto: str) -> Optional[str]:
         if prov:
             return prov
 
-    # Tabla completa de localidades (Correo Argentino): resuelve la provincia de
-    # cualquier localidad del pais, no solo las de las listas a mano. Autoritativa
-    # sobre los atajos de abajo, que quedan de respaldo.
+    # Tabla completa de localidades (Correo Argentino): resuelve la provincia de cualquier localidad del pais,
+    # no solo las de las listas a mano.
     from app.core import geo_cp
     prov_tabla, _cp = geo_cp.resolver(texto)
     if prov_tabla:
@@ -375,9 +309,7 @@ def clasificar_provincia(texto: str) -> Optional[str]:
 
 
 def clasificar_zona(texto: str) -> Optional[str]:
-    """Clasifica una direccion argentina en zona de envio por el CP (fuente de
-    verdad) y, si no hay, por nombre. Devuelve 'caba'|'gba'|'interior' o None
-    (indeterminada: pedir el dato, NO adivinar)."""
+    """Clasifica una direccion argentina en zona de envio por el CP (fuente de verdad) y, si no hay, por nombre."""
     t = _norm(texto)
     if not t:
         return None
@@ -409,8 +341,7 @@ def clasificar_zona(texto: str) -> Optional[str]:
         if z:
             return z
 
-    # 2c) CP pelado: el texto entero es un CP, la respuesta natural cuando el bot
-    # lo pide. La letra CPA desempata Buenos Aires.
+    # 2c) CP pelado: el texto entero es un CP, la respuesta natural cuando el bot lo pide.
     solo = _cp_solo(t)
     if solo:
         letra, cp4 = solo
@@ -422,10 +353,8 @@ def clasificar_zona(texto: str) -> Optional[str]:
         if z:
             return z
 
-    # 3) Tabla completa de localidades (Correo Argentino): con provincia +
-    # localidad (o una localidad inequivoca) sale la provincia y un CP
-    # representativo; con eso la zona es exacta. Cubre todo el pais, no solo las
-    # listas a mano. Para Buenos Aires el CP desempata GBA vs interior.
+    # 3) Tabla completa de localidades (Correo Argentino): con provincia + localidad (o una localidad
+    # inequivoca) sale la provincia y un CP representativo; con eso la zona es exacta.
     from app.core import geo_cp
     prov_tabla, cp_tabla = geo_cp.resolver(texto)
     if prov_tabla:
