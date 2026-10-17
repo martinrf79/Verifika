@@ -448,25 +448,58 @@ def sesion_de(ctx):
 _lock = threading.Lock()
 
 
-def _crear(modelo, msgs, formato=None):
+class CuotaDelDia(Exception):
+    """La cuota del dia se acabo: se para la tanda entera, no se reintenta (SIGUE 1, 17-oct)."""
+
+
+_SIN_CUOTA = threading.Event()
+_PAUSA = float(os.environ.get("DESMENUZADO_PAUSA", "0.6"))
+
+
+def _crear(modelo, msgs, formato=None, max_tokens=None):
     from necesita import cli
     espera = 10
     for i in range(6):
+        if _SIN_CUOTA.is_set():
+            raise CuotaDelDia("ya se acabo en otro hilo")
         try:
             if "gemini" in modelo:
                 with _lock:
-                    time.sleep(0.6)
+                    time.sleep(_PAUSA)
             kw = {"response_format": formato} if formato else {}
+            if max_tokens:
+                kw["max_tokens"] = max_tokens
             from app.core.llm_reintento import un_sistema  # como produccion: un solo sistema
             r = cli(modelo).chat.completions.create(model=modelo, messages=un_sistema(msgs), temperature=0.0, **kw)
             u = r.usage
             return r.choices[0].message.content or "", (getattr(u, "prompt_tokens", 0), getattr(u, "completion_tokens", 0))
         except Exception as e:  # noqa: BLE001
+            if re.search(r"per ?day|PerDay|requests_per_day", str(e), re.I):
+                _SIN_CUOTA.set()
+                raise CuotaDelDia(str(e)[:300]) from e
             if i < 5 and any(x in str(e) for x in ("429", "503", "500", "RESOURCE", "overloaded", "timed out")):
                 time.sleep(espera)
                 espera = min(espera * 2, 90)
                 continue
             raise
+
+
+def correr_contrato2(modelo, ctx, mensaje):
+    """Una llamada, con el estado numerado y el esquema del turno. La atadura del contrato 2 es el esquema estricto."""
+    import contrato2 as C2
+    msgs, mostr, ped = C2.mensajes(ctx, mensaje, POR_ID)
+    esq = C2.esquema(TIENDA, mostr, ped)
+    fmt = {"type": "json_object"} if "deepseek" in modelo else \
+        {"type": "json_schema", "json_schema": {"name": "comandos", "schema": esq}}
+    crudo, u = _crear(modelo, msgs, fmt, max_tokens=4000)
+    usos = [u]
+    if not C2.comandos_de(crudo):  # UN reintento si la salida no se puede leer, como la atadura de produccion
+        crudo2, u2 = _crear(modelo, msgs + [{"role": "assistant", "content": crudo[:1500]},
+                                            {"role": "user", "content": "Esa salida no es un JSON valido o no trae "
+                                             "comandos. Devolve SOLO el JSON, corto."}], fmt, max_tokens=4000)
+        crudo += "\n--- reintento ---\n" + crudo2
+        usos.append(u2)
+    return {"crudo": crudo, "comandos": C2.comandos_de(crudo.split("\n--- reintento ---\n")[-1]), "usos": usos}
 
 
 def correr_tablero(modelo, ctx, mensaje):
@@ -810,7 +843,12 @@ def igual_carrito(esp, real):
 
 def corregir(caso, forma, r):
     cid, ctx, msg, esp = caso
-    if forma == "tablero":
+    if forma == "contrato2":
+        import contrato2 as C2
+        at, carr = C2.atomos(r["comandos"], ctx, POR_ID)
+        carr = carr if esp.get("carrito") else None
+        err = ""
+    elif forma == "tablero":
         at = atomos_tablero(r)
         carr = carrito_tablero(at, ctx) if esp.get("carrito") else None
         err = ""
@@ -877,12 +915,20 @@ def uno(modelo, forma, caso, rep, etiqueta):
     from app.core.contexto_turno import set_current_tienda
     set_current_tienda(TIENDA)
     t0 = time.time()
+    if _SIN_CUOTA.is_set():
+        return {"modelo": modelo, "forma": forma, "id": cid, "rep": rep, "ok": False, "bien": 0, "partes": 0,
+                "faltan": ["SIN CUOTA: no se corrio"], "sin_cuota": True}
     try:
-        r = correr_tablero(modelo, ctx, msg) if forma == "tablero" else \
+        r = correr_contrato2(modelo, ctx, msg) if forma == "contrato2" else \
+            correr_tablero(modelo, ctx, msg) if forma == "tablero" else \
             correr_nexos(modelo, ctx, msg, numeros=(forma == "numeros"),
                                                        ejemplos=forma if forma.startswith("ej") else "")
         r["crudo_sin_ctx"] = r["crudo"]
         nota = corregir(caso, forma, r)
+    except CuotaDelDia as e:
+        print(f"CUOTA DEL DIA AGOTADA, se para la tanda: {e}", flush=True)
+        return {"modelo": modelo, "forma": forma, "id": cid, "rep": rep, "ok": False, "bien": 0, "partes": 0,
+                "faltan": ["SIN CUOTA: no se corrio"], "sin_cuota": True}
     except Exception as e:  # noqa: BLE001
         r, nota = {"crudo": f"ERROR {type(e).__name__}: {str(e)[:200]}", "usos": []}, \
             {"partes": 0, "bien": 0, "ok": False, "faltan": ["ERROR"], "error_codigo": str(e)[:200]}
@@ -901,6 +947,11 @@ def uno(modelo, forma, caso, rep, etiqueta):
 def rearmar(fila):
     """La salida guardada vuelta a leer, para corregir de nuevo sin llamar al modelo."""
     caso = next(c for c in CASOS if c[0] == fila["id"])
+    if fila["forma"] == "contrato2":
+        import contrato2 as C2
+        r = {"crudo": fila["crudo"], "comandos": C2.comandos_de(fila["crudo"].split("\n--- reintento ---\n")[-1])}
+        r["crudo_sin_ctx"] = r["crudo"]
+        return caso, r
     if fila["forma"] == "tablero":
         from app.core import tablero as T
         from app.core import ficha_charla as F
@@ -1131,6 +1182,8 @@ def main():
               for c in casos]
     with ThreadPoolExecutor(a.hilos) as ex:
         for f in ex.map(lambda t: uno(*t, a.etiqueta), tareas):
+            if f.get("sin_cuota"):
+                continue
             print(f"{f['modelo'][:8]} {f['forma'][:3]} {f['id']} r{f['rep']}: {'BIEN' if f['ok'] else 'MAL '} "
                   f"{f['bien']}/{f['partes']} {'; '.join(f.get('faltan') or [])[:160]}", flush=True)
     informe(a.etiqueta)
