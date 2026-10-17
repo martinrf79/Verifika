@@ -84,7 +84,8 @@ banderas y GUIAS        tercera llamada con preguntas de sí o no
 - **Una capa por commit.** El commit dice qué charlas de las 101 tendría que mover, y por qué.
 - **Se mide con `banco_pruebas/puerta.py`**, sobre las 101 charlas: las 58, las K, la jerga y las de memoria.
   Tres corridas de base y tres del cambio, charla por charla. Más la vara fija,
-  `pytest tests/test_casos_grabados.py`, y las grabaciones sin modelo.
+  `pytest tests/test_casos_grabados.py`, y las grabaciones sin modelo, `banco_pruebas/grabadas.py`, que va primero:
+  es gratis y frena antes de gastar cuota.
 - **Sale si `puerta.py` no marca ninguna charla rota.** Si empeora alguna, lo que hacía esa capa pasa al estado o al menú, y se
   vuelve a medir. Nunca se deja una capa nueva en su lugar.
 - **La atadura no es una capa de corrección:** valida el vocabulario del menú y se queda.
@@ -194,6 +195,7 @@ banderas y GUIAS        tercera llamada con preguntas de sí o no
 ```bash
 python3 -m pytest -q                       # la batería offline, sin modelo
 python3 -m pytest tests/test_casos_grabados.py   # la vara fija
+python3 -m banco_pruebas.grabadas          # el cableado sin modelo: lo commiteado contra el arbol de trabajo
 python3 -m banco_pruebas.puerta --base <etiqueta> --cambio <etiqueta>   # una mejora contra la base
 uvicorn app.main:app --reload --port 8080  # correr local
 ```

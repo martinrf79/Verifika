@@ -54,6 +54,7 @@ permiso.
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
+| El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
 | La vara de las 58 | `banco_pruebas/vara_58.py` |
 | Un turno por dentro | `banco_pruebas/sonda_turno.py` |
 | El censo del cableado | `banco_pruebas/censo_cableado.py` |
