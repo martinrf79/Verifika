@@ -1087,7 +1087,7 @@ pieza, un dato del estado de la charla, un tipo de ejemplo— y que harias disti
 no para estos."""
 
 
-def sintesis(etiqueta, rep=1):
+def sintesis(etiqueta, rep=1, entrevistador=""):
     """Despues de las entrevistas: a cada modelo, que le falta en general (9-oct)."""
     filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
     ultima = {(f["modelo"], f["id"]): f for f in filas if f["etiqueta"] == etiqueta and f["rep"] == rep}
@@ -1098,22 +1098,38 @@ def sintesis(etiqueta, rep=1):
                           + "; ".join(en_palabras(json.loads(x)) if x.startswith("{") else x for x in f.get("faltan") or [])
                           + ("" if f.get("carrito_ok", True) else "; el pedido no quedo con lo que pidio, cantidad y destino")
                           for f in malas)
-        resp, _ = _crear(modelo, [{"role": "user", "content": SINTESIS.format(casos=casos)}])
+        texto = SINTESIS.format(casos=casos)
+        if any(f["forma"] == "contrato2" for (m, _), f in ultima.items() if m == modelo):
+            import contrato2 as C2
+            texto = ("ESTAS SON LAS INSTRUCCIONES QUE RECIBE EL TRADUCTOR:\n" + C2.prompt() + "\n\n"
+                     + texto.replace("partis el mensaje del\ncliente en piezas", "traducis el mensaje del\ncliente a comandos"))
+        resp, _ = _crear(entrevistador or modelo, [{"role": "user", "content": texto}])
         with open(out, "a", encoding="utf-8") as o:
-            o.write(json.dumps({"etiqueta": etiqueta, "modelo": modelo, "id": "SINTESIS", "respuesta": resp},
+            o.write(json.dumps({"etiqueta": etiqueta, "modelo": entrevistador or modelo, "de": modelo, "id": "SINTESIS", "respuesta": resp},
                                ensure_ascii=False) + "\n")
         print(f"\n== SINTESIS {modelo}\n{resp}", flush=True)
 
 
-def entrevistar(etiqueta, rep=1):
+OTRO_ESCRIBIO = ("Esto es una revision, no un turno con el cliente. Arriba esta exactamente lo que recibio el traductor; "
+                 "la respuesta la escribio OTRO modelo, no vos. Mirala como un colega que sabe hacer este trabajo.\n")
+
+
+def entrevistar(etiqueta, rep=1, entrevistador="", todas=False):
+    """A cada falla, por que leyo asi. Con `entrevistador`, la pregunta se le hace a otro modelo sobre la salida del
+    que fallo (17-oct, Haiku sobre las fallas de Gemini). Con `todas`, tambien los casos nuevos; la reserva nunca."""
     filas = [json.loads(x) for x in open(SALIDA, encoding="utf-8")]
     ultima = {(f["modelo"], f["forma"], f["id"]): f for f in filas if f["etiqueta"] == etiqueta and f["rep"] == rep}
     malas = [f for f in ultima.values() if not f["ok"]
-             and not f["crudo"].startswith("ERROR") and not f["reserva"] and f["id"] not in NUEVOS]
+             and not f["crudo"].startswith("ERROR") and not f["reserva"] and (todas or f["id"] not in NUEVOS)]
     out = os.path.join(AQUI, "desmenuzado_entrevistas.jsonl")
     for f in malas:
         cid, ctx, msg, esp = next(c for c in CASOS if c[0] == f["id"])
-        if f["forma"] == "tablero":
+        if f["forma"] == "contrato2":
+            import contrato2 as C2
+            base = C2.mensajes(ctx, msg, POR_ID)[0]
+            base[0] = {"role": "system", "content": base[0]["content"] + "\n\nEL ESQUEMA DE SALIDA:\n"
+                       + json.dumps(C2.esquema(TIENDA, *C2.mensajes(ctx, msg, POR_ID)[1:]), ensure_ascii=False)}
+        elif f["forma"] == "tablero":
             from app.core import tablero as T
             from app.core import ficha_charla as F
             estado = F.estado(conv_de(ctx))
@@ -1141,13 +1157,17 @@ def entrevistar(etiqueta, rep=1):
         pregunta = PREGUNTA_ENTREVISTA.format(faltan="\n".join("- " + x for x in faltan) or "- (ninguna)",
                                               carrito=carrito + (" Ademas aparecio algo que no se pidio: "
                                                                  + ", ".join(f["prohibidos"]) if f.get("prohibidos") else ""))
-        resp, _ = _crear(f["modelo"], base + [{"role": "assistant", "content": f["crudo"][:3000]},
-                                              {"role": "user", "content": pregunta}])
-        fila = {"etiqueta": etiqueta, "modelo": f["modelo"], "forma": f["forma"], "id": cid, "mensaje": msg,
+        quien = entrevistador or f["modelo"]
+        if entrevistador and entrevistador != f["modelo"]:
+            pregunta = OTRO_ESCRIBIO + pregunta.split("\n", 1)[1].replace("tu traduccion", "esa traduccion") \
+                .replace("te llevo", "pudo llevar al traductor").replace("te ayudado", "ayudado")
+        resp, _ = _crear(quien, base + [{"role": "assistant", "content": f["crudo"][:3000]},
+                                        {"role": "user", "content": pregunta}])
+        fila = {"etiqueta": etiqueta, "modelo": quien, "de": f["modelo"], "forma": f["forma"], "id": cid, "mensaje": msg,
                 "faltan": f.get("faltan"), "carrito": carrito, "respuesta": resp}
         with open(out, "a", encoding="utf-8") as o:
             o.write(json.dumps(fila, ensure_ascii=False) + "\n")
-        print(f"\n== {f['modelo']} {f['forma']} {cid}\n{resp}", flush=True)
+        print(f"\n== {quien} sobre {f['modelo']} {f['forma']} {cid}\n{resp}", flush=True)
 
 
 def main():
@@ -1156,6 +1176,8 @@ def main():
     ap.add_argument("--informe")
     ap.add_argument("--recorregir")
     ap.add_argument("--entrevista")
+    ap.add_argument("--entrevistador", default="", help="otro modelo que revisa las fallas, p.ej. anthropic/claude-haiku-5.5")
+    ap.add_argument("--todas", action="store_true", help="la entrevista tambien con los casos nuevos; nunca la reserva")
     ap.add_argument("--modelos", default="deepseek-chat")
     ap.add_argument("--formas", default="tablero,nexos")
     ap.add_argument("--reps", type=int, default=1)
@@ -1167,8 +1189,8 @@ def main():
     if a.oraculo:
         return 0 if oraculo() else 1
     if a.entrevista:
-        entrevistar(a.entrevista)
-        sintesis(a.entrevista)
+        entrevistar(a.entrevista, entrevistador=a.entrevistador, todas=a.todas)
+        sintesis(a.entrevista, entrevistador=a.entrevistador)
         return 0
     if a.recorregir:
         recorregir(a.recorregir)
