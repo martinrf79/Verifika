@@ -7,7 +7,9 @@ ahora, y compara turno por turno las llamadas a herramientas, los hechos que rec
 casillas. No llama al modelo: no gasta cuota y da lo mismo cada vez que corre.
 
 LO QUE DICE. Iguales en todo, distintas, y por cada turno distinto que cambio y que casilla arreglo o
-rompio. Sale con error si rompe alguna: una casilla rota no entra.
+rompio. Sale con error si rompe alguna: una casilla rota no entra. Y marca PLATA cuando cambia un monto de
+los hechos aunque ninguna casilla lo mire: el 17-oct sacar `_reparto_leido` le quito el descuento al 70% de
+K21 y las casillas no lo vieron.
 
 SU LIMITE. Sirve mientras no cambie lo que recibe el interprete. Si cambia su prompt o su esquema, lo
 grabado ya no es lo que el modelo contestaria, y hay que grabar de nuevo con `sonda_charlas`.
@@ -22,12 +24,14 @@ import difflib
 import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 GRABADAS = RAIZ / "banco_pruebas" / "sonda_charlas_corridas.jsonl"
+_MONTO = re.compile(r"\$\s?\d[\d.]*")
 
 
 def _grabadas(ids: set) -> list:
@@ -86,9 +90,9 @@ def _leer(salidas: list) -> dict:
 
 
 def comparar(antes: dict, ahora: dict, ver: bool = False) -> int:
-    """Imprime la comparacion. Devuelve cuantas casillas rompe el cambio."""
+    """Imprime la comparacion. Devuelve cuantas casillas rompe el cambio mas cuantos turnos cambian plata."""
     comunes = sorted(set(antes) & set(ahora))
-    iguales, arregla, rompe, filas = 0, 0, 0, []
+    iguales, arregla, rompe, plata, filas = 0, 0, 0, 0, []
     for k in comunes:
         if json.dumps(antes[k], sort_keys=True) == json.dumps(ahora[k], sort_keys=True):
             iguales += 1
@@ -101,18 +105,22 @@ def comparar(antes: dict, ahora: dict, ver: bool = False) -> int:
             m = [n for n in cy if cy[n] is True and cx.get(n) is False]
             r = [n for n in cy if cy[n] is False and cx.get(n) is True]
             arregla, rompe = arregla + len(m), rompe + len(r)
+            montos = sorted(_MONTO.findall(x.get("codigo") or "")) != sorted(_MONTO.findall(y.get("codigo") or ""))
+            plata += montos
             que = [z for z in ("llamadas", "codigo", "sin", "error")
                    if json.dumps(x.get(z), sort_keys=True) != json.dumps(y.get(z), sort_keys=True)]
             filas.append(f"  {k[1]:6} {k[0]:18} turno {i}: cambia {', '.join(que)}"
-                         + (f" | ARREGLA {m}" if m else "") + (f" | ROMPE {r}" if r else ""))
+                         + (f" | ARREGLA {m}" if m else "") + (f" | ROMPE {r}" if r else "")
+                         + (" | PLATA: cambian los montos" if montos else ""))
             if ver and x.get("codigo") != y.get("codigo"):
                 filas += ["      " + d[:200] for d in difflib.unified_diff(
                     (x.get("codigo") or "").split("\n"), (y.get("codigo") or "").split("\n"), lineterm="", n=0)
                     if d[:1] in "+-" and d[:3] not in ("---", "+++")][:6]
     print(f"\nGRABADAS: {len(comunes)} charlas reproducidas sin modelo. Iguales en todo {iguales}, "
-          f"distintas {len(comunes) - iguales}. Casillas: arregla {arregla}, rompe {rompe}.")
+          f"distintas {len(comunes) - iguales}. Casillas: arregla {arregla}, rompe {rompe}. "
+          f"Turnos con montos distintos: {plata}.")
     print("\n".join(filas))
-    return rompe
+    return rompe + plata
 
 
 def main(argv: list) -> int:
@@ -146,7 +154,7 @@ def main(argv: list) -> int:
             rompe = comparar(_leer([s for _, s in procs[:mitad]]), _leer([s for _, s in procs[mitad:]]), a.ver)
         finally:
             subprocess.run(["git", "worktree", "remove", "--force", str(base)], cwd=RAIZ)
-    return 1 if rompe else 0
+    return 1 if rompe else 0  # rompe cuenta tambien los turnos con montos distintos
 
 
 if __name__ == "__main__":
