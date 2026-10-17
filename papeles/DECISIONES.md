@@ -149,3 +149,10 @@ Todas salen de lo medido en `PASO0_CENSO.md`. Ninguna es una preferencia.
     en K21 el codigo ya resuelve bien todo lo que el modelo interpreta bien; lo que falla es
     el modelo armando a mano lo que el codigo ya sabe.
 45. **El 8-oct no va mas: K21 se arregla.** Las casillas de 237000 no fallan a sabiendas.
+
+## 17-oct-2026 — K18, decidido por la sesión con el visto de Martín
+
+46. **Un modelo en varios colores sin color elegido: se nombran los colores que hay y se
+    pregunta cuál, con el precio si es el mismo en todos.** No se cuenta sin saber cuál. Motivo:
+    Martín dio las dos por válidas; esta es la que el código ya hace, no elige por el cliente y
+    le da el dato para decidir.
