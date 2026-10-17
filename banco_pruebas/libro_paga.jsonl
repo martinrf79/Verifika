@@ -9838,3 +9838,5 @@
 {"dia": "2026-10-17", "hora": "16:58:00", "modelo": "anthropic/claude-haiku-5.5", "entrada": 11156, "salida": 1664, "dolares": 0.00195, "proceso": 432}
 {"dia": "2026-10-17", "hora": "16:58:07", "modelo": "anthropic/claude-haiku-5.5", "entrada": 11994, "salida": 1052, "dolares": 0.00173, "proceso": 432}
 {"dia": "2026-10-17", "hora": "16:58:21", "modelo": "anthropic/claude-haiku-5.5", "entrada": 7058, "salida": 2528, "dolares": 0.00197, "proceso": 432}
+{"dia": "2026-10-17", "hora": "17:03:10", "modelo": "anthropic/claude-haiku-5.5", "entrada": 12247, "salida": 705, "dolares": 0.00158, "proceso": 863}
+{"dia": "2026-10-17", "hora": "17:03:18", "modelo": "anthropic/claude-haiku-5.5", "entrada": 11749, "salida": 2728, "dolares": 0.00254, "proceso": 863}

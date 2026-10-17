@@ -491,6 +491,12 @@ def correr_contrato2(modelo, ctx, mensaje):
     esq = C2.esquema(TIENDA, mostr, ped)
     fmt = {"type": "json_object"} if "deepseek" in modelo else \
         {"type": "json_schema", "json_schema": {"name": "comandos", "schema": esq}}
+    if modelo.startswith("anthropic/") or "deepseek" in modelo:
+        # Sin esquema estricto —Anthropic rechaza uno con tantos campos opcionales, 17-oct—: el esquema va en el
+        # prompt, como produccion hace con DeepSeek en `tablero._con_esquema`.
+        fmt = None if modelo.startswith("anthropic/") else fmt
+        msgs = [{"role": "system", "content": msgs[0]["content"] + "\n\nDevolve SOLO un JSON con este esquema, y en "
+                 "los campos con enum SOLO esos valores:\n" + json.dumps(esq, ensure_ascii=False)}] + msgs[1:]
     crudo, u = _crear(modelo, msgs, fmt, max_tokens=4000)
     usos = [u]
     if not C2.comandos_de(crudo):  # UN reintento si la salida no se puede leer, como la atadura de produccion

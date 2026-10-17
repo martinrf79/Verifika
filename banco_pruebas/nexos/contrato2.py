@@ -41,10 +41,10 @@ OPS = {
     "humano": "pide hablar con una persona",
     "responder": "sin consultar a la tienda: saber general, charla, fuera de tema o manipulacion",
 }
-OPERADORES = ["contiene", "no_contiene", "igual", "mayor", "menor", "prefiere", "evita"]
+OPERADORES = ["contiene", "no_contiene", "igual", "mayor", "menor", "prefiere", "evita", "ya_no_importa"]
 MEDIOS = ["transferencia", "mercado_pago", "tarjeta", "otro", "sin_decir"]
 FALTAS = ["producto_ambiguo", "equipo_del_cliente", "destino", "cantidad", "medio_de_pago", "otro"]
-CONDS = ["hay_stock", "es_compatible", "total_mayor", "precio_menor"]
+CONDS = ["hay_stock", "es_compatible", "total_mayor", "precio_menor", "no_lo_vende"]
 CLASES = ["saber_general", "charla", "fuera_de_tema", "manipulacion"]
 DATOS_FIJOS = ["precio", "stock", "todo"]
 # EL ORDEN ES UNA PALABRA DE UNA LISTA, y obligatorio en buscar (17-oct, c2_1): como objeto opcional el modelo lo
@@ -55,15 +55,15 @@ ORDENES = {"ninguno": None, "mas_barato": ("precio_ars", "min"), "mas_caro": ("p
 CAMPOS_POR_OP = {
     "producto": (["ref", "dato", "condiciones"], ["ref"]),
     "buscar": (["rubro", "orden", "busqueda", "condiciones", "cuantos", "cantidad", "entre", "entre_lo_mostrado",
-                "excluir_mostrado", "quitar_condiciones"], ["rubro", "orden", "busqueda"]),
+                "excluir_mostrado"], ["rubro", "orden", "busqueda"]),
     "catalogo": ([], []),
     "envio": (["destinos"], ["destinos"]),
     "politica": (["tema"], ["tema"]),
     "compatibilidad": (["ref", "con"], ["ref", "con"]),
     "afirma": (["ref", "tema", "valor"], ["valor"]),
     "agregar": (["ref", "cantidad", "destino"], ["ref"]),
-    "quitar": (["renglon"], ["renglon"]),
-    "cambiar": (["renglon", "cantidad", "destino", "ref"], ["renglon"]),
+    "quitar": (["renglon", "ref"], []),
+    "cambiar": (["renglon", "ref", "cantidad", "destino", "nuevo"], []),
     "reparto": (["partes"], ["partes"]),
     "cuenta": (["presupuesto_cliente"], []),
     "comprar": ([], []),
@@ -82,8 +82,8 @@ COMO TRADUCIR, en este orden:
 1. PARTI el mensaje: un comando por cada producto, rubro, pregunta o cambio. Una condicion que vale para varias partes se repite en cada una.
 2. CONSERVA todo lo que pide el cliente: cada condicion, cantidad, destino, preferencia y medio de pago va a algun comando. No saques, no suavices y no agregues nada. Lo que dice el cliente manda aunque parezca raro: si pide algo que el catalogo no tiene como campo, va igual con campo "sin_campo" y sus palabras en valor; el sistema le dira lo que hay.
 3. REFERENCIAS. Lo que ya esta en la charla se nombra con ref.a: M1, M2.. es LO MOSTRADO en el orden en que lo leyo el cliente; P1, P2.. son los renglones del PEDIDO. "El primero" es M1, "el ultimo" el ultimo M, "ese" el ultimo nombrado, "el otro" el que no eligio. Un producto nuevo va con ref.nombre, como lo dijo el cliente. ref.variante es el color, la capacidad o la version que pide, tambien sobre una referencia: "el de Samsung en 2 teras" es ref.a con variante "2TB". Lo que devuelve un comando de este mismo mensaje va con ref.resultado y el numero de ese comando. "Los otros", "el resto" de una lista del cliente va con ref.resto true: no lo cuentes vos.
-4. BUSQUEDAS. busqueda "nueva" si arranca algo distinto; "sigue" si continua lo que busco antes —"y en blanco?", "y teclados?", "otras opciones"—: el sistema conserva las condiciones de la BUSQUEDA VIGENTE que el cliente no cambio, y quitar_condiciones saca las que pidio sacar. "De esos" es entre_lo_mostrado true. "Otras", "distintas" es excluir_mostrado true. orden siempre: "mas_barato", "mas_caro", "mas_liviano", "mas_pesado" o "ninguno"; "los dos mas baratos" es mas_barato con cuantos 2. Si pide algo que ande con un equipo suyo, es una condicion con campo compatible_con. Toda la tienda es rubro "toda_la_tienda"; lo que la tienda no vende, "no_lo_vende".
-5. PEDIDO. "Me llevo", "anotame", "sumame", "mandame" agregan: un agregar por cada articulo, con su cantidad y su destino; "un auricular y un mouse a Cordoba" son dos agregar. Si da una lista por rubro y despues reparte por destino, la lista va en buscar con cantidad y cada reparto en agregar con ref.resultado. "Saca", "cambia", "en vez de", "mandalo a otro lado" son quitar o cambiar sobre su renglon P. "Cuanto es", "total", "sumame todo" es cuenta; si el pedido cambia, el sistema da el total solo. Si nombra con que paga, es reparto aunque sea un solo medio: ese medio al 100.
+4. BUSQUEDAS. busqueda "nueva" si arranca algo distinto; "sigue" si continua lo que busco antes —"y en blanco?", "y teclados?", "otras opciones"—: el sistema conserva las condiciones de la BUSQUEDA VIGENTE que el cliente no cambio. "Ya no importa la marca" es una condicion de ese campo con operador ya_no_importa. "De esos" es entre_lo_mostrado true. "Otras", "distintas" es excluir_mostrado true. orden siempre: "mas_barato", "mas_caro", "mas_liviano", "mas_pesado" o "ninguno"; "los dos mas baratos" es mas_barato con cuantos 2. Si pide algo que ande con un equipo suyo, es una condicion con campo compatible_con. Toda la tienda es rubro "toda_la_tienda". Si pide algo que no es de ningun rubro de la lista, es rubro "no_lo_vende": no lo acerques a un rubro parecido. "Si no tenes, algo parecido" es un si con cond no_lo_vende y la alternativa, el rubro mas cercano, en entonces.
+5. PEDIDO. "Me llevo", "quiero", "quiero comprar", "anotame", "sumame", "mandame" agregan: un agregar por cada articulo, con su cantidad y su destino; "un auricular y un mouse a Cordoba" son dos agregar. Si da una lista por rubro y despues reparte por destino, la lista va en buscar con cantidad y cada reparto en agregar con ref.resultado. "Mandamela a X" es el destino de ese agregar; envio es solo cuando pregunta cuanto sale o cuanto tarda el envio. "Saca", "cambia", "en vez de", "mandalo a otro lado" son quitar o cambiar sobre su renglon P, o sobre ref si lo nombra; en cambiar, nuevo es el producto o la variante que reemplaza. "Cuanto es", "total", "sumame todo" es cuenta; si el pedido cambia, el sistema da el total solo. Si dice con que va a pagar, es reparto aunque sea un solo medio: ese medio al 100. Si pregunta si aceptan un medio —"aceptan cheque?", "puedo pagar con cripto?"— es politica, no reparto; un medio que no esta en la lista va a politica, tema monedas_aceptadas o formas_pago.
 6. CONDICIONES. "Si X, Y" es un comando si con cond y la lista de comandos de entonces y de sino; esos comandos se escriben aparte y el sistema corre solo la rama que da. "Dame el que cumpla X" entre varios es buscar con entre, la lista de refs, y la condicion.
 7. Si para contestar falta un dato del cliente o no hay forma de saber a cual se refiere, repreguntar con falta. Si da algo por cierto, afirma, ademas de lo que pregunte. Si pide una persona, humano.
 8. Nunca escribas precios, stock ni datos que no esten en el mensaje o en el estado.
@@ -145,6 +145,35 @@ EJEMPLOS = [
       {"n": 5, "op": "agregar", "texto": "el resto a Salta", "ref": {"resto": True}, "destino": "Salta"},
       {"n": 6, "op": "reparto", "texto": "en 60 40",
        "partes": [{"medio": "sin_decir", "porcentaje": 60}, {"medio": "sin_decir", "porcentaje": 40}]}]),
+    ("", "un parlante Edifier y una webcam Logitech a Mendoza y un mouse Genius a San Juan. Si pasa de 200 mil saca "
+         "la webcam. Pago 80 transferencia y 20 tarjeta, y hacen factura A?",
+     [{"n": 1, "op": "buscar", "texto": "un parlante Edifier", "rubro": "parlante", "orden": "ninguno",
+       "busqueda": "nueva", "cuantos": 1, "cantidad": 1,
+       "condiciones": [{"campo": "marca", "operador": "igual", "valor": "Edifier"}]},
+      {"n": 2, "op": "buscar", "texto": "una webcam Logitech", "rubro": "webcam", "orden": "ninguno",
+       "busqueda": "nueva", "cuantos": 1, "cantidad": 1,
+       "condiciones": [{"campo": "marca", "operador": "igual", "valor": "Logitech"}]},
+      {"n": 3, "op": "buscar", "texto": "un mouse Genius", "rubro": "mouse", "orden": "ninguno",
+       "busqueda": "nueva", "cuantos": 1, "cantidad": 1,
+       "condiciones": [{"campo": "marca", "operador": "igual", "valor": "Genius"}]},
+      {"n": 4, "op": "agregar", "texto": "el parlante a Mendoza", "ref": {"resultado": 1}, "cantidad": 1,
+       "destino": "Mendoza"},
+      {"n": 5, "op": "agregar", "texto": "la webcam a Mendoza", "ref": {"resultado": 2}, "cantidad": 1,
+       "destino": "Mendoza"},
+      {"n": 6, "op": "agregar", "texto": "el mouse a San Juan", "ref": {"resultado": 3}, "cantidad": 1,
+       "destino": "San Juan"},
+      {"n": 7, "op": "si", "texto": "si pasa de 200 mil", "cond": {"tipo": "total_mayor", "monto": 200000},
+       "entonces": [8]},
+      {"n": 8, "op": "quitar", "texto": "saca la webcam", "ref": {"resultado": 2}},
+      {"n": 9, "op": "reparto", "texto": "80 transferencia y 20 tarjeta",
+       "partes": [{"medio": "transferencia", "porcentaje": 80}, {"medio": "tarjeta", "porcentaje": 20}]},
+      {"n": 10, "op": "politica", "texto": "hacen factura A", "tema": "factura"}]),
+    ("PEDIDO:\n  P1 1 x Teclado Redragon Kumara Negro · a Rosario",
+     "quiero comprar el monitor Samsung de 24, mandamelo a Parana, y el teclado cambialo por el blanco. Aceptan cheque?",
+     [{"n": 1, "op": "agregar", "texto": "quiero comprar el monitor Samsung de 24, a Parana",
+       "ref": {"nombre": "monitor Samsung 24"}, "cantidad": 1, "destino": "Parana"},
+      {"n": 2, "op": "cambiar", "texto": "el teclado por el blanco", "renglon": "P1", "nuevo": {"variante": "blanco"}},
+      {"n": 3, "op": "politica", "texto": "aceptan cheque", "tema": "formas_pago"}]),
     ("", "tienen envio gratis a todo el pais no? quiero hablar con alguien de la tienda",
      [{"n": 1, "op": "afirma", "texto": "envio gratis a todo el pais", "tema": "costo_envio",
        "valor": "envio gratis a todo el pais"},
@@ -214,21 +243,21 @@ def esquema(tienda, mostr, ped):
         "ref": ref, "dato": {"type": "string", "enum": DATOS_FIJOS + campos},
         "rubro": {"type": "string", "enum": rubros + ["toda_la_tienda", "no_lo_vende"]},
         "busqueda": {"type": "string", "enum": ["nueva", "sigue"]},
-        "quitar_condiciones": {"type": "array", "items": campo},
-        "condiciones": {"type": "array", "items": cond},
+        "condiciones": {"type": "array", "items": cond, "maxItems": 8},
+        "nuevo": ref,
         "orden": {"type": "string", "enum": list(ORDENES)},
-        "cuantos": I, "cantidad": I, "entre": {"type": "array", "items": ref},
+        "cuantos": I, "cantidad": I, "entre": {"type": "array", "items": ref, "maxItems": 8},
         "entre_lo_mostrado": {"type": "boolean"}, "excluir_mostrado": {"type": "boolean"},
-        "con": S, "destinos": {"type": "array", "items": S}, "destino": S,
+        "con": S, "destinos": {"type": "array", "items": S, "maxItems": 8}, "destino": S,
         "tema": {"type": "string", "enum": temas}, "valor": S,
         "renglon": {"type": "string", "enum": (ped or ["P1"]) + ["todos"]},
         "partes": {"type": "array", "items": {"type": "object", "properties": {
             "medio": {"type": "string", "enum": MEDIOS}, "porcentaje": {"type": "number"}},
-            "required": ["medio", "porcentaje"]}},
+            "required": ["medio", "porcentaje"]}, "maxItems": 4},
         "presupuesto_cliente": {"type": "number"}, "nombre": S,
         "cond": {"type": "object", "properties": {"tipo": {"type": "string", "enum": CONDS}, "ref": ref,
                                                   "con": S, "monto": {"type": "number"}}, "required": ["tipo"]},
-        "entonces": {"type": "array", "items": I}, "sino": {"type": "array", "items": I},
+        "entonces": {"type": "array", "items": I, "maxItems": 8}, "sino": {"type": "array", "items": I, "maxItems": 8},
         "falta": {"type": "string", "enum": FALTAS}, "clase": {"type": "string", "enum": CLASES},
     }
     # CADA COMANDO CON SUS CAMPOS Y NINGUNO MAS (17-oct, piloto): con un objeto plano de campos opcionales el modelo
@@ -239,7 +268,8 @@ def esquema(tienda, mostr, ped):
             "n": I, "op": {"type": "string", "enum": [op]}, "texto": S, **{k: f[k] for k in campos_op}},
             "required": ["n", "op", "texto"] + req})
     com = {"anyOf": variantes}
-    return {"type": "object", "properties": {"comandos": {"type": "array", "items": com}}, "required": ["comandos"]}
+    return {"type": "object", "properties": {"comandos": {"type": "array", "items": com, "maxItems": 30}},
+            "required": ["comandos"]}
 
 
 def prompt():
@@ -309,6 +339,8 @@ def _palabras(c, vigente_excl):
     """Las condiciones en palabras, como las lee el buscador del banco."""
     out = []
     for x in c.get("condiciones") or []:
+        if x.get("operador") == "ya_no_importa":
+            continue
         if x.get("operador") in ("no_contiene", "evita") and x.get("campo") == "marca":
             out.append("que no sea " + str(x.get("valor")))
         elif x.get("campo") not in ("sin_campo", "pais_fabricacion", "pais_marca", "compatible_con"):
@@ -378,7 +410,8 @@ def atomos(comandos, ctx, por_id):
                 continue
             o = _orden(c)
             orden = o[1] if o and str(o[0]).startswith("precio") else None
-            quita = set(c.get("quitar_condiciones") or [])
+            quita = set(c.get("quitar_condiciones") or []) | {x.get("campo") for x in c.get("condiciones") or []
+                                                              if x.get("operador") == "ya_no_importa"}
             # LAS EXCLUSIONES DE MARCA SIGUEN VALIENDO hasta que el cliente las saque (K17): lo aplica el codigo.
             excl = [] if "marca" in quita else excl_vigentes
             cond = _conds(c) + " " + str(c.get("texto") or "") + "".join(" que no sea " + m for m in excl)
@@ -410,6 +443,8 @@ def atomos(comandos, ctx, por_id):
             out.append({"t": "compat", "prod": _nombre_ref(ref, ctx, por_id, por_n), "con": con or ""})
         if op == "si":
             out.append({"t": "condicion"})
+            if (c.get("cond") or {}).get("tipo") == "no_lo_vende":
+                out.append({"t": "novende"})
             ref = (c.get("cond") or {}).get("ref")
             if ref:
                 out.append({"t": "prod", "prod": _nombre_ref(ref, ctx, por_id, por_n)})
@@ -452,6 +487,9 @@ def atomos(comandos, ctx, por_id):
                 continue
             renglones = range(len(carrito)) if c.get("renglon") == "todos" else \
                 [int(str(c.get("renglon"))[1:]) - 1] if re.fullmatch(r"P\d+", str(c.get("renglon") or "")) else []
+            if not renglones and ref:  # el renglon nombrado por el producto: lo ubica el codigo
+                nom = _n(_nombre_ref(ref, ctx, por_id, por_n))
+                renglones = [i for i, x in enumerate(carrito) if nom and (nom in _n(x[0]) or _n(x[0]) in nom)][:1]
             renglones = [i for i in renglones if 0 <= i < len(carrito)]
             if op == "quitar":
                 out.append({"t": "sacar", "prod": " ".join(carrito[i][0] for i in renglones)})
@@ -464,7 +502,12 @@ def atomos(comandos, ctx, por_id):
                         carrito[i][1] = int(c["cantidad"])
                     if c.get("destino"):
                         carrito[i][2] = c["destino"]
-                    if ref:
+                    nuevo = c.get("nuevo") or {}
+                    if nuevo.get("a") or nuevo.get("nombre") or nuevo.get("resultado"):
+                        carrito[i][0] = _nombre_ref(nuevo, ctx, por_id, por_n)
+                    elif nuevo.get("variante"):
+                        carrito[i][0] = carrito[i][0] + " " + str(nuevo["variante"])
+                    elif ref and c.get("renglon"):  # el contrato del 17-oct a la tarde: el reemplazo iba en ref
                         carrito[i][0] = _nombre_ref(ref, ctx, por_id, por_n)
                 out.append({"t": "cambiar", "prod": " ".join(carrito[i][0] for i in renglones),
                             "destino": c.get("destino") or ""})
