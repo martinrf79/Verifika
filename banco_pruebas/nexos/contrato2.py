@@ -272,6 +272,39 @@ def esquema(tienda, mostr, ped):
             "required": ["comandos"]}
 
 
+TIPOS_CAMPO = {
+    "ref": 'objeto: {"a": una de REFS} o {"nombre": texto, "variante": texto} o {"resultado": n} o {"resto": true}',
+    "nuevo": "objeto, como ref", "dato": "precio, stock, todo o uno de CAMPOS", "rubro": "uno de RUBROS",
+    "orden": "uno de ORDENES", "busqueda": "nueva o sigue",
+    "condiciones": 'lista de {"campo": uno de CAMPOS, "operador": uno de OPERADORES, "valor": texto}',
+    "cuantos": "entero", "cantidad": "entero", "entre": "lista de ref", "entre_lo_mostrado": "true o false",
+    "excluir_mostrado": "true o false", "con": "texto", "destinos": "lista de texto", "destino": "texto",
+    "tema": "uno de TEMAS", "valor": "texto", "renglon": "uno de RENGLONES",
+    "partes": 'lista de {"medio": uno de MEDIOS, "porcentaje": numero}', "presupuesto_cliente": "numero",
+    "nombre": "texto", "cond": '{"tipo": uno de CONDS, "ref": ref, "con": texto, "monto": numero}',
+    "entonces": "lista de n", "sino": "lista de n", "falta": "uno de FALTAS", "clase": "uno de CLASES",
+}
+
+
+def esquema_texto(tienda, mostr, ped):
+    """EL ESQUEMA EN EL PROMPT, ESCRITO UNA VEZ (17-oct). Para el proveedor sin esquema estricto: el JSON Schema
+    entero repetia la lista de campos en cada comando y le costaba al prompt cuatro veces lo que dice."""
+    rubros, temas, campos = vocabulario(tienda)
+    r = ['Devolve SOLO un JSON: {"comandos": [ {"n": entero, "op": ..., "texto": el pedazo del mensaje, ...} ]}.',
+         "Cada op lleva solo sus campos; los de * son obligatorios:"]
+    for op, (cs, req) in CAMPOS_POR_OP.items():
+        r.append(f"  {op}: " + (", ".join(c + ("*" if c in req else "") for c in cs) or "nada mas"))
+    r.append("TIPOS: " + "; ".join(f"{k}: {v}" for k, v in TIPOS_CAMPO.items()))
+    r.append("LISTAS CERRADAS, en los campos que las nombran solo estos valores:")
+    for nombre, valores in (("RUBROS", rubros + ["toda_la_tienda", "no_lo_vende"]), ("TEMAS", temas),
+                            ("CAMPOS", campos + ["compatible_con", "sin_campo"]), ("OPERADORES", OPERADORES),
+                            ("ORDENES", list(ORDENES)), ("MEDIOS", MEDIOS), ("CONDS", CONDS), ("FALTAS", FALTAS),
+                            ("CLASES", CLASES), ("REFS", mostr + ped or ["ninguna"]),
+                            ("RENGLONES", (ped or ["ninguno"]) + ["todos"])):
+        r.append(f"  {nombre}: " + ", ".join(valores))
+    return "\n".join(r)
+
+
 def prompt():
     ej = []
     for est, msg, cmds in EJEMPLOS:
