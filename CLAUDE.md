@@ -51,14 +51,15 @@ conciso, sin repetir; que la memoria de la charla no se pierda.
 
 ### El plan, en este orden
 
-1. **Un único estado de la charla, escrito por el código**: pedido por destino, lo mostrado con su id, los
-   filtros vigentes, lo que buscó el cliente. Es lo que tenía el contexto escrito a mano. **Se mide antes de
-   tocar producción**: la vara del desmenuzado con el contexto que arma el código, no el escrito a mano. Está
-   hecho cuando se acerca a 167 de 174.
-2. **El intérprete como traductor puro**, con las 58 como ejemplos resueltos y el menú cerrado. Es la forma
-   que dio 12 de 12.
-3. **Sacar las once capas de corrección**, con el criterio de abajo. Lo que hacía cada una pasa al estado del
-   paso 1 o al menú del paso 2, o se va.
+Cambiado por Martín el 18-oct, FICHA 70: **primero la traducción, después el código.**
+
+1. **La traducción caso por caso sobre las 58**, en el banco y sin tocar producción. El contrato 2 de
+   `banco_pruebas/nexos/contrato2.py` con la versión 3 de lo que recibe el modelo. Gemini y Haiku tienen que
+   pasar los dos. Está hecho cuando las 58 pasan y la reserva limpia de los 174 se acerca a 167.
+2. **Un único estado de la charla, escrito por el código**: pedido por destino, lo mostrado con su id, los
+   filtros vigentes, lo que buscó el cliente. Es lo que la fase 1 recibe escrito a mano.
+3. **El ejecutor de comandos en lugar de las once capas**, escrito contra las traducciones aprobadas de la fase
+   1, con el criterio de abajo. Lo que hacía cada capa pasa al estado, al contrato o se va.
 4. **Reducir `app/` a la mitad**, para que se pueda auditar y no se rompa con el tiempo. El techo está en
    `tests/lineas_techo.json`: baja con cada corte y nunca sube.
 
