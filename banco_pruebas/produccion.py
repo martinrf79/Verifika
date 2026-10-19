@@ -540,6 +540,70 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
     return out
 
 
+# ── JUNTAR — cada charla real queda como caso, con la agenda exacta del modelo (19-oct-2026) ──
+# Reemplaza a `cosecha.py`, que juntaba los pedidos del camino viejo. Cada turno trae lo que escribio el cliente,
+# la agenda que devolvio el modelo —el `interprete_ok`— y lo que contesto el bot. Con eso el turno se repite por el
+# flujo vivo sin modelo, en `tests/test_reales.py`. Una charla se corta en el turno que no tiene agenda: el reset o
+# una caida. El usuario se guarda con un hash: el numero de telefono no entra al repo.
+
+REALES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reales")
+
+
+def casos(eventos: list, dialogos: dict) -> list:
+    """Funcion PURA: los renglones del log y las charlas de Firestore -> los casos, uno por charla."""
+    import hashlib
+    turnos: dict = {}
+    for e in eventos or []:
+        t = str(e.get("trace_id") or "")
+        if t:
+            turnos.setdefault(t, {}).setdefault(e.get("event"), e)
+    por_usuario: dict = {}
+    for t, evs in turnos.items():
+        cab = evs.get("message_received")
+        if cab and cab.get("user_id"):
+            por_usuario.setdefault(str(cab["user_id"]), []).append((str(cab.get("_t") or ""), t, evs))
+    fuera = []
+    for uid, lista in por_usuario.items():
+        charla = [(r, x) for k, d in dialogos.items() if k == uid or k.startswith(uid + "_") for r, x in d]
+        caso = None
+        for hora, t, evs in sorted(lista):
+            ok = evs.get("interprete_ok")
+            try:
+                agenda = json.loads(ok.get("agenda") or "") if ok else None
+            except (TypeError, ValueError):
+                agenda = None
+            if agenda is None:
+                caso = None
+                continue
+            corto = str(evs["message_received"].get("msg_preview") or "")
+            i = next((i for i, (r, x) in enumerate(charla) if r == "user" and x.startswith(corto)), None)
+            mensaje = charla[i][1] if i is not None else corto
+            respondio = charla[i + 1][1] if i is not None and i + 1 < len(charla) and \
+                charla[i + 1][0] == "assistant" else ""
+            if caso is None:
+                caso = {"id": hashlib.sha1(f"{uid}{hora}".encode()).hexdigest()[:10], "desde": hora[:19],
+                        "turnos": []}
+                fuera.append(caso)
+            caso["turnos"].append({"trace": t, "mensaje": mensaje, "agenda": agenda, "respondio": respondio})
+    return fuera
+
+
+def juntar(tok: str, desde_s: int) -> list:
+    """Baja la ventana y guarda cada charla en `banco_pruebas/reales/<id>.json`. Lo ya guardado no se pisa: el
+    defecto que se le marco a mano —`no_debe`, `debe`— queda."""
+    eventos = renglones_del_turno(tok, desde_s, 2000)
+    _, meta = charlas(tok, 300, "", desde_s or 86400)
+    os.makedirs(REALES, exist_ok=True)
+    nuevos = []
+    for c in casos(eventos, meta.get("dialogos") or {}):
+        ruta = os.path.join(REALES, f"{c['id']}.json")
+        if not os.path.exists(ruta):
+            with open(ruta, "w", encoding="utf-8") as f:
+                json.dump(c, f, ensure_ascii=False, indent=1)
+            nuevos.append(ruta)
+    return nuevos
+
+
 def main(argv: list) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--limite", type=int, default=20,
@@ -557,6 +621,9 @@ def main(argv: list) -> int:
                     help="no imprime la charla literal al final. Por defecto "
                          "SE IMPRIME: el texto que recibio el cliente no esta "
                          "en ningun log y sin el no se puede juzgar un turno.")
+    ap.add_argument("--juntar", action="store_true",
+                    help="guarda cada charla de la ventana como caso en banco_pruebas/reales/, con la agenda del "
+                         "modelo, para repetirla en tests/test_reales.py.")
     args = ap.parse_args(argv)
     desde_s = ventana_a_segundos(args.desde)
     if args.desde and not desde_s:
@@ -568,6 +635,11 @@ def main(argv: list) -> int:
         print("Sin GCP_SA_KEY_B64 en el entorno (o sin la libreria de firma):\n"
               "no se pueden bajar las charlas reales. No es un error del\n"
               "sistema; es que este entorno no tiene la credencial de lectura.")
+        return 0
+
+    if args.juntar:
+        nuevos = juntar(tok, desde_s)
+        print(f"JUNTAR: {len(nuevos)} charlas nuevas en banco_pruebas/reales/" + "".join(f"\n  {n}" for n in nuevos))
         return 0
 
     # LA PELICULA VA ANTES DE LAS CHARLAS. Sale siempre, haya o no charlas nuevas.
