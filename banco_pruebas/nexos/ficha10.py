@@ -260,7 +260,14 @@ CASILLAS_10 = F.CASILLAS_9.replace(
     # LO QUE SE DA POR CIERTO DE LA TIENDA SE VERIFICA CONTRA SU POLITICA (C12 de las 58): la casilla no tenia donde
     # poner el tema, y el codigo no lo encontraba por las palabras del cliente.
     'El codigo lo verifica. [{"dice", "sobre"}]',
-    'El codigo lo verifica. Si es de la tienda, "tema" es el tema de la lista que lo cubre. [{"dice", "sobre", "tema"}]')
+    'El codigo lo verifica. Si es de la tienda, "tema" es el tema de la lista que lo cubre. [{"dice", "sobre", "tema"}]'
+).replace(
+    # LO QUE SE DICE PARA VARIAS VA EN CADA UNA (19-oct, X24 y el grupo C de las 58): "el mas barato de cada uno"
+    # quedaba solo en la ultima busqueda.
+    'Las exclusiones que siguen valiendo, de la ficha, van en cada busqueda nueva, de cualquier rubro.',
+    'Las exclusiones que siguen valiendo, de la ficha, van en cada busqueda nueva, de cualquier rubro. Un orden o una '
+    'condicion que el cliente dice para varias —"de cada uno", "los dos", "todo"— va en cada una de esas busquedas.')
+assert "de cada uno" in CASILLAS_10
 assert CASILLAS_10 != F.CASILLAS_9 and '"candidatos"' in CASILLAS_10 and '"sobre", "tema"' in CASILLAS_10
 
 

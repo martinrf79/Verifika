@@ -1,0 +1,62 @@
+# Las 58: lo que el código tiene que recibir de cada mensaje
+
+Para revisar. Cada renglón dice el mensaje del cliente y lo que tiene que llegar al código, en palabras.
+
+- C01. El cliente dice: tenes el G305?. Tiene que llegar: consultar el producto g305; y no anota ninguna compra.
+- C02. El cliente dice: que parlantes tenes?. Tiene que llegar: buscar productos de parlante; y no anota ninguna compra.
+- C03. El cliente dice: cuantos dpi tiene el G502 Hero?. Tiene que llegar: consultar el producto g502; y no anota ninguna compra.
+- C04. El cliente dice: el K120, que es inalambrico, cuanto sale?. Tiene que llegar: consultar el producto k120; y no anota ninguna compra.
+- C05. El cliente dice: busco una notebook con 16 GB de RAM. Tiene que llegar: buscar productos de notebook, con la condicion '16'; y no anota ninguna compra.
+- C06. El cliente dice: quiero un mouse inalambrico, preferentemente Logitech. Tiene que llegar: buscar productos de mouse, con la condicion 'inalambr wireless'; buscar productos de mouse, con la condicion 'logitech'; y no anota ninguna compra.
+- C07. El cliente dice: un mouse que no sea Genius. Tiene que llegar: buscar productos de mouse, sin la marca genius; y no anota ninguna compra.
+- C08. El cliente dice: una tablet, lo menos china posible. Tiene que llegar: buscar productos de tablet; buscar productos de tablet, con la condicion 'chin origen fabric pais taiw' o bien contestar la regla de la tienda sobre origen procedencia o fabricacion; y no anota ninguna compra.
+- C09. El cliente dice: cual es el monitor mas barato?. Tiene que llegar: buscar productos de monitor, el mas barato; y no anota ninguna compra.
+- C10. El cliente dice: cuanto sale el envio a Posadas?. Tiene que llegar: cotizar el envio a posadas; y no anota ninguna compra.
+- C11. El cliente dice: hacen factura A?. Tiene que llegar: contestar la regla de la tienda sobre factura o datos fiscales; y no anota ninguna compra.
+- C12. El cliente dice: tienen 50 por ciento off en todo, no?. Tiene que llegar: contestar la regla de la tienda sobre promociones o descuento transferencia; y no anota ninguna compra.
+- C13. El cliente dice: soy revendedor, tienen precio mayorista?. Tiene que llegar: contestar la regla de la tienda sobre mayoristas; y no anota ninguna compra.
+- C14. El cliente dice: que conviene, DDR4 o DDR5?. Tiene que llegar: y no anota ninguna compra; y no busca productos.
+- C15. El cliente dice: me llevo dos G305 negros. Tiene que llegar: consultar el producto g305; el pedido queda así: 2 de g305 negro, sin destino.
+- C16. El cliente dice: me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago. Tiene que llegar: consultar el producto k120; repartir el pago: transferencia 70 por ciento, mercado 30 por ciento; dar el total del pedido; el pedido queda así: 1 de k120 negro, sin destino.
+- C17. El cliente dice: cuanto sale el G305 y que teclados mecanicos tenes?. Tiene que llegar: consultar el producto g305; buscar productos de teclado, con la condicion 'mecanic'; y no anota ninguna compra.
+- C18. El cliente dice: tenes auriculares JBL y cuanto sale mandarlos a Cordoba?. Tiene que llegar: buscar productos de auriculares, con la condicion 'jbl'; cotizar el envio a cordoba; y no anota ninguna compra.
+- C19. El cliente dice: el G203 tiene stock? y hacen factura A?. Tiene que llegar: consultar el producto g203; contestar la regla de la tienda sobre factura o datos fiscales; y no anota ninguna compra.
+- C20. El cliente dice: sumame dos K120 negros y un G203 negro. Tiene que llegar: dar el total del pedido; el pedido queda así: 2 de k120 negro, sin destino; 1 de g203 negro, sin destino.
+- C21. Antes en la charla: quiero un G305 negro y un K120 negro. El cliente dice: sumame todo y pago 70 por ciento transferencia y 30 por ciento Mercado Pago. Tiene que llegar: dar el total del pedido; repartir el pago: transferencia 70 por ciento, mercado 30 por ciento.
+- C22. El cliente dice: el G305 sirve para jugar? cuanto sale?. Tiene que llegar: consultar el producto g305; y no anota ninguna compra.
+- C23. El cliente dice: quiero el G305 en blanco y un K120. Tiene que llegar: consultar el producto g305; consultar el producto k120.
+- C24. El cliente dice: teclado y mouse, los dos lo mas baratos posible. Tiene que llegar: buscar productos de teclado, el mas barato; buscar productos de mouse, el mas barato; y no anota ninguna compra.
+- C25. El cliente dice: dos G305 negros y tres K120 blancos, cuanto es?. Tiene que llegar: dar el total del pedido; el pedido queda así: 2 de g305 negro, sin destino; 3 de k120 blanco, sin destino.
+- C26. El cliente dice: mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?. Tiene que llegar: consultar el producto g203; cotizar el envio a rosario o bien cotizar el envio a rosario; cotizar el envio a mendoza o bien cotizar el envio a mendoza.
+- C27. Antes en la charla: mostrame mouse Logitech. El cliente dice: de esos, cual es el mas barato?. Tiene que llegar: buscar productos de ?, el mas barato o bien consultar el producto g203; y no anota ninguna compra.
+- C28. El cliente dice: si no hay G502 Hero en negro, pasame el G305. Tiene que llegar: consultar el producto g502; consultar el producto g305; separar la condicion que puso el cliente de lo que hace si se cumple; y no anota ninguna compra.
+- C29. El cliente dice: si el G305 anda con Mac, me lo llevo. Tiene que llegar: averiguar si g305 anda con mac; separar la condicion que puso el cliente de lo que hace si se cumple.
+- C30. El cliente dice: tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?. Tiene que llegar: averiguar si fury beast anda con ddr5 pc placa escritorio; buscar productos de memoria ram, con la condicion 'ddr5'; separar la condicion que puso el cliente de lo que hace si se cumple; y no anota ninguna compra.
+- C31. El cliente dice: sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX. Tiene que llegar: separar la condicion que puso el cliente de lo que hace si se cumple; dar el total del pedido; el pedido queda así: 1 de mx master, sin destino; 2 de g305, sin destino.
+- C32. El cliente dice: entre el G305 y el G203, dame el que sea inalambrico. Tiene que llegar: consultar el producto g305; separar la condicion que puso el cliente de lo que hace si se cumple o bien agregar.
+- C33. El cliente dice: quiero un teclado Redragon, ah no, mejor Logitech. Tiene que llegar: buscar productos de teclado, con la condicion 'logitech'.
+- C34. Antes en la charla: cuanto sale mandar un G203 a Rosario?. El cliente dice: me equivoque, era para Cordoba, no Rosario. Tiene que llegar: cotizar el envio a cordoba o bien cotizar el envio a cordoba.
+- C35. Antes en la charla: busco un mouse gamer Logitech. El cliente dice: ya no importa la marca, pasame otras opciones. Tiene que llegar: buscar productos de mouse; y no anota ninguna compra.
+- C36. El cliente dice: el G305 anda con mi Mac?. Tiene que llegar: averiguar si g305 anda con mac; y no anota ninguna compra.
+- C37. El cliente dice: tengo una notebook, que memoria ram le sirve?. Tiene que llegar: buscar productos de memoria ram o bien preguntarle al cliente el dato que falta o bien averiguar si . anda con notebook; y no anota ninguna compra.
+- C38. Antes en la charla: cuanto sale la Kingston Fury Beast DDR4 16GB?. El cliente dice: le sirve a mi pc?. Tiene que llegar: averiguar si fury beast ram anda con pc; preguntarle al cliente el dato que falta; y no anota ninguna compra.
+- C39. El cliente dice: el G203 es inalambrico, no? lo quiero para viajar. Tiene que llegar: consultar el producto g203.
+- C40. El cliente dice: me dijeron que el envio es gratis a todo el pais, no?. Tiene que llegar: contestar la regla de la tienda sobre costo envio o envios o promociones; y no anota ninguna compra.
+- C41. El cliente dice: soy jubilado, tienen descuento?. Tiene que llegar: contestar la regla de la tienda sobre promociones o descuento transferencia; y no anota ninguna compra.
+- C42. El cliente dice: quiero una notebook con 64 GB de RAM por menos de 200 mil. Tiene que llegar: buscar productos de notebook, con la condicion '64'; y no anota ninguna compra.
+- C43. Antes en la charla: cuanto sale el K120?. El cliente dice: y ese es inalambrico?. Tiene que llegar: consultar el producto k120; y no anota ninguna compra.
+- C44. Antes en la charla: cuanto salen el G305 y el G203?. El cliente dice: el G305 no me convence, el otro tiene stock?. Tiene que llegar: consultar el producto g203; y no anota ninguna compra.
+- C45. Antes en la charla: busco un mouse Logitech con cable. El cliente dice: y en blanco?. Tiene que llegar: buscar productos de mouse, con la condicion 'blanc' o bien consultar el producto g203 blanc g502 blanc; y no anota ninguna compra.
+- C46. Antes en la charla: busco un teclado que no sea Redragon. El cliente dice: y alguno mecanico?. Tiene que llegar: buscar productos de teclado, con la condicion 'mecanic', sin la marca redragon; y no anota ninguna compra.
+- C47. Antes en la charla: hola, soy de Posadas, Misiones. El cliente dice: cuanto me sale el G203 negro con envio?. Tiene que llegar: consultar el producto g203; cotizar el envio a posadas o bien cotizar el envio a posadas; dar el total del pedido.
+- C48. Antes en la charla: me llevo un G305 negro. El cliente dice: mandamelo a Rosario, cuanto seria en total?. Tiene que llegar: cotizar el envio a rosario o bien cotizar el envio a rosario; dar el total del pedido; el pedido queda así: 1 de g305 a rosario.
+- C49. Antes en la charla: tenes webcams?. El cliente dice: el teclado logi ese del principio, tiene stock?. Tiene que llegar: consultar el producto k120; y no anota ninguna compra.
+- C50. Antes en la charla: me llevo uno. El cliente dice: el primero. Tiene que llegar: consultar el producto g203.
+- C51. El cliente dice: cuanto sale el G305 negro? y mandame ese a Cordoba. Tiene que llegar: consultar el producto g305; cotizar el envio a cordoba o bien cotizar el envio a cordoba.
+- C52. Antes en la charla: que tenes en mouse Logitech, teclados Logitech y auriculares JBL?. El cliente dice: y ese cuanto?. Tiene que llegar: preguntarle al cliente el dato que falta; y no anota ninguna compra.
+- C53. Antes en la charla: cuanto sale el G502 Hero?. El cliente dice: del que me dijiste, si no hay en negro dame el blanco. Tiene que llegar: consultar el producto g502; separar la condicion que puso el cliente de lo que hace si se cumple.
+- C54. El cliente dice: tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?. Tiene que llegar: buscar productos de placa de video; y no anota ninguna compra.
+- C55. Antes en la charla: me gusta el G305. El cliente dice: ah no, el otro, y ese me lo llevo. Tiene que llegar: consultar el producto g203; el pedido queda así: 1 de g203, sin destino.
+- C56. El cliente dice: tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos. Tiene que llegar: contestar la regla de la tienda sobre promociones o descuento transferencia; consultar el producto k120; separar la condicion que puso el cliente de lo que hace si se cumple.
+- C57. El cliente dice: cual es la capital de Francia?. Tiene que llegar: y no anota ninguna compra; y no busca productos.
+- C58. El cliente dice: jaja buenisimo gracias crack, che y el G305 tiene garantia?. Tiene que llegar: consultar el producto g305 o bien contestar la regla de la tienda sobre garantia o garantia como usar; y no anota ninguna compra.
