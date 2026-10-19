@@ -62,26 +62,6 @@ def test_transferencia_usa_demo_si_tienda_sin_datos(firestore_doble):
 
 # ── ENTREGA DE DATOS DE COBRO A PEDIDO (charla real 20-jul) ──────────────────
 
-def test_pasame_los_enlaces_entrega_el_cobro(monkeypatch, firestore_doble):
-    """'Pasame los enlaces' con presupuesto sobre la mesa -> CBU demo + link
-    generico de Mercado Pago, en cualquier modo."""
-    import asyncio
-    from app.core import leads as L
-    monkeypatch.setattr(L, "get_lead_activo",
-                        lambda user_id, canal, tienda_id: None)
-    monkeypatch.setattr(L, "modo_cierre", lambda tid: "lead")
-    _, meta = asyncio.new_event_loop().run_until_complete(
-        L.procesar_mensaje_para_lead(
-            user_id="u1", canal="whatsapp", tienda_id="verifika_prod",
-            mensaje="Pasame los enlaces", respuesta_solver="",
-            trace_id="t1", interpretacion={"intencion": "aporta_dato",
-                                           "confianza": 0.9},
-            presupuesto="Presupuesto:\n- 1x Mouse: $8.500\nTotal: $8.500"))
-    assert meta["accion"] == "cobro_datos"
-    r = meta["respuesta_directa"]
-    assert "CBU" in r or "Alias" in r
-    assert "mpago" in r or "Mercado Pago" in r
-
 
 def test_pregunta_de_datos_de_producto_no_entrega_cobro(monkeypatch,
                                                         firestore_doble):

@@ -11,9 +11,12 @@ Es lo unico que pasa de un turno al siguiente, ademas del historial. Vive en el 
   cerrado     el pedido como estaba cuando se cerro, para no cerrarlo dos veces.
   nombre_pedido   si ya se pidio el nombre para este pedido.
   por_rubro   lo que el cliente pidio por rubro, sin modelo: {"auriculares": 2}. De aca sale "los otros".
+  abiertas    lo que el vendedor pregunto y el cliente no contesto: [{"texto", "cita", "pregunta"}]. Es la R de la
+              libreta: la respuesta del turno siguiente se ata a la pregunta que la pidio.
 """
 
-VACIO = {"mostrados": [], "pedido": [], "reparto": [], "busqueda": {}, "cliente": {}, "cerrado": "", "nombre_pedido": False, "por_rubro": {}}
+VACIO = {"mostrados": [], "pedido": [], "reparto": [], "busqueda": {}, "cliente": {}, "cerrado": "", "nombre_pedido": False, "por_rubro": {},
+         "abiertas": []}
 TOPE_MOSTRADOS = 30
 
 

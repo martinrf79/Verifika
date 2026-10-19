@@ -201,8 +201,8 @@ def install():
     import app.core.pago as pago
     setattr(pago, "get_config", _patches["get_config"])
 
-    # LEADS EN RAM: el camino REAL del cierre (procesar_mensaje_para_lead, con
-    # sus gatillos, pregunta suave y captura) corre TAL CUAL. Se dobla SOLO el
+    # LEADS EN RAM: el camino REAL del cierre (`flujo.cierre.cerrar`, con
+    # el lead, el aviso y el cobro) corre TAL CUAL. Se dobla SOLO el
     # almacenamiento del lead (dict en RAM en vez de la coleccion Firestore) y
     # el aviso al dueño (notificar_lead, que es una llamada HTTP saliente).
     # Antes todo el camino era un no-op y el cierre no se probaba nunca en el
