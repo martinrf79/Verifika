@@ -51,52 +51,29 @@ conciso, sin repetir; que la memoria de la charla no se pierda.
 
 ### El plan, en este orden
 
-Cambiado por Martín el 18-oct, FICHA 70: **primero la traducción, después el código.**
+Cambiado por Martín el 19-oct: **el cableado desde cero, sobre las 58, sin modelos.** Reemplaza al plan de la
+FICHA 70 y al criterio de sacar las once capas de a una.
 
-1. **La traducción caso por caso sobre las 58**, en el banco y sin tocar producción. El contrato 2 de
-   `banco_pruebas/nexos/contrato2.py` con la versión 3 de lo que recibe el modelo. Gemini y Haiku tienen que
-   pasar los dos. Está hecho cuando las 58 pasan y la reserva limpia de los 174 se acerca a 167.
-2. **Un único estado de la charla, escrito por el código**: pedido por destino, lo mostrado con su id, los
-   filtros vigentes, lo que buscó el cliente. Es lo que la fase 1 recibe escrito a mano.
-3. **El ejecutor de comandos en lugar de las once capas**, escrito contra las traducciones aprobadas de la fase
-   1, con el criterio de abajo. Lo que hacía cada capa pasa al estado, al contrato o se va.
-4. **Reducir `app/` a la mitad**, para que se pueda auditar y no se rompa con el tiempo. El techo está en
-   `tests/lineas_techo.json`: baja con cada corte y nunca sube.
-
-### Las once capas, y el criterio para sacarlas
-
-Viven en `app/core/tablero.py`. Corrigen la salida del intérprete:
-
-```
-_reparto_leido          relee el reparto del pago en el mensaje
-_sobre_el_pedido        rearma el pedido guardado
-_envios_juntos          junta los envíos en una pieza
-_normalizar             ajusta las piezas al vocabulario
-_sobre_lo_buscado       suma las condiciones de la búsqueda anterior
-_heredar_exclusiones    copia las exclusiones de la memoria
-_conservar              compara los artículos contra lo repartido
-_resolver_items y _elegidos   eligen qué producto es cada artículo
-_cuenta_del_codigo      arma la cuenta que el intérprete no pidió
-_revision               segunda llamada al modelo para corregir
-banderas y GUIAS        tercera llamada con preguntas de sí o no
-```
-
-**El criterio:**
-- **Una capa por commit.** El commit dice qué charlas de las 101 tendría que mover, y por qué.
-- **Se mide con `banco_pruebas/puerta.py`**, sobre las 101 charlas: las 58, las K, la jerga y las de memoria.
-  Tres corridas de base y tres del cambio, charla por charla. Más la vara fija,
-  `pytest tests/test_casos_grabados.py`, y las grabaciones sin modelo, `banco_pruebas/grabadas.py`, que va primero:
-  es gratis y frena antes de gastar cuota.
-- **Sale si `puerta.py` no marca ninguna charla rota.** Si empeora alguna, lo que hacía esa capa pasa al estado o al menú, y se
-  vuelve a medir. Nunca se deja una capa nueva en su lugar.
-- **La atadura no es una capa de corrección:** valida el vocabulario del menú y se queda.
+1. **El flujo nuevo vive en `banco_pruebas/flujo/` mientras se arma.** Estado, intérprete, ejecutor, redacción y
+   cierre, escritos de cero. De lo viejo usa sólo las herramientas: motor, calculadora, envío, políticas,
+   compatibilidad, `leads` y Firestore.
+2. **Sin modelos.** Las dos llamadas al modelo, traducir y explicar, las reemplaza el banco con lo escrito a mano en
+   `banco_pruebas/traducciones58.py`, en el formato de la ficha 10. El corredor bloquea cualquier otra llamada.
+3. **La vara es la de Martín**: las casillas de `vara_58.json`, que no se tocan, por el webhook entero:
+   `python3 -m banco_pruebas.cableado58`.
+4. **El control contra la trampa**: el mismo cableado con las traducciones que grabó Gemini,
+   `--grabadas f10e_58_gg1`, `gg2` y `gg3`. Un arreglo entra si sirve para una clase, no para un caso.
+5. **Cuando estén las 58, un solo deploy**: el flujo pasa a `app/core/flujo/`, el intérprete se conecta al modelo
+   con el prompt de la ficha 10, y se borran `tablero.py`, `respuesta.py` y lo que quede sin uso. El techo de
+   `tests/lineas_techo.json` baja en ese commit. Si falla en vivo, se vuelve con git.
+6. **Después, Martín dice cómo se sigue.**
 
 ### Qué es parche, y cómo no se cae en eso
 
 - **Un arreglo corrige la causa donde vive, y cubre la clase entera.** La prueba: si mañana llega la misma
   falla dicha de otra forma, ¿queda cubierta sin tocar nada?
-- **No se juzga a ojo: se mide.** Un cambio de lo que reciben el intérprete o el redactor que mueve sólo el
-  caso que lo motivó es parche y no entra. Lo decide `puerta.py`, no la sesión.
+- **No se juzga a ojo: se mide.** Un cambio que mueve sólo el caso que lo motivó es parche y no entra. Lo decide
+  `cableado58.py` con las traducciones a mano y con las grabadas de Gemini, no la sesión.
 - **No se suma un campo, una pregunta o una capa nueva por cada falla.** Ese es el patrón que trajo la
   maraña. Lo que falla seguido, se le achica al modelo.
 - **Si para que pase un caso hay que cambiar un test, sumar una palabra a una lista o poner un umbral, se para

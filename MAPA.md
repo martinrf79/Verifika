@@ -53,6 +53,9 @@ permiso.
 | Qué querés medir | Archivo |
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
+| El flujo nuevo, armándose desde cero: estado, ejecutor, redacción, cierre | `banco_pruebas/flujo/` |
+| Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
+| Lo que devuelve el intérprete en cada turno de las 58, escrito a mano | `banco_pruebas/traducciones58.py` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
 | La vara de las 58 | `banco_pruebas/vara_58.py` |
