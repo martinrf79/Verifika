@@ -18,7 +18,7 @@ contra la distribucion VERDADERA de preguntas. Eso es lo que ningun guion
 escrito a mano reproduce.
 
 Y DESDE EL 3-SEP EL INFORME TERMINA CON LA CHARLA LITERAL. El texto que
-recibio el cliente NO esta en ningun log: `turno_ok` anota el largo, la
+recibio el cliente NO esta en ningun log: `flujo_turno` anota lo que hizo el codigo, la
 latencia y los puntos, nunca el mensaje. Este script ya bajaba el `history`
 entero de la conversacion para correr los invariantes y despues lo tiraba. Ese
 descarte costaba una sesion completa: desde afuera se podia decir que fallo por
@@ -148,77 +148,9 @@ def _post(url: str, tok: str, cuerpo: dict) -> dict:
         return json.load(r)
 
 
-# ── EL NUMERO DEL MOTOR ─────────────────────────────────────────────────────
-#
-# POR QUE VIVE ACA Y NO EN UN SCRIPT PROPIO. Este archivo ya es el lector de
-# produccion: tiene la credencial, tiene la ventana, y el puente del issue 31
-# ya lo corre. Un script aparte seria una segunda cosa que pedir, con su
-# segunda ventana, y dos numeros de la misma corrida que no se pueden comparar.
-#
-# QUE CONTESTA, y hasta hoy no lo contestaba nadie: si el modelo USA el motor o
-# lo esquiva, cuantas vueltas le cuesta -y cada vuelta vuelve a pagar el prompt
-# entero-, si lo que vuelve le sirve o tiene que buscar de nuevo, y QUE LE
-# FALTA A LA FUENTE. Ese ultimo renglon es el que mas vale: una condicion que
-# el catalogo no puede cumplir es un campo que habria que agregar, y hasta hoy
-# eso se descubria leyendo charlas a mano.
-#
-# EL RENGLON LO ESCRIBE EL TURNO -`motor_turno` en `app/core/respuesta.py`-, en
-# CADA turno, haya buscado o no. Un turno que no busco es un dato, no un hueco.
-
-# LOS CAMPOS DEL RENGLON, EN UN SOLO LUGAR. El turno los escribe -el informe de
-# `respuesta._informe_en_blanco`- y esta funcion los lee. Si alguien renombra
-# uno de los dos lados, el agregador se queda mudo sin que nadie lo note: es el
-# telefono descompuesto que este repo ya pago tres veces. Por eso hay candado
-# en `tests/test_numero_motor.py`, que compara las dos listas.
-CAMPOS = ("vueltas", "llamadas", "consultas", "repetidas", "puntuales",
-          "veredictos", "filas", "rescates", "vacios", "sin_dato", "campos",
-          "campos_tocados", "correcciones", "fichas", "temas", "temas_sin_resolver", "compat",
-          "compat_sin_dato", "envios", "envios_sin_clasificar", "criterio",
-          "criterio_sin_resolver", "cuentas", "cuentas_sin_total", "afirma",
-          # LOS CINCO DEL COTEJO (22-sep-2026).
-          "renglones", "renglones_copia", "renglones_propios",
-          "rubros_sin_pedir", "umbrales_degradados", "condiciones_repuestas",
-          "vueltas_sin_aporte")
-
 PROYECTO = os.environ.get("GCP_PROJECT", "memory-engine-v1")
 SERVICIO = os.environ.get("CLOUD_RUN_SERVICIO", "agente-bot")
 TOPE_PAGINAS = 5
-
-
-def renglones_del_motor(tok: str, desde_s: int, limite: int = 1000) -> list:
-    """Los `motor_turno` de la ventana, del mas nuevo al mas viejo.
-
-    Lista vacia si la credencial no alcanza para leer logs: el informe de
-    invariantes no se cae por eso. Sin ventana se miran las ultimas 24 horas,
-    que es el default de Cloud Logging para una consulta sin filtro de tiempo.
-    """
-    desde = datetime.utcfromtimestamp(
-        time.time() - (desde_s or 86400)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    filtro = (f'resource.type="cloud_run_revision" '
-              f'AND resource.labels.service_name="{SERVICIO}" '
-              f'AND jsonPayload.event="motor_turno" '
-              f'AND timestamp>="{desde}"')
-    fuera, token = [], ""
-    for _ in range(TOPE_PAGINAS):
-        cuerpo = {"resourceNames": [f"projects/{PROYECTO}"],
-                  "filter": filtro, "orderBy": "timestamp desc",
-                  "pageSize": min(1000, max(1, limite))}
-        if token:
-            cuerpo["pageToken"] = token
-        try:
-            r = _post("https://logging.googleapis.com/v2/entries:list",
-                      tok, cuerpo)
-        except Exception as e:  # noqa: BLE001 — sin logs, el resto del informe
-            print(f"[el numero del motor no se pudo leer: "
-                  f"{type(e).__name__}: {str(e)[:120]}]")
-            return fuera
-        for e in r.get("entries") or []:
-            if isinstance(e.get("jsonPayload"), dict):
-                fuera.append(e["jsonPayload"])
-        token = r.get("nextPageToken") or ""
-        if not token or len(fuera) >= limite:
-            break
-    return fuera[:limite]
 
 
 def _n(v) -> int:
@@ -228,269 +160,6 @@ def _n(v) -> int:
         return int(float(v))
     except (TypeError, ValueError):
         return 0
-
-
-def numero_del_motor(eventos: list) -> list:
-    """El informe del motor, en lineas. Funcion PURA sobre los renglones: la
-    misma cuenta sirve para los logs de produccion y para una corrida viva, y
-    por eso se puede medir offline con eventos escritos a mano."""
-    turnos = [e for e in (eventos or [])
-              if str((e or {}).get("event") or "") == "motor_turno"]
-    cab = ["", "=" * 78, "EL NUMERO DEL MOTOR — que hizo la busqueda en cada turno",
-           "=" * 78, ""]
-    if not turnos:
-        return cab + ["No hay turnos con renglon `motor_turno` en la ventana.",
-                      "Si el bot contesto igual, es que esta corriendo una "
-                      "version anterior al renglon.", ""]
-
-    n = len(turnos)
-    busco = [t for t in turnos if _n(t.get("llamadas")) > 0]
-    revuelta = [t for t in busco if _n(t.get("llamadas")) > 1]
-    consultas = sum(_n(t.get("consultas")) for t in turnos)
-    repetidas = sum(_n(t.get("repetidas")) for t in turnos)
-    puntuales = sum(_n(t.get("puntuales")) for t in turnos)
-    filas = sum(_n(t.get("filas")) for t in turnos)
-    vacios = sum(_n(t.get("vacios")) for t in turnos)
-    rescates = sum(_n(t.get("rescates")) for t in turnos)
-    sin_dato = sum(_n(t.get("sin_dato")) for t in turnos)
-
-    def pct(x):
-        return f"{100 * x / n:.0f}%"
-
-    veredictos: dict = {}
-    for t in turnos:
-        for v in (t.get("veredictos") or []):
-            veredictos[str(v)] = veredictos.get(str(v), 0) + 1
-    campos: dict = {}
-    for t in turnos:
-        for c in (t.get("campos") or []):
-            campos[str(c)] = campos.get(str(c), 0) + 1
-    # LOS TEMAS QUE EL MODELO PIDIO Y LOS QUE LA CASA NO TIENE ESCRITOS. El
-    # segundo es el renglon que dice QUE LE FALTA A LA FAQ, y antes del 12-sep
-    # no existia: con el codigo adivinando el tema, uno sin resolver era
-    # indistinguible de uno que nadie pregunto.
-    temas: dict = {}
-    faltan: dict = {}
-    con_tema = 0
-    for t in turnos:
-        pedidos = t.get("temas") or []
-        if pedidos:
-            con_tema += 1
-        for x in pedidos:
-            temas[str(x)] = temas.get(str(x), 0) + 1
-        for x in (t.get("temas_sin_resolver") or []):
-            faltan[str(x)] = faltan.get(str(x), 0) + 1
-
-    # LA BOCA DE COMPATIBILIDAD, CON EL MISMO PAR DE NUMEROS QUE LOS TEMAS: lo
-    # que se pregunto y lo que la tabla no pudo contestar. El segundo es el que
-    # dice QUE FILA FALTA en `compatibilidad.csv`.
-    compat: dict = {}
-    compat_faltan: dict = {}
-    con_compat = 0
-    for t in turnos:
-        pedidos = t.get("compat") or []
-        if pedidos:
-            con_compat += 1
-        for x in pedidos:
-            compat[str(x)] = compat.get(str(x), 0) + 1
-        for x in (t.get("compat_sin_dato") or []):
-            compat_faltan[str(x)] = compat_faltan.get(str(x), 0) + 1
-
-    # EL ENVIO, QUE DESDE EL 13-sep LO PIDE EL MODELO. El renglon que importa
-    # es el segundo: un lugar que la tabla no clasifica es o una localidad que
-    # falta o una forma de escribirla que no reconocemos, y hasta hoy no dejaba
-    # rastro porque el destino lo adivinaba el codigo.
-    envios: dict = {}
-    envios_faltan: dict = {}
-    con_envio = 0
-    for t in turnos:
-        pedidos = t.get("envios") or []
-        if pedidos:
-            con_envio += 1
-        for x in pedidos:
-            envios[str(x)] = envios.get(str(x), 0) + 1
-        for x in (t.get("envios_sin_clasificar") or []):
-            envios_faltan[str(x)] = envios_faltan.get(str(x), 0) + 1
-
-    # LA BOCA CRITERIO, CON EL MISMO PAR: lo que se sirvio y lo que la casa no
-    # tiene escrito. El segundo dice QUE ENTRADA agregarle a
-    # `base_conocimiento.json`, que es el archivo del que sale esta boca.
-    criterio: dict = {}
-    criterio_faltan: dict = {}
-    con_criterio = 0
-    for t in turnos:
-        pedidos = t.get("criterio") or []
-        if pedidos:
-            con_criterio += 1
-        for x in pedidos:
-            criterio[str(x)] = criterio.get(str(x), 0) + 1
-        for x in (t.get("criterio_sin_resolver") or []):
-            criterio_faltan[str(x)] = criterio_faltan.get(str(x), 0) + 1
-
-    # LA CUENTA DEL RETORNO, con el mismo par que las bocas: la que salio y la
-    # que no se pudo hacer. El segundo numero dice cuantas veces el cliente
-    # pidio el total y el codigo no pudo darselo, que hasta el 14-sep no se
-    # podia contar: el total lo resolvia una suma del texto, que siempre da
-    # algo.
-    cuentas = sum(int(t.get("cuentas") or 0) for t in turnos)
-    cuentas_sin = sum(int(t.get("cuentas_sin_total") or 0) for t in turnos)
-
-    lineas = cab + [
-        f"TURNOS EN LA VENTANA: {n}",
-        f"  busco en {len(busco)} de {n} ({pct(len(busco))})   "
-        f"contestaron sin buscar: {n - len(busco)}",
-        f"  volvio a buscar en {len(revuelta)} ({pct(len(revuelta))}): "
-        f"la primera consulta no le alcanzo",
-        f"  consultas: {consultas} en total, "
-        f"{consultas / max(1, len(busco)):.1f} por turno que busco",
-        f"  CUENTAS del pedido: {cuentas} calculadas por `calculate_total`"
-        + (f", {cuentas_sin} que no se pudieron dar" if cuentas_sin else ""),
-        f"  consultas REPETIDAS: {repetidas}"
-        + ("   <- gasto una vuelta pidiendo lo mismo" if repetidas else ""),
-        f"  declaradas de UN producto puntual: {puntuales} de {consultas}"
-        + ("   <- nunca lo declara: la ambiguedad no se puede disparar"
-           if consultas and not puntuales else ""),
-        f"  filas devueltas: {filas}   vacias: {vacios}   "
-        f"rescates: {rescates}   sin el dato cargado: {sin_dato}",
-    ]
-    if veredictos:
-        lineas.append("  veredictos: " + " · ".join(
-            f"{k} {v}" for k, v in sorted(veredictos.items(),
-                                          key=lambda x: -x[1])))
-    lineas.append(f"  pidio politicas de la casa en {con_tema} de {n} "
-                  f"({pct(con_tema)})"
-                  + ("   <- nunca las pide: el mapa 3 no se esta usando"
-                     if n and not con_tema else ""))
-    if temas:
-        lineas.append("  temas servidos: " + " · ".join(
-            f"{k} {v}" for k, v in sorted(temas.items(), key=lambda x: -x[1])))
-    if faltan:
-        lineas += ["",
-                   "LO QUE EL CLIENTE PREGUNTO Y LA CASA NO TIENE ESCRITO, que "
-                   "es el renglon que dice que tema agregar a la FAQ:"]
-        for c, v in sorted(faltan.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    if con_compat:
-        lineas.append("  pregunto COMPATIBILIDAD en "
-                      f"{con_compat} de {n} ({pct(con_compat)}): "
-                      + " · ".join(f"{k} {v}" for k, v in
-                                   sorted(compat.items(), key=lambda x: -x[1])))
-    if compat_faltan:
-        lineas += ["",
-                   "LO QUE LA TABLA DE COMPATIBILIDAD NO PUDO CONTESTAR, que "
-                   "es el renglon que dice que fila agregarle:"]
-        for c, v in sorted(compat_faltan.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    if con_envio:
-        lineas.append(f"  cotizo ENVIO en {con_envio} de {n} "
-                      f"({pct(con_envio)}): "
-                      + " · ".join(f"{k} {v}" for k, v in
-                                   sorted(envios.items(), key=lambda x: -x[1])))
-    if envios_faltan:
-        lineas += ["",
-                   "LOS LUGARES QUE NO SE PUDIERON CLASIFICAR, que es el "
-                   "renglon que dice que le falta a la tabla de destinos:"]
-        for c, v in sorted(envios_faltan.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    if con_criterio:
-        lineas.append("  pidio CRITERIO de la casa en "
-                      f"{con_criterio} de {n} ({pct(con_criterio)}): "
-                      + " · ".join(f"{k} {v}" for k, v in
-                                   sorted(criterio.items(),
-                                          key=lambda x: -x[1])))
-    if criterio_faltan:
-        lineas += ["",
-                   "LO QUE EL CLIENTE PREGUNTO Y LA CASA NO TIENE ESCRITO COMO "
-                   "CRITERIO, que es el renglon que dice que entrada agregarle "
-                   "a base_conocimiento.json:"]
-        for c, v in sorted(criterio_faltan.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    if campos:
-        lineas += ["",
-                   "LO QUE LA FUENTE NO PUDO CUMPLIR, que es el renglon que "
-                   "dice que campo agregar:"]
-        for c, v in sorted(campos.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    else:
-        lineas.append("  toda condicion que se pidio se pudo aplicar.")
-    return lineas + _bloque_cotejo(turnos) + [""]
-
-
-# ── EL COTEJO, QUE ES EL NUMERO DE LA INTERPRETACION (22-sep-2026) ──────────
-#
-# POR QUE ES UN BLOQUE APARTE. Todo lo de arriba mide QUE HIZO la busqueda;
-# esto mide CUANTO DE LO QUE EL MODELO DECLARO SE PUDO COTEJAR contra lo que el
-# cliente dijo, que es otra pregunta. Mezclados, el renglon de la fidelidad se
-# leia como un contador mas de filas.
-#
-# EL PRIMER NUMERO ES EL QUE MANDA: renglones copia sobre renglones emitidos.
-# `renglones` es la unica casilla del esquema que no le pide al modelo ninguna
-# decision —que dijo el cliente, con sus palabras— y es la que le da al codigo
-# con que detectar lo OMITIDO. Si baja, todas las comprobaciones que se apoyan
-# en ella pierden piso, y por eso se imprime primero y solo.
-
-
-def _bloque_cotejo(turnos: list) -> list:
-    renglones = sum(int(t.get("renglones") or 0) for t in turnos)
-    copias = sum(int(t.get("renglones_copia") or 0) for t in turnos)
-    con_renglon = [t for t in turnos if int(t.get("renglones") or 0)]
-    if not con_renglon:
-        return ["", "EL COTEJO: ningun turno de la ventana declaro renglones."]
-    propios: dict = {}
-    rubros: dict = {}
-    umbrales: dict = {}
-    repuestas: dict = {}
-    sin_aporte = 0
-    for t in turnos:
-        for x in (t.get("renglones_propios") or []):
-            propios[str(x)] = propios.get(str(x), 0) + 1
-        for x in (t.get("rubros_sin_pedir") or []):
-            rubros[str(x)] = rubros.get(str(x), 0) + 1
-        for x in (t.get("umbrales_degradados") or []):
-            umbrales[str(x)] = umbrales.get(str(x), 0) + 1
-        for x in (t.get("condiciones_repuestas") or []):
-            repuestas[str(x)] = repuestas.get(str(x), 0) + 1
-        sin_aporte += int(t.get("vueltas_sin_aporte") or 0)
-    lineas = [
-        "",
-        "=" * 78,
-        "EL COTEJO — lo que el modelo declaro contra lo que el cliente dijo",
-        "=" * 78,
-        "",
-        f"EL RENGLON ES COPIA en {copias} de {renglones} "
-        f"({copias * 100 // max(1, renglones)}%), sobre "
-        f"{len(con_renglon)} turno" + ("s" if len(con_renglon) != 1 else "")
-        + " que declararon renglones.",
-        "  Un renglon que no es copia es la casilla de transcripcion usada "
-        "para interpretar,",
-        "  y sobre un renglon parafraseado el codigo no puede cotejar nada.",
-    ]
-    if propios:
-        lineas += ["", "LOS RENGLONES QUE EL MODELO ESCRIBIO CON SUS PALABRAS "
-                       "EN VEZ DE COPIAR:"]
-        for c, v in sorted(propios.items(), key=lambda x: -x[1])[:10]:
-            lineas.append(f"   {v:>3}x  {c}")
-    if rubros:
-        lineas += ["", "EL RUBRO QUE EL CLIENTE NOMBRO Y NADIE BUSCO, que es "
-                       "la omision hecha afirmacion:"]
-        for c, v in sorted(rubros.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    else:
-        lineas.append("  ningun rubro nombrado quedo sin buscar.")
-    if umbrales:
-        lineas += ["", "LA CIFRA QUE EL CLIENTE NO DIJO, degradada de filtro a "
-                       "orden por el codigo:"]
-        for c, v in sorted(umbrales.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    if repuestas:
-        lineas += ["", "LA CONDICION QUE UNA VUELTA PERDIO Y EL CODIGO "
-                       "REPUSO:"]
-        for c, v in sorted(repuestas.items(), key=lambda x: -x[1]):
-            lineas.append(f"   {v:>3}x  {c}")
-    if sin_aporte:
-        lineas.append(f"  vueltas que no agregaron nada y no se volvieron a "
-                      f"buscar: {sin_aporte}")
-    return lineas
 
 
 # ── BAJAR LAS CHARLAS ───────────────────────────────────────────────────────
@@ -660,8 +329,8 @@ def transcripcion(revisadas: list, dialogos: dict) -> list:
     lineas = ["", "=" * 78,
               "LA CHARLA, TAL CUAL LA RECIBIO EL CLIENTE",
               "=" * 78,
-              "Esto NO esta en los logs: `turno_ok` guarda el largo, la",
-              "latencia y los puntos, nunca el texto. Sale del `history` de la",
+              "Esto NO esta en los logs: `flujo_turno` guarda lo que hizo el",
+              "codigo, nunca el texto. Sale del `history` de la",
               "conversacion, que es lo mismo que se le mando a Telegram o a",
               "WhatsApp.", ""]
     usadas, gastado, cortadas = 0, 0, 0
@@ -767,50 +436,31 @@ def informe(revisadas: list, meta: dict | None = None) -> str:
 
 
 
-# ── LA PELICULA DEL TURNO — la sonda, pero sobre PRODUCCION ─────────────────
-#
-# POR QUE EXISTE (Martin, 15-sep-2026). `banco_pruebas/sonda_turno.py` muestra
-# el turno por dentro, etapa por etapa, pero corre un turno NUEVO contra el
-# modelo: no puede decir que paso en la charla que el cliente ya tuvo. Y el
-# informe de arriba dice CUANTO -cuantas consultas, cuantas vueltas- pero no
-# QUE. Entre los dos quedaba el unico hueco que importa: con que palabras pidio
-# el modelo, que tenia delante cuando las escribio, y que volvio.
-#
-# NO ES UN INSTRUMENTO NUEVO. Es este mismo lector, con dos renglones mas que
-# el turno ahora escribe -`prompt_armado` y `motor_pedido`- y una funcion PURA
-# que los ordena por `trace_id`. Sale por el mismo issue 31 y con la misma
-# credencial: no hay nada nuevo que pedir ni que recordar.
-#
-# LA RESPUESTA DEL BOT NO ESTA ACA, y es a proposito: los logs no guardan el
-# texto que leyo el cliente. Esta abajo, en la transcripcion del mismo informe.
+# ── LA PELICULA DEL TURNO — que tradujo el interprete y que hizo el codigo ──
+# Desde el 19-oct el turno es `app/core/flujo/`, y escribe tres renglones por turno: `interprete_ok` con las
+# casillas que lleno el modelo, `flujo_turno` con lo que hizo el codigo —hechos, preguntas, herramientas— y, si
+# cerro, `flujo_cierre`. Los errores tienen su renglon. El texto que leyo el cliente no esta en los logs: esta en
+# la transcripcion, al final del informe.
 
 EVENTOS_PELICULA = (
-    "message_received", "prompt_armado", "motor_pedido", "motor_buscar",
-    "retorno_recortado", "motor_turno", "turno_ok", "turno_sin_buscar",
-    "tipo_vacio", "respuesta_sin_modelo", "motor_argumentos_rotos",
-    "respuesta_modelo_error", "antijailbreak_bloqueo",
-    # LA GUARDA DE ESTADO, Y NACE MUDA: su unico efecto es este renglon. Va en
-    # la pelicula porque es donde se decide si algun dia frena —hace falta ver
-    # el campo Y la respuesta que lo nombro, y eso no se lee de un contador—.
-    "afirmo_sin_mirar",
-    # LA CORRECCION DE ESTADO. Sale cuando la guarda no solo vio sino que le
-    # devolvio el dato al modelo y le pidio de nuevo. Sin este renglon una
-    # vuelta de mas en el turno no se distingue de una busqueda que no alcanzo,
-    # que es exactamente lo que paso el 16-sep a las 19:46: el turno mostraba
-    # cuatro vueltas y habia que deducir de ahi que se habia corregido.
-    "correccion_de_estado")
+    "message_received", "antijailbreak_bloqueo",
+    "interprete_ok", "interprete_devuelta", "interprete_error", "explicar_error",
+    "flujo_turno", "flujo_ejecutor_error", "flujo_cierre", "flujo_cierre_lead_error", "flujo_cobro_error",
+    "flujo_guardar_error", "agente_herramienta_error")
+
+# Los renglones que avisan que algo fallo: la pelicula los muestra con su error.
+AVISOS = ("antijailbreak_bloqueo", "interprete_error", "explicar_error", "flujo_ejecutor_error",
+          "flujo_cierre_lead_error", "flujo_cobro_error", "flujo_guardar_error", "agente_herramienta_error")
 
 # Cuantos turnos se cuentan por defecto. Tres alcanzan para una prueba por
-# WhatsApp y entran en un comentario del issue; el informe de arriba sigue
-# midiendo la ventana entera.
+# WhatsApp; el informe de arriba sigue midiendo la ventana entera.
 TURNOS_PELICULA = 3
 
 
 def renglones_del_turno(tok: str, desde_s: int, limite: int = 600) -> list:
     """Los eventos que arman la pelicula, del mas viejo al mas nuevo.
 
-    Mismo camino y mismas excusas que `renglones_del_motor`: si la credencial
-    no alcanza, se devuelve vacio y el resto del informe sigue.
+    Si la credencial no alcanza, se devuelve vacio y el resto del informe sigue.
     """
     desde = datetime.utcfromtimestamp(
         time.time() - (desde_s or 86400)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -845,164 +495,46 @@ def renglones_del_turno(tok: str, desde_s: int, limite: int = 600) -> list:
     return list(reversed(fuera[:limite]))
 
 
-def _una_consulta(c: dict) -> str:
-    """Una consulta del modelo en un renglon legible. Es la traduccion del
-    JSON a algo que se pueda leer en voz alta, que es como Martin lee."""
-    p = []
-    if c.get("texto"):
-        p.append(f'texto "{c["texto"]}"')
-    if c.get("categoria"):
-        p.append(f'categoria {c["categoria"]}')
-    for x in c.get("condiciones") or []:
-        p.append(f'{x.get("campo")} {x.get("operador")} {x.get("valor")}')
-    o = c.get("ordenar_por") or {}
-    if o:
-        p.append(f'ordenar {o.get("campo")} {o.get("direccion")}')
-    if c.get("ids"):
-        p.append("ids " + ", ".join(str(i) for i in c["ids"]))
-    if c.get("busco"):
-        p.append(f'busco {c["busco"]}')
-    if c.get("cantidad"):
-        p.append(f'cantidad {c["cantidad"]}')
-    return " · ".join(p) or "(vacia)"
-
-
-def _lo_que_pidio(crudo) -> list:
-    """El pedido del modelo, campo por campo. Devuelve renglones ya indentados.
-
-    UN PEDIDO VACIO TAMBIEN SE DICE: que el modelo no declarara una boca es
-    justamente lo que hay que poder ver.
-    """
-    try:
-        d = json.loads(crudo) if isinstance(crudo, str) else (crudo or {})
-    except Exception:  # noqa: BLE001 — un pedido ilegible se muestra crudo
-        return [f"      PIDIO   (no se pudo leer) {str(crudo)[:200]}"]
-    filas = []
-    for c in d.get("consultas") or []:
-        filas.append(f"      consulta   {_una_consulta(c)}")
-    for campo in ("temas", "criterio", "envios"):
-        if d.get(campo):
-            filas.append(f"      {campo:<10} "
-                         + " | ".join(str(x) for x in d[campo]))
-    for c in d.get("compatibilidad") or []:
-        filas.append(f"      compat     {c.get('producto')} con {c.get('con')}")
-    cta = d.get("cuenta") or {}
-    if cta:
-        items = ", ".join(f'{i.get("id")} x{i.get("cantidad") or 1}'
-                          for i in (cta.get("items") or []))
-        reparto = ", ".join(f'{r.get("porcentaje")}% {r.get("medio")}'
-                            for r in (cta.get("reparto_pago") or []))
-        filas.append(f"      cuenta     {items}"
-                     + (f"   reparto {reparto}" if reparto else ""))
-    return filas or ["      PIDIO   nada"]
-
-
 def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
-    """LOS ULTIMOS TURNOS, ETAPA POR ETAPA. Funcion PURA sobre los renglones.
-
-    Pura como `numero_del_motor`, y por el mismo motivo: lo que decide que se
-    ve tiene que poder probarse sin red y sin credencial.
-    """
-    if not eventos:
-        return []
-    turnos_dict: dict = {}
-    for e in eventos:
+    """LOS ULTIMOS TURNOS, ETAPA POR ETAPA. Funcion PURA sobre los renglones: lo que decide que se ve se prueba sin
+    red y sin credencial, en `tests/test_pelicula.py`."""
+    por_turno: dict = {}
+    for e in eventos or []:
         t = str(e.get("trace_id") or "")
-        if t:
-            turnos_dict.setdefault(t, []).append(e)
-    if not turnos_dict:
+        if t and e.get("event") in EVENTOS_PELICULA:
+            por_turno.setdefault(t, []).append(e)
+    if not por_turno:
         return []
-    ultimos = list(turnos_dict.items())[-max(1, turnos):]
-
-    out = ["", "=" * 64,
-           f"LA PELICULA DE LOS ULTIMOS {len(ultimos)} TURNOS",
-           "Lo que el modelo tenia delante, lo que pidio y lo que volvio.",
-           "El texto que leyo el cliente no esta en los logs: esta en la "
+    ultimos = list(por_turno.items())[-max(1, turnos):]
+    out = ["", "=" * 64, f"LA PELICULA DE LOS ULTIMOS {len(ultimos)} TURNOS",
+           "Lo que tradujo el interprete y lo que hizo el codigo. El texto que leyo el cliente esta en la "
            "transcripcion, al final.", "=" * 64]
     for trace, evs in ultimos:
         cab = next((e for e in evs if e.get("event") == "message_received"), {})
-        fin = next((e for e in evs if e.get("event") == "turno_ok"), {})
-        hora = str(cab.get("_t") or (evs[0].get("_t") if evs else ""))[11:19]
-        out.append("")
-        out.append(f"--- TURNO {trace}   {hora} UTC ---")
+        hora = str(cab.get("_t") or evs[0].get("_t") or "")[11:19]
+        out += ["", f"--- TURNO {trace}   {hora} UTC ---"]
         if cab.get("msg_preview"):
             out.append(f"  CLIENTE: {cab['msg_preview']}")
         for e in evs:
             ev = e.get("event")
-            if ev == "prompt_armado":
-                cual = ("buscar" if e.get("con_tablero") else "contestar")
-                out.append(f"  VUELTA {_n(e.get('vuelta'))} · de {cual} · "
-                           f"{_n(e.get('tokens'))} tokens · "
-                           f"{_n(e.get('hallazgos'))} respuestas del motor ya "
-                           f"en la mano")
-            elif ev == "motor_pedido":
-                out += _lo_que_pidio(e.get("pedido"))
-            elif ev == "motor_buscar":
-                ver = ", ".join(str(v) for v in (e.get("veredictos") or []))
-                filas = e.get("filas") or []
-                out.append(f"      VOLVIO   {len(filas)} consultas · "
-                           f"veredictos {ver or 'ninguno'} · "
-                           f"filas {filas or 0}"
-                           + (f" · repetidas {_n(e.get('repetidas'))}"
-                              if _n(e.get("repetidas")) else ""))
-                for campo in ("temas", "criterio", "envios", "compat"):
-                    if e.get(campo):
-                        out.append(f"      {campo:<10} "
-                                   + ", ".join(str(x) for x in e[campo]))
-                if e.get("cuenta"):
-                    out.append(f"      cuenta     {str(e['cuenta'])[:300]}")
-            elif ev == "retorno_recortado":
-                out.append(f"      RECORTE  se sacaron "
-                           f"{_n(e.get('filas_sacadas'))} filas para que "
-                           f"entre el retorno")
-            elif ev == "motor_turno":
-                if e.get("campos"):
-                    out.append("      NO SE PUDO APLICAR: "
-                               + ", ".join(str(x) for x in e["campos"]))
-                for campo in ("temas_sin_resolver", "criterio_sin_resolver",
-                              "compat_sin_dato", "envios_sin_clasificar"):
-                    if e.get(campo):
-                        out.append(f"      {campo}: "
-                                   + ", ".join(str(x) for x in e[campo]))
-                if _n(e.get("cuentas_sin_total")):
-                    out.append("      LA CUENTA NO SE PUDO HACER")
-            elif ev == "correccion_de_estado":
-                out.append(f"      SE LE CORRIGIO: {e.get('campo')} · se le "
-                           f"devolvio el dato y se le pidio de nuevo")
-            elif ev == "afirmo_sin_mirar":
-                out.append("      AFIRMO SIN MIRAR: "
-                           + ", ".join(str(x) for x in e.get("campos") or [])
-                           + f" · el turno tuvo {_n(e.get('tocados'))} campos "
-                           f"delante")
-            elif ev in ("turno_sin_buscar", "tipo_vacio",
-                        "respuesta_sin_modelo", "motor_argumentos_rotos",
-                        "respuesta_modelo_error", "antijailbreak_bloqueo",
-    # LA GUARDA DE ESTADO, Y NACE MUDA: su unico efecto es este renglon. Va en
-    # la pelicula porque es donde se decide si algun dia frena —hace falta ver
-    # el campo Y la respuesta que lo nombro, y eso no se lee de un contador—.
-    "afirmo_sin_mirar"):
-                out.append(f"      AVISO    {ev} "
-                           + str(e.get("error") or e.get("motivo") or "")[:140])
-        if fin:
-            etapas = fin.get("etapas") or {}
-            out.append(f"  CONTESTO tipo {fin.get('tipo') or '(sin tipo)'} · "
-                       f"{_n(fin.get('largo'))} caracteres · "
-                       f"{_n(fin.get('latency_ms'))} ms")
-            if etapas:
-                out.append("      etapas   " + ", ".join(
-                    f"{k} {_n(v)}ms" for k, v in etapas.items()))
-            alertas = []
-            if _n(fin.get("plata_inventada")):
-                alertas.append("PLATA INVENTADA, la respuesta no salio")
-            if _n(fin.get("huecos_sin_dato")):
-                alertas.append(f"{_n(fin.get('huecos_sin_dato'))} huecos sin dato")
-            if fin.get("cuenta_total"):
-                alertas.append(f"total {fin['cuenta_total']}")
-            if alertas:
-                out.append("      " + " · ".join(alertas))
-        else:
-            out.append("  (este turno no llego a `turno_ok`: se cayo antes)")
+            if ev == "interprete_ok":
+                out.append("  TRADUJO   " + (", ".join(map(str, e.get("casillas") or [])) or "nada"))
+            elif ev == "interprete_devuelta":
+                out.append(f"  DEVUELTA  el modelo dejo {_n(e.get('faltas'))} cosas sin ubicar y se le pidio de nuevo")
+            elif ev == "flujo_turno":
+                out.append("  HIZO      " + (", ".join(map(str, e.get("hechos") or [])) or "nada")
+                           + (f" · {_n(e.get('preguntas'))} preguntas" if _n(e.get("preguntas")) else "")
+                           + (" · herramientas " + ", ".join(map(str, e.get("herramientas")))
+                              if e.get("herramientas") else ""))
+            elif ev == "flujo_cierre":
+                out.append(f"  CERRO     {_n(e.get('articulos'))} articulos, pago {e.get('medio') or 'sin decir'}")
+            elif ev in AVISOS:
+                out.append(f"  AVISO     {ev} " + str(e.get("error") or e.get("motivo") or "")[:160])
+        if not any(e.get("event") == "flujo_turno" for e in evs) and \
+                not any(e.get("event") == "antijailbreak_bloqueo" for e in evs):
+            out.append("  (este turno no llego a `flujo_turno`: se cayo antes o el modelo no contesto)")
     return out
+
 
 def main(argv: list) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -1034,15 +566,7 @@ def main(argv: list) -> int:
               "sistema; es que este entorno no tiene la credencial de lectura.")
         return 0
 
-    # EL NUMERO DEL MOTOR VA PRIMERO Y VA SIEMPRE. No depende de que haya
-    # charlas nuevas en la ventana -son dos preguntas distintas- y el camino de
-    # abajo tiene una salida temprana cuando no hay ninguna: dejarlo abajo
-    # significaba perder el numero justo las veces que no hubo charlas.
-    print("\n".join(numero_del_motor(
-        renglones_del_motor(tok, desde_s, max(200, args.limite * 20)))))
-
-    # LA PELICULA VA PEGADA AL NUMERO, y antes de las charlas: primero cuanto,
-    # despues QUE. Sale siempre y no hay nada que pedir.
+    # LA PELICULA VA ANTES DE LAS CHARLAS. Sale siempre, haya o no charlas nuevas.
     if args.pelicula:
         print("\n".join(pelicula(
             renglones_del_turno(tok, desde_s), args.pelicula)))

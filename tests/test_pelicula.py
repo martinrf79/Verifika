@@ -1,112 +1,70 @@
-"""LA PELICULA DEL TURNO — la sonda sobre produccion.
+"""LA PELICULA DEL TURNO — la sonda sobre produccion, para el flujo vivo (19-oct-2026).
 
-QUE CUIDA ESTA VARA. La pelicula es una funcion PURA sobre los renglones del
-log, igual que `numero_del_motor`, y por el mismo motivo: lo que decide QUE se
-ve del sistema tiene que poder probarse sin red y sin credencial.
+QUE CUIDA ESTA VARA. La pelicula es una funcion PURA sobre los renglones del log: lo que decide QUE se ve del sistema
+tiene que poder probarse sin red y sin credencial.
 
-Y cuida la otra mitad, que es la que se rompe sola: los NOMBRES. El turno
-escribe `prompt_armado` y `motor_pedido`; esta funcion los lee. Si alguien
-renombra uno de los dos lados, la pelicula se queda muda sin que nadie lo note.
-Es el telefono descompuesto que este repo ya pago tres veces.
+Y cuida la otra mitad, que es la que se rompe sola: los NOMBRES. El flujo escribe `interprete_ok` y `flujo_turno`;
+la pelicula los lee. Si alguien renombra uno de los dos lados, la pelicula se queda muda sin que nadie lo note. Por
+eso cada evento que la pelicula pide tiene que estar escrito en `app/`.
 """
-import json
+import re
+from pathlib import Path
 
 from banco_pruebas.produccion import EVENTOS_PELICULA, pelicula
 
 
 def _evs() -> list:
-    """Un turno entero, tal como lo escribe `app/core/respuesta.py`."""
+    """Un turno entero, tal como lo escribe `app/core/flujo/`."""
     return [
-        {"event": "message_received", "trace_id": "abc123",
-         "_t": "2026-09-15T15:29:15Z", "tienda_id": "verifika_prod",
-         "msg_preview": "dos auriculares y dos mouse, cuanto sale todo?"},
-        {"event": "prompt_armado", "trace_id": "abc123", "vuelta": 1,
-         "con_tablero": True, "con_moldes": False, "tokens": 3140,
-         "hallazgos": 0},
-        {"event": "motor_pedido", "trace_id": "abc123", "vuelta": 1,
-         "pedido": json.dumps({
-             "consultas": [{"texto": "auriculares", "busco": "varios",
-                            "cantidad": 2,
-                            "condiciones": [{"campo": "pais_fabricacion",
-                                             "operador": "no_contiene",
-                                             "valor": "china"}]}],
-             "temas": ["cuotas"], "envios": ["Posadas"],
-             "cuenta": {"items": [{"id": "AUR0001", "cantidad": 2}],
-                        "reparto_pago": [{"medio": "transferencia",
-                                          "porcentaje": 70}]}})},
-        {"event": "motor_buscar", "trace_id": "abc123", "consultas": 1,
-         "veredictos": ["existe"], "filas": [5], "temas": ["cuotas"],
-         "envios": ["Posadas"], "repetidas": 0},
-        {"event": "motor_turno", "trace_id": "abc123", "vueltas": 2,
-         "campos": ["sin_campo_en_la_fuente"], "cuentas_sin_total": 1},
-        {"event": "turno_ok", "trace_id": "abc123", "tipo": "precio_multiple",
-         "largo": 528, "latency_ms": 6954, "etapas": {"modelo": 6748},
-         "plata_inventada": 0, "huecos_sin_dato": 0},
+        {"event": "message_received", "trace_id": "abc123", "_t": "2026-10-19T15:29:15Z",
+         "msg_preview": "me llevo el G305 negro, mandalo a Rosario"},
+        {"event": "interprete_devuelta", "trace_id": "abc123", "faltas": 1},
+        {"event": "interprete_ok", "trace_id": "abc123", "casillas": ["envios", "pedido"]},
+        {"event": "flujo_turno", "trace_id": "abc123", "casillas": ["envios", "pedido"],
+         "hechos": ["pedido", "cuenta"], "preguntas": 0, "herramientas": ["cuenta"]},
+        {"event": "flujo_cierre", "trace_id": "abc123", "articulos": 1, "medio": "transferencia"},
     ]
 
 
-def test_la_pelicula_muestra_lo_que_el_modelo_pidio():
-    """EL RENGLON QUE FALTABA. `motor_buscar` dice cuantas consultas hubo; con
-    que PALABRAS se pidio no estaba en ningun lado, y es la unica pieza que
-    decide toda la busqueda."""
+def test_la_pelicula_muestra_lo_que_tradujo_y_lo_que_hizo():
     t = "\n".join(pelicula(_evs()))
-    assert "auriculares" in t
-    assert "pais_fabricacion no_contiene china" in t
-    assert "busco varios" in t
-    assert "cuotas" in t
-    assert "AUR0001 x2" in t
-    assert "70% transferencia" in t
+    assert "me llevo el G305 negro" in t
+    assert "TRADUJO   envios, pedido" in t
+    assert "DEVUELTA  el modelo dejo 1 cosas sin ubicar" in t
+    assert "HIZO      pedido, cuenta" in t and "herramientas cuenta" in t
+    assert "CERRO     1 articulos, pago transferencia" in t
 
 
-def test_la_pelicula_muestra_lo_que_el_modelo_tenia_delante():
-    """La otra mitad: que viajo en cada vuelta. Un pedido mal escrito puede ser
-    culpa de lo que el modelo NO tenia delante, y eso no se veia."""
-    t = "\n".join(pelicula(_evs()))
-    assert "VUELTA 1" in t and "de buscar" in t
-    assert "3140 tokens" in t
-
-
-def test_la_pelicula_dice_lo_que_no_se_pudo():
-    """Un turno que fallo tiene que verse como fallo, no como un hueco."""
-    t = "\n".join(pelicula(_evs()))
-    assert "NO SE PUDO APLICAR" in t
-    assert "LA CUENTA NO SE PUDO HACER" in t
-    assert "precio_multiple" in t and "6954 ms" in t
+def test_un_error_se_ve_como_error():
+    evs = _evs() + [{"event": "flujo_cobro_error", "trace_id": "abc123", "error": "sin link"}]
+    assert "AVISO     flujo_cobro_error sin link" in "\n".join(pelicula(evs))
 
 
 def test_un_turno_que_se_cayo_se_dice():
-    """Sin `turno_ok` el turno no llego al cliente. Decirlo es el dato; dejar
-    el renglon en blanco seria leerlo como un turno normal."""
-    evs = [e for e in _evs() if e["event"] != "turno_ok"]
-    assert "se cayo antes" in "\n".join(pelicula(evs))
+    """Sin `flujo_turno` el turno no llego a cumplir la traduccion. Decirlo es el dato."""
+    evs = [e for e in _evs() if e["event"] not in ("flujo_turno", "flujo_cierre")] + \
+          [{"event": "interprete_error", "trace_id": "abc123", "error": "RateLimitError"}]
+    t = "\n".join(pelicula(evs))
+    assert "no llego a `flujo_turno`" in t and "interprete_error RateLimitError" in t
 
 
 def test_sin_eventos_no_hay_pelicula():
     """Una ventana sin turnos no imprime un titulo vacio."""
     assert pelicula([]) == []
-    assert pelicula([{"event": "otra_cosa"}]) == []
+    assert pelicula([{"event": "otra_cosa", "trace_id": "x"}]) == []
 
 
 def test_todo_evento_que_la_pelicula_IMPRIME_lo_pide_tambien():
-    """EL CODIGO MUERTO DE LA PELICULA, y me lo comi el 16-sep.
-
-    `EVENTOS_PELICULA` es lo que la pelicula PIDE a Cloud Logging; abajo hay un
-    `elif ev == "..."` por cada uno que sabe imprimir. Agregue la rama de
-    `correccion_de_estado` y NO el nombre a la lista, asi que la rama era
-    inalcanzable: el evento nunca venia. Se vio en la primera corrida real, con
-    un turno de cuatro vueltas del que habia que DEDUCIR que se habia
-    corregido.
-
-    Las dos listas viven en el mismo archivo y a veinte lineas de distancia, y
-    igual se separaron. Por eso es un candado y no un cuidado.
-    """
-    import re
-    from pathlib import Path
+    """Una rama `elif ev == "..."` cuyo evento no esta en la lista no se alcanza nunca."""
     fuente = Path("banco_pruebas/produccion.py").read_text(encoding="utf-8")
-    # Los que la pelicula sabe imprimir, sacados del codigo que los imprime.
-    imprime = set(re.findall(r'elif ev == "([a-z_]+)"', fuente))
-    imprime |= set(re.findall(r'if ev == "([a-z_]+)"', fuente))
+    imprime = set(re.findall(r'(?:el)?if ev == "([a-z_]+)"', fuente))
     huerfanos = sorted(imprime - set(EVENTOS_PELICULA))
-    assert not huerfanos, (
-        f"la pelicula imprime {huerfanos} y no los PIDE: esas ramas no se "
-        f"alcanzan nunca. Agregalos a EVENTOS_PELICULA")
+    assert not huerfanos, f"la pelicula imprime {huerfanos} y no los pide: agregalos a EVENTOS_PELICULA"
+
+
+def test_todo_evento_que_la_pelicula_PIDE_lo_escribe_app():
+    """El telefono descompuesto: un evento que nadie escribe deja la pelicula muda."""
+    codigo = "\n".join(p.read_text(encoding="utf-8") for p in Path("app").rglob("*.py"))
+    mudos = [e for e in EVENTOS_PELICULA if f'"{e}"' not in codigo]
+    print(f"\nPELICULA: {len(EVENTOS_PELICULA)} eventos, {len(EVENTOS_PELICULA) - len(mudos)} escritos en app/")
+    assert not mudos, f"la pelicula pide {mudos} y app/ no los escribe"
