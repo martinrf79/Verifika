@@ -123,12 +123,11 @@ que son los que hacen algo en vez de pedirlo:
 >>> LOS INSTRUMENTOS, y que contesta cada uno <<<
   pytest -q                              bateria offline, sin LLM
   banco_pruebas/produccion.py            charlas reales de Cloud Run
-  banco_pruebas/puerta.py                una mejora contra la base, charla a charla
-  banco_pruebas/vara_58.py               la vara de las 58
-  banco_pruebas/censo_cableado.py        puntas sueltas del cableado
-  banco_pruebas/sonda_turno.py           un turno por dentro
+  banco_pruebas/cableado58.py            las 58 por el flujo vivo, sin modelo
+  banco_pruebas/cableado58.py --grabadas el control con las traducciones de Gemini
+  banco_pruebas/traducciones58.py        lo que devuelve el interprete en cada turno, a mano
 
-Camino vivo: orchestrator -> respuesta.procesar_turno -> tablero.turno
+Camino vivo: orchestrator -> app/core/flujo/turno.procesar_turno
 Reglas: CLAUDE.md. Donde esta cada cosa: MAPA.md. El plan: CLAUDE.md, seccion 1.
 =============================================================================
 REGLAS
@@ -205,6 +204,6 @@ print("    cableado           " + leer("banco_pruebas/cableado_techo.json",
 print("    interpretacion     " + leer("banco_pruebas/interpretacion_piso.json",
                                        "corridas_perfectas", "casillas_de_la_vara"))
 PYEOF
-echo "  el marcador: pytest -q. Una mejora, por banco_pruebas/puerta.py."
+echo "  el marcador: pytest -q, con las 58 adentro: tests/test_cableado58.py."
 echo "======================================================================="
 echo ""

@@ -5,7 +5,7 @@ import structlog
 
 from app.config import get_settings
 from app.logger import get_logger
-from app.core.respuesta import procesar_turno
+from app.core.flujo.turno import procesar_turno
 
 log = get_logger(__name__)
 settings = get_settings()

@@ -194,10 +194,35 @@ class Turno:
         return resueltos
 
 
+UNO = ("pedido", "total", "cliente")  # casillas que son un objeto; el resto son listas o un si o no
+
+
+def normalizar(llena) -> dict:
+    """La traduccion en la forma de la ficha, venga como venga del modelo: "cliente.nombre": "Ana" es
+    {"cliente": {"nombre": "Ana"}}; un pedido que llega como lista son sus articulos; un objeto suelto donde va una
+    lista es una lista de uno; un destino o un tema dentro de un objeto es ese texto. No interpreta nada."""
+    llena = dict(llena) if isinstance(llena, dict) else {}
+    for k in [k for k in llena if "." in k]:
+        cas, _, sub = k.partition(".")
+        base = llena.get(cas) if isinstance(llena.get(cas), dict) else {}
+        llena[cas] = {**base, sub: llena.pop(k)}
+    for cas in UNO:
+        v = llena.get(cas)
+        if cas == "pedido" and isinstance(v, list):
+            llena[cas] = {"cambia": True, "articulos": v}
+        elif v is not None and not isinstance(v, dict):
+            llena[cas] = {"pide": _si(v)} if cas == "total" else {}
+    for cas, campo in (("envios", "destino"), ("politicas", "tema"), ("no_vende", "que"), ("explicar", "pregunta"),
+                       ("preguntar", "dato"), ("corrige", "dijo")):
+        llena[cas] = [str(x.get(campo) or next(iter(x.values()), "")) if isinstance(x, dict) else x
+                      for x in _lista(llena.get(cas))]
+    return llena
+
+
 def ejecutar(llena: dict, estado: dict, tienda_id: str, explicar=None) -> Turno:
     """La traduccion entera, casilla por casilla, en un orden fijo."""
     t = Turno(estado, tienda_id)
-    llena = llena or {}
+    llena = normalizar(llena)
 
     cliente = llena.get("cliente") if isinstance(llena.get("cliente"), dict) else {}
     estado["cliente"].update({k: v for k, v in cliente.items() if v and k in ("localidad", "nombre", "es")})

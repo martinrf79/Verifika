@@ -35,24 +35,3 @@ def mostrar(estado: dict, filas: list) -> None:
     nuevos = [{"id": str(f["id"]), "nombre": f.get("nombre") or "", "precio": _plata(f.get("precio_ars"))}
               for f in filas]
     estado["mostrados"] = (viejos + nuevos)[-TOPE_MOSTRADOS:]
-
-
-def texto(estado: dict) -> str:
-    """El estado como lo lee el interprete: datos numerados, sin prosa."""
-    out = []
-    if estado["mostrados"]:
-        out.append("LO MOSTRADO, del mas viejo al mas nuevo:")
-        out += [f"M{i}. {m['nombre']}, {m['precio']}" for i, m in enumerate(estado["mostrados"], 1)]
-    if estado["pedido"]:
-        out.append("EL PEDIDO:")
-        out += [f"P{i}. {a['cantidad']}x {a['nombre']}" + (f", a {a['destino']}" if a.get("destino") else ", sin destino")
-                for i, a in enumerate(estado["pedido"], 1)]
-    if estado["reparto"]:
-        out.append("PAGA: " + ", ".join(f"{r['medio']} {r['porcentaje']}%" for r in estado["reparto"]))
-    if estado["busqueda"]:
-        b = estado["busqueda"]
-        out.append(f"LA ULTIMA BUSQUEDA: {b.get('rubro')}, condiciones {b.get('condiciones') or []}, "
-                   f"orden {b.get('orden') or 'nada'}")
-    if estado["cliente"]:
-        out.append("EL CLIENTE: " + ", ".join(f"{k} {v}" for k, v in estado["cliente"].items() if v))
-    return "\n".join(out) or "La charla recien empieza."

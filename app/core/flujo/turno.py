@@ -3,12 +3,12 @@ from app.config import get_settings
 from app.core import guardas_salida as gs
 from app.core.contexto_turno import set_current_tienda
 from app.logger import get_logger
-from app.storage.firestore_client import get_conversation, save_conversation
+from app.storage import firestore_client as fc
 
 from . import estado as E
 from . import interprete, redaccion
 from .cierre import cerrar
-from .ejecutor import ejecutar
+from .ejecutor import ejecutar, normalizar
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -16,12 +16,23 @@ settings = get_settings()
 
 async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: str, trace_id: str) -> str:
     set_current_tienda(tienda_id)
-    conv = get_conversation(user_id, tienda_id=tienda_id) or {}
+    conv = fc.get_conversation(user_id, tienda_id=tienda_id) or {}
     history = conv.get("history") or []
     estado = E.leer(conv)
 
-    llena = interprete.interpretar(raw_message, history, E.texto(estado), trace_id)
-    t = ejecutar(llena, estado, tienda_id, explicar=lambda q: interprete.explicar(q, trace_id))
+    llena = await interprete.interpretar(raw_message, history, estado, tienda_id, trace_id)
+    if llena is None:
+        from app.core.guia_venta_prosa import mensaje
+        return mensaje("sobrecarga", "Perdón, estoy con mucha demanda en este momento. "
+                                     "Probá de nuevo en un ratito y te respondo. 🙏")
+    llena = normalizar(llena)
+    explicado = {str(q): await interprete.explicar(str(q), trace_id) for q in llena["explicar"]}
+    try:
+        t = ejecutar(llena, estado, tienda_id, explicar=explicado.get)
+    except Exception as e:  # noqa: BLE001 — una traduccion que el codigo no puede cumplir no deja al cliente sin nada
+        log.error("flujo_ejecutor_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:200]}",
+                  casillas=sorted(llena))
+        return "No te entendí bien. ¿Me lo decís de otra forma?"
     if any(h["tipo"] == "pedido" for h in t.hechos):
         estado["nombre_pedido"] = False
     # EL NOMBRE SE PIDE UNA VEZ POR PEDIDO, en el primer turno sin otra pregunta: si no, la venta queda trabada.
@@ -52,7 +63,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
     history = (history + [{"role": "user", "content": raw_message},
                           {"role": "assistant", "content": texto}])[-(settings.HISTORY_LIMIT * 2):]
     try:
-        save_conversation(user_id, history, conv.get("summary") or "", tienda_id=tienda_id,
+        fc.save_conversation(user_id, history, conv.get("summary") or "", tienda_id=tienda_id,
                           estado_conversacion="en_curso", estado_charla=estado, ultimo_presupuesto=presupuesto)
     except Exception as e:  # noqa: BLE001 — el cliente recibe su respuesta aunque no se haya guardado
         log.error("flujo_guardar_error", trace_id=trace_id, error=str(e)[:200])

@@ -16,9 +16,9 @@ anterior, con las historias de cada regla, está en `archivo/documentacion/CLAUD
 4. **Producción se lee sin issue:** `python3 banco_pruebas/produccion.py --desde 6h` da los logs y la charla
    literal; `--usuario <numero>` una sola. El entorno trae la cuenta de solo lectura. Sin `gcloud`, comentando
    `/logs` en el issue 31.
-5. **Dónde está cada parte del camino vivo lo dice `MAPA.md`, y sólo ése.** El camino es `orchestrator`,
-   `respuesta.procesar_turno`, `tablero.turno`. `arquitectura/MAPA_CABLEADO.md` es histórico: describe un
-   camino apagado el 26-sep y sólo valen sus números de desconexión `D`, que el código cita.
+5. **Dónde está cada parte del camino vivo lo dice `MAPA.md`, y sólo ése.** El camino es `orchestrator` →
+   `app/core/flujo/turno.procesar_turno`: el intérprete traduce, el ejecutor cumple, la redacción escribe.
+   `arquitectura/MAPA_CABLEADO.md` y las fichas hasta la 70 describen caminos ya borrados.
 
 ---
 
@@ -52,20 +52,19 @@ conciso, sin repetir; que la memoria de la charla no se pierda.
 ### El plan, en este orden
 
 Cambiado por Martín el 19-oct: **el cableado desde cero, sobre las 58, sin modelos.** Reemplaza al plan de la
-FICHA 70 y al criterio de sacar las once capas de a una.
+FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 5 están hechos: el flujo es el camino vivo.
 
-1. **El flujo nuevo vive en `banco_pruebas/flujo/` mientras se arma.** Estado, intérprete, ejecutor, redacción y
-   cierre, escritos de cero. De lo viejo usa sólo las herramientas: motor, calculadora, envío, políticas,
-   compatibilidad, `leads` y Firestore.
+1. **El flujo vive en `app/core/flujo/`.** Estado, intérprete, ejecutor, catálogo, redacción y cierre, escritos de
+   cero. De lo viejo usa sólo las herramientas: motor, calculadora, envío, políticas, compatibilidad, `leads` y
+   Firestore.
 2. **Sin modelos.** Las dos llamadas al modelo, traducir y explicar, las reemplaza el banco con lo escrito a mano en
    `banco_pruebas/traducciones58.py`, en el formato de la ficha 10. El corredor bloquea cualquier otra llamada.
 3. **La vara es la de Martín**: las casillas de `vara_58.json`, que no se tocan, por el webhook entero:
    `python3 -m banco_pruebas.cableado58`.
 4. **El control contra la trampa**: el mismo cableado con las traducciones que grabó Gemini,
    `--grabadas f10e_58_gg1`, `gg2` y `gg3`. Un arreglo entra si sirve para una clase, no para un caso.
-5. **Cuando estén las 58, un solo deploy**: el flujo pasa a `app/core/flujo/`, el intérprete se conecta al modelo
-   con el prompt de la ficha 10, y se borran `tablero.py`, `respuesta.py` y lo que quede sin uso. El techo de
-   `tests/lineas_techo.json` baja en ese commit. Si falla en vivo, se vuelve con git.
+5. **Las 58 están en la batería**, `tests/test_cableado58.py`: una charla rota frena el deploy. El intérprete usa el
+   prompt de la ficha 10. `tablero.py`, `respuesta.py` y las once capas se borraron. Si falla en vivo, git.
 6. **Después, Martín dice cómo se sigue.**
 
 ### Qué es parche, y cómo no se cae en eso
@@ -172,9 +171,9 @@ FICHA 70 y al criterio de sacar las once capas de a una.
 
 ```bash
 python3 -m pytest -q                       # la batería offline, sin modelo
-python3 -m pytest tests/test_casos_grabados.py   # la vara fija
-python3 -m banco_pruebas.grabadas          # el cableado sin modelo: lo commiteado contra el arbol de trabajo
-python3 -m banco_pruebas.puerta --base <etiqueta> --cambio <etiqueta>   # una mejora contra la base
+python3 -m pytest tests/test_cableado58.py      # la vara fija: las 58 por el flujo vivo, sin modelo
+python3 -m banco_pruebas.cableado58 --ver        # lo mismo, con lo que recibe el cliente
+python3 -m banco_pruebas.cableado58 --grabadas f10e_58_gg1   # el control con las traducciones de Gemini
 uvicorn app.main:app --reload --port 8080  # correr local
 ```
 

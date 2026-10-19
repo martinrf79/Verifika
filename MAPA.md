@@ -11,7 +11,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 
 **Arranque corto:**
 
-1. El camino vivo es `orchestrator` → `respuesta.procesar_turno` → `tablero.turno`, que usa las herramientas de `agente`.
+1. El camino vivo es `orchestrator` → `flujo.turno.procesar_turno`: intérprete, ejecutor, redacción, cierre.
    El motor busca. Lo viejo está en `archivo/` y NO se reenchufa.
 2. Se lee entera la ficha abierta que nombra `PENDIENTE.md` antes de tocar una mejora.
 3. No se crea una función sin mirar si ya existe. La identidad la certifica
@@ -26,19 +26,21 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | --- | --- |
 | Entrada de WhatsApp y Telegram, webhooks | `app/main.py` |
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
-| El turno: agente, guarda de plata, cierre, memoria | `app/core/respuesta.py` |
-| El tablero: intérprete, las once capas, redactor | `app/core/tablero.py` |
-| El estado de la charla que escribe el código | `app/core/ficha_charla.py` |
-| El agente: herramientas chicas, índice, alias | `app/core/agente.py` |
+| El turno entero: leer, interpretar, ejecutar, redactar, cerrar, guardar | `app/core/flujo/turno.py` |
+| Las dos llamadas al modelo: traducir a la ficha 10 y explicar | `app/core/flujo/interprete.py` |
+| Cada casilla de la traducción, cumplida con las herramientas | `app/core/flujo/ejecutor.py` |
+| Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |
+| La respuesta al cliente, escrita por el código | `app/core/flujo/redaccion.py` |
+| El estado único de la charla | `app/core/flujo/estado.py` |
+| El cierre: pedido y nombre, lead, aviso y cobro | `app/core/flujo/cierre.py` |
+| Índice de la tienda, rubro, cuenta, envío, compatibilidad | `app/core/agente.py` |
 | El motor: buscar, identidad, filtros, cuenta | `app/core/motor.py` |
-| Precio y envío que el modelo no puede inventar | `app/core/numeros.py` |
 | La llamada al modelo y el reintento | `app/core/llm_reintento.py` |
 | Campos y filtros del catálogo | `app/core/filtros_catalogo.py` |
 | Cuenta, precios, envío | `app/core/calculadora.py`, `app/core/envio.py` |
-| Cierre y cobro | `app/core/cierre.py`, `app/core/camino_cobro.py`, `app/core/pago.py` |
+| Textos del cierre y cobro | `app/core/cierre.py`, `app/core/pago.py` |
 | Aviso de lead | `app/core/leads.py` |
 | Prosa fija de la casa | `app/core/guia_venta_prosa.py` |
-| Memoria de la charla | `app/core/memoria_larga.py` |
 | Leer y escribir Firestore | `app/storage/firestore_client.py` |
 | Configuración y secretos | `app/config.py` |
 
@@ -53,7 +55,6 @@ permiso.
 | Qué querés medir | Archivo |
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
-| El flujo nuevo, armándose desde cero: estado, ejecutor, redacción, cierre | `banco_pruebas/flujo/` |
 | Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
 | Lo que devuelve el intérprete en cada turno de las 58, escrito a mano | `banco_pruebas/traducciones58.py` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |

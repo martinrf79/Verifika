@@ -8,12 +8,12 @@ trajo el interprete en la casilla `cliente`. El bot pide el nombre y nada mas: e
   pedido y nombre, sin cerrar     lead capturado, aviso al dueño, confirmacion y cobro
   pedido igual al ya cerrado      nada: no se cierra dos veces
 
-De `leads` y `cierre` usa solo lo que guarda el lead, avisa y escribe la confirmacion; de `pago`, el cobro. Sus
+Llama a `leads` por el modulo —`leads.crear_lead`, `leads.notificar_lead`—, asi el doble del banco lo reemplaza
+siempre. De `leads` y `cierre` usa solo lo que guarda el lead, avisa y escribe la confirmacion; de `pago`, el cobro. Sus
 lecturas del mensaje —si pide el link, si dice que no, si pregunta— no se usan: eran otra interpretacion.
 """
 from app.core import cierre as C
-from app.core.leads import crear_lead, actualizar_lead, modo_cierre
-from app.core.notificador import notificar_lead
+from app.core import leads
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -35,18 +35,19 @@ async def cerrar(estado: dict, user_id: str, canal: str, tienda_id: str, presupu
     destinos = ", ".join(dict.fromkeys(a["destino"] for a in estado["pedido"] if a.get("destino")))
     lead = {"nombre": nombre, "telefono": user_id, "forma_pago": medio, "direccion": destinos, "orden": presupuesto}
     try:
-        lead_id = crear_lead(user_id, canal, tienda_id, ultimo_mensaje="", frase_disparadora="pedido y nombre",
+        lead_id = leads.crear_lead(user_id, canal, tienda_id, ultimo_mensaje="", frase_disparadora="pedido y nombre",
                              nivel="fuerte", estado_inicial="capturado", orden=presupuesto)
-        actualizar_lead(lead_id, tienda_id, {"nombre": nombre, "telefono": user_id, "forma_pago": medio,
+        leads.actualizar_lead(lead_id, tienda_id, {"nombre": nombre, "telefono": user_id, "forma_pago": medio,
                                              "direccion": destinos})
-        await notificar_lead(tienda_id=tienda_id, user_id=user_id, canal=canal, estado="capturado", nombre=nombre,
+        await leads.notificar_lead(tienda_id=tienda_id, user_id=user_id, canal=canal, estado="capturado", nombre=nombre,
                              telefono=user_id, direccion=destinos, forma_pago=medio, orden=presupuesto,
                              ultimo_mensaje="")
     except Exception as e:  # noqa: BLE001 — sin lead guardado el cliente igual recibe la confirmacion
         log.warning("flujo_cierre_lead_error", trace_id=trace_id, error=str(e)[:160])
     # La cuenta no se repite si el cliente la acaba de leer en este mismo mensaje.
-    texto = C.mensaje_confirmacion(lead, presupuesto if resumen else "")
-    if modo_cierre(tienda_id) == "venta":
+    # Sin medio dicho, la confirmacion igual nombra el pago: "coordinar y el envio a Rosario" quedaba cojo.
+    texto = C.mensaje_confirmacion({**lead, "forma_pago": medio or "el medio que elijas"}, presupuesto if resumen else "")
+    if leads.modo_cierre(tienda_id) == "venta":
         from app.core.pago import instruccion_cobro
         # UN COBRO POR MEDIO: con 70/30, el CBU por la parte de transferencia y el link por la de Mercado Pago.
         for m in medios or [""]:

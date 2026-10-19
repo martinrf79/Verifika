@@ -1,9 +1,8 @@
 """EL CABLEADO SOBRE LAS 58 — el flujo nuevo por el webhook entero, sin modelo (19-oct-2026, orden de Martin).
 
 Cada charla de las 58 de `vara_58.json` corre turno por turno por el clon de produccion —el webhook de WhatsApp, el
-antijailbreak, el orchestrator, el cierre y Firestore en RAM— con dos cambios:
-  1. el turno es `banco_pruebas.flujo.turno.procesar_turno`, el flujo nuevo;
-  2. las dos llamadas al modelo devuelven lo escrito a mano en `banco_pruebas/traducciones58.py`.
+antijailbreak, el orchestrator, el flujo, el cierre y Firestore en RAM—, y las dos llamadas al modelo devuelven lo
+escrito a mano en `banco_pruebas/traducciones58.py`.
 Lo que recibe el cliente se califica con las casillas de `vara_58.json`, que no se tocan: las decidio Martin.
 
 El control: `--grabadas <etiqueta>` usa en el ULTIMO turno de cada charla la traduccion que grabo Gemini en
@@ -45,9 +44,7 @@ def grabadas(etiqueta: str) -> dict:
 def instalar():
     C.preparar_entorno()
     C.instalar()
-    from app.core import orchestrator
-    from banco_pruebas.flujo import interprete, turno
-    orchestrator.procesar_turno = turno.procesar_turno
+    from app.core.flujo import interprete
     # NI UNA LLAMADA AL MODELO: cada intento se anota, aunque quien llamo se trague el error, y la corrida lo dice.
     from app.core import llm_reintento
 
@@ -64,8 +61,13 @@ def correr(charla: dict, traducciones: list, interprete, explicar: dict) -> list
     uid = f"cableado_{charla['id']}"
     C.reiniciar_cliente(uid)
     cola = list(traducciones)
-    interprete.interpretar = lambda *a, **k: cola.pop(0) if cola else {}
-    interprete.explicar = lambda pregunta, *a, **k: explicar.get(pregunta, "")
+
+    async def _interpretar(*a, **k):
+        return cola.pop(0) if cola else {}
+
+    async def _explicar(pregunta, *a, **k):
+        return explicar.get(pregunta, "")
+    interprete.interpretar, interprete.explicar = _interpretar, _explicar
     respuestas, turnos = [], []
     for t in charla["turnos"]:
         texto = "\n".join(asyncio.run(C.turno(uid, t["texto"])))

@@ -17,7 +17,7 @@ import unicodedata
 
 from app.core import agente
 from app.core.filtros_catalogo import los_que_lo_nombran_entero, vocabulario
-from app.storage.firestore_client import get_all_products, get_product_by_id
+from app.storage import firestore_client as fc
 
 
 def n(t) -> str:
@@ -26,7 +26,7 @@ def n(t) -> str:
 
 
 def productos(tienda_id: str) -> list:
-    return get_all_products(tienda_id=tienda_id) or []
+    return fc.get_all_products(tienda_id=tienda_id) or []
 
 
 def rubro(texto: str, tienda_id: str) -> str:
@@ -116,7 +116,7 @@ def tope_del_total(si: str):
 
 
 def por_id(pid: str, tienda_id: str) -> dict:
-    return get_product_by_id(str(pid), tienda_id=tienda_id) or {}
+    return fc.get_product_by_id(str(pid), tienda_id=tienda_id) or {}
 
 
 # ══ BUSQUEDA ═════════════════════════════════════════════════════════════════

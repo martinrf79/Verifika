@@ -1084,7 +1084,7 @@ def test_el_motivo_de_no_contar_dice_si_el_precio_es_el_mismo(firestore_doble, n
     """Sin color no se cuenta, porque elegir es del cliente. Pero si todos los
     que se llaman asi valen lo mismo, decir que cada uno sale distinto es falso.
     Y "el G203 o el G305" no es uno solo aunque la lista traiga dos colores."""
-    from app.core import tablero as T
+    from app.core import agente as T
     r = T.ejecutar("cuenta", {"items": [{"producto": nombre, "cantidad": 1}], "destino": "", "destinos": [],
                               "reparto_pago": None}, TIENDA)
     motivo = (r.get("cuenta") or {}).get("sin_total") or ""
