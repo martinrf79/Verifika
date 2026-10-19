@@ -28,11 +28,11 @@ ACCIONES = {
     "politica": 'una regla de la tienda: "tema" de la lista; "afirma" lo que da por cierto de la tienda.',
     "compatibilidad": 'si un producto anda con algo: "producto", "con"; "falta_modelo" true si es un equipo suyo sin '
                       'modelo —"mi notebook"—.',
-    "comprar": 'lo que decide llevar, o la lista con cantidades y destinos que arma para el presupuesto. Solo el cambio '
-               'de este mensaje: "agrega" [{"producto", "cantidad", "color", "destino"}] —producto es un modelo, un '
-               '"M-2", un rubro o "los otros", que sin cantidad es todo lo que queda de la lista—; "saca" ["L-1"]; '
-               '"cambia" [{"es": "L-1", y producto, cantidad, color o destino}]; "confirma" ["L-2"] si dice que si a lo '
-               'que el renglon tiene a confirmar; "total" si dice cuantos articulos son en total; "reemplaza" true si rehace el pedido entero y '
+    "comprar": 'lo que decide llevar, o la lista con cantidades y destinos para el presupuesto. Solo el cambio de este '
+               'mensaje: "agrega" [{"producto", "cantidad", "color", "destino"}] —un modelo, un "M-2", un rubro o "los '
+               'otros", que sin cantidad es lo que queda de la lista—; "saca" ["L-1"]; "cambia" [{"es": "L-1", y producto, '
+               'cantidad, color o destino}]; "confirma" ["L-2"] si dice que si a lo que falta confirmar; "acepta" ["L-2"] '
+               'si acepta lo SUPUESTO; "total" si dice cuantos son en total; "reemplaza" true si rehace el pedido y '
                '"agrega" es como queda; "reparto" como en cuenta.',
     "explicar": 'saber general de tecnologia, que no es de la tienda: "pregunta".',
     "otro": '"que": saludo, dato —lo que dice de si mismo, que va en "cliente"—, corrige —lo que retiro en el mismo '

@@ -38,8 +38,10 @@ def test_un_rubro_fuera_de_la_lista_se_confirma_y_los_otros_esperan():
     _, falta, arts, qs = _turno(_real_t1())
     assert {x["falta"] for x in falta} == {"confirmar", "otros"}
     assert arts == []
-    # Una sola pregunta: "los otros" depende de la respuesta sobre el teclado.
-    assert len(qs) == 1 and qs[0].startswith("Pediste teclado para Concordia"), qs
+    # Una sola pregunta, entre las lecturas que cierran con "los otros dos": el teclado era un auricular o una memoria.
+    # Si fuera aparte, los otros serian tres. "Los otros" espera esa respuesta.
+    assert len(qs) == 1 and qs[0].startswith("El teclado para Concordia no estaba en tu lista"), qs
+    assert "auriculares o memoria ram" in qs[0], qs
 
 
 def test_lo_demas_como_te_dije_confirma_sin_duplicar():
@@ -106,7 +108,8 @@ def test_el_pago_partido_pide_el_medio_y_que_sume_cien():
         B.aplicar(b, {"agrega": [{"producto": "G203", "cantidad": 1, "color": "negro"}], "reparto": reparto})
         _, falta, arts, qs = _turno(b)
         assert [x["falta"] for x in falta] == ([tipo] if tipo else []), (reparto, falta)
-        assert bool(arts) == (tipo is None)
+        # Lo que falta del pago no frena la cuenta: frena el cierre.
+        assert arts and (B.etapa(b, falta, arts) == "armando") == bool(tipo)
     print(f"\nPAGO: {len(casos)} casos")
 
 
@@ -212,3 +215,36 @@ def test_una_charla_de_antes_del_borrador_no_pierde_su_pedido():
     _, falta, arts, _ = _turno(b)
     assert falta == [] and [(a["cantidad"], a["destino"]) for a in arts] == [(2, "Rosario")]
     assert b["cliente"]["nombre"] == "Julio" and B.pago_listo(b)
+
+
+def test_el_borrador_propone_la_lectura_que_cierra_con_los_numeros_del_cliente():
+    # La charla real del 19-oct, 18:38: "son 7, el teclado va a Posadas", y el modelo lo anoto como un teclado nuevo.
+    b = _real_t1()
+    B.aplicar(b, {"total": 7, "confirma": ["L-3"]})
+    B.aplicar(b, {"agrega": [{"producto": "teclado", "cantidad": 1, "destino": "Posadas"}]})
+    res, falta, arts, qs = _turno(b)
+    # Dos teclados darian ocho: la lectura que cierra es el mismo teclado que se mueve, y los otros son tres.
+    assert [x["falta"] for x in falta] == ["supuesto"], falta
+    assert sum(a["cantidad"] for a in arts) == 7
+    assert sum(a["cantidad"] for a in arts if a["destino"] == "Posadas") == 4
+    supuesto = next(x["supuesto"] for x in res if x.get("supuesto"))
+    assert "va a Posadas, no a Concordia" in supuesto["texto"] and qs == ["¿Lo dejo así?"]
+    assert B.etapa(b, falta, arts) == "armando"
+    # Si lo acepta, lo supuesto pasa a ser lo dicho y no queda nada a confirmar.
+    B.aplicar(b, B.aceptar(b, ["L-6"], TIENDA))
+    res, falta, arts, qs = _turno(b)
+    assert falta == [] and sum(a["cantidad"] for a in arts) == 7 and [r["L"] for r in b["renglones"]] == \
+        ["L-1", "L-2", "L-4", "L-5", "L-6"]
+
+
+def test_un_rubro_fuera_de_la_lista_que_solo_cierra_de_una_forma_se_propone():
+    # Dos mouse y un teclado a Rosario, los otros a Salta, con una lista de dos mouse y dos auriculares: el teclado
+    # aparte deja los otros en dos, que es lo que dijo.
+    b = B.leer({})
+    B.aplicar(b, {"agrega": [{"producto": "mouse", "cantidad": 2, "destino": "Rosario"},
+                             {"producto": "teclado", "cantidad": 1, "destino": "Rosario"},
+                             {"producto": "los otros", "cantidad": 2, "destino": "Salta"}]},
+              pedidas={"mouse": 2, "auriculares": 2})
+    res, falta, arts, qs = _turno(b)
+    assert [x["falta"] for x in falta] == ["supuesto"] and sum(a["cantidad"] for a in arts) == 5, falta
+    assert "aparte" in next(x["supuesto"]["texto"] for x in res if x.get("supuesto"))

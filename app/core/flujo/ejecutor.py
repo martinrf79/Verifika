@@ -190,7 +190,7 @@ class Turno:
         return out
 
     def derivar(self) -> None:
-        """EL BORRADOR, re-derivado entero: lo que falta se pregunta desde ahi, y el pedido es lo resuelto o nada."""
+        """EL BORRADOR, re-derivado entero: lo que falta y lo supuesto se preguntan desde ahi; el pedido es lo resuelto."""
         b, antes = self.estado["borrador"], self.estado["pedido"]
         self.res = B.resolver(b, self.tienda)
         falta = B.faltantes(b, self.res)
@@ -199,7 +199,7 @@ class Turno:
         self.n = self.compra or self.n
         for q in B.preguntas(b, falta):
             self.preguntar(q)
-        if falta:
+        if not arts and falta:
             # Lo que ya quedo claro se muestra una vez; lo elegido de un rubro no, que su lista ya esta en el mensaje.
             de_lista = {str(p["id"]) for x in self.listas.values() for p in x["filas"]}
             claros = [a for x in self.res if not x.get("falta") for a in x.get("articulos") or []]
@@ -207,7 +207,11 @@ class Turno:
                 self.hechos.append({"tipo": "producto", "producto": K.por_id(pid, self.tienda), "variantes": [],
                                     "dato": {}, "pide": ""})
             mostrar(self.estado, [{"id": a["id"], "nombre": a["nombre"], "precio_ars": a["precio"]} for a in claros])
-        elif B.huella(arts) != B.huella(antes) and self.compra:
+            return
+        # LO SUPUESTO SE DICE mientras no lo acepte: la pregunta de si se deja asi no queda sin su contexto.
+        self.hechos += [{"tipo": "supuesto", "texto": x["supuesto"]["texto"], "n": self.n} for x in self.res
+                        if x.get("supuesto")]
+        if B.huella(arts) != B.huella(antes) and self.compra:
             elegidos = {r: {"nombre": nom, "orden": (b["criterios"].get(r) or {}).get("orden") or "nada"}
                         for x in self.res for r, nom in (x.get("elegidos") or {}).items()}
             if elegidos and set(elegidos) & set(self.listas):
@@ -303,6 +307,9 @@ def _comprar(t: Turno, p: dict):
         if not nombre:
             return None
         agrega.append({**a, "producto": nombre, "cita": p.get("cita") or "", "condicion": p.get("condicion") or ""})
+    if _lista(p.get("acepta")):
+        # Lo que acepto de lo supuesto pasa a lo dicho, antes de lo demas de esta compra.
+        B.aplicar(t.estado["borrador"], B.aceptar(t.estado["borrador"], _lista(p["acepta"]), t.tienda))
     B.aplicar(t.estado["borrador"], {**{k: p.get(k) for k in ("saca", "cambia", "confirma", "total", "reemplaza",
                                                                 "responde")}, "agrega": agrega},
               pedidas=t.pedidas if agrega else None)
@@ -313,6 +320,9 @@ def _comprar(t: Turno, p: dict):
 
 def _cuenta(t: Turno, p: dict):
     _reparto(t, p)
+    if any(h["tipo"] == "cuenta" for h in t.hechos):
+        # UNA CUENTA POR TURNO: "el 70 transferencia" y "armame presupuestos" piden la misma, con todo lo dicho.
+        return True
     si_pasa = _uno(t, p.get("si_pasa")) if p.get("si_pasa") else ""
     if t.estado["pedido"]:
         t.cuenta(t.estado["pedido"], B.pago_listo(t.estado["borrador"]), p.get("tope"), si_pasa)

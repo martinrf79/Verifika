@@ -108,7 +108,11 @@
     ],
     "cliente": {}
    },
-   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\n\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nPediste teclado para Concordia, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?"
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\n\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nPediste teclado para Concordia, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
+   "debe": [
+    "teclado",
+    "?"
+   ]
   },
   {
    "trace": "6af3bca0",
@@ -165,7 +169,16 @@
      }
     ]
    },
-   "respondio": "Auriculares HyperX Cloud II Negro: $125.500, hay stock.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock.\n\nPediste teclado para Concordia, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\nPediste teclado para posadas, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?"
+   "respondio": "Auriculares HyperX Cloud II Negro: $125.500, hay stock.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock.\n\nPediste teclado para Concordia, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\nPediste teclado para posadas, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
+   "debe": [
+    "Total general",
+    "va a posadas, no a Concordia",
+    "¿Con qué medio pagás el 30%?"
+   ],
+   "no_debe": [
+    "Pediste teclado"
+   ]
   }
- ]
+ ],
+ "defecto": "19-oct 18:38: con 'son 7, el teclado va a Posadas' el bot no armo el presupuesto y volvio a preguntar por el teclado. Se perdia la confirmacion al juntar las compras, el modelo anoto un teclado nuevo en vez de moverlo, y el medio que faltaba frenaba la cuenta."
 }

@@ -67,12 +67,6 @@ def mensaje(clave: str, defecto: str = "", **llaves) -> str:
         return texto
 
 
-def etiqueta_dato(clave: str, defecto: str = "") -> str:
-    """Como se nombra un dato que falta -'tu nombre y apellido'- adentro de la frase de cierre."""
-    corpus = _corpus_de(_tienda_actual())
-    return str(corpus["etiquetas_datos"].get(str(clave), "") or defecto)
-
-
 def _resultado(tema: str, corpus: dict) -> dict:
     """Criterio y movida de un tema, juntos. Los campos que ese tema no tenga
     simplemente no viajan: el modelo no recibe claves vacias que llenar."""

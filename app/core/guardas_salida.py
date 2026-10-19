@@ -132,25 +132,3 @@ def para_corregir(sin_respaldo, tienda_id: str) -> tuple:
             return str(campo), dice
     return None, ""
 
-
-def correccion_de_estado(texto: str, tocados, tienda_id: str,
-                         trace_id: str = "") -> str:
-    """EL BLOQUE QUE VUELVE AL MODELO cuando afirmo sobre un campo que no miro."""
-    sin = afirmo_sin_mirar(texto, tocados, tienda_id, trace_id)
-    if not sin:
-        return ""
-    campo, dice = para_corregir(sin, tienda_id)
-    if not campo:
-        return ""
-    log.warning("correccion_de_estado", trace_id=trace_id, campo=campo)
-    return (
-        "CORRECCION DEL CODIGO, y es un dato de la fuente, no una opinion.\n"
-        f"En lo que escribiste afirmaste sobre `{campo}`, y en este turno no lo "
-        "consultaste ni una vez. La fuente SI lo tiene:\n"
-        f"  {dice}\n"
-        "Contesta con ese dato de la fuente, y si no alcanza para lo que "
-        "pidio, deciselo y ofrecele buscarlo con esas palabras. Si volves a "
-        "decir que no lo tenemos, le estas mintiendo al cliente.\n"
-        "Y el resto del pedido se contesta IGUAL: los precios que ya volvieron, "
-        "los envios que ya se cotizaron y la cuenta si la pidio. Una condicion "
-        "que no se pueda cumplir se dice en un renglon y no cancela nada.")

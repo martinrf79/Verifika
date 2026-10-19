@@ -64,17 +64,6 @@ def _normalizar_modo(v: str) -> str:
     return _ALIAS_MODO.get(clave, "")
 
 
-def _insistencia(lead: dict, falt: list) -> int:
-    """Veces que ya se pidieron EXACTAMENTE estos campos en turnos anteriores."""
-    previos = list(lead.get("datos_pedidos_campos") or [])
-    if previos != list(falt):
-        return 0
-    try:
-        return max(0, int(lead.get("datos_pedidos_veces") or 0))
-    except (TypeError, ValueError):
-        return 0
-
-
 def modo_cierre(tienda_id: str) -> str:
     """Modalidad del cierre para la tienda. La config por tienda en Firestore ('modo_cierre') pisa el default de
     config.py."""
@@ -87,33 +76,6 @@ def modo_cierre(tienda_id: str) -> str:
     except Exception as e:
         log.warning("modo_cierre_read_error", error=str(e)[:100])
     return _normalizar_modo(settings.MODO_CIERRE) or settings.MODO_CIERRE
-
-
-def get_lead_activo(user_id: str, canal: str, tienda_id: str) -> dict | None:
-    try:
-        leads_ref = _tienda_ref(tienda_id).collection("leads")
-        cutoff_ts = time.time() - LEAD_VENTANA_SEGUNDOS
-        query = (leads_ref
-                 .where(filter=firestore.FieldFilter("user_id", "==", user_id))
-                 .where(filter=firestore.FieldFilter("canal", "==", canal))
-                 .order_by("creado_en_ts", direction=firestore.Query.DESCENDING)
-                 .limit(1))
-        docs = list(query.stream())
-        if not docs:
-            return None
-        data = docs[0].to_dict()
-        data["lead_id"] = docs[0].id
-        if data.get("creado_en_ts", 0) < cutoff_ts:
-            return None
-        # Un lead descartado (por "nueva compra") o ya cerrado no se reusa: si no,
-        # un pedido viejo se completa con datos de una compra nueva (visto en prod
-        # 16-jun: cierre con "javier rojas" y 2 gabinetes sobre una compra de RAM).
-        if data.get("estado") in ("descartado", "cerrado", "completado"):
-            return None
-        return data
-    except Exception as e:
-        log.warning("lead_query_failed", error=str(e)[:500])
-        return None
 
 
 def descartar_leads_activos(user_id: str, canal: str, tienda_id: str) -> int:

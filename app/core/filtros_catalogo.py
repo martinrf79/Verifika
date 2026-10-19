@@ -909,16 +909,3 @@ _COMO_LO_DICE_EL_CLIENTE = {
     "parlantes": "parlante", "auriculares bluetooth": "auriculares",
 }
 
-
-def _rubros_por_como_lo_dice(msg: str, reales: set) -> list[str]:
-    """Los rubros que el cliente nombro con SU palabra."""
-    import re
-    out = []
-    for alias, cat in _COMO_LO_DICE_EL_CLIENTE.items():
-        if cat not in reales or cat in out:
-            continue
-        if re.search(r"\b" + re.escape(alias) + r"\b", msg):
-            out.append(cat)
-    return out
-
-

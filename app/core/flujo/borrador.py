@@ -75,7 +75,8 @@ def aplicar(b: dict, ops: dict, pedidas: dict = None) -> None:
         if not r:
             continue
         if c.get("producto"):
-            r.update({"que": str(c["producto"]), "confirmado": False, "color": str(c.get("color") or "")})
+            # Lo nombro el cliente al corregir: no se le vuelve a preguntar si lo suma.
+            r.update({"que": str(c["producto"]), "confirmado": True, "color": str(c.get("color") or "")})
         for k in ("color", "destino"):
             if c.get(k):
                 r[k] = str(c[k])
@@ -126,9 +127,16 @@ def _art(p: dict, cantidad: int, destino: str) -> dict:
 
 
 def resolver(b: dict, tienda_id: str) -> list:
-    """Cada renglon con lo que es hoy: {"L", "articulos"} si se resolvio, o {"L", "falta": tipo, ...} si no."""
+    """Cada renglon con lo que es hoy: {"L", "articulos"} si se resolvio, o {"L", "falta": tipo, ...} si no. Si lo
+    dicho no cierra, propone: ver `_proponer`."""
     filas = {}
+    res = _resolver(b, tienda_id, b["renglones"], filas)
+    if any(x.get("falta") in ("confirmar", "otros") for x in res):
+        return _proponer(b, tienda_id, res, filas)
+    return res
 
+
+def _resolver(b: dict, tienda_id: str, renglones: list, filas: dict) -> list:
     def fila(rub, color=""):
         # "Un mouse negro a Rosario": el color dicho en el renglon se suma al criterio del rubro.
         if (rub, color) not in filas:
@@ -141,7 +149,7 @@ def resolver(b: dict, tienda_id: str) -> list:
         return filas[(rub, color)]
 
     res, de_rubro, otros = [], [], []
-    for r in b["renglones"]:
+    for r in renglones:
         x = {"L": r["L"], "renglon": r}
         res.append(x)
         if r.get("condicion") == "no_cumple":
@@ -216,11 +224,83 @@ def resolver(b: dict, tienda_id: str) -> list:
     return res
 
 
+# ══ 2b. PROPONER: si lo dicho no cierra, la lectura mas coherente con los numeros del cliente ════════════════
+#
+# Un vendedor no frena ante un pedido mal dicho: arma la lectura que cierra y dice que supuso. Las lecturas son pocas
+# y fijas, y cada una cuesta lo que se aparta de lo dicho: un rubro fuera de la lista va aparte, 0, o era uno de la
+# lista, 2; el mismo producto fuera de la lista en dos destinos son dos, 0, o es uno que se mueve, 1. Cierra la que
+# cumple lo pedido por rubro, "los otros" y el total. Gana la que cierra con menos costo: si es una, se propone con lo
+# supuesto dicho; si empatan, se pregunta entre ellas; si ninguna cierra, se pregunta como siempre. Sin modelo.
+
+def _cierra(b: dict, res: list, tienda_id: str) -> bool:
+    por_rubro = {}
+    for a in (a for x in res for a in x.get("articulos") or []):
+        c = K.por_id(a["id"], tienda_id).get("categoria")
+        por_rubro[c] = por_rubro.get(c, 0) + a["cantidad"]
+    return not any(x.get("falta") in ("confirmar", "otros") for x in res) and \
+        all(por_rubro.get(r, 0) <= c for r, c in b["lista"].items()) and \
+        (not b["total"] or sum(por_rubro.values()) == b["total"])
+
+
+def _proponer(b: dict, tienda_id: str, res: list, filas: dict) -> list:
+    import itertools
+    afuera = [r for r in b["renglones"] if K.n(r["que"]) not in OTROS
+              and K.solo_rubro(r["que"], tienda_id) not in ("", *b["lista"])]
+    ejes = [[(r["L"], "aparte", 0)] + [(r["L"], rub, 2) for rub in b["lista"]] for r in afuera if not r["confirmado"]]
+    for viejo, nuevo in itertools.combinations(afuera, 2):
+        if K.n(viejo["que"]) == K.n(nuevo["que"]) and K.n(viejo["destino"]) != K.n(nuevo["destino"]):
+            ejes.append([(nuevo["L"], "dos", 0), (nuevo["L"], "mueve:" + viejo["L"], 1)])
+    lecturas = []
+    for combo in itertools.islice(itertools.product(*ejes), 64) if ejes else []:
+        rs = {r["L"]: dict(r) for r in b["renglones"]}
+        for L, que, _ in combo:
+            if que.startswith("mueve:"):
+                rs[L]["confirmado"] |= bool((rs.pop(que[6:], None) or {}).get("confirmado"))
+            elif que != "dos":
+                rs[L].update({"confirmado": True, **({} if que == "aparte" else {"que": que})})
+        r2 = _resolver(b, tienda_id, list(rs.values()), filas)
+        if _cierra(b, r2, tienda_id):
+            lecturas.append((sum(c for *_, c in combo), combo, r2))
+    menor = min((c for c, *_ in lecturas), default=None)
+    mejores = {huella(articulos(r2, [])): (combo, r2) for c, combo, r2 in lecturas if c == menor}
+    if len(mejores) != 1:
+        # EMPATE: se pregunta entre las lecturas que cierran, no a ciegas.
+        for combo, _ in mejores.values():
+            for L, que, costo in combo:
+                x = next(y for y in res if y["L"] == L)
+                if costo == 2 and x.get("falta") == "confirmar":
+                    x["opciones"] = list(dict.fromkeys(x.get("opciones", []) + [que]))
+        return res
+    combo, r2 = next(iter(mejores.values()))
+    dicho = {r["L"]: r for r in b["renglones"]}
+    for L, que, _ in combo:
+        r, x = dicho[L], next((y for y in r2 if y["L"] == L), None)
+        if que.startswith("mueve:"):
+            v = dicho[que[6:]]
+            x["supuesto"] = {"texto": f"Tomé que el {r['que']} va a {r['destino']}, no a {v['destino']}.",
+                             "op": {"saca": [v["L"]], "confirma": [L] if v["confirmado"] else []}}
+        elif que == "aparte" and not r["confirmado"]:
+            x["supuesto"] = {"texto": f"Sumé el {r['que']} aparte de tu lista.", "op": {"confirma": [L]}}
+        elif que not in ("dos", "aparte"):
+            x["supuesto"] = {"texto": f"Tomé el {_que({'renglon': r})} como {que}: en tu lista no había {r['que']}.",
+                             "op": {"cambia": [{"es": L, "producto": que}]}}
+    return r2
+
+
+def aceptar(b: dict, refs: list, tienda_id: str) -> dict:
+    """Lo que el cliente acepto de lo supuesto, en operaciones de siempre: la lectura pasa a ser lo dicho."""
+    ops = {"saca": [], "cambia": [], "confirma": []}
+    for x in resolver(b, tienda_id):
+        for k, v in (x.get("supuesto") or {}).get("op", {}).items() if x["L"] in refs else []:
+            ops[k] += v
+    return ops
+
+
 # ══ 3. VALIDAR y 4. LOS FALTANTES ════════════════════════════════════════════
 
 def faltantes(b: dict, res: list) -> list:
     """Lo que falta, renglon por renglon y del borrador entero, en el orden de los renglones."""
-    out = [x for x in res if x.get("falta")]
+    out = [x for x in res if x.get("falta")] + [{**x, "falta": "supuesto"} for x in res if x.get("supuesto")]
     vivos = [x for x in res if not x.get("no_aplica")]
     destinos = {x["renglon"]["destino"] for x in vivos if x["renglon"]["destino"]}
     if destinos:
@@ -250,9 +330,13 @@ def pago_listo(b: dict) -> list:
     return list(p) if ok else []
 
 
+NO_FRENAN = ("pago", "medio", "supuesto")
+
+
 def articulos(res: list, falta: list) -> list:
-    """Lo que se cuenta y se cierra: todo resuelto, o nada. El mismo producto al mismo destino es un renglon."""
-    if falta or not res:
+    """Lo que se cuenta: todos los renglones resueltos, o nada. Lo que falta del pago y lo supuesto no frenan la
+    cuenta, frenan el cierre. El mismo producto al mismo destino es un renglon."""
+    if any(x["falta"] not in NO_FRENAN for x in falta) or not res:
         return []
     out = {}
     for x in res:
@@ -304,9 +388,14 @@ def preguntas(b: dict, falta: list) -> list:
             q = f"¿Cuántos {x['renglon']['que']} querés?"
         elif t == "condicion":
             q = "¿Te lo confirmo así?"
+        elif t == "confirmar" and x.get("opciones"):
+            q = f"El {_que(x)} no estaba en tu lista. Si era " + " o ".join(x["opciones"]) + \
+                " cierra con lo que dijiste: ¿era eso, o va aparte?"
         elif t == "confirmar":
             q = f"Pediste {_que(x)}, pero en la lista había " + ", ".join(x["lista"]) + \
                 ": ¿lo sumo o era otra cosa de la lista?"
+        elif t == "supuesto":
+            q = "¿Lo dejo así?"
         elif t == "otros" and not x.get("espera"):
             q = f"¿Cuáles son {x['renglon']['que']}?" + (" De la lista quedan " + ", ".join(
                 f"{c} {rub}" for rub, c in x["quedan"]) + "." if x["quedan"] else "")
@@ -315,7 +404,9 @@ def preguntas(b: dict, falta: list) -> list:
         elif t == "pago":
             q = "Los porcentajes del pago no suman 100: ¿cómo lo repartís?"
         elif t == "medio":
-            q = "¿Con qué medio pagás cada parte: " + " y ".join(f"el {p['porcentaje']}%" for p in b["pago"]) + "?"
+            sin = [p for p in b["pago"] if K.n(p["medio"]) in ("", "sin decir", "none", "null")]
+            q = ("¿Con qué medio pagás cada parte: " if len(sin) > 1 else "¿Con qué medio pagás ") + \
+                " y ".join(f"el {p['porcentaje']}%" for p in sin) + "?"
         if q and q not in out:
             out.append(q)
     return out
@@ -338,6 +429,8 @@ def libreta(b: dict, res: list, falta: list) -> list:
             + f" a {r['destino'] or 'sin destino'}"
         if x.get("no_aplica"):
             hoy = "no va, no se cumplio la condicion"
+        elif x.get("supuesto"):
+            hoy = f"SUPUESTO, {x['supuesto']['texto']} Si lo acepta: acepta {x['L']}"
         elif x["L"] in faltas:
             hoy = "FALTA " + _FALTA.get(faltas[x["L"]], faltas[x["L"]])
         else:

@@ -86,6 +86,7 @@ RENGLONES = {
     "elegidos": lambda h: ["Para el presupuesto tomé " + ", ".join(
         f"{'el más barato' if 'barato' in e['orden'] else 'la primera opción'} de {r}, {e['nombre']}"
         for r, e in h["rubros"].items()) + ". Si preferís otro, decime cuál."],
+    "supuesto": lambda h: [h["texto"]],
     "pasa_tope": lambda h: [f"El total pasaba de {_plata(h['tope'])}, así que saqué el {h['saca']}."],
     "cuenta": _cuenta,
     "envio": _envio,
