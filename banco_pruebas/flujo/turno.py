@@ -22,24 +22,38 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
 
     llena = interprete.interpretar(raw_message, history, E.texto(estado), trace_id)
     t = ejecutar(llena, estado, tienda_id, explicar=lambda q: interprete.explicar(q, trace_id))
-    nuevo = any(h["tipo"] == "pedido" for h in t.hechos)
-    pide_nombre = nuevo and not estado["cliente"].get("nombre")
+    if any(h["tipo"] == "pedido" for h in t.hechos):
+        estado["nombre_pedido"] = False
+    # EL NOMBRE SE PIDE UNA VEZ POR PEDIDO, en el primer turno sin otra pregunta: si no, la venta queda trabada.
+    pide_nombre = bool(estado["pedido"]) and not estado["cliente"].get("nombre") and not t.preguntas \
+        and not estado.get("nombre_pedido")
+    if pide_nombre:
+        estado["nombre_pedido"] = True
     texto = redaccion.texto(t.hechos, t.preguntas, pide_nombre)
     log.info("flujo_turno", trace_id=trace_id, casillas=sorted(k for k, v in (llena or {}).items() if v),
              hechos=[h["tipo"] for h in t.hechos], preguntas=len(t.preguntas),
              herramientas=[x["herramienta"] for x in t.llamadas])
 
     cuentas = [h for h in t.hechos if h["tipo"] == "cuenta"]
-    presupuesto = "\n".join(b["detalle"] for b in cuentas[-1]["bloques"])[:900] if cuentas else None
+    presupuesto = None
+    if cuentas:
+        # CON VARIOS DESTINOS LO QUE SE COBRA ES EL TOTAL GENERAL: va en el presupuesto que lee el cierre.
+        presupuesto = "\n".join(b["detalle"] for b in cuentas[-1]["bloques"])
+        if cuentas[-1].get("general"):
+            presupuesto += "\n" + cuentas[-1]["general"]["detalle"]
+        presupuesto = presupuesto[-1500:]
     if not t.preguntas:
         cierre = await cerrar(estado, user_id, canal, tienda_id, presupuesto or conv.get("ultimo_presupuesto") or "",
-                              trace_id)
+                              trace_id, resumen=not cuentas)
         texto = f"{texto}\n\n{cierre}".strip() if cierre else texto
     texto = texto or "¿En qué te puedo ayudar?"
     if not history:
         texto = gs.con_saludo_inicial(texto, gs.business_name(tienda_id))
     history = (history + [{"role": "user", "content": raw_message},
                           {"role": "assistant", "content": texto}])[-(settings.HISTORY_LIMIT * 2):]
-    save_conversation(user_id, history, conv.get("summary") or "", tienda_id=tienda_id,
-                      estado_conversacion="en_curso", estado_charla=estado, ultimo_presupuesto=presupuesto)
+    try:
+        save_conversation(user_id, history, conv.get("summary") or "", tienda_id=tienda_id,
+                          estado_conversacion="en_curso", estado_charla=estado, ultimo_presupuesto=presupuesto)
+    except Exception as e:  # noqa: BLE001 — el cliente recibe su respuesta aunque no se haya guardado
+        log.error("flujo_guardar_error", trace_id=trace_id, error=str(e)[:200])
     return texto

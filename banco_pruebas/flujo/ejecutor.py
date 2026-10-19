@@ -76,7 +76,8 @@ class Turno:
         propias = set(K.n(p.get("nombre")).split())
         universo = [x for x in K.productos(self.tienda) if x.get("categoria") == p.get("categoria")]
         for parte in [q] + [w for w in q.split() if len(w) > 2 and w not in propias and w not in K._RELLENO]:
-            clave = next((k for k in datos if datos[k] and (K.n(k) in parte or parte in K.n(k))), None)
+            palabras = set(parte.split())
+            clave = next((k for k in datos if datos[k] and set(K.n(k).replace("_", " ").split()) & palabras), None)
             if clave:
                 return {"campo": clave, "valor": datos[clave]}
             f = K.atar(parte, universo, self.tienda)
@@ -105,20 +106,27 @@ class Turno:
     # ── la plata ─────────────────────────────────────────────────────────────
 
     def cuenta(self, articulos: list, reparto: list, tope=None, si_pasa: str = "") -> None:
-        """Una cuenta por destino. Con mas de un destino, el total general es la suma de los totales."""
+        """Una cuenta por destino. Con mas de un destino, el total general es la suma de los totales y el reparto
+        del pago se calcula una sola vez, sobre ese total."""
         grupos = {}
         for a in articulos:
             grupos.setdefault(a.get("destino") or "", []).append({"id": a["id"], "cantidad": a["cantidad"]})
+        varios = len(grupos) > 1
         tope = K.entero(tope)
         bloques = []
         for destino, items in grupos.items():
             r = self.herramienta("cuenta", items=items, destinos=[destino] if destino else [],
-                                 reparto_pago=reparto or None)
+                                 reparto_pago=None if varios else (reparto or None))
             if (r.get("cuenta") or {}).get("total_ars") is not None:
                 bloques.append({"destino": destino, **r["cuenta"]})
-        if not bloques:
-            return
-        total = sum(int(b.get("total_final_ars") or b["total_ars"]) for b in bloques)
+            else:
+                # Una cuenta a medias no se muestra como entera: se pregunta lo que falta.
+                self.preguntar(f"No pude calcular el envío a {destino}: ¿me pasás la provincia o el código postal?"
+                               if destino else "No pude armar la cuenta: ¿me confirmás los productos?")
+                return
+        general = self.general(bloques, reparto) if varios else None
+        total = (general or {}).get("total_final_ars") or (general or {}).get("total_ars") \
+            or int(bloques[0].get("total_final_ars") or bloques[0]["total_ars"])
         if tope and total > tope and si_pasa:
             idt = K.identificar(si_pasa, "", self.tienda)
             saca = {str(v["id"]) for v in idt.get("variantes") or []}
@@ -128,7 +136,21 @@ class Turno:
                 if articulos is self.estado["pedido"]:
                     self.estado["pedido"] = quedan
                 return self.cuenta(quedan, reparto)
-        self.hechos.append({"tipo": "cuenta", "bloques": bloques, "total": total if len(bloques) > 1 else None})
+        self.hechos.append({"tipo": "cuenta", "bloques": bloques, "general": general})
+
+    def general(self, bloques: list, reparto: list) -> dict:
+        """El total general de varios destinos y, si reparte el pago, el reparto sobre ese total: lo calcula
+        `pago_split`, el mismo de la calculadora."""
+        from app.core.calculadora import _money
+        from app.core.pago_split import calcular_split, descuento_de, render_split
+        base = sum(int(b["total_ars"]) for b in bloques)
+        out = {"total_ars": base, "detalle": f"Total general: {_money(base)}"}
+        if reparto:
+            split = calcular_split(base, reparto, *descuento_de(self.tienda))
+            if split.get("ok"):
+                out["total_final_ars"] = split["total_final_ars"]
+                out["detalle"] += "\n\n" + render_split(split)
+        return out
 
     def pedido(self, ped: dict, condicionado: bool) -> list:
         """Los articulos resueltos. Si alguno no se puede resolver, pregunta y el pedido no cambia."""
@@ -149,8 +171,14 @@ class Turno:
                 falta = True
             elif idt.get("falta_color"):
                 colores = [v["color"] for v in idt["variantes"] if K.con_stock(v) and v.get("color")]
-                self.preguntar(f"¿El {idt['producto'].get('modelo') or a['producto']} en qué color: "
-                               + " o ".join(colores) + "?")
+                modelo = idt["producto"].get("modelo") or a["producto"]
+                antes = f"El {modelo} no viene en {idt['no_hay_color']}. " if idt.get("no_hay_color") else ""
+                self.preguntar(f"{antes}¿El {modelo} en qué color: " + " o ".join(colores) + "?")
+                falta = True
+            elif not K.con_stock(idt["producto"]):
+                self.hechos.append({"tipo": "producto", "producto": idt["producto"], "variantes": idt["variantes"],
+                                    "dato": {}, "pide": ""})
+                self.preguntar(f"El {idt['producto']['nombre']} no tiene stock: ¿te sirve otro color u otro modelo?")
                 falta = True
             else:
                 p = idt["producto"]

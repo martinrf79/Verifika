@@ -59,8 +59,8 @@ def _cuenta(h: dict) -> list:
     out = []
     for b in h["bloques"]:
         out.append(b["detalle"])
-    if h.get("total"):
-        out.append(f"Total general: {_plata(h['total'])}")
+    if h.get("general"):
+        out.append(h["general"]["detalle"])
     return out
 
 
@@ -80,7 +80,9 @@ RENGLONES = {
     "no_vende": lambda h: [f"No vendemos {h['que']}."],
     "compat": lambda h: [h.get("motivo") or f"{h.get('nombre')}: {h.get('veredicto')}."],
     "politica": lambda h: [h["texto"]],
-    "pedido": lambda h: ["Te anoto: " + ", ".join(f"{a['cantidad']}x {a['nombre']}" for a in h["articulos"]) + "."],
+    "pedido": lambda h: ["Te anoto: " + ", ".join(f"{a['cantidad']}x {a['nombre']}"
+                                                  + (f" a {a['destino']}" if a.get("destino") else "")
+                                                  for a in h["articulos"]) + "."],
     "pedido_vacio": lambda h: ["Listo, saqué todo del pedido."],
     "pasa_tope": lambda h: [f"El total pasaba de {_plata(h['tope'])}, así que saqué el {h['saca']}."],
     "cuenta": _cuenta,

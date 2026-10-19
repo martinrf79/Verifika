@@ -21,6 +21,7 @@ import sys
 
 from banco_pruebas import clon_produccion as C
 
+LLAMADAS_AL_MODELO = []
 GRABADAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nexos", "ficha_casillas_corridas.jsonl")
 
 
@@ -47,10 +48,11 @@ def instalar():
     from app.core import orchestrator
     from banco_pruebas.flujo import interprete, turno
     orchestrator.procesar_turno = turno.procesar_turno
-    # NI UNA LLAMADA AL MODELO: si alguna pieza del camino lo llama, la corrida revienta y se ve cual.
+    # NI UNA LLAMADA AL MODELO: cada intento se anota, aunque quien llamo se trague el error, y la corrida lo dice.
     from app.core import llm_reintento
 
     def _sin_modelo(*a, **k):
+        LLAMADAS_AL_MODELO.append(1)
         raise RuntimeError("el cableado58 no llama al modelo")
     llm_reintento._cliente = _sin_modelo
     return interprete
@@ -87,8 +89,12 @@ def main():
         if args and charla["id"] not in args:
             continue
         trad = list(T.get(charla["id"]) or [])
+        if len(trad) != len(charla["turnos"]):
+            raise SystemExit(f"{charla['id']}: {len(trad)} traducciones para {len(charla['turnos'])} turnos")
         if etiqueta:
             if charla["id"] not in del_modelo:
+                print(f"{charla['id']} SIN GRABACION")
+                mal.append(charla["id"])
                 continue
             trad[-1:] = [del_modelo[charla["id"]]]
         turnos = correr(charla, trad, interprete, EXPLICAR)
@@ -101,6 +107,9 @@ def main():
     print(f"\nCABLEADO{' con ' + etiqueta if etiqueta else ''}: {len(bien)} de {len(bien) + len(mal)} charlas bien")
     if mal:
         print("mal: " + " ".join(mal))
+    if LLAMADAS_AL_MODELO:
+        print(f"ERROR: {len(LLAMADAS_AL_MODELO)} intentos de llamar al modelo")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

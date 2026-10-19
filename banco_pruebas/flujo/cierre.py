@@ -24,29 +24,37 @@ def _huella(pedido: list) -> str:
     return "|".join(sorted(f"{a['id']}:{a['cantidad']}:{a.get('destino') or ''}" for a in pedido))
 
 
-async def cerrar(estado: dict, user_id: str, canal: str, tienda_id: str, presupuesto: str, trace_id: str) -> str:
+async def cerrar(estado: dict, user_id: str, canal: str, tienda_id: str, presupuesto: str, trace_id: str,
+                 resumen: bool = True) -> str:
     """El texto del cierre para sumar a la respuesta, o "" si no toca cerrar."""
     nombre = str(estado["cliente"].get("nombre") or "").strip()
     if not estado["pedido"] or not nombre or estado.get("cerrado") == _huella(estado["pedido"]):
         return ""
-    medio = (estado["reparto"][0]["medio"] if estado["reparto"] else "")
-    lead = {"nombre": nombre, "telefono": user_id, "forma_pago": medio, "orden": presupuesto}
+    medios = list(dict.fromkeys(str(r["medio"]) for r in estado["reparto"] if r.get("medio")))
+    medio = " y ".join(medios)
+    destinos = ", ".join(dict.fromkeys(a["destino"] for a in estado["pedido"] if a.get("destino")))
+    lead = {"nombre": nombre, "telefono": user_id, "forma_pago": medio, "direccion": destinos, "orden": presupuesto}
     try:
         lead_id = crear_lead(user_id, canal, tienda_id, ultimo_mensaje="", frase_disparadora="pedido y nombre",
                              nivel="fuerte", estado_inicial="capturado", orden=presupuesto)
-        actualizar_lead(lead_id, tienda_id, {"nombre": nombre, "telefono": user_id, "forma_pago": medio})
+        actualizar_lead(lead_id, tienda_id, {"nombre": nombre, "telefono": user_id, "forma_pago": medio,
+                                             "direccion": destinos})
         await notificar_lead(tienda_id=tienda_id, user_id=user_id, canal=canal, estado="capturado", nombre=nombre,
-                             telefono=user_id, direccion="", forma_pago=medio, orden=presupuesto, ultimo_mensaje="")
+                             telefono=user_id, direccion=destinos, forma_pago=medio, orden=presupuesto,
+                             ultimo_mensaje="")
     except Exception as e:  # noqa: BLE001 — sin lead guardado el cliente igual recibe la confirmacion
         log.warning("flujo_cierre_lead_error", trace_id=trace_id, error=str(e)[:160])
-    texto = C.mensaje_confirmacion(lead, presupuesto)
+    # La cuenta no se repite si el cliente la acaba de leer en este mismo mensaje.
+    texto = C.mensaje_confirmacion(lead, presupuesto if resumen else "")
     if modo_cierre(tienda_id) == "venta":
-        try:
-            from app.core.pago import instruccion_cobro
-            cobro = await instruccion_cobro(presupuesto, lead, tienda_id, trace_id)
-            texto += f"\n{cobro}" if cobro else ""
-        except Exception as e:  # noqa: BLE001
-            log.warning("flujo_cobro_error", trace_id=trace_id, error=str(e)[:160])
+        from app.core.pago import instruccion_cobro
+        # UN COBRO POR MEDIO: con 70/30, el CBU por la parte de transferencia y el link por la de Mercado Pago.
+        for m in medios or [""]:
+            try:
+                cobro = await instruccion_cobro(presupuesto, {**lead, "forma_pago": m}, tienda_id, trace_id)
+                texto += f"\n{cobro}" if cobro else ""
+            except Exception as e:  # noqa: BLE001
+                log.warning("flujo_cobro_error", trace_id=trace_id, error=str(e)[:160])
     estado["cerrado"] = _huella(estado["pedido"])
     log.info("flujo_cierre", trace_id=trace_id, articulos=len(estado["pedido"]), medio=medio)
     return texto

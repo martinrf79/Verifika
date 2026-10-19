@@ -73,6 +73,11 @@ def identificar(nombre: str, color: str, tienda_id: str) -> dict:
     del_color = [p for p in variantes if p.get("color") and set(n(p["color"]).split()) <= pedido]
     if len(del_color) == 1:
         return {"veredicto": "exists", "producto": del_color[0], "variantes": variantes}
+    if color and not del_color and len(variantes) > 1:
+        # Pidio un color que el modelo no tiene: no se cambia por otro en silencio.
+        hay = [p for p in variantes if con_stock(p)] or variantes
+        return {"veredicto": "exists", "producto": hay[0], "variantes": variantes, "falta_color": True,
+                "no_hay_color": color}
     if len(variantes) == 1:
         return {"veredicto": "exists", "producto": variantes[0], "variantes": variantes}
     hay = [p for p in variantes if con_stock(p)]
@@ -100,7 +105,8 @@ def nombrados(texto: str, tienda_id: str, largo: int = 4) -> list:
     return [nombre for _, nombre in sorted(hallados)]
 
 
-_SUPERA = re.compile(r"\b(?:pasa de|pasa los|supera|supera los|mas de|excede)\s*\$?\s*([\d.,]+)\s*(mil|k|lucas)?")
+_SUPERA = re.compile(r"\b(?:pasa de|pasa los|supera|supera los|mas de|excede)\s*\$?\s*([\d.,]+)(?![\d.,])\s*"
+                     r"(millones|millon|mil|k|lucas)?\b")
 
 
 def tope_del_total(si: str):
@@ -124,7 +130,7 @@ PRIORIDAD = ("marca", "color", "conexion", "ram", "almacenamiento", "procesador"
 _NIEGA = re.compile(r"^(?:que\s+)?(?:no\s+(?:sea[ns]?\s+)?|sin\s+|ni\s+|excepto\s+|salvo\s+|nada\s+de\s+)")
 # Un tope es de plata si el numero no lleva unidad: "hasta 16 GB" es memoria, no precio.
 _TOPE = re.compile(r"\b(menos de|hasta|maximo|no mas de|por debajo de|mas de|desde|minimo)\s*\$?\s*([\d.,]+)"
-                   r"(?![\d.,])\s*(mil|k|lucas)?(?!\s*(?:gb|tb|hz|w|watts|mah|mm|pulgadas|gramos|g|meses)\b)")
+                   r"(?![\d.,])\s*(millones|millon|mil|k|lucas)?\b(?!\s*(?:gb|tb|hz|w|watts|mah|mm|pulgadas|gramos|g|meses)\b)")
 _RELLENO = set("a al con de del el en la las lo los para por que un una unos unas y o sea posible preferentemente "
                "preferiblemente idealmente algo alguno alguna".split())
 
@@ -145,9 +151,17 @@ def _contiene(texto: str, valor: str) -> bool:
     return re.search(rf"(?<![a-z0-9]){re.escape(valor)}(?:s|es)?(?![a-z0-9])", texto) is not None
 
 
-def _monto(numero: str, mil: str) -> int:
-    v = int(re.sub(r"\D", "", numero.split(",")[0]) or 0)
-    return v * 1000 if mil else v
+_POR = {"mil": 1_000, "k": 1_000, "lucas": 1_000, "millon": 1_000_000, "millones": 1_000_000}
+
+
+def _monto(numero: str, por: str) -> int:
+    """"200 mil", "1,5 millones", "1.500.000". Con multiplicador, una coma o un punto con una o dos cifras atras
+    es decimal; sin el, el punto es de miles."""
+    if por and re.fullmatch(r"\d+[.,]\d{1,2}", numero):
+        v = float(numero.replace(",", "."))
+    else:
+        v = int(re.sub(r"\D", "", numero.split(",")[0]) or 0)
+    return int(v * _POR.get(por or "", 1))
 
 
 def atar(condicion: str, universo: list, tienda_id: str) -> dict:
