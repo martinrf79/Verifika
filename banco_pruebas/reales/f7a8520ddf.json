@@ -1,0 +1,171 @@
+{
+ "id": "f7a8520ddf",
+ "desde": "2026-10-19T18:38:13",
+ "turnos": [
+  {
+   "trace": "3c494db5",
+   "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Dame precio de dos auriculares,",
+      "accion": "buscar",
+      "rubro": "auriculares",
+      "cantidad": 2,
+      "orden": "nada"
+     },
+     {
+      "n": 2,
+      "cita": "dos mouse",
+      "accion": "buscar",
+      "rubro": "mouse",
+      "cantidad": 2,
+      "orden": "nada"
+     },
+     {
+      "n": 3,
+      "cita": "y dos memorias.",
+      "accion": "buscar",
+      "rubro": "memoria ram",
+      "cantidad": 2,
+      "orden": "nada"
+     },
+     {
+      "n": 4,
+      "cita": "El precio no sería tan importante.",
+      "accion": "otro",
+      "que": "dato"
+     },
+     {
+      "n": 5,
+      "cita": "Lo que sí que necesito que lleven las menos partes chinas posibles.",
+      "accion": "politica",
+      "tema": "contenido_caja",
+      "afirma": "menos partes chinas posibles"
+     },
+     {
+      "n": 6,
+      "cita": "Un auricular y un mouse será envío a Córdoba capital.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "auriculares",
+        "cantidad": 1,
+        "destino": "Córdoba capital"
+       },
+       {
+        "producto": "mouse",
+        "cantidad": 1,
+        "destino": "Córdoba capital"
+       }
+      ]
+     },
+     {
+      "n": 7,
+      "cita": "Un teclado y un mouse será envío a Concordia.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "Concordia"
+       },
+       {
+        "producto": "mouse",
+        "cantidad": 1,
+        "destino": "Concordia"
+       }
+      ]
+     },
+     {
+      "n": 8,
+      "cita": "Los otros dos artículos serán con envío a posadas.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "los otros",
+        "cantidad": 2,
+        "destino": "posadas"
+       }
+      ]
+     },
+     {
+      "n": 9,
+      "cita": "Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "sin decir",
+        "porcentaje": 70
+       },
+       {
+        "medio": "sin decir",
+        "porcentaje": 30
+       }
+      ]
+     }
+    ],
+    "cliente": {}
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\n\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nPediste teclado para Concordia, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?"
+  },
+  {
+   "trace": "6af3bca0",
+   "mensaje": "Ok en total serian 7 articulos el teclado va a posadas. Con esa correccion y el 70 transferencia armame presupuestos",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Ok en total serian 7 articulos",
+      "accion": "comprar",
+      "total": 7
+     },
+     {
+      "n": 2,
+      "cita": "el teclado va a posadas.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "posadas"
+       }
+      ]
+     },
+     {
+      "n": 3,
+      "cita": "Con esa correccion",
+      "accion": "comprar",
+      "responde": "R-1",
+      "confirma": [
+       "L-3"
+      ]
+     },
+     {
+      "n": 4,
+      "cita": "y el 70 transferencia",
+      "accion": "cuenta",
+      "responde": "R-2",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 70
+       },
+       {
+        "medio": "sin decir",
+        "porcentaje": 30
+       }
+      ]
+     },
+     {
+      "n": 5,
+      "cita": "armame presupuestos",
+      "accion": "cuenta"
+     }
+    ]
+   },
+   "respondio": "Auriculares HyperX Cloud II Negro: $125.500, hay stock.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock.\n\nPediste teclado para Concordia, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\nPediste teclado para posadas, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?"
+  }
+ ]
+}

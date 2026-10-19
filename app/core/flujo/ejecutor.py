@@ -396,24 +396,13 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
     preguntas = t.agenda = A.preguntas(agenda)
     for i, p in enumerate(preguntas, 1):
         p.setdefault("n", i)
-    # LAS COMPRAS DE UN MENSAJE SON UN SOLO PEDIDO: "un auricular a Cordoba, un mouse a Concordia, los otros dos a
-    # Posadas" en tres preguntas se anota junto, o se pregunta y no se anota nada. Asi "los otros" cuenta lo de las
-    # tres. Las que dependen de otra pregunta van aparte.
-    compras = [p for p in preguntas if p.get("accion") == "comprar" and not p.get("si")]
-    juntas = {}
-    if len(compras) > 1:
-        primera = compras[0]
-        for p in compras[1:]:
-            for k in ("agrega", "saca", "cambia"):
-                primera[k] = _lista(primera.get(k)) + _lista(p.get(k))
-            primera["reparto"] = p.get("reparto") or primera.get("reparto")
-            primera["reemplaza"] = _si(primera.get("reemplaza")) or _si(p.get("reemplaza"))
-            juntas[p["n"]] = primera["n"]
+    # CADA COMPRA SE APLICA AL BORRADOR EN SU ORDEN: "los otros" lo cuenta el borrador con todo lo dicho, asi que no hace
+    # falta juntarlas. Juntarlas perdia lo que no era agrega, saca o cambia: la confirmacion y el total.
     # Una accion fuera del menu no se cumple: la agarra el candado de abajo.
     for p in sorted(preguntas, key=lambda p: DESPUES.get(p.get("accion"), 0)):
         if DESPUES.get(p.get("accion"), 0) >= 3 and not t.derivado:
             _derivar(t)
-        if p.get("accion") in ACCIONES and p["n"] not in juntas:
+        if p.get("accion") in ACCIONES:
             _cumplir(t, p)
     if not t.derivado:
         _derivar(t)
@@ -434,8 +423,10 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
         t.hechos.append({"tipo": "envio", "n": envios[0]["n"], **r})
     con_hechos = {h.get("n") for h in t.hechos}
     repreguntadas = set(t.de.values())
-    for n, primera in juntas.items():
-        t.estados[n] = t.estados.get(primera) or ("repreguntada" if primera in repreguntadas else "respondida")
+    # Las compras terminan como termino el borrador: lo que falta se pregunto desde la primera.
+    for p in preguntas:
+        if p.get("accion") == "comprar" and p["n"] not in t.estados and t.compra:
+            t.estados[p["n"]] = "repreguntada" if t.compra in repreguntadas else "respondida"
     for p in preguntas:
         n = p["n"]
         if n in t.estados:
