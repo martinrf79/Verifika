@@ -208,8 +208,8 @@ def libreta(estado: dict, historial: list, tienda_id: str) -> str:
         excluye = [c for c in bu.get("condiciones") or [] if K._NIEGA.search(K.n(c))]
         if excluye:
             r.append("- EXCLUSIONES VIGENTES: " + ", ".join(excluye))
-    if estado["cliente"]:
-        r.append("- CLIENTE: " + ", ".join(f"{k} {v}" for k, v in estado["cliente"].items() if v))
+    if b["cliente"]:
+        r.append("- CLIENTE: " + ", ".join(f"{k} {v}" for k, v in b["cliente"].items() if v))
     abiertas = [(k, v) for k, v in nums.items() if k[0] == "R"]
     if abiertas:
         r += ["- ABIERTO, lo que el vendedor pregunto:"] + [

@@ -242,6 +242,14 @@ def faltantes(b: dict, res: list) -> list:
 
 # ══ 5. DERIVAR ═══════════════════════════════════════════════════════════════
 
+def pago_listo(b: dict) -> list:
+    """El pago que se cuenta: con cada medio dicho y que sume cien. Si no, ninguno."""
+    p = b["pago"]
+    ok = p and sum(K.entero(x["porcentaje"]) for x in p) == 100 and \
+        not any(K.n(x["medio"]) in ("", "sin decir", "none", "null") for x in p)
+    return list(p) if ok else []
+
+
 def articulos(res: list, falta: list) -> list:
     """Lo que se cuenta y se cierra: todo resuelto, o nada. El mismo producto al mismo destino es un renglon."""
     if falta or not res:

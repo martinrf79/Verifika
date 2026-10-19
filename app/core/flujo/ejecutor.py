@@ -285,8 +285,7 @@ def _reparto(t: Turno, p: dict) -> bool:
     if not reparto:
         return False
     B.aplicar(t.estado["borrador"], {"reparto": reparto})
-    completo = not any(K.n(r.get("medio")) in ("", "sin decir", "none", "null") for r in reparto)
-    t.estado["reparto"] = reparto if completo else []
+    completo = bool(B.pago_listo(t.estado["borrador"]))
     if not completo and not t.estado["borrador"]["renglones"]:
         t.preguntar("¿Con qué medio pagás cada parte: " + " y ".join(f"el {K.entero(r['porcentaje'])}%"
                                                                     for r in reparto) + "?")
@@ -316,7 +315,7 @@ def _cuenta(t: Turno, p: dict):
     _reparto(t, p)
     si_pasa = _uno(t, p.get("si_pasa")) if p.get("si_pasa") else ""
     if t.estado["pedido"]:
-        t.cuenta(t.estado["pedido"], t.estado["reparto"], p.get("tope"), si_pasa)
+        t.cuenta(t.estado["pedido"], B.pago_listo(t.estado["borrador"]), p.get("tope"), si_pasa)
         return True
     compras = {x["n"] for x in t.agenda if x.get("accion") == "comprar"}
     if t.estado["borrador"]["renglones"]:
@@ -336,7 +335,7 @@ def _cuenta(t: Turno, p: dict):
     destino = next(iter(t.destinos), "")
     items = [{"id": str(h["producto"]["id"]), "cantidad": 1, "destino": destino} for h in productos]
     if items and not dudosos:
-        t.cuenta(items, t.estado["reparto"])
+        t.cuenta(items, B.pago_listo(t.estado["borrador"]))
     elif not items:
         t.preguntar("¿De qué productos querés la cuenta?")
 
@@ -393,7 +392,7 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
     t.nums, t.explicar = numeros(estado), explicar
     agenda = agenda if isinstance(agenda, dict) else {"preguntas": agenda}
     cliente = agenda.get("cliente") if isinstance(agenda.get("cliente"), dict) else {}
-    estado["cliente"].update({k: v for k, v in cliente.items() if v and k in ("localidad", "nombre", "es")})
+    estado["borrador"]["cliente"].update({k: v for k, v in cliente.items() if v and k in ("localidad", "nombre", "es")})
     preguntas = t.agenda = A.preguntas(agenda)
     for i, p in enumerate(preguntas, 1):
         p.setdefault("n", i)
@@ -423,7 +422,7 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
         t.n = max(p["n"] for p in preguntas if p["accion"] == "comprar") if any(
             p["accion"] == "comprar" for p in preguntas) else t.n
         antes = len(t.hechos)
-        t.cuenta(t.estado["pedido"], t.estado["reparto"])
+        t.cuenta(t.estado["pedido"], B.pago_listo(t.estado["borrador"]))
         for h in t.hechos[antes:]:
             h.setdefault("n", t.n)
     # LOS ENVIOS que no entraron en una cuenta, en una sola cotizacion.
@@ -466,7 +465,8 @@ def _derivar(t: Turno) -> None:
     for p in t.agenda:
         if p.get("accion") == "cuenta" and p.get("reparto") and t.estado["borrador"]["renglones"]:
             B.aplicar(t.estado["borrador"], {"reparto": [r for r in _lista(p["reparto"]) if isinstance(r, dict)]})
-    if t.estado["borrador"]["renglones"] or t.compra:
+    # Un pedido sin renglones que lo digan no existe: se re-deriva a vacio, tambien el guardado antes del borrador.
+    if t.estado["borrador"]["renglones"] or t.compra or t.estado["pedido"]:
         n = t.n
         t.derivar()
         t.n = n

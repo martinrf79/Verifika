@@ -4,20 +4,15 @@ Es lo unico que pasa de un turno al siguiente, ademas del historial. Vive en el 
 `estado_charla`, y tiene estas partes:
 
   mostrados   lo que el cliente leyo, en orden, con id, nombre y precio. Las referencias salen de aca.
-  pedido      lo que el cliente decidio llevar: id, nombre, cantidad y destino de cada articulo.
-  reparto     como paga: [{"medio", "porcentaje"}].
+  borrador    lo que dijo el cliente: renglones, lista por rubro, criterios, total, pago, cliente y cierre. Es la verdad
+              de todo lo que la charla construye, FICHA 71: `borrador.py`.
+  pedido      lo resuelto del borrador, re-derivado en cada turno: id, nombre, cantidad y destino. No se escribe a mano.
   busqueda    la ultima busqueda: rubro, condiciones en palabras y orden.
-  cliente     lo que dijo de si mismo: localidad, nombre, quien es.
-  cerrado     el pedido como estaba cuando se cerro, para no cerrarlo dos veces.
-  nombre_pedido   si ya se pidio el nombre para este pedido.
-  por_rubro   lo que el cliente pidio por rubro, sin modelo: {"auriculares": 2}. De aca sale "los otros".
-  borrador    lo que dijo el cliente, por renglon: la verdad del pedido. `pedido` se deriva de aca, FICHA 71.
   abiertas    lo que el vendedor pregunto y el cliente no contesto: [{"texto", "cita", "pregunta"}]. Es la R de la
               libreta: la respuesta del turno siguiente se ata a la pregunta que la pidio.
 """
 
-VACIO = {"mostrados": [], "pedido": [], "reparto": [], "busqueda": {}, "cliente": {}, "cerrado": "", "nombre_pedido": False, "por_rubro": {},
-         "abiertas": [], "borrador": {}}
+VACIO = {"mostrados": [], "pedido": [], "busqueda": {}, "abiertas": [], "borrador": {}}
 TOPE_MOSTRADOS = 30
 
 

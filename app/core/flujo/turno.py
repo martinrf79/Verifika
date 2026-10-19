@@ -5,6 +5,7 @@ from app.core.contexto_turno import set_current_tienda
 from app.logger import get_logger
 from app.storage import firestore_client as fc
 
+from . import borrador as B
 from . import estado as E
 from . import interprete, redaccion
 from .cierre import cerrar
@@ -34,13 +35,14 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
         log.error("flujo_ejecutor_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:200]}",
                   acciones=[p.get("accion") for p in preguntas(agenda)])
         return "No te entendí bien. ¿Me lo decís de otra forma?"
-    if any(h["tipo"] == "pedido" for h in t.hechos):
-        estado["nombre_pedido"] = False
-    # EL NOMBRE SE PIDE UNA VEZ POR PEDIDO, en el primer turno sin otra pregunta: si no, la venta queda trabada.
-    pide_nombre = bool(estado["pedido"]) and not estado["cliente"].get("nombre") and not t.preguntas \
-        and not estado.get("nombre_pedido")
+    # EL NOMBRE SE PIDE UNA VEZ POR PEDIDO, en el primer turno sin otra pregunta: si no, la venta queda trabada. La
+    # etapa sale del borrador; "para quien se pidio" es la huella del pedido, asi un pedido que cambia lo pide de nuevo.
+    b = estado["borrador"]
+    huella = B.huella(estado["pedido"])
+    pide_nombre = B.etapa(b, [], estado["pedido"]) == "falta_nombre" and not t.preguntas \
+        and b["cierre"].get("nombre_para") != huella
     if pide_nombre:
-        estado["nombre_pedido"] = True
+        b["cierre"]["nombre_para"] = huella
     texto = redaccion.texto(t.hechos, t.preguntas, pide_nombre)
     log.info("flujo_turno", trace_id=trace_id, estados=[t.estados.get(p.get("n")) for p in preguntas(agenda)],
              hechos=[h["tipo"] for h in t.hechos], preguntas=len(t.preguntas),
