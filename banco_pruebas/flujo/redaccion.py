@@ -81,6 +81,7 @@ RENGLONES = {
     "compat": lambda h: [h.get("motivo") or f"{h.get('nombre')}: {h.get('veredicto')}."],
     "politica": lambda h: [h["texto"]],
     "pedido": lambda h: ["Te anoto: " + ", ".join(f"{a['cantidad']}x {a['nombre']}" for a in h["articulos"]) + "."],
+    "pedido_vacio": lambda h: ["Listo, saqué todo del pedido."],
     "pasa_tope": lambda h: [f"El total pasaba de {_plata(h['tope'])}, así que saqué el {h['saca']}."],
     "cuenta": _cuenta,
     "envio": _envio,

@@ -60,7 +60,8 @@ class Turno:
         else:
             p = idt["producto"]
             self.hechos.append({"tipo": "producto", "producto": p, "variantes": idt["variantes"],
-                                "dato": self.dato(p, quiere_saber), "pide": quiere_saber})
+                                "dato": self.dato(p, quiere_saber), "pide": quiere_saber,
+                                "falta_color": bool(idt.get("falta_color"))})
             mostrar(self.estado, [p])
 
     def dato(self, p: dict, quiere_saber: str) -> dict:
@@ -93,7 +94,7 @@ class Turno:
             self.hechos.append({"tipo": "no_vende", "que": nombre})
             return
         orden = str(b.get("orden") or "nada")
-        cuantos = int(b.get("cantidad") or 1) if K.n(orden) not in ("nada", "") else 5
+        cuantos = K.entero(b.get("cantidad"), 1) if K.n(orden) not in ("nada", "") else 5
         entre = [m["id"] for m in self.estado["mostrados"]] if _si(b.get("entre_lo_mostrado")) else None
         conds = [str(c) for c in _lista(b.get("condiciones"))]
         r = K.buscar(rub, conds, orden, cuantos, self.tienda, entre)
@@ -108,6 +109,7 @@ class Turno:
         grupos = {}
         for a in articulos:
             grupos.setdefault(a.get("destino") or "", []).append({"id": a["id"], "cantidad": a["cantidad"]})
+        tope = K.entero(tope)
         bloques = []
         for destino, items in grupos.items():
             r = self.herramienta("cuenta", items=items, destinos=[destino] if destino else [],
@@ -117,13 +119,14 @@ class Turno:
         if not bloques:
             return
         total = sum(int(b.get("total_final_ars") or b["total_ars"]) for b in bloques)
-        if tope and total > int(tope) and si_pasa:
+        if tope and total > tope and si_pasa:
             idt = K.identificar(si_pasa, "", self.tienda)
             saca = {str(v["id"]) for v in idt.get("variantes") or []}
             quedan = [a for a in articulos if str(a["id"]) not in saca]
             if saca and quedan and len(quedan) < len(articulos):
-                self.hechos.append({"tipo": "pasa_tope", "tope": int(tope), "saca": idt["producto"]["nombre"]})
-                self.estado["pedido"] = quedan
+                self.hechos.append({"tipo": "pasa_tope", "tope": tope, "saca": idt["producto"]["nombre"]})
+                if articulos is self.estado["pedido"]:
+                    self.estado["pedido"] = quedan
                 return self.cuenta(quedan, reparto)
         self.hechos.append({"tipo": "cuenta", "bloques": bloques, "total": total if len(bloques) > 1 else None})
 
@@ -140,6 +143,10 @@ class Turno:
             elif idt["veredicto"] == "ambiguous":
                 self.preguntar("¿Cuál de estos querés: " + " o ".join(p["nombre"] for p in idt["opciones"]) + "?")
                 falta = True
+            elif a.get("cantidad") not in (None, "") and K.entero(a["cantidad"]) < 1:
+                # Una cantidad que no es un numero no se adivina.
+                self.preguntar(f"¿Cuántos {idt['producto'].get('modelo') or a['producto']} querés?")
+                falta = True
             elif idt.get("falta_color"):
                 colores = [v["color"] for v in idt["variantes"] if K.con_stock(v) and v.get("color")]
                 self.preguntar(f"¿El {idt['producto'].get('modelo') or a['producto']} en qué color: "
@@ -148,7 +155,8 @@ class Turno:
             else:
                 p = idt["producto"]
                 resueltos.append({"id": str(p["id"]), "nombre": p["nombre"], "precio": p.get("precio_ars"),
-                                  "cantidad": int(a.get("cantidad") or 1), "destino": _destino(a.get("destino"))})
+                                  "cantidad": K.entero(a.get("cantidad"), 1),
+                                  "destino": _destino(a.get("destino"))})
         if falta or condicionado:
             for a in resueltos:
                 self.hechos.append({"tipo": "producto", "producto": K.por_id(a["id"], self.tienda), "variantes": [],
@@ -250,14 +258,24 @@ def ejecutar(llena: dict, estado: dict, tienda_id: str, explicar=None) -> Turno:
             estado["pedido"] = nuevo
             t.hechos.append({"tipo": "pedido", "articulos": nuevo})
             cambio = True
+    elif _si(ped.get("cambia")) and isinstance(ped.get("articulos"), list) and not reparto and estado["pedido"]:
+        # El pedido entero como queda es una lista vacia: el cliente saco todo.
+        estado["pedido"] = []
+        t.hechos.append({"tipo": "pedido_vacio"})
     if estado["pedido"] and (cambio or _si(tot.get("pide"))):
         t.cuenta(estado["pedido"], estado["reparto"], tot.get("tope"), str(tot.get("si_pasa") or ""))
     elif _si(tot.get("pide")) and not estado["pedido"]:
         # Un total sin pedido: lo que pregunto, una unidad de cada uno, al destino que dijo.
         destinos = [d for d in map(_destino, _lista(llena.get("envios"))) if d]
+        productos = [h for h in t.hechos if h["tipo"] == "producto"]
+        # Sin color elegido vale el precio del modelo solo si todos sus colores salen lo mismo.
+        dudosos = [h for h in productos if h.get("falta_color")
+                   and len({v.get("precio_ars") for v in h["variantes"] if K.con_stock(v)}) > 1]
+        for h in dudosos:
+            t.preguntar(f"¿El {h['producto'].get('modelo')} en qué color? Cambia el precio.")
         items = [{"id": str(h["producto"]["id"]), "cantidad": 1, "destino": destinos[0] if destinos else ""}
-                 for h in t.hechos if h["tipo"] == "producto"]
-        if items:
+                 for h in productos]
+        if items and not dudosos:
             t.cuenta(items, estado["reparto"])
 
     # LOS ENVIOS que no entraron en una cuenta

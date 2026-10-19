@@ -20,11 +20,19 @@ def leer(conv: dict) -> dict:
     return {k: guardado.get(k, type(v)()) for k, v in VACIO.items()}
 
 
+def _plata(n) -> str:
+    try:
+        return "$" + f"{int(float(n)):,}".replace(",", ".")
+    except (TypeError, ValueError):
+        return ""
+
+
 def mostrar(estado: dict, filas: list) -> None:
     """Suma al final lo que el cliente acaba de leer. Si ya estaba, pasa al final: es lo mas reciente."""
     ids = {str(f["id"]) for f in filas}
     viejos = [m for m in estado["mostrados"] if str(m["id"]) not in ids]
-    nuevos = [{"id": str(f["id"]), "nombre": f.get("nombre") or "", "precio": f.get("precio") or ""} for f in filas]
+    nuevos = [{"id": str(f["id"]), "nombre": f.get("nombre") or "", "precio": _plata(f.get("precio_ars"))}
+              for f in filas]
     estado["mostrados"] = (viejos + nuevos)[-TOPE_MOSTRADOS:]
 
 

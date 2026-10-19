@@ -35,7 +35,15 @@ def rubro(texto: str, tienda_id: str) -> str:
 
 
 def con_stock(p: dict) -> bool:
-    return int(float(p.get("stock") or 0)) > 0
+    return entero(p.get("stock")) > 0
+
+
+def entero(v, defecto: int = 0) -> int:
+    """Un numero que puede venir como texto del interprete: "2", "2.0", "300000". Lo que no es numero, el defecto."""
+    try:
+        return int(float(str(v).replace(",", ".")))
+    except (TypeError, ValueError):
+        return defecto
 
 
 # ══ IDENTIDAD ════════════════════════════════════════════════════════════════
@@ -81,8 +89,9 @@ def nombrados(texto: str, tienda_id: str, largo: int = 4) -> list:
     for tam in range(min(largo, len(ws)), 0, -1):
         for i in range(len(ws) - tam + 1):
             tramo = set(range(i, i + tam))
-            if tramo & usadas or not any(re.search(r"[a-z]", w) and re.search(r"\d", w) for w in ws[i:i + tam]) \
-                    and tam == 1:
+            # Una palabra sola nombra un producto solo si es un codigo de modelo, con letras y numeros: "G203".
+            codigo = any(re.search(r"[a-z]", w) and re.search(r"\d", w) for w in ws[i:i + tam])
+            if tramo & usadas or (tam == 1 and not codigo):
                 continue
             idt = identificar(" ".join(ws[i:i + tam]), "", tienda_id)
             if idt["veredicto"] == "exists":
@@ -113,7 +122,9 @@ PRIORIDAD = ("marca", "color", "conexion", "ram", "almacenamiento", "procesador"
              "pais_marca", "tags", "modelo", "nombre", "descripcion")
 
 _NIEGA = re.compile(r"^(?:que\s+)?(?:no\s+(?:sea[ns]?\s+)?|sin\s+|ni\s+|excepto\s+|salvo\s+|nada\s+de\s+)")
-_TOPE = re.compile(r"\b(menos de|hasta|maximo|no mas de|por debajo de|mas de|desde|minimo)\s*\$?\s*([\d.,]+)\s*(mil|k|lucas)?")
+# Un tope es de plata si el numero no lleva unidad: "hasta 16 GB" es memoria, no precio.
+_TOPE = re.compile(r"\b(menos de|hasta|maximo|no mas de|por debajo de|mas de|desde|minimo)\s*\$?\s*([\d.,]+)"
+                   r"(?![\d.,])\s*(mil|k|lucas)?(?!\s*(?:gb|tb|hz|w|watts|mah|mm|pulgadas|gramos|g|meses)\b)")
 _RELLENO = set("a al con de del el en la las lo los para por que un una unos unas y o sea posible preferentemente "
                "preferiblemente idealmente algo alguno alguna".split())
 
@@ -130,7 +141,8 @@ def _valores(prod: dict, campo: str) -> str:
 def _contiene(texto: str, valor: str) -> bool:
     if not texto or not valor:
         return False
-    return re.search(rf"(?<![a-z0-9]){re.escape(valor)}", texto) is not None
+    # Palabra entera, con plural: "red" no es "redragon", "inalambrico" si es "inalambricos".
+    return re.search(rf"(?<![a-z0-9]){re.escape(valor)}(?:s|es)?(?![a-z0-9])", texto) is not None
 
 
 def _monto(numero: str, mil: str) -> int:
@@ -196,7 +208,9 @@ def buscar(rubro_: str, condiciones: list, orden: str, cuantos: int, tienda_id: 
                     [c for c, _ in filtros]
         quedan = [p for p in universo if con_stock(p) and all(cumple(p, f) for c, f in filtros if c not in vacio_por)]
     clave = ORDEN.get(n(orden))
-    if clave:
+    if not clave:
+        cuantos = max(int(cuantos or 0), 5)
+    else:
         quedan.sort(key=lambda p: clave[1] * float(p.get(clave[0]) or 0))
     filas, vistos = [], set()
     for p in quedan:
