@@ -1,15 +1,17 @@
 """EL ESTADO DE LA CHARLA — uno solo, lo escribe el codigo (19-oct-2026).
 
 Es lo unico que pasa de un turno al siguiente, ademas del historial. Vive en el documento de la charla, en el campo
-`estado_charla`, y tiene cinco partes:
+`estado_charla`, y tiene seis partes:
 
   mostrados   lo que el cliente leyo, en orden, con id, nombre y precio. Las referencias salen de aca.
   pedido      lo que el cliente decidio llevar: id, nombre, cantidad y destino de cada articulo.
   reparto     como paga: [{"medio", "porcentaje"}].
   busqueda    la ultima busqueda: rubro, condiciones en palabras y orden.
   cliente     lo que dijo de si mismo: localidad, nombre, quien es.
+  cerrado     el pedido como estaba cuando se cerro, para no cerrarlo dos veces.
 """
-VACIO = {"mostrados": [], "pedido": [], "reparto": [], "busqueda": {}, "cliente": {}}
+
+VACIO = {"mostrados": [], "pedido": [], "reparto": [], "busqueda": {}, "cliente": {}, "cerrado": ""}
 TOPE_MOSTRADOS = 30
 
 

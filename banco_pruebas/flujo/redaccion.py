@@ -91,8 +91,8 @@ RENGLONES = {
 }
 
 
-def texto(hechos: list, preguntas: list, pedido_nuevo: bool) -> str:
+def texto(hechos: list, preguntas: list, pide_nombre: bool) -> str:
     bloques = ["\n".join(RENGLONES[h["tipo"]](h)) for h in hechos]
-    if pedido_nuevo and not preguntas:
+    if pide_nombre and not preguntas:
         preguntas = ["Para reservarlo, ¿me decís tu nombre?"]
     return "\n\n".join(b for b in bloques + list(preguntas) if b.strip())
