@@ -1,5 +1,5 @@
 {
- "_que_es": "Como nombran los clientes cada rubro, tema y campo. Lo genera scripts/generar_alias.py con el modelo, una vez por tienda: no se edita a mano.",
+ "_que_es": "Como nombran los clientes cada rubro, tema y campo. Lo genera scripts/generar_alias.py con el modelo, una vez por tienda: no se edita a mano. Excepcion, 20-oct, con permiso de Martin: off, envio gratis, envio es gratis y tarjeta de debito se sumaron a mano.",
  "rubros": {
   "almacenamiento externo": [
    "disco de 1tb",
@@ -232,7 +232,8 @@
    "que medios aceptan",
    "reciben tarjeta",
    "se puede pagar con debito",
-   "tienen mercado pago"
+   "tienen mercado pago",
+   "tarjeta de debito"
   ],
   "cuotas": [
    "con que tarjeta hay cuotas",
@@ -258,7 +259,9 @@
    "cuanto sale el envio",
    "cuanto sale el envio a capital",
    "es gratis el envio",
-   "tienen envio sin cargo"
+   "tienen envio sin cargo",
+   "envio gratis",
+   "envio es gratis"
   ],
   "plazo_envio": [
    "cuando lo despachan",
@@ -592,7 +595,8 @@
    "tienen 3 cuotas sin interes",
    "tienen algun cupon",
    "tienen algun descuento",
-   "tienen promo por pago efectivo"
+   "tienen promo por pago efectivo",
+   "off"
   ],
   "teclado_mecanico_membrana": [
    "es de los que hacen ruido",

@@ -91,6 +91,8 @@ def test_el_marcador_reconoce_lo_de_la_tienda_y_no_inventa():
         ("mitad transferencia y mitad mercado pago", ["50 y 50 por ciento"]),
         ("si pasa de 300 mil saca el MX", ["300.000 pesos"]),
         ("hacen factura A?", ["el tema factura"]),
+        ("tienen 50 off, no?", ["el tema promociones"]),
+        ("aceptan tarjeta de debito?", ["el tema formas_pago"]),
     ]
     for mensaje, esperado in casos:
         t = marcador.tabla(mensaje, TIENDA)

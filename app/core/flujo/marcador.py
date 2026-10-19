@@ -90,7 +90,7 @@ def _rubros(ws: list, tienda_id: str) -> list:
 
 
 def _temas(texto: str, tienda_id: str) -> dict:
-    """Los temas de la FAQ cuya frase clave aparece entera en el mensaje, y los de cada alias de la tienda cuyas
+    """Los temas de la FAQ o de un alias de la tienda cuya frase aparece entera en el mensaje, y los de cada alias cuyas
     palabras propias, dos o mas, estan todas en el mensaje: "es gratis el envio" es costo_envio en cualquier orden. Una
     palabra es propia si aparece en pocos temas; "tienen" o "cuanto" no distinguen ninguno."""
     ws = re.findall(r"[a-z0-9]+", K.n(texto))
@@ -108,8 +108,13 @@ def _temas(texto: str, tienda_id: str) -> dict:
             if f and f" {f} " in t:
                 out.setdefault(f, []).append(tema)
         for f in alias.get(tema) or []:
-            propias = [w for w in re.findall(r"[a-z0-9]+", K.n(f)) if len(w) > 3 and cuantos.get(w, 0) <= 3]
-            if len(propias) > 1 and set(propias) <= dichas and tema not in sum(out.values(), []):
+            entera = " ".join(re.findall(r"[a-z0-9]+", K.n(f)))
+            propias = [w for w in entera.split() if len(w) > 3 and cuantos.get(w, 0) <= 3]
+            if tema in sum(out.values(), []):
+                continue
+            if entera and f" {entera} " in t:
+                out.setdefault(entera, []).append(tema)
+            elif len(propias) > 1 and set(propias) <= dichas:
                 out.setdefault(" ".join(propias), []).append(tema)
     return out
 
