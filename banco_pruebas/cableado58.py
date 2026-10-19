@@ -1,48 +1,32 @@
-"""EL CABLEADO SOBRE LAS 58 — el flujo nuevo por el webhook entero, sin modelo (19-oct-2026, orden de Martin).
+"""EL CABLEADO SOBRE LAS 58 — el flujo vivo por el webhook entero, sin modelo (20-oct-2026, orden de Martin).
 
 Cada charla de las 58 de `vara_58.json` corre turno por turno por el clon de produccion —el webhook de WhatsApp, el
 antijailbreak, el orchestrator, el flujo, el cierre y Firestore en RAM—, y las dos llamadas al modelo devuelven lo
-escrito a mano en `banco_pruebas/traducciones58.py`.
+escrito a mano en `banco_pruebas/agendas58.py`: la agenda de cada turno y la explicacion de saber general.
 Lo que recibe el cliente se califica con las casillas de `vara_58.json`, que no se tocan: las decidio Martin.
 
-El control: `--grabadas <etiqueta>` usa en el ULTIMO turno de cada charla la traduccion que grabo Gemini en
-`banco_pruebas/nexos/ficha_casillas_corridas.jsonl`. Si el cableado anda con lo mio y no con lo del modelo, lo mio
-esta hecho a la medida del cableado y no vale.
+El control contra la trampa es la corrida final con el modelo, comparada pregunta por pregunta con `agendas58.py`.
 
   python3 -m banco_pruebas.cableado58                         las 58
   python3 -m banco_pruebas.cableado58 C27 C46 --ver           esas, con lo que recibio el cliente
-  python3 -m banco_pruebas.cableado58 --grabadas f10e_58_gg1  el control con las traducciones de Gemini
 """
 import asyncio
 import json
-import os
 import sys
 
 from banco_pruebas import clon_produccion as C
 
 LLAMADAS_AL_MODELO = []
-GRABADAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nexos", "ficha_casillas_corridas.jsonl")
 
 
-# Las complejas de la vara que ya entraron: varios rubros a varios destinos, la clase que Martin probo en vivo.
-COMPLEJAS = ("K03", "K06", "K07", "K20")
+# Las complejas de la vara que ya entraron: varios rubros a varios destinos, la clase que Martin probo en vivo, y la
+# memoria a varios turnos.
+COMPLEJAS = ("K03", "K06", "K07", "K10", "K11", "K20", "K21")
 
 
 def charlas() -> list:
     doc = json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))
     return [c for c in doc["charlas"] if c["id"].startswith("C") or c["id"] in COMPLEJAS]
-
-
-def grabadas(etiqueta: str) -> dict:
-    out = {}
-    for x in open(GRABADAS, encoding="utf-8"):
-        f = json.loads(x)
-        if f["etiqueta"] == etiqueta:
-            try:
-                out[f["id"]] = json.loads(f["crudo"]).get("llena") or {}
-            except (ValueError, AttributeError):
-                out[f["id"]] = {}
-    return out
 
 
 def instalar():
@@ -59,12 +43,12 @@ def instalar():
     return interprete
 
 
-def correr(charla: dict, traducciones: list, interprete, explicar: dict) -> list:
+def correr(charla: dict, agendas: list, interprete, explicar: dict) -> list:
     """Los turnos de una charla: lo que recibio el cliente y cada casilla con su nota."""
     from banco_pruebas.sonda_charlas import nota_casilla
     uid = f"cableado_{charla['id']}"
     C.reiniciar_cliente(uid)
-    cola = list(traducciones)
+    cola = list(agendas)
 
     async def _interpretar(*a, **k):
         return cola.pop(0) if cola else {}
@@ -84,33 +68,23 @@ def correr(charla: dict, traducciones: list, interprete, explicar: dict) -> list
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     ver = "--ver" in sys.argv
-    etiqueta = sys.argv[sys.argv.index("--grabadas") + 1] if "--grabadas" in sys.argv else ""
-    if etiqueta:
-        args = [a for a in args if a != etiqueta]
     interprete = instalar()
-    from banco_pruebas.traducciones58 import EXPLICAR, T
-    del_modelo = grabadas(etiqueta) if etiqueta else {}
+    from banco_pruebas.agendas58 import AGENDAS, EXPLICAR
     bien, mal = [], []
     for charla in charlas():
         if args and charla["id"] not in args:
             continue
-        trad = list(T.get(charla["id"]) or [])
-        if len(trad) != len(charla["turnos"]):
-            raise SystemExit(f"{charla['id']}: {len(trad)} traducciones para {len(charla['turnos'])} turnos")
-        if etiqueta:
-            if charla["id"] not in del_modelo:
-                print(f"{charla['id']} SIN GRABACION")
-                mal.append(charla["id"])
-                continue
-            trad[-1:] = [del_modelo[charla["id"]]]
-        turnos = correr(charla, trad, interprete, EXPLICAR)
+        agendas = list(AGENDAS.get(charla["id"]) or [])
+        if len(agendas) != len(charla["turnos"]):
+            raise SystemExit(f"{charla['id']}: {len(agendas)} agendas para {len(charla['turnos'])} turnos")
+        turnos = correr(charla, agendas, interprete, EXPLICAR)
         malas = [n for t in turnos for n, ok in t["casillas"] if ok is not True]
         (mal if malas else bien).append(charla["id"])
         print(f"{charla['id']} {'bien' if not malas else 'MAL: ' + '; '.join(malas)}")
         if ver or (malas and len(args) <= 3 and args):
             for i, t in enumerate(turnos, 1):
                 print(f"  T{i} cliente: {t['texto']}\n  " + t["respuesta"].replace("\n", "\n  "))
-    print(f"\nCABLEADO{' con ' + etiqueta if etiqueta else ''}: {len(bien)} de {len(bien) + len(mal)} charlas bien")
+    print(f"\nCABLEADO: {len(bien)} de {len(bien) + len(mal)} charlas bien")
     if mal:
         print("mal: " + " ".join(mal))
     if LLAMADAS_AL_MODELO:

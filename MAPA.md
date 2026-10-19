@@ -30,7 +30,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Las dos llamadas al modelo: traducir a la agenda y explicar; la consigna, los seis ejemplos y la libreta | `app/core/flujo/interprete.py` |
 | La agenda: el menu de acciones y el control de lo que falta | `app/core/flujo/agenda.py` |
 | Lo que el codigo reconoce en el mensaje antes del modelo | `app/core/flujo/marcador.py` |
-| Cada casilla de la traducción, cumplida con las herramientas | `app/core/flujo/ejecutor.py` |
+| Cada pregunta de la agenda, cumplida con las herramientas, y el candado | `app/core/flujo/ejecutor.py` |
 | Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |
 | La respuesta al cliente, escrita por el código | `app/core/flujo/redaccion.py` |
 | El estado único de la charla | `app/core/flujo/estado.py` |
@@ -58,8 +58,7 @@ permiso.
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
 | Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
-| Lo que devuelve el intérprete en cada turno de las 58, escrito a mano | `banco_pruebas/traducciones58.py` |
-| Las 58 y las K como agendas, escritas a mano: la vara del intérprete nuevo | `banco_pruebas/agendas58.py` |
+| Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |
 | Si lo que recibe el modelo alcanza, sin modelo | `banco_pruebas/suficiencia.py` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |

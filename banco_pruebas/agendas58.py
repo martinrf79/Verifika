@@ -6,9 +6,10 @@ turno —M lo mostrado, P el pedido—, como la arma `interprete.libreta` sobre 
 
 Sin citas: la cita la controla `agenda.faltas` sobre lo que devuelve el modelo, y aca no hace falta.
 
-Sirve dos veces:
-  1. Sin modelo, para medir si lo que recibe el modelo alcanza: `tests/test_agenda.py`, la suficiencia.
-  2. Con el modelo, al final, para compararlo pregunta por pregunta.
+Sirve tres veces:
+  1. Sin modelo, el cableado: `cableado58.py` las pasa por el webhook entero en lugar del interprete.
+  2. Sin modelo, la suficiencia: si lo que recibe el modelo alcanza para escribirlas, `tests/test_agenda.py`.
+  3. Con el modelo, al final, para compararlo pregunta por pregunta.
 """
 
 
@@ -33,8 +34,8 @@ def a(producto, cantidad=1, color=None, destino=None):
             if v is not None}
 
 
-def com(*agrega, saca=None, cambia=None, reparto=None, si=None):
-    return _p("comprar", si, agrega=list(agrega), saca=saca, cambia=cambia, reparto=reparto)
+def com(*agrega, saca=None, cambia=None, reparto=None, reemplaza=False, si=None):
+    return _p("comprar", si, agrega=list(agrega), saca=saca, cambia=cambia, reparto=reparto, reemplaza=reemplaza)
 
 
 def cu(tope=None, si_pasa=None, reparto=None):
@@ -110,7 +111,8 @@ AGENDAS = {
     "C30": [ag(otro("dato"), co("Kingston Fury Beast DDR4 16GB", "placa DDR5"),
                bu("memoria ram", "DDR5", si=(2, "no")), cliente={"equipo": "PC de escritorio con placa DDR5"})],
     "C31": [ag(com(a("MX Master 3S", 1, "negro"), a("G305", 2, "negro")), cu(tope=300000, si_pasa="MX Master 3S"))],
-    "C32": [ag(pr("G305", "inalambrico"), pr("G203", "inalambrico"))],
+    "C32": [ag(pr("G305", "inalambrico"), pr("G203", "inalambrico"), com(a("G305"), si=(1, "si")),
+               com(a("G203"), si=(2, "si")))],
     "C33": [ag(otro("corrige"), bu("teclado", "Logitech"))],
     "C34": [ag(pr("G203"), en("Rosario")),
             ag(en("Cordoba"))],
@@ -119,15 +121,15 @@ AGENDAS = {
     "C36": [ag(co("G305", "Mac"))],
     "C37": [ag(otro("dato"), co("memoria ram", "notebook", True), cliente={"equipo": "notebook"})],
     "C38": [ag(pr("Kingston Fury Beast DDR4 16GB")),
-            ag(co("M1", "pc", True))],
+            ag(co("M-1", "pc", True))],
     "C39": [ag(pr("G203", "inalambrico", afirma="inalambrico"))],
     "C40": [ag(po("costo_envio", afirma="envio gratis a todo el pais"))],
     "C41": [ag(otro("dato"), po("descuento_transferencia"), cliente={"es": "jubilado"})],
     "C42": [ag(bu("notebook", "64 GB de RAM", "menos de 200 mil"))],
     "C43": [ag(pr("K120")),
-            ag(pr("M1", "inalambrico"))],
+            ag(pr("M-1", "inalambrico"))],
     "C44": [ag(pr("G305"), pr("G203")),
-            ag(pr("M2", "stock"))],
+            ag(pr("M-2", "stock"))],
     "C45": [ag(bu("mouse", "Logitech", "con cable")),
             ag(bu("mouse", "Logitech", "con cable", "blanco"))],
     "C46": [ag(bu("teclado", "que no sea Redragon")),
@@ -135,24 +137,24 @@ AGENDAS = {
     "C47": [ag(otro("dato"), cliente={"localidad": "Posadas, Misiones"}),
             ag(pr("G203", color="negro"), en("Posadas"), cu())],
     "C48": [ag(com(a("G305", 1, "negro"))),
-            ag(com(cambia=[{"es": "P1", "destino": "Rosario"}]), cu())],
+            ag(com(cambia=[{"es": "P-1", "destino": "Rosario"}]), cu())],
     "C49": [ag(pr("K120", color="negro")),
             ag(bu("auriculares", "JBL")),
             ag(bu("webcam")),
-            ag(pr("M1", "stock"))],
+            ag(pr("M-1", "stock"))],
     "C50": [ag(pr("G203"), pr("G305")),
-            ag(com(a(["M1", "M2"]))),
-            ag(com(a("M1")))],
+            ag(com(a(["M-1", "M-2"]))),
+            ag(com(a("M-1")))],
     "C51": [ag(pr("G305", color="negro"), com(a("G305", 1, "negro", "Cordoba")))],
     "C52": [ag(bu("mouse", "Logitech"), bu("teclado", "Logitech"), bu("auriculares", "JBL")),
-            ag(pr([f"M{i}" for i in range(1, 13)]))],
+            ag(pr([f"M-{i}" for i in range(1, 13)]))],
     "C53": [ag(pr("G502 Hero")),
-            ag(pr("M1", "stock", "negro"), com(a("M1", 1, "blanco"), si=(1, "no")))],
+            ag(pr("M-1", "stock", "negro"), com(a("M-1", 1, "blanco"), si=(1, "no")))],
     "C54": [ag(otro("dato"), bu("placa de video", "que aguante una fuente de 550 watts", orden="mas potente"),
                cliente={"equipo": "fuente de 550 watts"})],
     "C55": [ag(pr("G305", color="negro"), pr("G203", color="negro")),
             ag(pr("G305")),
-            ag(otro("corrige"), com(a("M1")))],
+            ag(otro("corrige"), com(a("M-1")))],
     "C56": [ag(po("promociones", afirma="50 off"), pr("K120", "si sale menos de 10 mil", "negro"),
                com(a("K120", 2, "negro"), si=(2, "si")))],
     "C57": [ag(otro("fuera_de_tema"))],
@@ -179,4 +181,48 @@ AGENDAS = {
                    a("memoria ram", destino="Concordia"), a("mouse", destino="Concordia"),
                    a("los otros", 2, destino="Posadas")),
                cu(reparto=SETENTA_TREINTA))],
+    # LA MEMORIA A VARIOS TURNOS (20-oct): el pedido anotado tiene que llegar entero al final.
+    "K10": [ag(otro("saludo"), bu("mouse"), bu("auriculares")),
+            ag(com(a("M170", 1, "negro"))),
+            ag(bu("auriculares", "con microfono")),
+            ag(bu("auriculares", "playstation 5", entre=True)),
+            ag(po("cuotas"), po("formas_pago")),
+            ag(com(a("HyperX Cloud II"))),
+            ag(otro("corrige")),
+            ag(com(cambia=[{"es": "P-1", "destino": "Rosario"}]), cu())],
+    "K11": [ag(otro("saludo"), bu("mouse", "para la oficina"), bu("teclado", "para la oficina")),
+            ag(bu("mouse", orden="mas barato"), bu("teclado", orden="mas barato")),
+            ag(otro("dato"), com(a("M-12"))),
+            ag(po("factura")),
+            ag(com(cambia=[{"es": "P-1", "cantidad": 3}])),
+            ag(otro("corrige"), com(cambia=[{"es": "P-1", "cantidad": 2, "destino": "Rosario"}]), cu())],
+    # LA CHARLA REAL DE MARTIN DEL 19-OCT, entera: siete articulos, tres destinos y el pago partido.
+    "K21": [ag(bu("auriculares", SIN_CHINAS, cantidad=2), bu("mouse", SIN_CHINAS, cantidad=2),
+               bu("memoria ram", SIN_CHINAS, cantidad=2),
+               com(a("auriculares", destino="Cordoba capital"), a("mouse", destino="Cordoba capital"),
+                   a("teclado", destino="Concordia"), a("mouse", destino="Concordia"),
+                   a("los otros", 2, destino="Posadas")),
+               cu(reparto=SETENTA_TREINTA)),
+            ag(bu("teclado", SIN_CHINAS),
+               com(a("auriculares", destino="Cordoba capital"), a("mouse", destino="Cordoba capital"),
+                   a("teclado", destino="Concordia"), a("mouse", destino="Concordia"),
+                   a("los otros", None, destino="Posadas"), reemplaza=True),
+               cu()),
+            ag(otro("dato"), bu("auriculares", orden="mas barato", cantidad=2),
+               bu("mouse", orden="mas barato", cantidad=2), bu("memoria ram", orden="mas barato", cantidad=2),
+               bu("teclado", orden="mas barato"),
+               com(a("auriculares", destino="Cordoba capital"), a("mouse", destino="Cordoba capital"),
+                   a("teclado", destino="Concordia"), a("mouse", destino="Concordia"),
+                   a("los otros", None, destino="Posadas"), reemplaza=True),
+               cu()),
+            ag(cu()),
+            ag(otro("dato"), cliente={"nombre": "Julio"}),
+            ag(cu()),
+            ag(otro("dato"), cu(reparto=SETENTA_TREINTA))],
+}
+
+# LA SEGUNDA LLAMADA, la de saber general, escrita a mano.
+EXPLICAR = {
+    "que conviene, DDR4 o DDR5?": ("Depende de tu placa: DDR4 y DDR5 no son intercambiables, cada placa acepta una "
+                                   "sola. DDR5 es la más nueva y rápida; DDR4 es más barata y sigue rindiendo bien."),
 }

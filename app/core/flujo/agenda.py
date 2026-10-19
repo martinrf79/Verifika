@@ -5,10 +5,10 @@ preguntas, en el orden del cliente, y a cada una le pone UNA accion de un menu c
 del mensaje tiene su lugar, y el codigo puede controlar que ninguno quede sin respuesta.
 
   {"preguntas": [{"n": 1, "cita": "las palabras literales", "accion": "buscar", ...los datos de la accion,
-                  "si": {"de": 2, "da": "si"|"no"}, "responde": "R1"}],
+                  "si": {"de": 2, "da": "si"|"no"}, "responde": "R-1"}],
    "cliente": {"es", "nombre", "localidad", "equipo"}}
 
-Lo que el modelo senala de la charla lo senala con el numero de la libreta —M2 lo mostrado, P1 el pedido, R1 la
+Lo que el modelo senala de la charla lo senala con el numero de la libreta —M-2 lo mostrado, P-1 el pedido, R-1 la
 repregunta abierta—, que arma el codigo en `interprete.libreta`. Asi no reescribe nombres ni reconstruye la charla.
 """
 import re
@@ -19,8 +19,8 @@ ACCIONES = {
               '"mas caro", "mas <dato>" o "nada" —economico o "de acuerdo a la crisis" es "mas barato"—; "condiciones" '
               'en palabras del cliente —marca, color, tope de precio, "que no sea X"—; "entre_lo_mostrado" true si elige '
               'entre lo ya mostrado. Las exclusiones vigentes de la libreta van en cada busqueda nueva.',
-    "producto": 'un modelo concreto. "producto" es lo que dijo el cliente, o el numero de la libreta si lo senala: "M2". '
-                'Si lo que senala puede ser varios, la lista: ["M1", "M2"], y el codigo pregunta. "quiere_saber": precio, '
+    "producto": 'un modelo concreto. "producto" es lo que dijo el cliente, o el numero de la libreta si lo senala: "M-2". '
+                'Si lo que senala puede ser varios, la lista: ["M-1", "M-2"], y el codigo pregunta. "quiere_saber": precio, '
                 'stock o el dato que pide; "color" si lo dijo; "afirma" lo que da por cierto del producto.',
     "envio": '"destino" a cotizar, con las palabras del cliente.',
     "cuenta": 'pide sumar o un presupuesto. "tope" si pone un monto; "si_pasa" lo que saca si el total lo pasa; '
@@ -30,8 +30,9 @@ ACCIONES = {
                       'modelo —"mi notebook"—.',
     "comprar": 'lo que decide llevar, o la lista con cantidades y destinos que arma para el presupuesto. Solo el cambio '
                'de este mensaje: "agrega" [{"producto", "cantidad", "color", "destino"}] —producto es un modelo, un '
-               '"M2", un rubro o "los otros"—; "saca" ["P1"]; "cambia" [{"es": "P1", y cantidad, color o destino}]; '
-               '"reparto" como en cuenta.',
+               '"M-2", un rubro o "los otros", que sin cantidad es todo lo que queda de la lista—; "saca" ["P-1"]; '
+               '"cambia" [{"es": "P-1", y cantidad, color o destino}]; "reemplaza" true si rehace el pedido entero y '
+               '"agrega" es como queda; "reparto" como en cuenta.',
     "explicar": 'saber general de tecnologia, que no es de la tienda: "pregunta".',
     "otro": '"que": saludo, dato —lo que dice de si mismo, que va en "cliente"—, corrige —lo que retiro en el mismo '
             'mensaje—, humano, fuera_de_tema o catalogo.',
@@ -41,7 +42,7 @@ ACCIONES = {
 OBLIGATORIO = {"buscar": "rubro", "producto": "producto", "envio": "destino", "politica": "tema",
                "compatibilidad": "producto", "explicar": "pregunta", "otro": "que"}
 
-_REF = re.compile(r"^[MPR]\d+$")
+_REF = re.compile(r"^[MPR]-\d+$")
 
 # Palabras que no piden nada: si quedan sin citar no falta nada.
 _VACIAS = set("a al algo con de del el en es esta este la las lo los me mi o para pero por que se si su te tu un una "

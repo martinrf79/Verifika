@@ -32,7 +32,7 @@ def vistas():
 def test_los_seis_ejemplos_cumplen_el_contrato():
     from app.core.flujo import agenda as A, interprete as I
     for libreta, mensaje, _, salida in I.EJEMPLOS:
-        assert A.faltas(mensaje, salida, set(re.findall(r"\b[MPR]\d+\b", libreta))) == [], mensaje
+        assert A.faltas(mensaje, salida, set(re.findall(r"\b[MPR]-\d+\b", libreta))) == [], mensaje
     print(f"\nEJEMPLOS: {len(I.EJEMPLOS)} de {len(I.EJEMPLOS)} cumplen la agenda")
 
 
@@ -48,10 +48,20 @@ def test_el_control_ve_lo_que_falta():
     assert any("menu" in f for f in A.faltas(mensaje, fuera_del_menu, set()))
     sin_dato = {"preguntas": [{**bien["preguntas"][0], "producto": ""}, bien["preguntas"][1]]}
     assert any("producto" in f for f in A.faltas(mensaje, sin_dato, set()))
-    fuera_de_la_libreta = {"preguntas": [{**bien["preguntas"][0], "producto": "M3"}, bien["preguntas"][1]]}
-    assert any("M3" in f for f in A.faltas(mensaje, fuera_de_la_libreta, {"M1", "M2"}))
+    fuera_de_la_libreta = {"preguntas": [{**bien["preguntas"][0], "producto": "M-3"}, bien["preguntas"][1]]}
+    assert any("M-3" in f for f in A.faltas(mensaje, fuera_de_la_libreta, {"M-1", "M-2"}))
     depende_de_nada = {"preguntas": [bien["preguntas"][0], {**bien["preguntas"][1], "si": {"de": 7, "da": "si"}}]}
     assert any("7" in f for f in A.faltas(mensaje, depende_de_nada, set()))
+
+
+def test_el_candado_no_deja_una_pregunta_sin_estado():
+    """Una pregunta que el ejecutor no puede cumplir no se pierde en silencio: se repregunta con su cita."""
+    from app.core.flujo import estado as E
+    from app.core.flujo.ejecutor import ejecutar
+    t = ejecutar({"preguntas": [{"n": 1, "cita": "y me lo envolves para regalo?", "accion": "envolver"}]},
+                 E.leer({}), TIENDA)
+    assert t.estados == {1: "sin_estado"}
+    assert any("y me lo envolves para regalo?" in q for q in t.preguntas), t.preguntas
 
 
 def test_una_agenda_a_mano_por_turno_y_dentro_del_menu():

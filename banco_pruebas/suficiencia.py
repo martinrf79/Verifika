@@ -5,8 +5,8 @@ mano en `agendas58.py` tiene que poder salir de lo que el modelo ve en ese turno
 las palabras del cliente—. Si un dato no esta, el modelo lo tendria que adivinar: la falla es del codigo, y se arregla
 en el marcador o en la libreta, no en la consigna.
 
-Las libretas salen del estado real de cada turno: las charlas corren por el clon de produccion con las traducciones a
-mano, y antes de cada turno se toma el estado tal como lo veria el interprete.
+Las libretas salen del estado real de cada turno: las charlas corren por el clon de produccion con las agendas a mano,
+y antes de cada turno se toma el estado tal como lo veria el interprete.
 
   python3 -m banco_pruebas.suficiencia            lo que falta, turno por turno
   python3 -m banco_pruebas.suficiencia --ver C49  con la libreta y la tabla de cada turno
@@ -22,7 +22,7 @@ from banco_pruebas import clon_produccion as C
 def vistas() -> list:
     """[(charla, turno, mensaje, estado, historial)] de las 58 y las K, antes de cada turno."""
     interprete = CB.instalar()
-    from banco_pruebas.traducciones58 import EXPLICAR, T
+    from banco_pruebas.agendas58 import AGENDAS as T, EXPLICAR
     out = []
     for charla in CB.charlas():
         uid = f"suficiencia_{charla['id']}"

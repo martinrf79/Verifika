@@ -58,13 +58,16 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 5 están 
    cero. De lo viejo usa sólo las herramientas: motor, calculadora, envío, políticas, compatibilidad, `leads` y
    Firestore.
 2. **Sin modelos.** Las dos llamadas al modelo, traducir y explicar, las reemplaza el banco con lo escrito a mano en
-   `banco_pruebas/traducciones58.py`, en el formato de la ficha 10. El corredor bloquea cualquier otra llamada.
+   `banco_pruebas/agendas58.py`: desde el 20-oct el intérprete devuelve una agenda, una pregunta por cosa pedida,
+   `flujo/agenda.py`. El corredor bloquea cualquier otra llamada.
 3. **La vara es la de Martín**: las casillas de `vara_58.json`, que no se tocan, por el webhook entero:
    `python3 -m banco_pruebas.cableado58`.
-4. **El control contra la trampa**: el mismo cableado con las traducciones que grabó Gemini,
-   `--grabadas f10e_58_gg1`, `gg2` y `gg3`. Un arreglo entra si sirve para una clase, no para un caso.
-5. **Las 58 están en la batería**, `tests/test_cableado58.py`: una charla rota frena el deploy. El intérprete usa el
-   prompt de la ficha 10. `tablero.py`, `respuesta.py` y las once capas se borraron. Si falla en vivo, git.
+4. **El control contra la trampa**: antes del modelo, `tests/test_agenda.py` prueba gratis que lo que ve el modelo
+   alcanza para escribir cada agenda; al final, una corrida con el modelo se compara pregunta por pregunta contra
+   `agendas58.py`. Un arreglo entra si sirve para una clase, no para un caso.
+5. **Las 58 están en la batería**, `tests/test_cableado58.py`: una charla rota frena el deploy. El intérprete usa la
+   consigna de la agenda, con seis ejemplos. `tablero.py`, `respuesta.py` y las once capas se borraron. Si falla en
+   vivo, git.
 6. **Después, Martín dice cómo se sigue.**
 
 ### Qué es parche, y cómo no se cae en eso
@@ -72,7 +75,7 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 5 están 
 - **Un arreglo corrige la causa donde vive, y cubre la clase entera.** La prueba: si mañana llega la misma
   falla dicha de otra forma, ¿queda cubierta sin tocar nada?
 - **No se juzga a ojo: se mide.** Un cambio que mueve sólo el caso que lo motivó es parche y no entra. Lo decide
-  `cableado58.py` con las traducciones a mano y con las grabadas de Gemini, no la sesión.
+  `cableado58.py` con las agendas a mano y la corrida final con el modelo, no la sesión.
 - **No se suma un campo, una pregunta o una capa nueva por cada falla.** Ese es el patrón que trajo la
   maraña. Lo que falla seguido, se le achica al modelo.
 - **Si para que pase un caso hay que cambiar un test, sumar una palabra a una lista o poner un umbral, se para
@@ -173,7 +176,7 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 5 están 
 python3 -m pytest -q                       # la batería offline, sin modelo
 python3 -m pytest tests/test_cableado58.py      # la vara fija: las 58 por el flujo vivo, sin modelo
 python3 -m banco_pruebas.cableado58 --ver        # lo mismo, con lo que recibe el cliente
-python3 -m banco_pruebas.cableado58 --grabadas f10e_58_gg1   # el control con las traducciones de Gemini
+python3 -m banco_pruebas.suficiencia            # si lo que ve el modelo alcanza para cada agenda, sin modelo
 uvicorn app.main:app --reload --port 8080  # correr local
 ```
 

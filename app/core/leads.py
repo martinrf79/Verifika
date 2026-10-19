@@ -50,12 +50,6 @@ _RE_PIDE_COBRO = re.compile(
     r"|\bdatos\s+(?:para|de)\s+(?:pagar|pago|transferir|transferencia)"
     r"|\bcu[aá]l\s+es\s+el\s+(?:cbu|alias|link)\b")
 
-RE_TELEFONO = re.compile(
-    r"(?:\+?54\s?9?\s?)?(?:11|2\d{2}|3\d{2})\s?\d{3,4}\s?\d{4}"
-)
-RE_TELEFONO_GENERICO = re.compile(r"\b\d{8,13}\b")
-
-
 # SWITCH DE VERSION DEL BOT (A/B), un solo lugar para prenderla.
 _ALIAS_MODO = {
     "a": "lead", "version_a": "lead", "opcion_a": "lead", "lead": "lead",
@@ -93,18 +87,6 @@ def modo_cierre(tienda_id: str) -> str:
     except Exception as e:
         log.warning("modo_cierre_read_error", error=str(e)[:100])
     return _normalizar_modo(settings.MODO_CIERRE) or settings.MODO_CIERRE
-
-
-def extraer_telefono(texto: str) -> str:
-    if not texto:
-        return ""
-    match = RE_TELEFONO.search(texto)
-    if match:
-        return re.sub(r"\D", "", match.group(0))
-    match = RE_TELEFONO_GENERICO.search(texto)
-    if match:
-        return match.group(0)
-    return ""
 
 
 def get_lead_activo(user_id: str, canal: str, tienda_id: str) -> dict | None:

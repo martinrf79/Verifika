@@ -1,4 +1,4 @@
-"""EL TURNO — la misma firma que `respuesta.procesar_turno`, por el flujo nuevo (19-oct-2026)."""
+"""EL TURNO — el mensaje, la agenda del interprete, la agenda cumplida y la respuesta (20-oct-2026)."""
 from app.config import get_settings
 from app.core import guardas_salida as gs
 from app.core.contexto_turno import set_current_tienda
@@ -8,7 +8,8 @@ from app.storage import firestore_client as fc
 from . import estado as E
 from . import interprete, redaccion
 from .cierre import cerrar
-from .ejecutor import ejecutar, normalizar
+from .agenda import preguntas
+from .ejecutor import ejecutar
 
 log = get_logger(__name__)
 settings = get_settings()
@@ -20,18 +21,18 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
     history = conv.get("history") or []
     estado = E.leer(conv)
 
-    llena = await interprete.interpretar(raw_message, history, estado, tienda_id, trace_id)
-    if llena is None:
+    agenda = await interprete.interpretar(raw_message, history, estado, tienda_id, trace_id)
+    if agenda is None:
         from app.core.guia_venta_prosa import mensaje
         return mensaje("sobrecarga", "Perdón, estoy con mucha demanda en este momento. "
                                      "Probá de nuevo en un ratito y te respondo. 🙏")
-    llena = normalizar(llena)
-    explicado = {str(q): await interprete.explicar(str(q), trace_id) for q in llena["explicar"]}
+    explicado = {str(p.get("pregunta")): await interprete.explicar(str(p.get("pregunta")), trace_id)
+                 for p in preguntas(agenda) if p.get("accion") == "explicar"}
     try:
-        t = ejecutar(llena, estado, tienda_id, explicar=explicado.get)
-    except Exception as e:  # noqa: BLE001 — una traduccion que el codigo no puede cumplir no deja al cliente sin nada
+        t = ejecutar(agenda, estado, tienda_id, explicar=explicado.get)
+    except Exception as e:  # noqa: BLE001 — una agenda que el codigo no puede cumplir no deja al cliente sin nada
         log.error("flujo_ejecutor_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:200]}",
-                  casillas=sorted(llena))
+                  acciones=[p.get("accion") for p in preguntas(agenda)])
         return "No te entendí bien. ¿Me lo decís de otra forma?"
     if any(h["tipo"] == "pedido" for h in t.hechos):
         estado["nombre_pedido"] = False
@@ -41,7 +42,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
     if pide_nombre:
         estado["nombre_pedido"] = True
     texto = redaccion.texto(t.hechos, t.preguntas, pide_nombre)
-    log.info("flujo_turno", trace_id=trace_id, casillas=sorted(k for k, v in (llena or {}).items() if v),
+    log.info("flujo_turno", trace_id=trace_id, estados=[t.estados.get(p.get("n")) for p in preguntas(agenda)],
              hechos=[h["tipo"] for h in t.hechos], preguntas=len(t.preguntas),
              herramientas=[x["herramienta"] for x in t.llamadas])
 

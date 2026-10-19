@@ -1,7 +1,8 @@
 """EL FLUJO DE UN MENSAJE — desde cero, sobre las 58 (19-oct-2026, orden de Martin).
 
-  1. interprete.interpretar   el modelo traduce el mensaje a la ficha 10. Es la unica decision del modelo.
-  2. ejecutor.ejecutar        el codigo cumple cada casilla con las herramientas deterministas.
+  1. interprete.interpretar   el modelo traduce el mensaje a una agenda, una pregunta por cosa pedida. Es la unica
+                              decision del modelo.
+  2. ejecutor.ejecutar        el codigo cumple cada pregunta con las herramientas deterministas.
   3. redaccion.texto          el codigo escribe la respuesta con lo que devolvieron.
   4. estado                   el codigo guarda lo que pasa al turno siguiente.
 

@@ -78,6 +78,7 @@ RENGLONES = {
     "no_vende": lambda h: [f"No vendemos {h['que']}."],
     "compat": lambda h: [h.get("motivo") or f"{h.get('nombre')}: {h.get('veredicto')}."],
     "politica": lambda h: [h["texto"]],
+    "sin_politica": lambda h: ["Sobre eso no tengo información escrita."],
     "pedido": lambda h: ["Te anoto: " + ", ".join(f"{a['cantidad']}x {a['nombre']}"
                                                   + (f" a {a['destino']}" if a.get("destino") else "")
                                                   for a in h["articulos"]) + "."],
@@ -98,7 +99,9 @@ RENGLONES = {
 def texto(hechos: list, preguntas: list, pide_nombre: bool) -> str:
     # CON PRESUPUESTO, LAS LISTAS VAN CORTAS: la respuesta es la cuenta, y cada lista queda con tres opciones.
     con_cuenta = any(h["tipo"] == "cuenta" for h in hechos)
-    bloques = ["\n".join(_lista(h, 3 if con_cuenta else 5) if h["tipo"] == "lista" else RENGLONES[h["tipo"]](h))
+    # Y EL PEDIDO NO SE LISTA DOS VECES: si va la cuenta, sus renglones ya dicen que se anoto y a donde va.
+    bloques = ["\n".join(_lista(h, 3 if con_cuenta else 5) if h["tipo"] == "lista"
+                         else ["Te lo anoto así:"] if h["tipo"] == "pedido" and con_cuenta else RENGLONES[h["tipo"]](h))
                for h in hechos]
     # UN AVISO IGUAL SE DICE UNA VEZ: la misma condicion sin campo en cuatro busquedas es un renglon, no cuatro.
     sin_campo = list(dict.fromkeys(c for h in hechos if h["tipo"] == "lista" for c in h["sin_campo"]))

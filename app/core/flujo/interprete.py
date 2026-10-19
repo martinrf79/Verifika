@@ -34,7 +34,7 @@ COMO SE HACE:
    una con "n" y con "cita", las palabras literales del cliente. Todo el mensaje queda citado, tambien los saludos.
 2. A cada pregunta, UNA accion del menu, con sus datos.
 3. Lo que el cliente senala de la charla —"ese", "el segundo", "el de Rosario", "lo de antes"— lo buscas en la LIBRETA
-   y pones su numero: "M2", "P1". Si contesta lo que el vendedor le pregunto, la pregunta lleva "responde": "R1".
+   y pones su numero: "M-2", "P-1". Si contesta lo que el vendedor le pregunto, la pregunta lleva "responde": "R-1".
 4. Lo que depende de otra pregunta —"si no hay", "si anda", "si es asi"— lleva "si": {{"de": n, "da": "si" o "no"}}.
 5. Lo que dice para varias —"los dos", "de cada uno", "todo"— va en cada una de esas preguntas.
 6. El rubro, el tema y el producto salen de la tabla de lo que el codigo reconocio. Nunca escribas un precio ni un dato
@@ -89,35 +89,35 @@ EJEMPLOS = [
          {"n": 3, "cita": "si no hay, me llevo el blanco", "accion": "comprar", "si": {"de": 2, "da": "no"},
           "agrega": [{"producto": "G502 Hero", "color": "blanco", "cantidad": 1}]}],
       "cliente": {"localidad": "Posadas"}}),
-    ("LIBRETA:\n- MOSTRADO:\n  M1 Mouse Logitech G305 Lightspeed Negro $80.500, stock 9\n"
-     "  M2 Mouse Logitech G203 Lightsync Negro $37.500, stock 5",
+    ("LIBRETA:\n- MOSTRADO:\n  M-1 Mouse Logitech G305 Lightspeed Negro $80.500, stock 9\n"
+     "  M-2 Mouse Logitech G203 Lightsync Negro $37.500, stock 5",
      "el segundo es inalambrico? si es asi mandamelo a Cordoba",
      "nada",
      {"preguntas": [
-         {"n": 1, "cita": "el segundo es inalambrico?", "accion": "producto", "producto": "M2",
+         {"n": 1, "cita": "el segundo es inalambrico?", "accion": "producto", "producto": "M-2",
           "quiere_saber": "inalambrico"},
          {"n": 2, "cita": "si es asi mandamelo a Cordoba", "accion": "comprar", "si": {"de": 1, "da": "si"},
-          "agrega": [{"producto": "M2", "cantidad": 1, "destino": "Cordoba"}]}]}),
-    ("LIBRETA:\n- PEDIDO:\n  P1 1 Auriculares HyperX Cloud Stinger 2 Negro a Rosario\n"
-     "  P2 1 Auriculares HyperX Cloud Stinger 2 Negro a Mendoza\n  P3 1 Mouse Logitech M170 Negro a Mendoza\n"
+          "agrega": [{"producto": "M-2", "cantidad": 1, "destino": "Cordoba"}]}]}),
+    ("LIBRETA:\n- PEDIDO:\n  P-1 1 Auriculares HyperX Cloud Stinger 2 Negro a Rosario\n"
+     "  P-2 1 Auriculares HyperX Cloud Stinger 2 Negro a Mendoza\n  P-3 1 Mouse Logitech M170 Negro a Mendoza\n"
      "- PAGA: transferencia 70%, Mercado Pago 30%",
      "saca el de Rosario y sumale un teclado barato al de Mendoza. cuanto queda todo?",
      '"teclado" es el rubro teclado',
      {"preguntas": [
-         {"n": 1, "cita": "saca el de Rosario", "accion": "comprar", "saca": ["P1"]},
+         {"n": 1, "cita": "saca el de Rosario", "accion": "comprar", "saca": ["P-1"]},
          {"n": 2, "cita": "un teclado barato", "accion": "buscar", "rubro": "teclado", "cantidad": 1,
           "orden": "mas barato"},
          {"n": 3, "cita": "sumale un teclado barato al de Mendoza", "accion": "comprar",
           "agrega": [{"producto": "teclado", "cantidad": 1, "destino": "Mendoza"}]},
          {"n": 4, "cita": "cuanto queda todo?", "accion": "cuenta"}]}),
-    ("LIBRETA:\n- MOSTRADO:\n  M1 Mouse Logitech G305 Lightspeed Negro $80.500, stock 9\n"
-     "  M2 Mouse Logitech G203 Lightsync Negro $37.500, stock 5\n"
-     '- ABIERTO, lo que el vendedor pregunto:\n  R1 "¿Cuál querés: M1 o M2?", para: me llevo uno',
+    ("LIBRETA:\n- MOSTRADO:\n  M-1 Mouse Logitech G305 Lightspeed Negro $80.500, stock 9\n"
+     "  M-2 Mouse Logitech G203 Lightsync Negro $37.500, stock 5\n"
+     '- ABIERTO, lo que el vendedor pregunto:\n  R-1 "¿Cuál querés: M-1 o M-2?", para: me llevo uno',
      "el primero, en blanco",
      "nada",
      {"preguntas": [
-         {"n": 1, "cita": "el primero, en blanco", "accion": "comprar", "responde": "R1",
-          "agrega": [{"producto": "M1", "color": "blanco", "cantidad": 1}]}]}),
+         {"n": 1, "cita": "el primero, en blanco", "accion": "comprar", "responde": "R-1",
+          "agrega": [{"producto": "M-1", "color": "blanco", "cantidad": 1}]}]}),
     ("LIBRETA:\n- BUSCO: teclado, que no sea Redragon\n- EXCLUSIONES VIGENTES: que no sea Redragon",
      "y un mouse Razer, ah no, mejor Logitech. me dijeron que tienen 20% off, es asi? que conviene, cable o inalambrico?",
      '"mouse" es el rubro mouse',
@@ -156,7 +156,7 @@ def consigna(tienda_id: str) -> str:
 def datos(p: dict, todos: list) -> str:
     """Un producto con lo que la tienda sabe de el, para que "el inalambrico" o "en blanco" tengan de donde salir."""
     colores = [q["color"] for q in K._colores_de(p, todos) if q.get("color") and K.con_stock(q)]
-    specs = [f"{k.replace('_', ' ')}: {v}" for k, v in (p.get("specs") or {}).items() if v]
+    specs = [f"{k.replace('_', ' ')}: {str(v)[:50]}" for k, v in (p.get("specs") or {}).items() if v]
     if p.get("peso_gramos"):
         specs.append(f"peso: {p['peso_gramos']} g")
     return (f"{p['nombre']} ${K.entero(p.get('precio_ars')):,}".replace(",", ".") + f", stock {K.entero(p.get('stock'))}"
@@ -164,12 +164,16 @@ def datos(p: dict, todos: list) -> str:
 
 
 def numeros(estado: dict) -> dict:
-    """Cada numero de la libreta y a que apunta: "M2" un producto mostrado, "P1" un renglon del pedido, "R1" una
+    """Cada numero de la libreta y a que apunta: "M-2" un producto mostrado, "P-1" un renglon del pedido, "R-1" una
     repregunta abierta. El ejecutor resuelve con lo mismo que vio el modelo."""
-    out = {f"M{i}": m["id"] for i, m in enumerate(estado["mostrados"][-12:], 1)}
-    out.update({f"P{i}": a for i, a in enumerate(estado["pedido"], 1)})
-    out.update({f"R{i}": r for i, r in enumerate(estado["abiertas"], 1)})
+    out = {f"M-{i}": m["id"] for i, m in enumerate(estado["mostrados"][-12:], 1)}
+    out.update({f"P-{i}": a for i, a in enumerate(estado["pedido"], 1)})
+    out.update({f"R-{i}": r for i, r in enumerate(estado["abiertas"], 1)})
     return out
+
+
+def _plano(texto) -> str:
+    return " / ".join(x.strip() for x in str(texto or "").splitlines() if x.strip())
 
 
 def libreta(estado: dict, historial: list, tienda_id: str) -> str:
@@ -180,9 +184,9 @@ def libreta(estado: dict, historial: list, tienda_id: str) -> str:
     nums = numeros(estado)
     vistos = [(k, por_id[v]) for k, v in nums.items() if k[0] == "M" and v in por_id]
     if vistos:
-        # Los datos tecnicos, de los cinco ultimos: "el inalambrico" apunta a lo que acaba de leer.
+        # Los datos tecnicos, de los tres ultimos: "el inalambrico" apunta a lo que acaba de leer.
         r += ["- MOSTRADO, del mas viejo al mas nuevo:"] + [
-            f"  {k} {datos(p, todos) if i >= len(vistos) - 5 else datos({**p, 'specs': {}, 'peso_gramos': None}, todos)}"
+            f"  {k} {datos(p, todos) if i >= len(vistos) - 3 else datos({**p, 'specs': {}, 'peso_gramos': None}, todos)}"
             for i, (k, p) in enumerate(vistos)]
     if estado["pedido"]:
         r += ["- PEDIDO:"] + [f"  {k} {a['cantidad']} {a['nombre']} a {a.get('destino') or 'sin destino'}"
@@ -207,9 +211,12 @@ def libreta(estado: dict, historial: list, tienda_id: str) -> str:
                                                             for k, v in abiertas]
     charla = [m for m in historial if m.get("role") in ("user", "assistant")][-2:]
     if charla:
-        r += ["- LO ULTIMO:"] + [f"  {'CLIENTE' if m['role'] == 'user' else 'VENDEDOR'}: "
-                                + " / ".join(x.strip() for x in (m.get("content") or "")[:400].splitlines() if x.strip())
-                                for m in charla]
+        # Del cliente, el principio; del vendedor, el final, que es donde pregunta: las listas ya estan arriba.
+        # Si lo que pregunto ya esta en ABIERTO, no se repite.
+        r += ["- LO ULTIMO:"] + [
+            f"  CLIENTE: {_plano(m.get('content'))[:400]}" if m["role"] == "user"
+            else f"  VENDEDOR: ...{_plano(m.get('content'))[-200:]}" for m in charla
+            if m["role"] == "user" or not abiertas]
     return "LIBRETA:\n" + "\n".join(r) if r else "LIBRETA: vacia, es el primer mensaje."
 
 
