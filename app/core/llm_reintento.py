@@ -88,15 +88,6 @@ async def llamar_con_reintento(fn, *, timeout_s: float | None = None,
     raise ultimo
 
 
-def un_sistema(msgs: list) -> list:
-    """UN SOLO MENSAJE DE SISTEMA, al principio (7-oct-2026, FICHA 67)."""
-    sistemas = [m.get("content") or "" for m in msgs if m.get("role") == "system"]
-    if len(sistemas) < 2:
-        return list(msgs)
-    return [{"role": "system", "content": "\n\n".join(s for s in sistemas if s)}] + \
-        [m for m in msgs if m.get("role") != "system"]
-
-
 def _settings():
     from app.config import get_settings
     return get_settings()

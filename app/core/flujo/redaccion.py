@@ -38,7 +38,7 @@ def _producto(h: dict) -> list:
     return out
 
 
-def _lista(h: dict) -> list:
+def _lista(h: dict, filas: int = 5) -> list:
     out = []
     if h["vacio_por"]:
         out.append(f"No hay {h['rubro']} con {', '.join(h['vacio_por'])}." +
@@ -47,9 +47,7 @@ def _lista(h: dict) -> list:
         out.append(f"En {h['rubro']} tengo:")
     else:
         out.append(f"No tengo {h['rubro']} con stock ahora.")
-    out += [_fila(p) for p in h["filas"]]
-    for c in h["sin_campo"]:
-        out.append(f"Lo de \"{c}\" no figura en las fichas, así que no pude filtrar por eso.")
+    out += [_fila(p) for p in h["filas"][:filas]]
     if h["orden_desconocido"]:
         out.append(f"No tengo un dato en las fichas para ordenar por \"{h['orden_desconocido']}\".")
     return out
@@ -84,6 +82,9 @@ RENGLONES = {
                                                   + (f" a {a['destino']}" if a.get("destino") else "")
                                                   for a in h["articulos"]) + "."],
     "pedido_vacio": lambda h: ["Listo, saqué todo del pedido."],
+    "elegidos": lambda h: ["Para el presupuesto tomé " + ", ".join(
+        f"{'el más barato' if 'barato' in e['orden'] else 'la primera opción'} de {r}, {e['nombre']}"
+        for r, e in h["rubros"].items()) + ". Si preferís otro, decime cuál."],
     "pasa_tope": lambda h: [f"El total pasaba de {_plata(h['tope'])}, así que saqué el {h['saca']}."],
     "cuenta": _cuenta,
     "envio": _envio,
@@ -95,7 +96,15 @@ RENGLONES = {
 
 
 def texto(hechos: list, preguntas: list, pide_nombre: bool) -> str:
-    bloques = ["\n".join(RENGLONES[h["tipo"]](h)) for h in hechos]
+    # CON PRESUPUESTO, LAS LISTAS VAN CORTAS: la respuesta es la cuenta, y cada lista queda con tres opciones.
+    con_cuenta = any(h["tipo"] == "cuenta" for h in hechos)
+    bloques = ["\n".join(_lista(h, 3 if con_cuenta else 5) if h["tipo"] == "lista" else RENGLONES[h["tipo"]](h))
+               for h in hechos]
+    # UN AVISO IGUAL SE DICE UNA VEZ: la misma condicion sin campo en cuatro busquedas es un renglon, no cuatro.
+    sin_campo = list(dict.fromkeys(c for h in hechos if h["tipo"] == "lista" for c in h["sin_campo"]))
+    if sin_campo:
+        bloques.append("Lo de " + " y ".join(f"\"{c}\"" for c in sin_campo)
+                       + " no figura en las fichas, así que no pude filtrar por eso.")
     if pide_nombre and not preguntas:
         preguntas = ["Para reservarlo, ¿me decís tu nombre?"]
     return "\n\n".join(b for b in bloques + list(preguntas) if b.strip())

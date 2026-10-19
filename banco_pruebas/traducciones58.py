@@ -1,4 +1,4 @@
-"""LAS 58 TRADUCIDAS A MANO — lo minimo que tiene que devolver el interprete para que el flujo siga (19-oct-2026).
+"""LAS 58 Y LAS DE VARIOS RUBROS, TRADUCIDAS A MANO — lo minimo que tiene que devolver el interprete para que el flujo siga (19-oct-2026).
 
 Orden de Martin: nada de modelos mientras se arma el cableado. Cada turno de cada charla de `vara_58.json` tiene
 aca la ficha 10 llena como la devolveria el interprete, con las casillas de `banco_pruebas/nexos/ficha10.py` y nada
@@ -135,6 +135,39 @@ T = {
     "C57": [{"fuera_de_tema": True}],
     "C58": [{"productos": [pr("G305", "garantia")]}],
 }
+
+# LA CLASE DE VARIOS RUBROS A VARIOS DESTINOS (19-oct, lo que Martin probo en vivo con K20): el pedido nombra
+# rubros, no modelos, y "los otros" o "lo demas" sin decir cuales. El rubro lo cumple la busqueda y el resto lo cuenta
+# el codigo.
+SIN_CHINAS = "menos partes chinas posibles"
+K20_T1 = {"busquedas": [b("auriculares", SIN_CHINAS, cantidad=2), b("mouse", SIN_CHINAS, cantidad=2),
+                        b("memoria ram", SIN_CHINAS, cantidad=2)],
+          "pedido": pedido(art("auricular", destino="Cordoba capital"), art("mouse", destino="Cordoba capital"),
+                           art("teclado", destino="Concordia"), art("mouse", destino="Concordia"),
+                           art("los otros dos articulos", 2, destino="Posadas"), reparto=SETENTA_TREINTA)}
+T.update({
+    "K03": [{"busquedas": [b("auriculares", orden="mas barato", cantidad=2), b("mouse", orden="mas barato", cantidad=2)],
+             "pedido": pedido(art("auriculares", 2, destino="Cordoba capital"), art("mouse", 2, destino="Cordoba capital")),
+             "envios": ["Cordoba capital"], "total": TOTAL}],
+    "K06": [{"busquedas": [b("teclado", orden="mas barato", cantidad=2), b("mouse", orden="mas barato", cantidad=2)],
+             "pedido": pedido(art("teclado", destino="Cordoba"), art("mouse", destino="Cordoba"),
+                              art("teclado", destino="Rio Tercero"), art("mouse", destino="Rio Tercero"),
+                              reparto=[{"medio": "transferencia", "porcentaje": 100}])}],
+    "K07": [{"busquedas": [b("mouse", orden="mas barato", cantidad=2), b("teclado", orden="mas barato", cantidad=2),
+                           b("auriculares", orden="mas barato", cantidad=2)],
+             "pedido": pedido(art("mouse", destino="Rosario"), art("teclado", destino="Rosario"),
+                              art("teclado", destino="Concordia"), art("auricular", destino="Concordia"),
+                              art("lo demas", 2, destino="Rio Cuarto")),
+             "politicas": ["formas_pago"]},
+            {"pedido": {"cambia": False, "articulos": [], "reparto_pago": [
+                {"medio": "transferencia", "porcentaje": 50}, {"medio": "Mercado Pago", "porcentaje": 50}]},
+             "total": TOTAL}],
+    "K20": [K20_T1,
+            {"pedido": pedido(art("auricular", destino="Cordoba capital"), art("mouse", destino="Cordoba capital"),
+                              art("memoria ram", destino="Concordia"), art("mouse", destino="Concordia"),
+                              art("los otros dos articulos", 2, destino="Posadas"), reparto=SETENTA_TREINTA),
+             "total": TOTAL}],
+})
 
 EXPLICAR = {
     "que conviene, DDR4 o DDR5?": ("Depende de tu placa: DDR4 y DDR5 no son intercambiables, cada placa acepta una "

@@ -178,6 +178,8 @@ def lo_que_ya_sabe(estado: dict, historial: list, tienda_id: str) -> str:
         if excluye:
             r.append("- exclusiones que siguen valiendo, para cualquier rubro hasta que el cliente las saque: "
                      + ", ".join(excluye))
+    if estado["por_rubro"]:
+        r.append("- lo que pidio por rubro: " + ", ".join(f"{n} {k}" for k, n in estado["por_rubro"].items()))
     if estado["reparto"]:
         r.append("- paga: " + ", ".join(f"{x['medio']} {x['porcentaje']}%" for x in estado["reparto"]))
     if estado["cliente"]:
@@ -284,7 +286,9 @@ async def interpretar(mensaje: str, historial: list, estado: dict, tienda_id: st
         log.warning("interprete_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:160]}")
         return None
     llena = salida.get("llena") if isinstance(salida.get("llena"), dict) else {}
-    log.info("interprete_ok", trace_id=trace_id, casillas=sorted(k for k, v in llena.items() if v))
+    # LO QUE TRADUJO, ENTERO: sin esto, una falla en vivo no se puede separar entre el modelo y el codigo.
+    log.info("interprete_ok", trace_id=trace_id, casillas=sorted(k for k, v in llena.items() if v),
+             llena=json.dumps(llena, ensure_ascii=False)[:4000])
     return llena
 
 

@@ -1,5 +1,4 @@
 """LA FUENTE, SIN INTERMEDIARIOS — lo que el codigo pone delante del modelo."""
-import re
 import unicodedata
 
 from app.logger import get_logger
@@ -301,20 +300,6 @@ def inventario(tienda_id: str) -> dict:
             ("productos", "categorias", "precio_min", "precio_max")}
 
 
-def texto_inventario(tienda_id: str) -> str:
-    """El inventario como se lo lee el modelo. Vacio si no se pudo armar."""
-    inv = inventario(tienda_id)
-    if not inv.get("productos"):
-        return ""
-    cats = ", ".join(f"{c} ({n})" for c, n in inv["categorias"])
-    linea = (f"EL CATALOGO ENTERO son {inv['productos']} productos en "
-             f"{len(inv['categorias'])} categorias: {cats}.")
-    if inv.get("precio_min") and inv.get("precio_max"):
-        linea += (f" Los precios van de {_plata(inv['precio_min'])} a "
-                  f"{_plata(inv['precio_max'])}.")
-    return linea
-
-
 # ── EL ENVIO: EL MAPA 2 DE LA FICHA 50, Y LA TARIFA YA COTIZADA ────────────
 
 
@@ -460,9 +445,3 @@ def cotizar_destinos(nombres, tienda_id: str,
     return fuera
 
 
-def estable_de(nombre: str, localidad_previa: str = "") -> str:
-    """COMO SE GUARDA EL DESTINO PARA EL TURNO SIGUIENTE: la provincia, o la zona."""
-    r = _cotizar(nombre)
-    if not r and localidad_previa:
-        r = _cotizar(f"{nombre}, {localidad_previa}")
-    return _destino_estable(r) if r else ""

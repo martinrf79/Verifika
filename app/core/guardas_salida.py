@@ -48,24 +48,6 @@ _RE_BIENVENIDA_SOLVER = re.compile(
     re.IGNORECASE)
 
 
-# Aperturas de saludo a mitad de charla, mas anchas que las del turno 1.
-_RE_SALUDO_MEDIO = re.compile(
-    r"^[¡!]*\s*(?:hola+|buen(?:as)?\s+(?:tardes|noches|d[ií]as?)|"
-    r"qu[eé]\s+tal|c[oó]mo\s+(?:va|and[aá]s|est[aá]s)|"
-    r"buenas)\s*[!.,:¡]+\s*",
-    re.IGNORECASE)
-
-
-def sin_saludo_del_modelo(respuesta: str) -> str:
-    """Recorta el saludo que el modelo escribe por su cuenta a mitad de charla."""
-    cuerpo = _RE_SALUDO_MEDIO.sub("", (respuesta or "").strip(), count=1).strip()
-    if not cuerpo:
-        return respuesta
-    if cuerpo != (respuesta or "").strip():
-        cuerpo = cuerpo[0].upper() + cuerpo[1:]
-    return cuerpo
-
-
 def con_saludo_inicial(respuesta: str, business_name: str) -> str:
     """Primer mensaje de la charla: linea FIJA de saludo con el aviso de que es
     una herramienta automatica, y abajo la respuesta del turno."""
@@ -139,9 +121,6 @@ def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
 
 
 # QUE CAMPO SE CORRIGE, Y LA RESPUESTA ES: CUALQUIERA QUE LA FUENTE TENGA.
-
-# Cuantas correcciones se hacen por turno.
-TOPE_CORRECCIONES = 1
 
 
 def para_corregir(sin_respaldo, tienda_id: str) -> tuple:

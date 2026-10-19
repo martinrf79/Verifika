@@ -39,6 +39,7 @@ class Turno:
     def __init__(self, estado: dict, tienda_id: str):
         self.estado, self.tienda = estado, tienda_id
         self.hechos, self.preguntas, self.llamadas = [], [], []
+        self.listas, self.pedidas = {}, {}  # lo buscado en este turno: filas y unidades pedidas, por rubro
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
@@ -100,6 +101,9 @@ class Turno:
         conds = [str(c) for c in _lista(b.get("condiciones"))]
         r = K.buscar(rub, conds, orden, cuantos, self.tienda, entre)
         self.hechos.append({"tipo": "lista", "rubro": rub or "la tienda", **r})
+        if rub:
+            self.listas[rub] = {"filas": r["filas"], "orden": orden}
+            self.pedidas[rub] = self.pedidas.get(rub, 0) + max(1, K.entero(b.get("cantidad"), 1))
         mostrar(self.estado, r["filas"])
         self.estado["busqueda"] = {"rubro": rub, "condiciones": conds, "orden": orden}
 
@@ -153,25 +157,35 @@ class Turno:
         return out
 
     def pedido(self, ped: dict, condicionado: bool) -> list:
-        """Los articulos resueltos. Si alguno no se puede resolver, pregunta y el pedido no cambia."""
-        resueltos, falta = [], False
+        """Los articulos resueltos, o [] si falta algo: entonces se pregunta y el pedido no cambia.
+
+        Un articulo nombra un modelo, un rubro o "los otros". El modelo se identifica. El rubro —"un auricular a
+        Cordoba"— sale de la busqueda de ese rubro, su primera fila, que es la mas barata si la pidio asi. "Los otros"
+        —"los otros dos a Posadas"— son lo que queda de lo pedido por rubro, contado por el codigo. Un rubro que no
+        estaba en la lista del cliente, o un resto que no cierra, se pregunta: no se adivina."""
+        pedidas = {**self.estado["por_rubro"], **self.pedidas} if self.pedidas else dict(self.estado["por_rubro"])
+        resueltos, de_rubro, otros, falta = [], [], [], False
         for a in _lista(ped.get("articulos")):
             if not isinstance(a, dict) or not a.get("producto"):
                 continue
-            idt = K.identificar(str(a["producto"]), str(a.get("color") or ""), self.tienda)
-            if idt["veredicto"] == "not_found":
-                self.hechos.append({"tipo": "no_existe", "nombre": a["producto"]})
-                falta = True
-            elif idt["veredicto"] == "ambiguous":
-                self.preguntar("¿Cuál de estos querés: " + " o ".join(p["nombre"] for p in idt["opciones"]) + "?")
-                falta = True
-            elif a.get("cantidad") not in (None, "") and K.entero(a["cantidad"]) < 1:
+            nombre = str(a["producto"])
+            if a.get("cantidad") not in (None, "") and K.entero(a["cantidad"]) < 1:
                 # Una cantidad que no es un numero no se adivina.
-                self.preguntar(f"¿Cuántos {idt['producto'].get('modelo') or a['producto']} querés?")
+                self.preguntar(f"¿Cuántos {nombre} querés?")
+                falta = True
+                continue
+            idt = K.identificar(nombre, str(a.get("color") or ""), self.tienda)
+            rub = "" if idt["veredicto"] == "exists" and not idt.get("falta_color") else K.solo_rubro(nombre, self.tienda)
+            if rub:
+                de_rubro.append((rub, a))
+            elif idt["veredicto"] == "not_found":
+                otros.append(a)
+            elif idt["veredicto"] == "ambiguous":
+                self.preguntar("¿Cuál de estos querés: " + " o ".join(p["nombre"] for p in idt["opciones"][:4]) + "?")
                 falta = True
             elif idt.get("falta_color"):
                 colores = [v["color"] for v in idt["variantes"] if K.con_stock(v) and v.get("color")]
-                modelo = idt["producto"].get("modelo") or a["producto"]
+                modelo = idt["producto"].get("modelo") or nombre
                 antes = f"El {modelo} no viene en {idt['no_hay_color']}. " if idt.get("no_hay_color") else ""
                 self.preguntar(f"{antes}¿El {modelo} en qué color: " + " o ".join(colores) + "?")
                 falta = True
@@ -181,17 +195,75 @@ class Turno:
                 self.preguntar(f"El {idt['producto']['nombre']} no tiene stock: ¿te sirve otro color u otro modelo?")
                 falta = True
             else:
-                p = idt["producto"]
-                resueltos.append({"id": str(p["id"]), "nombre": p["nombre"], "precio": p.get("precio_ars"),
-                                  "cantidad": K.entero(a.get("cantidad"), 1),
-                                  "destino": _destino(a.get("destino"))})
+                resueltos.append(self._articulo(idt["producto"], a))
+        # UN RUBRO FUERA DE LA LISTA DEL CLIENTE se pregunta: "dos auriculares, dos mouse y dos memorias" y despues
+        # "un teclado a Concordia" (K20). Sin lista, cualquier rubro vale.
+        fuera = [(r, a) for r, a in de_rubro if pedidas and r not in pedidas]
+        for r, a in fuera:
+            destino = _destino(a.get("destino"))
+            self.preguntar(f"Pediste {r}" + (f" para {destino}" if destino else "") + ", pero en la lista había "
+                           + ", ".join(pedidas) + ": ¿lo sumo o era otra cosa de la lista?")
+            falta = True
+        # LOS OTROS: lo pedido por rubro menos lo ya asignado, en el orden de la lista.
+        if otros:
+            usadas = {}
+            for r, a in de_rubro:
+                usadas[r] = usadas.get(r, 0) + K.entero(a.get("cantidad"), 1)
+            for x in resueltos:
+                c = K.por_id(x["id"], self.tienda).get("categoria")
+                usadas[c] = usadas.get(c, 0) + x["cantidad"]
+            quedan = [(r, n - usadas.get(r, 0)) for r, n in pedidas.items() if n - usadas.get(r, 0) > 0]
+            unidades = sum(K.entero(a.get("cantidad"), 1) for a in otros)
+            if fuera or not quedan or unidades != sum(n for _, n in quedan):
+                cuales = " y ".join(str(a["producto"]) for a in otros)
+                self.preguntar(f"¿Cuáles son {cuales}?" + (" De la lista quedan " + ", ".join(
+                    f"{n} {r}" for r, n in quedan) + "." if quedan else ""))
+                falta = True
+            else:
+                pendientes = [r for r, n in quedan for _ in range(n)]
+                for a in otros:
+                    for _ in range(K.entero(a.get("cantidad"), 1)):
+                        de_rubro.append((pendientes.pop(0), {**a, "cantidad": 1}))
+        # EL RUBRO SE CUMPLE CON SU BUSQUEDA: la de este turno, o una nueva sin condiciones.
+        elegidos = {}
+        for r, a in de_rubro:
+            if (r, a) in fuera:
+                continue
+            lista = self.listas.get(r) or {"filas": K.buscar(r, [], "nada", 1, self.tienda)["filas"], "orden": "nada"}
+            if not lista["filas"]:
+                self.preguntar(f"No tengo {r} con stock: ¿te sirve otra cosa?")
+                falta = True
+                continue
+            p = lista["filas"][0]
+            elegidos[r] = {"nombre": p["nombre"], "orden": lista["orden"]}
+            resueltos.append(self._articulo(p, a))
+        if de_rubro or otros:
+            self.estado["por_rubro"] = pedidas
         if falta or condicionado:
-            for a in resueltos:
-                self.hechos.append({"tipo": "producto", "producto": K.por_id(a["id"], self.tienda), "variantes": [],
+            # Lo que ya quedo claro se muestra una vez; lo elegido de un rubro no, que su lista ya esta en el mensaje.
+            de_lista = {str(p["id"]) for x in self.listas.values() for p in x["filas"]}
+            for pid in dict.fromkeys(a["id"] for a in resueltos if a["id"] not in de_lista):
+                self.hechos.append({"tipo": "producto", "producto": K.por_id(pid, self.tienda), "variantes": [],
                                     "dato": {}, "pide": ""})
-            mostrar(self.estado, [{"id": a["id"], "nombre": a["nombre"], "precio": a["precio"]} for a in resueltos])
+            mostrar(self.estado, [{"id": a["id"], "nombre": a["nombre"], "precio_ars": a["precio"]} for a in resueltos])
             return []
-        return resueltos
+        if elegidos:
+            self.hechos.append({"tipo": "elegidos", "rubros": elegidos})
+        return _juntar(resueltos)
+
+    @staticmethod
+    def _articulo(p: dict, a: dict) -> dict:
+        return {"id": str(p["id"]), "nombre": p["nombre"], "precio": p.get("precio_ars"),
+                "cantidad": K.entero(a.get("cantidad"), 1), "destino": _destino(a.get("destino"))}
+
+
+def _juntar(articulos: list) -> list:
+    """El mismo producto al mismo destino es un renglon con la suma de las cantidades."""
+    out = {}
+    for a in articulos:
+        k = (a["id"], a["destino"])
+        out[k] = {**a, "cantidad": out[k]["cantidad"] + a["cantidad"]} if k in out else a
+    return list(out.values())
 
 
 UNO = ("pedido", "total", "cliente")  # casillas que son un objeto; el resto son listas o un si o no

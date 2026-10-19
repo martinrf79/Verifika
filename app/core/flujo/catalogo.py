@@ -34,6 +34,14 @@ def rubro(texto: str, tienda_id: str) -> str:
     return agente._rubro(texto, tienda_id)[0] or ""
 
 
+def solo_rubro(texto: str, tienda_id: str) -> str:
+    """El rubro si el texto nombra SOLO un rubro —"auriculares", "un mouse", "memorias"—, o "". "Teclado Logitech" no:
+    trae algo mas que el rubro, y eso lo decide la identidad o una busqueda."""
+    rub = rubro(texto, tienda_id)
+    palabras = [w for w in n(texto).split() if w not in _RELLENO and not w.isdigit()]
+    return rub if rub and palabras and all(w[:5] in n(rub) for w in palabras) else ""
+
+
 def con_stock(p: dict) -> bool:
     return entero(p.get("stock")) > 0
 

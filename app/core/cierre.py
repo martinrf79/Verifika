@@ -1,14 +1,8 @@
 """CIERRE DE VENTA — captura estructurada del pedido y los datos del cliente."""
-import json
 import re
 import unicodedata
 
-from app.config import get_settings
-from app.logger import get_logger
 from app.core.leads import extraer_telefono
-
-log = get_logger(__name__)
-settings = get_settings()
 
 # LO QUE SE LE PIDE AL CLIENTE PARA CERRAR.
 CAMPOS_REQUERIDOS = ["nombre"]
@@ -79,18 +73,6 @@ _ETIQUETAS_RESPALDO = {
 def _etiqueta(clave: str) -> str:
     from app.core.guia_venta_prosa import etiqueta_dato
     return etiqueta_dato(clave, _ETIQUETAS_RESPALDO.get(clave, ""))
-
-_EXTRACTOR_PROMPT = """Sos un extractor de datos para cerrar una venta. Del mensaje del cliente saca SOLO los datos que esten presentes, no inventes nada.
-
-Devolve JSON estricto, sin texto antes ni despues:
-{"nombre": "", "telefono": "", "direccion": "", "forma_pago": ""}
-
-Reglas:
-- nombre: nombre y apellido de la persona, si lo dice.
-- telefono: solo numeros, si da un telefono.
-- direccion: calle, numero y localidad, lo que sirva para el envio. Si el cliente da MAS DE UNA direccion (envios separados), devolvelas todas separadas por " | ".
-- forma_pago: una sola de estas si la menciona: transferencia, mercado pago, efectivo, tarjeta, debito, credito.
-- Si un dato NO esta en el mensaje, deja ese campo como string vacio. Nunca pongas datos que el cliente no dijo."""
 
 
 # ── RESPALDOS DETERMINISTAS (sin LLM) ───────────────────────────────────────
@@ -177,44 +159,6 @@ def extraer_determinista(mensaje: str) -> dict:
     dir_ = extraer_direccion(mensaje)
     if dir_:
         datos["direccion"] = dir_
-    return datos
-
-
-def extraer_datos_cliente(mensaje: str, trace_id=None) -> dict:
-    """Extrae los datos presentes en el mensaje."""
-    datos = {c: "" for c in CAMPOS_EXTRAIBLES}
-    try:
-        from app.core.llm_reintento import _cliente, _modelo
-        cli = _cliente()
-        if cli is None:
-            raise RuntimeError("sin cliente")
-        r = cli.chat.completions.create(
-            model=_modelo(),
-            messages=[
-                {"role": "system", "content": _EXTRACTOR_PROMPT},
-                {"role": "user", "content": mensaje},
-            ],
-            temperature=0.0, max_tokens=160,
-            extra_body={"reasoning_effort": "none"},
-        )
-        content = (r.choices[0].message.content or "").strip()
-        if content.startswith("```"):
-            content = content.split("```")[1] if "```" in content[3:] else content[3:]
-            if content.startswith("json"):
-                content = content[4:]
-            content = content.strip()
-        parsed = json.loads(content)
-        for c in CAMPOS_EXTRAIBLES:
-            v = str(parsed.get(c, "") or "").strip()
-            if v:
-                datos[c] = v
-    except Exception as e:
-        log.warning("cierre_extractor_error", trace_id=trace_id, error=str(e)[:150])
-
-    # Respaldo deterministico: telefono, forma de pago y direccion por patron.
-    for campo, valor in extraer_determinista(mensaje).items():
-        if valor and not datos.get(campo):
-            datos[campo] = valor
     return datos
 
 

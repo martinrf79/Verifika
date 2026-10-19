@@ -24,9 +24,13 @@ LLAMADAS_AL_MODELO = []
 GRABADAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nexos", "ficha_casillas_corridas.jsonl")
 
 
+# Las complejas de la vara que ya entraron: varios rubros a varios destinos, la clase que Martin probo en vivo.
+COMPLEJAS = ("K03", "K06", "K07", "K20")
+
+
 def charlas() -> list:
     doc = json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))
-    return [c for c in doc["charlas"] if c["id"].startswith("C")]
+    return [c for c in doc["charlas"] if c["id"].startswith("C") or c["id"] in COMPLEJAS]
 
 
 def grabadas(etiqueta: str) -> dict:
