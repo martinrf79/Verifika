@@ -94,9 +94,12 @@ def aplicar(b: dict, ops: dict, pedidas: dict = None) -> None:
         igual = next((r for r in previos if repite and (K.n(r["que"]), K.n(r["destino"])) == clave), None)
         if igual:
             previos.remove(igual)
-            igual["confirmado"] = igual["confirmado"] or bool(ops.get("responde"))
-            if a.get("cantidad") not in (None, "") and K.n(a["producto"]) not in OTROS:
-                igual["cantidad"] = _cantidad(a["cantidad"])
+            if ops.get("responde"):
+                igual["confirmado"] = True
+                igual["condicion"] = "" if igual.get("condicion") == "sin_saber" else igual.get("condicion")
+            # Con "reemplaza" el agrega es como queda: "lo demas" sin numero es todo lo que queda, y borra el que habia.
+            if a.get("cantidad") not in (None, "") or ops.get("reemplaza"):
+                igual["cantidad"] = _cantidad(a.get("cantidad"))
             if a.get("color"):
                 igual["color"] = str(a["color"])
             quedan.append(igual)

@@ -2,11 +2,9 @@
 
 El bot pregunto "¿lo sumo el teclado?", el cliente dijo que si dos veces, y el bot volvio a preguntar lo mismo. Las
 tres agendas son las que escribio el modelo, tal cual las guardo `interprete_ok`. Es la falla de memoria y cableado
-que resuelve la FICHA 71, el borrador: hoy falla, y lo marca el xfail.
+que resuelve la FICHA 71, el borrador: el si confirma el renglon L-3 y no se vuelve a preguntar.
 """
 import asyncio
-
-import pytest
 
 from banco_pruebas import cableado58 as CB
 from banco_pruebas import clon_produccion as C
@@ -52,8 +50,6 @@ TURNOS = [(MENSAJE, T1), ("Si en realidad son 7 articulos, el teclado va a conco
           ("Si suma el teclado", T3)]
 
 
-@pytest.mark.xfail(strict=True, reason="PLAN: FICHA 71, el borrador. El si a una repregunta no cierra el faltante "
-                                       "del renglon que la pidio, y el bot repite la misma pregunta.")
 def test_un_si_a_la_repregunta_no_la_vuelve_a_preguntar():
     from app.core import llm_reintento
     puerta = llm_reintento._cliente

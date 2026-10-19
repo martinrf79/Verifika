@@ -8,7 +8,7 @@ del mensaje tiene su lugar, y el codigo puede controlar que ninguno quede sin re
                   "si": {"de": 2, "da": "si"|"no"}, "responde": "R-1"}],
    "cliente": {"es", "nombre", "localidad", "equipo"}}
 
-Lo que el modelo senala de la charla lo senala con el numero de la libreta —M-2 lo mostrado, P-1 el pedido, R-1 la
+Lo que el modelo senala de la charla lo senala con el numero de la libreta —M-2 lo mostrado, L-1 un renglon del borrador, R-1 la
 repregunta abierta—, que arma el codigo en `interprete.libreta`. Asi no reescribe nombres ni reconstruye la charla.
 """
 import re
@@ -30,8 +30,9 @@ ACCIONES = {
                       'modelo —"mi notebook"—.',
     "comprar": 'lo que decide llevar, o la lista con cantidades y destinos que arma para el presupuesto. Solo el cambio '
                'de este mensaje: "agrega" [{"producto", "cantidad", "color", "destino"}] —producto es un modelo, un '
-               '"M-2", un rubro o "los otros", que sin cantidad es todo lo que queda de la lista—; "saca" ["P-1"]; '
-               '"cambia" [{"es": "P-1", y cantidad, color o destino}]; "reemplaza" true si rehace el pedido entero y '
+               '"M-2", un rubro o "los otros", que sin cantidad es todo lo que queda de la lista—; "saca" ["L-1"]; '
+               '"cambia" [{"es": "L-1", y producto, cantidad, color o destino}]; "confirma" ["L-2"] si dice que si a lo '
+               'que el renglon tiene a confirmar; "total" si dice cuantos articulos son en total; "reemplaza" true si rehace el pedido entero y '
                '"agrega" es como queda; "reparto" como en cuenta.',
     "explicar": 'saber general de tecnologia, que no es de la tienda: "pregunta".',
     "otro": '"que": saludo, dato —lo que dice de si mismo, que va en "cliente"—, corrige —lo que retiro en el mismo '
@@ -42,7 +43,7 @@ ACCIONES = {
 OBLIGATORIO = {"buscar": "rubro", "producto": "producto", "envio": "destino", "politica": "tema",
                "compatibilidad": "producto", "explicar": "pregunta", "otro": "que"}
 
-_REF = re.compile(r"^[MPR]-\d+$")
+_REF = re.compile(r"^[MLR]-\d+$")
 
 # Palabras que no piden nada: si quedan sin citar no falta nada.
 _VACIAS = set("a al algo con de del el en es esta este la las lo los me mi o para pero por que se si su te tu un una "

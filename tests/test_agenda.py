@@ -32,7 +32,7 @@ def vistas():
 def test_los_seis_ejemplos_cumplen_el_contrato():
     from app.core.flujo import agenda as A, interprete as I
     for libreta, mensaje, _, salida in I.EJEMPLOS:
-        assert A.faltas(mensaje, salida, set(re.findall(r"\b[MPR]-\d+\b", libreta))) == [], mensaje
+        assert A.faltas(mensaje, salida, set(re.findall(r"\b[MLR]-\d+\b", libreta))) == [], mensaje
     print(f"\nEJEMPLOS: {len(I.EJEMPLOS)} de {len(I.EJEMPLOS)} cumplen la agenda")
 
 

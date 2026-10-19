@@ -10,7 +10,7 @@ pregunta se cumple con UNA funcion de `Turno`, y termina en uno de estos estados
 
 EL CANDADO: una pregunta que termina sin estado no se pierde en silencio, se le repregunta al cliente con su cita.
 No se vuelve a leer el mensaje del cliente: lo que el interprete no puso en la agenda no existe para el codigo. Lo que
-el modelo senala con un numero de la libreta —M-2, P-1— se resuelve con `interprete.numeros`, lo mismo que vio el modelo.
+el modelo senala con un numero de la libreta —M-2, L-1— se resuelve con `interprete.numeros`, lo mismo que vio el modelo.
 Los montos salen de la calculadora, por `agente.h_cuenta` y `agente.h_envio`.
 
 Un hecho es un dict con "tipo" y "n", la pregunta que lo pidio. `redaccion.texto` los pasa a palabras en ese orden.
@@ -19,6 +19,7 @@ from app.core import agente, fuente
 from app.logger import get_logger
 
 from . import agenda as A
+from . import borrador as B
 from . import catalogo as K
 from .estado import mostrar
 
@@ -53,7 +54,7 @@ class Turno:
         self.n, self.de = 0, {}  # la pregunta que se esta cumpliendo, y de que pregunta es cada repregunta
         self.resultados, self.estados = {}, {}  # por pregunta: si dio que si, para "si no hay"; y como termino
         self.nums, self.agenda, self.destinos, self.cambio, self.explicar = {}, [], [], False, None
-        self.sin_anotar = ""  # la compra que no se pudo anotar, en palabras, para el turno siguiente
+        self.res, self.compra, self.derivado = [], None, False  # el borrador resuelto, y la compra que lo cambio
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
@@ -131,6 +132,8 @@ class Turno:
             self.pedidas[rub] = self.pedidas.get(rub, 0) + max(1, K.entero(b.get("cantidad"), 1))
         mostrar(self.estado, r["filas"])
         self.estado["busqueda"] = {"rubro": rub, "condiciones": conds, "orden": orden}
+        if rub:
+            B.anotar_busqueda(self.estado["borrador"], rub, conds, orden, entre)
         return bool(r["filas"]) and not r["vacio_por"]
 
     # ── la plata ─────────────────────────────────────────────────────────────
@@ -164,6 +167,10 @@ class Turno:
             if saca and quedan and len(quedan) < len(articulos):
                 self.hechos.append({"tipo": "pasa_tope", "tope": tope, "saca": idt["producto"]["nombre"]})
                 if articulos is self.estado["pedido"]:
+                    # Lo dijo el cliente: si pasa, sale. Sale del borrador, y el pedido es lo que queda.
+                    b = self.estado["borrador"]
+                    fuera = {x["L"] for x in self.res for a in x.get("articulos") or [] if str(a["id"]) in saca}
+                    b["renglones"] = [r for r in b["renglones"] if r["L"] not in fuera]
                     self.estado["pedido"] = quedan
                 return self.cuenta(quedan, reparto)
         self.hechos.append({"tipo": "cuenta", "bloques": bloques, "general": general})
@@ -182,118 +189,32 @@ class Turno:
                 out["detalle"] += "\n\n" + render_split(split)
         return out
 
-    def pedido(self, ped: dict) -> list:
-        """Los articulos resueltos, o [] si falta algo: entonces se pregunta y el pedido no cambia.
-
-        Un articulo nombra un modelo, un rubro o "los otros". El modelo se identifica. El rubro —"un auricular a
-        Cordoba"— sale de la busqueda de ese rubro, su primera fila, que es la mas barata si la pidio asi. "Los otros"
-        —"los otros dos a Posadas"— son lo que queda de lo pedido por rubro, contado por el codigo. Un rubro que no
-        estaba en la lista del cliente, o un resto que no cierra, se pregunta: no se adivina."""
-        pedidas = {**self.estado["por_rubro"], **self.pedidas} if self.pedidas else dict(self.estado["por_rubro"])
-        resueltos, de_rubro, otros, falta = [], [], [], False
-        for a in _lista(ped.get("articulos")):
-            if not isinstance(a, dict) or not a.get("producto"):
-                continue
-            nombre = str(a["producto"])
-            if a.get("cantidad") not in (None, "") and K.entero(a["cantidad"]) < 1:
-                # Una cantidad que no es un numero no se adivina.
-                self.preguntar(f"¿Cuántos {nombre} querés?")
-                falta = True
-                continue
-            idt = K.identificar(nombre, str(a.get("color") or ""), self.tienda)
-            rub = "" if idt["veredicto"] == "exists" and not idt.get("falta_color") else K.solo_rubro(nombre, self.tienda)
-            if rub:
-                de_rubro.append((rub, a))
-            elif idt["veredicto"] == "not_found":
-                otros.append(a)
-            elif idt["veredicto"] == "ambiguous":
-                self.preguntar("¿Cuál de estos querés: " + " o ".join(p["nombre"] for p in idt["opciones"][:4]) + "?")
-                falta = True
-            elif idt.get("falta_color"):
-                colores = [v["color"] for v in idt["variantes"] if K.con_stock(v) and v.get("color")]
-                modelo = idt["producto"].get("modelo") or nombre
-                antes = f"El {modelo} no viene en {idt['no_hay_color']}. " if idt.get("no_hay_color") else ""
-                # Es un paso de la compra, y lo dice: "para reservarte" y no una pregunta suelta.
-                self.preguntar(f"{antes}Para reservarte el {modelo}, ¿en qué color: " + " o ".join(colores) + "?")
-                falta = True
-            elif not K.con_stock(idt["producto"]):
-                self.hechos.append({"tipo": "producto", "producto": idt["producto"], "variantes": idt["variantes"],
-                                    "dato": {}, "pide": ""})
-                self.preguntar(f"El {idt['producto']['nombre']} no tiene stock: ¿te sirve otro color u otro modelo?")
-                falta = True
-            else:
-                resueltos.append(self._articulo(idt["producto"], a))
-        # UN RUBRO FUERA DE LA LISTA DEL CLIENTE se pregunta: "dos auriculares, dos mouse y dos memorias" y despues
-        # "un teclado a Concordia" (K20). Sin lista, cualquier rubro vale.
-        fuera = [(r, a) for r, a in de_rubro if pedidas and r not in pedidas]
-        for r, a in fuera:
-            destino = _destino(a.get("destino"))
-            self.preguntar(f"Pediste {r}" + (f" para {destino}" if destino else "") + ", pero en la lista había "
-                           + ", ".join(pedidas) + ": ¿lo sumo o era otra cosa de la lista?")
-            falta = True
-        # LOS OTROS: lo pedido por rubro menos lo ya asignado, en el orden de la lista.
-        if otros:
-            usadas = {}
-            for r, a in de_rubro:
-                usadas[r] = usadas.get(r, 0) + K.entero(a.get("cantidad"), 1)
-            for x in resueltos:
-                c = K.por_id(x["id"], self.tienda).get("categoria")
-                usadas[c] = usadas.get(c, 0) + x["cantidad"]
-            quedan = [(r, n - usadas.get(r, 0)) for r, n in pedidas.items() if n - usadas.get(r, 0) > 0]
-            if len(otros) == 1 and otros[0].get("cantidad") in (None, ""):
-                # "Lo demas a Posadas", sin numero: es todo lo que queda de la lista.
-                otros = [{**otros[0], "cantidad": sum(n for _, n in quedan)}]
-            unidades = sum(K.entero(a.get("cantidad"), 1) for a in otros)
-            if fuera or not quedan or unidades != sum(n for _, n in quedan):
-                cuales = " y ".join(str(a["producto"]) for a in otros)
-                self.preguntar(f"¿Cuáles son {cuales}?" + (" De la lista quedan " + ", ".join(
-                    f"{n} {r}" for r, n in quedan) + "." if quedan else ""))
-                falta = True
-            else:
-                pendientes = [r for r, n in quedan for _ in range(n)]
-                for a in otros:
-                    for _ in range(K.entero(a.get("cantidad"), 1)):
-                        de_rubro.append((pendientes.pop(0), {**a, "cantidad": 1}))
-        # EL RUBRO SE CUMPLE CON SU BUSQUEDA: la de este turno, o una nueva sin condiciones.
-        elegidos = {}
-        for r, a in de_rubro:
-            if (r, a) in fuera:
-                continue
-            lista = self.listas.get(r) or {"filas": K.buscar(r, [], "nada", 1, self.tienda)["filas"], "orden": "nada"}
-            if not lista["filas"]:
-                self.preguntar(f"No tengo {r} con stock: ¿te sirve otra cosa?")
-                falta = True
-                continue
-            p = lista["filas"][0]
-            elegidos[r] = {"nombre": p["nombre"], "orden": lista["orden"]}
-            resueltos.append(self._articulo(p, a))
-        if de_rubro or otros:
-            self.estado["por_rubro"] = pedidas
+    def derivar(self) -> None:
+        """EL BORRADOR, re-derivado entero: lo que falta se pregunta desde ahi, y el pedido es lo resuelto o nada."""
+        b, antes = self.estado["borrador"], self.estado["pedido"]
+        self.res = B.resolver(b, self.tienda)
+        falta = B.faltantes(b, self.res)
+        arts = B.articulos(self.res, falta)
+        self.estado["pedido"] = arts
+        self.n = self.compra or self.n
+        for q in B.preguntas(b, falta):
+            self.preguntar(q)
         if falta:
             # Lo que ya quedo claro se muestra una vez; lo elegido de un rubro no, que su lista ya esta en el mensaje.
             de_lista = {str(p["id"]) for x in self.listas.values() for p in x["filas"]}
-            for pid in dict.fromkeys(a["id"] for a in resueltos if a["id"] not in de_lista):
+            claros = [a for x in self.res if not x.get("falta") for a in x.get("articulos") or []]
+            for pid in dict.fromkeys(a["id"] for a in claros if a["id"] not in de_lista):
                 self.hechos.append({"tipo": "producto", "producto": K.por_id(pid, self.tienda), "variantes": [],
                                     "dato": {}, "pide": ""})
-            mostrar(self.estado, [{"id": a["id"], "nombre": a["nombre"], "precio_ars": a["precio"]} for a in resueltos])
-            return []
-        if elegidos:
-            self.hechos.append({"tipo": "elegidos", "rubros": elegidos})
-        return _juntar(resueltos)
-
-    @staticmethod
-    def _articulo(p: dict, a: dict) -> dict:
-        return {"id": str(p["id"]), "nombre": p["nombre"], "precio": p.get("precio_ars"),
-                "cantidad": K.entero(a.get("cantidad"), 1), "destino": _destino(a.get("destino"))}
-
-
-def _juntar(articulos: list) -> list:
-    """El mismo producto al mismo destino es un renglon con la suma de las cantidades."""
-    out = {}
-    for a in articulos:
-        k = (a["id"], a["destino"])
-        out[k] = {**a, "cantidad": out[k]["cantidad"] + a["cantidad"]} if k in out else a
-    return list(out.values())
+            mostrar(self.estado, [{"id": a["id"], "nombre": a["nombre"], "precio_ars": a["precio"]} for a in claros])
+        elif B.huella(arts) != B.huella(antes) and self.compra:
+            elegidos = {r: {"nombre": nom, "orden": (b["criterios"].get(r) or {}).get("orden") or "nada"}
+                        for x in self.res for r, nom in (x.get("elegidos") or {}).items()}
+            if elegidos and set(elegidos) & set(self.listas):
+                self.hechos.append({"tipo": "elegidos", "rubros": elegidos, "n": self.n})
+            self.hechos.append({"tipo": "pedido", "articulos": arts, "n": self.n} if arts
+                               else {"tipo": "pedido_vacio", "n": self.n})
+            self.cambio = True
 
 
 # ══ LAS ACCIONES: una funcion por accion del menu ═════════════════════════════
@@ -306,8 +227,8 @@ def _nombres(t: Turno, x) -> list:
         ref = t.nums.get(v)
         if v[:1] == "M" and ref:
             v = K.por_id(ref, t.tienda).get("nombre") or v
-        elif v[:1] == "P" and isinstance(ref, dict):
-            v = ref["nombre"]
+        elif v[:1] == "L" and isinstance(ref, dict):
+            v = ref["que"]
         if v:
             out.append(v)
     return out
@@ -359,55 +280,34 @@ def _politica(t: Turno, p: dict):
 
 
 def _reparto(t: Turno, p: dict) -> bool:
+    """El pago dicho va al borrador. Sin medio no se cuenta —"sin decir (70%)" no es un cobro—: lo pregunta el borrador."""
     reparto = [r for r in _lista(p.get("reparto")) if isinstance(r, dict) and r.get("porcentaje")]
-    if any(K.n(r.get("medio")) in ("", "sin decir", "none", "null") for r in reparto):
-        # Un reparto sin medio no se cuenta: "sin decir (70%)" no es un cobro. Se pregunta con que paga cada parte.
+    if not reparto:
+        return False
+    B.aplicar(t.estado["borrador"], {"reparto": reparto})
+    completo = not any(K.n(r.get("medio")) in ("", "sin decir", "none", "null") for r in reparto)
+    t.estado["reparto"] = reparto if completo else []
+    if not completo and not t.estado["borrador"]["renglones"]:
         t.preguntar("¿Con qué medio pagás cada parte: " + " y ".join(f"el {K.entero(r['porcentaje'])}%"
                                                                     for r in reparto) + "?")
-        return False
-    if reparto:
-        t.estado["reparto"] = reparto
-    return bool(reparto)
+    return completo
 
 
 def _comprar(t: Turno, p: dict):
-    """El cambio de este mensaje sobre el pedido: lo que agrega, lo que saca y lo que cambia de un renglon."""
+    """El cambio de este mensaje sobre lo dicho: va al borrador, que re-deriva el pedido entero."""
     cambio = _reparto(t, p)
-    pedido = [] if _si(p.get("reemplaza")) else list(t.estado["pedido"])
-    saca = [t.nums[x] for x in _lista(p.get("saca")) if isinstance(t.nums.get(x), dict)]
-    pedido = [a for a in pedido if a not in saca]
-    for c in _lista(p.get("cambia")):
-        viejo = t.nums.get(str((c or {}).get("es"))) if isinstance(c, dict) else None
-        if viejo not in pedido:
-            continue
-        nuevo = {**viejo, **{k: c[k] for k in ("destino",) if c.get(k)}}
-        if c.get("cantidad") not in (None, ""):
-            nuevo["cantidad"] = K.entero(c["cantidad"], viejo["cantidad"])
-        if c.get("color"):
-            idt = K.identificar(viejo["nombre"], str(c["color"]), t.tienda)
-            if idt["veredicto"] == "exists" and not idt.get("no_hay_color"):
-                nuevo = {**nuevo, **Turno._articulo(idt["producto"], nuevo)}
-        pedido[pedido.index(viejo)] = nuevo
-    articulos = []
+    agrega = []
     for a in _lista(p.get("agrega")):
-        if not isinstance(a, dict):
+        if not isinstance(a, dict) or not a.get("producto"):
             continue
         nombre = _uno(t, a.get("producto"))
         if not nombre:
             return None
-        articulos.append({**a, "producto": nombre})
-    agregados = t.pedido({"articulos": articulos}) if articulos else []
-    if articulos and not agregados:
-        # LO QUE NO SE PUDO ANOTAR NO SE OLVIDA: queda en lo abierto, y el turno siguiente lo ve entero.
-        t.sin_anotar = "; ".join(f"{a.get('cantidad') or 'todo lo que queda de la lista,'} {a['producto']}"
-                                 + (f" a {_destino(a.get('destino'))}" if _destino(a.get("destino")) else "")
-                                 for a in articulos)
-        return None
-    nuevo = _juntar(pedido + agregados)
-    if nuevo != t.estado["pedido"] or saca:
-        t.estado["pedido"] = nuevo
-        t.hechos.append({"tipo": "pedido", "articulos": nuevo} if nuevo else {"tipo": "pedido_vacio"})
-        cambio = True
+        agrega.append({**a, "producto": nombre, "cita": p.get("cita") or "", "condicion": p.get("condicion") or ""})
+    B.aplicar(t.estado["borrador"], {**{k: p.get(k) for k in ("saca", "cambia", "confirma", "total", "reemplaza",
+                                                                "responde")}, "agrega": agrega},
+              pedidas=t.pedidas if agrega else None)
+    t.compra = t.compra or t.n
     t.cambio = t.cambio or cambio
     return True
 
@@ -419,8 +319,8 @@ def _cuenta(t: Turno, p: dict):
         t.cuenta(t.estado["pedido"], t.estado["reparto"], p.get("tope"), si_pasa)
         return True
     compras = {x["n"] for x in t.agenda if x.get("accion") == "comprar"}
-    if compras & set(t.de.values()):
-        # La cuenta de un pedido que todavia no se pudo armar espera la respuesta de esa repregunta.
+    if t.estado["borrador"]["renglones"]:
+        # La cuenta de un pedido a medias espera lo que le falta: no se muestra una cuenta parcial.
         t.estados[t.n] = "repreguntada"
         return None
     if compras and all(t.estados.get(n) == "no_aplica" for n in compras):
@@ -474,10 +374,9 @@ def _cumplir(t: Turno, p: dict) -> None:
     if si:
         r = t.resultados.get(K.entero(si.get("de")))
         if r is None and p["accion"] == "comprar":
-            # Lo que depende de algo que no se pudo saber no se anota solo: el cliente lo confirma viendo el resultado.
-            t.preguntar("¿Te lo confirmo así?")
-            return
-        if r is not None and r != (K.n(si.get("da")) != "no"):
+            # Lo que depende de algo que no se pudo saber se anota a confirmar: el borrador lo pregunta.
+            p["condicion"] = "sin_saber"
+        elif r is not None and r != (K.n(si.get("da")) != "no"):
             t.estados[t.n] = "no_aplica"
             return
     t.resultados[t.n] = ACCIONES[p["accion"]](t, p)
@@ -490,6 +389,7 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
     from .interprete import numeros
     t = Turno(estado, tienda_id)
     # Los numeros de la libreta se toman antes de cumplir nada: son los que vio el modelo.
+    estado["borrador"] = B.leer(estado.get("borrador"))
     t.nums, t.explicar = numeros(estado), explicar
     agenda = agenda if isinstance(agenda, dict) else {"preguntas": agenda}
     cliente = agenda.get("cliente") if isinstance(agenda.get("cliente"), dict) else {}
@@ -512,8 +412,12 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
             juntas[p["n"]] = primera["n"]
     # Una accion fuera del menu no se cumple: la agarra el candado de abajo.
     for p in sorted(preguntas, key=lambda p: DESPUES.get(p.get("accion"), 0)):
+        if DESPUES.get(p.get("accion"), 0) >= 3 and not t.derivado:
+            _derivar(t)
         if p.get("accion") in ACCIONES and p["n"] not in juntas:
             _cumplir(t, p)
+    if not t.derivado:
+        _derivar(t)
     # UN PEDIDO QUE CAMBIO SE CUENTA aunque no lo haya pedido: el cliente ve como queda.
     if t.cambio and t.estado["pedido"] and not any(h["tipo"] == "cuenta" for h in t.hechos):
         t.n = max(p["n"] for p in preguntas if p["accion"] == "comprar") if any(
@@ -550,11 +454,19 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
             t.estados[n] = "sin_estado"
     t.hechos.sort(key=lambda h: h.get("n", 0))
     citas = {p["n"]: str(p.get("cita") or "") for p in preguntas}
-    compra = next((p["n"] for p in preguntas if p.get("accion") == "comprar"), None)
     estado["abiertas"] = [{"texto": q, "cita": citas.get(t.de.get(q), "")} for q in t.preguntas]
-    # Lo que no se anoto va una vez, en la primera repregunta de la compra.
-    for a in estado["abiertas"]:
-        if t.sin_anotar and t.de.get(a["texto"]) == compra:
-            a["sin_anotar"] = t.sin_anotar
-            break
     return t
+
+
+def _derivar(t: Turno) -> None:
+    """Una vez por turno, despues de lo que cambia lo dicho y antes de la cuenta. Sin renglones no hay nada que
+    derivar: la cuenta de lo consultado sigue por su lado."""
+    t.derivado = True
+    # Todo lo dicho entra antes de resolver: el pago de la cuenta tambien, asi su medio se pregunta desde el borrador.
+    for p in t.agenda:
+        if p.get("accion") == "cuenta" and p.get("reparto") and t.estado["borrador"]["renglones"]:
+            B.aplicar(t.estado["borrador"], {"reparto": [r for r in _lista(p["reparto"]) if isinstance(r, dict)]})
+    if t.estado["borrador"]["renglones"] or t.compra:
+        n = t.n
+        t.derivar()
+        t.n = n

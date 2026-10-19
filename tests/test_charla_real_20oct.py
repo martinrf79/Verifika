@@ -68,5 +68,5 @@ def test_la_compra_partida_se_pregunta_entera_y_queda_para_el_turno_siguiente():
     # 3. El reparto sin medio se pregunta, no se cobra.
     assert "sin decir" not in texto and "medio" in texto, texto
     # Y la compra queda entera en la libreta del turno siguiente, con sus destinos.
-    assert "SIN ANOTAR" in vistos[1] and all(d in vistos[1] for d in ("Concordia", "Posadas")), vistos[1]
+    assert "- BORRADOR:" in vistos[1] and all(d in vistos[1] for d in ("Concordia", "Posadas")), vistos[1]
     print(f"\nREAL 20-OCT: 4 de 4 fallas cubiertas\n{texto}\n---\n{vistos[1]}")

@@ -21,6 +21,7 @@ from app.config import get_settings
 from app.logger import get_logger
 
 from . import agenda as A
+from . import borrador as B
 from . import catalogo as K
 from . import marcador
 
@@ -34,7 +35,7 @@ COMO SE HACE:
    una con "n" y con "cita", las palabras literales del cliente. Todo el mensaje queda citado, tambien los saludos.
 2. A cada pregunta, UNA accion del menu, con sus datos.
 3. Lo que el cliente senala de la charla —"ese", "el segundo", "el de Rosario", "lo de antes"— lo buscas en la LIBRETA
-   y pones su numero: "M-2", "P-1". Si contesta lo que el vendedor le pregunto, la pregunta lleva "responde": "R-1".
+   y pones su numero: "M-2", "L-1". Si contesta lo que el vendedor le pregunto, la pregunta lleva "responde": "R-1".
 4. Lo que depende de otra pregunta —"si no hay", "si anda", "si es asi"— lleva "si": {{"de": n, "da": "si" o "no"}}.
 5. Lo que dice para varias —"los dos", "de cada uno", "todo"— va en cada una de esas preguntas.
 6. El rubro, el tema y el producto salen de la tabla de lo que el codigo reconocio. Nunca escribas un precio ni un dato
@@ -99,31 +100,28 @@ EJEMPLOS = [
           "quiere_saber": "inalambrico"},
          {"n": 2, "cita": "si es asi mandamelo a Cordoba", "accion": "comprar", "si": {"de": 1, "da": "si"},
           "agrega": [{"producto": "M-2", "cantidad": 1, "destino": "Cordoba"}]}]}),
-    ("LIBRETA:\n- PEDIDO:\n  P-1 1 Auriculares HyperX Cloud Stinger 2 Negro a Rosario\n"
-     "  P-2 1 Auriculares HyperX Cloud Stinger 2 Negro a Mendoza\n  P-3 1 Mouse Logitech M170 Negro a Mendoza\n"
-     "- PAGA: transferencia 70%, Mercado Pago 30%",
+    ("LIBRETA:\n- BORRADOR:\n  L-1 1 auriculares a Rosario: 1 Auriculares HyperX Cloud Stinger 2 Negro\n"
+     "  L-2 1 auriculares a Mendoza: 1 Auriculares HyperX Cloud Stinger 2 Negro\n"
+     "  L-3 1 M170 a Mendoza: 1 Mouse Logitech M170 Negro\n- PAGA: transferencia 70%, Mercado Pago 30%",
      "saca el de Rosario y sumale un teclado barato al de Mendoza. cuanto queda todo?",
      '"teclado" es el rubro teclado',
      {"preguntas": [
-         {"n": 1, "cita": "saca el de Rosario", "accion": "comprar", "saca": ["P-1"]},
+         {"n": 1, "cita": "saca el de Rosario", "accion": "comprar", "saca": ["L-1"]},
          {"n": 2, "cita": "un teclado barato", "accion": "buscar", "rubro": "teclado", "cantidad": 1,
           "orden": "mas barato"},
          {"n": 3, "cita": "sumale un teclado barato al de Mendoza", "accion": "comprar",
           "agrega": [{"producto": "teclado", "cantidad": 1, "destino": "Mendoza"}]},
          {"n": 4, "cita": "cuanto queda todo?", "accion": "cuenta"}]}),
-    ("LIBRETA:\n- PIDIO POR RUBRO: 2 mouse, 1 teclado\n"
+    ("LIBRETA:\n- BORRADOR:\n  L-1 1 mouse a Rosario: 1 Mouse Logitech M170 Negro\n"
+     "  L-2 1 auriculares a Salta: FALTA confirmar, no estaba en la lista\n"
+     "  L-3 los otros a Jujuy: FALTA cuales son\n- PIDIO POR RUBRO: 2 mouse, 1 teclado\n"
      '- ABIERTO, lo que el vendedor pregunto:\n  R-1 "Pediste auriculares para Salta, pero en la lista había mouse, '
-     'teclado: ¿lo sumo o era otra cosa de la lista?", para: un mouse a Rosario, unos auriculares a Salta y lo demas a '
-     'Jujuy\n    SIN ANOTAR, espera esta respuesta: 1 mouse a Rosario; 1 auriculares a Salta; todo lo que queda de la '
-     'lista, los otros a Jujuy',
+     'teclado: ¿lo sumo o era otra cosa de la lista?", para: unos auriculares a Salta',
      "si, sumalo, son 4 en total y lo demas como te dije",
      "nada",
      {"preguntas": [
-         {"n": 1, "cita": "si, sumalo,", "accion": "buscar", "responde": "R-1", "rubro": "auriculares", "cantidad": 1},
-         {"n": 2, "cita": "son 4 en total y lo demas como te dije", "accion": "comprar", "responde": "R-1", "agrega": [
-             {"producto": "mouse", "cantidad": 1, "destino": "Rosario"},
-             {"producto": "auriculares", "cantidad": 1, "destino": "Salta"},
-             {"producto": "los otros", "destino": "Jujuy"}]}]}),
+         {"n": 1, "cita": "si, sumalo, son 4 en total y lo demas como te dije", "accion": "comprar",
+          "responde": "R-1", "confirma": ["L-2"], "total": 4}]}),
     ("LIBRETA:\n- BUSCO: teclado, que no sea Redragon\n- EXCLUSIONES VIGENTES: que no sea Redragon",
      "y un mouse Razer, ah no, mejor Logitech. me dijeron que tienen 20% off, es asi? que conviene, cable o inalambrico?",
      '"mouse" es el rubro mouse',
@@ -172,12 +170,12 @@ def datos(p: dict, todos: list) -> str:
 
 
 def numeros(estado: dict) -> dict:
-    """Cada numero de la libreta y a que apunta: "M-2" un producto mostrado, "P-1" un renglon del pedido, "R-1" una
+    """Cada numero de la libreta y a que apunta: "M-2" un producto mostrado, "L-1" un renglon del borrador, "R-1" una
     repregunta abierta. El ejecutor resuelve con lo mismo que vio el modelo."""
     # Dos ids con el mismo nombre son, para el cliente, el mismo producto: se numera una vez, el mas reciente.
     unicos = list({m.get("nombre") or m["id"]: m for m in estado["mostrados"]}.values())
     out = {f"M-{i}": m["id"] for i, m in enumerate(unicos[-12:], 1)}
-    out.update({f"P-{i}": a for i, a in enumerate(estado["pedido"], 1)})
+    out.update({r["L"]: r for r in (estado.get("borrador") or {}).get("renglones") or []})
     out.update({f"R-{i}": r for i, r in enumerate(estado["abiertas"], 1)})
     return out
 
@@ -198,29 +196,24 @@ def libreta(estado: dict, historial: list, tienda_id: str) -> str:
         r += ["- MOSTRADO, del mas viejo al mas nuevo:"] + [
             f"  {k} {datos(p, todos) if i >= len(vistos) - 3 else datos({**p, 'specs': {}, 'peso_gramos': None}, todos)}"
             for i, (k, p) in enumerate(vistos)]
-    if estado["pedido"]:
-        r += ["- PEDIDO:"] + [f"  {k} {a['cantidad']} {a['nombre']} a {a.get('destino') or 'sin destino'}"
-                              for k, a in nums.items() if k[0] == "P"]
-    if estado["por_rubro"]:
-        r.append("- PIDIO POR RUBRO: " + ", ".join(f"{n} {k}" for k, n in estado["por_rubro"].items()))
-    b = estado["busqueda"]
-    if b:
-        r.append(f"- BUSCO: {b.get('rubro') or 'toda la tienda'}"
-                 + "".join(f", {c}" for c in b.get("condiciones") or [])
-                 + (f", {b['orden']}" if b.get("orden") not in (None, "", "nada") else ""))
-        excluye = [c for c in b.get("condiciones") or [] if K._NIEGA.search(K.n(c))]
+    # EL BORRADOR: cada L-n con lo dicho, en que quedo y lo que le falta. El modelo solo lo senala.
+    b = B.leer(estado.get("borrador"))
+    res = B.resolver(b, tienda_id) if b["renglones"] else []
+    r += B.libreta(b, res, B.faltantes(b, res))
+    bu = estado["busqueda"]
+    if bu:
+        r.append(f"- BUSCO: {bu.get('rubro') or 'toda la tienda'}"
+                 + "".join(f", {c}" for c in bu.get("condiciones") or [])
+                 + (f", {bu['orden']}" if bu.get("orden") not in (None, "", "nada") else ""))
+        excluye = [c for c in bu.get("condiciones") or [] if K._NIEGA.search(K.n(c))]
         if excluye:
             r.append("- EXCLUSIONES VIGENTES: " + ", ".join(excluye))
-    if estado["reparto"]:
-        r.append("- PAGA: " + ", ".join(f"{x['medio']} {x['porcentaje']}%" for x in estado["reparto"]))
     if estado["cliente"]:
         r.append("- CLIENTE: " + ", ".join(f"{k} {v}" for k, v in estado["cliente"].items() if v))
     abiertas = [(k, v) for k, v in nums.items() if k[0] == "R"]
     if abiertas:
         r += ["- ABIERTO, lo que el vendedor pregunto:"] + [
-            f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}'
-            + (f'\n    SIN ANOTAR, espera esta respuesta: {v["sin_anotar"]}' if v.get("sin_anotar") else "")
-            for k, v in abiertas]
+            f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}' for k, v in abiertas]
     charla = [m for m in historial if m.get("role") in ("user", "assistant")][-2:]
     if charla:
         # Del cliente, el principio; del vendedor, el final, que es donde pregunta: las listas ya estan arriba.
