@@ -129,7 +129,10 @@ def marcar(mensaje: str, tienda_id: str) -> list:
     for cosa, alternativa in _no_vendidas(tienda_id).items():
         if re.search(rf"\b{re.escape(K.n(cosa))}", n):
             out.append((cosa, "algo que la tienda no vende" + (f"; lo mas parecido: {alternativa}" if alternativa else "")))
-    out += [(f, "si pregunta una regla de la tienda, el tema " + " o ".join(ts)) for f, ts in _temas(mensaje, tienda_id).items()]
+    # "Si pregunta": una palabra de la FAQ tambien aparece en un pedido —"con envio", "partes chinas"—, y ahi no es
+    # una politica. La consigna lo dice con ejemplos.
+    out += [(f, "SOLO si pregunta una regla de la tienda, el tema " + " o ".join(ts))
+            for f, ts in _temas(mensaje, tienda_id).items()]
     for m in _PAR.finditer(n):
         a, b = _numero(m.group(1)), _numero(m.group(2))
         if a + b == 100:

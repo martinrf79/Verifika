@@ -53,6 +53,7 @@ class Turno:
         self.n, self.de = 0, {}  # la pregunta que se esta cumpliendo, y de que pregunta es cada repregunta
         self.resultados, self.estados = {}, {}  # por pregunta: si dio que si, para "si no hay"; y como termino
         self.nums, self.agenda, self.destinos, self.cambio, self.explicar = {}, [], [], False, None
+        self.sin_anotar = ""  # la compra que no se pudo anotar, en palabras, para el turno siguiente
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
@@ -359,6 +360,11 @@ def _politica(t: Turno, p: dict):
 
 def _reparto(t: Turno, p: dict) -> bool:
     reparto = [r for r in _lista(p.get("reparto")) if isinstance(r, dict) and r.get("porcentaje")]
+    if any(K.n(r.get("medio")) in ("", "sin decir", "none", "null") for r in reparto):
+        # Un reparto sin medio no se cuenta: "sin decir (70%)" no es un cobro. Se pregunta con que paga cada parte.
+        t.preguntar("¿Con qué medio pagás cada parte: " + " y ".join(f"el {K.entero(r['porcentaje'])}%"
+                                                                    for r in reparto) + "?")
+        return False
     if reparto:
         t.estado["reparto"] = reparto
     return bool(reparto)
@@ -392,6 +398,10 @@ def _comprar(t: Turno, p: dict):
         articulos.append({**a, "producto": nombre})
     agregados = t.pedido({"articulos": articulos}) if articulos else []
     if articulos and not agregados:
+        # LO QUE NO SE PUDO ANOTAR NO SE OLVIDA: queda en lo abierto, y el turno siguiente lo ve entero.
+        t.sin_anotar = "; ".join(f"{a.get('cantidad') or 'todo lo que queda de la lista,'} {a['producto']}"
+                                 + (f" a {_destino(a.get('destino'))}" if _destino(a.get("destino")) else "")
+                                 for a in articulos)
         return None
     nuevo = _juntar(pedido + agregados)
     if nuevo != t.estado["pedido"] or saca:
@@ -487,9 +497,22 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
     preguntas = t.agenda = A.preguntas(agenda)
     for i, p in enumerate(preguntas, 1):
         p.setdefault("n", i)
+    # LAS COMPRAS DE UN MENSAJE SON UN SOLO PEDIDO: "un auricular a Cordoba, un mouse a Concordia, los otros dos a
+    # Posadas" en tres preguntas se anota junto, o se pregunta y no se anota nada. Asi "los otros" cuenta lo de las
+    # tres. Las que dependen de otra pregunta van aparte.
+    compras = [p for p in preguntas if p.get("accion") == "comprar" and not p.get("si")]
+    juntas = {}
+    if len(compras) > 1:
+        primera = compras[0]
+        for p in compras[1:]:
+            for k in ("agrega", "saca", "cambia"):
+                primera[k] = _lista(primera.get(k)) + _lista(p.get(k))
+            primera["reparto"] = p.get("reparto") or primera.get("reparto")
+            primera["reemplaza"] = _si(primera.get("reemplaza")) or _si(p.get("reemplaza"))
+            juntas[p["n"]] = primera["n"]
     # Una accion fuera del menu no se cumple: la agarra el candado de abajo.
     for p in sorted(preguntas, key=lambda p: DESPUES.get(p.get("accion"), 0)):
-        if p.get("accion") in ACCIONES:
+        if p.get("accion") in ACCIONES and p["n"] not in juntas:
             _cumplir(t, p)
     # UN PEDIDO QUE CAMBIO SE CUENTA aunque no lo haya pedido: el cliente ve como queda.
     if t.cambio and t.estado["pedido"] and not any(h["tipo"] == "cuenta" for h in t.hechos):
@@ -508,6 +531,8 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
         t.hechos.append({"tipo": "envio", "n": envios[0]["n"], **r})
     con_hechos = {h.get("n") for h in t.hechos}
     repreguntadas = set(t.de.values())
+    for n, primera in juntas.items():
+        t.estados[n] = t.estados.get(primera) or ("repreguntada" if primera in repreguntadas else "respondida")
     for p in preguntas:
         n = p["n"]
         if n in t.estados:
@@ -525,5 +550,11 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
             t.estados[n] = "sin_estado"
     t.hechos.sort(key=lambda h: h.get("n", 0))
     citas = {p["n"]: str(p.get("cita") or "") for p in preguntas}
+    compra = next((p["n"] for p in preguntas if p.get("accion") == "comprar"), None)
     estado["abiertas"] = [{"texto": q, "cita": citas.get(t.de.get(q), "")} for q in t.preguntas]
+    # Lo que no se anoto va una vez, en la primera repregunta de la compra.
+    for a in estado["abiertas"]:
+        if t.sin_anotar and t.de.get(a["texto"]) == compra:
+            a["sin_anotar"] = t.sin_anotar
+            break
     return t

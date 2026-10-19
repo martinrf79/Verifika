@@ -101,7 +101,7 @@ def texto(hechos: list, preguntas: list, pide_nombre: bool) -> str:
     con_cuenta = any(h["tipo"] == "cuenta" for h in hechos)
     # Y EL PEDIDO NO SE LISTA DOS VECES: si va la cuenta, sus renglones ya dicen que se anoto y a donde va.
     bloques = ["\n".join(_lista(h, 3 if con_cuenta else 5) if h["tipo"] == "lista"
-                         else ["Te lo anoto así:"] if h["tipo"] == "pedido" and con_cuenta else RENGLONES[h["tipo"]](h))
+                         else [] if h["tipo"] == "pedido" and con_cuenta else RENGLONES[h["tipo"]](h))
                for h in hechos]
     # UN AVISO IGUAL SE DICE UNA VEZ: la misma condicion sin campo en cuatro busquedas es un renglon, no cuatro.
     sin_campo = list(dict.fromkeys(c for h in hechos if h["tipo"] == "lista" for c in h["sin_campo"]))

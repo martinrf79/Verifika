@@ -7,7 +7,7 @@
 Lo que recibe el modelo, y nada mas:
   CONSIGNA   fija: como se corta un mensaje, el menu de acciones, los rubros, los temas y seis ejemplos resueltos de
              las clases que fallaban —multipregunta, condicion, referencia, cambio del pedido, respuesta a una
-             repregunta y correccion—. Al ser fija, entra en el cache del proveedor.
+             repregunta con el pedido sin anotar, y correccion—. Al ser fija, entra en el cache del proveedor.
   LIBRETA    la memoria de la charla, escrita por el codigo y numerada: M lo mostrado, P el pedido, R lo que el vendedor
              pregunto y sigue abierto. El modelo senala con el numero; no reconstruye la charla.
   TABLA      lo que el marcador reconocio en el mensaje: productos, rubros, temas, porcentajes y montos.
@@ -38,7 +38,8 @@ COMO SE HACE:
 4. Lo que depende de otra pregunta —"si no hay", "si anda", "si es asi"— lleva "si": {{"de": n, "da": "si" o "no"}}.
 5. Lo que dice para varias —"los dos", "de cada uno", "todo"— va en cada una de esas preguntas.
 6. El rubro, el tema y el producto salen de la tabla de lo que el codigo reconocio. Nunca escribas un precio ni un dato
-   de la tienda: los verifica el codigo.
+   de la tienda: los verifica el codigo. "politica" es solo para una regla de la tienda que pregunta —factura,
+   garantia, cuotas—: pedir un envio, una cuenta o una condicion del producto no es politica.
 7. "cliente" es lo que dice de si mismo: "es" —revendedor, empresa, jubilado—, "nombre", "localidad", "equipo".
 
 EL MENU:
@@ -110,14 +111,19 @@ EJEMPLOS = [
          {"n": 3, "cita": "sumale un teclado barato al de Mendoza", "accion": "comprar",
           "agrega": [{"producto": "teclado", "cantidad": 1, "destino": "Mendoza"}]},
          {"n": 4, "cita": "cuanto queda todo?", "accion": "cuenta"}]}),
-    ("LIBRETA:\n- MOSTRADO:\n  M-1 Mouse Logitech G305 Lightspeed Negro $80.500, stock 9\n"
-     "  M-2 Mouse Logitech G203 Lightsync Negro $37.500, stock 5\n"
-     '- ABIERTO, lo que el vendedor pregunto:\n  R-1 "¿Cuál querés: M-1 o M-2?", para: me llevo uno',
-     "el primero, en blanco",
+    ("LIBRETA:\n- PIDIO POR RUBRO: 2 mouse, 1 teclado\n"
+     '- ABIERTO, lo que el vendedor pregunto:\n  R-1 "Pediste auriculares para Salta, pero en la lista había mouse, '
+     'teclado: ¿lo sumo o era otra cosa de la lista?", para: un mouse a Rosario, unos auriculares a Salta y lo demas a '
+     'Jujuy\n    SIN ANOTAR, espera esta respuesta: 1 mouse a Rosario; 1 auriculares a Salta; todo lo que queda de la '
+     'lista, los otros a Jujuy',
+     "si, sumalo, son 4 en total y lo demas como te dije",
      "nada",
      {"preguntas": [
-         {"n": 1, "cita": "el primero, en blanco", "accion": "comprar", "responde": "R-1",
-          "agrega": [{"producto": "M-1", "color": "blanco", "cantidad": 1}]}]}),
+         {"n": 1, "cita": "si, sumalo,", "accion": "buscar", "responde": "R-1", "rubro": "auriculares", "cantidad": 1},
+         {"n": 2, "cita": "son 4 en total y lo demas como te dije", "accion": "comprar", "responde": "R-1", "agrega": [
+             {"producto": "mouse", "cantidad": 1, "destino": "Rosario"},
+             {"producto": "auriculares", "cantidad": 1, "destino": "Salta"},
+             {"producto": "los otros", "destino": "Jujuy"}]}]}),
     ("LIBRETA:\n- BUSCO: teclado, que no sea Redragon\n- EXCLUSIONES VIGENTES: que no sea Redragon",
      "y un mouse Razer, ah no, mejor Logitech. me dijeron que tienen 20% off, es asi? que conviene, cable o inalambrico?",
      '"mouse" es el rubro mouse',
@@ -156,7 +162,9 @@ def consigna(tienda_id: str) -> str:
 def datos(p: dict, todos: list) -> str:
     """Un producto con lo que la tienda sabe de el, para que "el inalambrico" o "en blanco" tengan de donde salir."""
     colores = [q["color"] for q in K._colores_de(p, todos) if q.get("color") and K.con_stock(q)]
-    specs = [f"{k.replace('_', ' ')}: {str(v)[:50]}" for k, v in (p.get("specs") or {}).items() if v]
+    # Lo que el producto NO tiene no sirve para senalarlo —"el que tiene RGB"—, y el dato lo verifica el codigo.
+    specs = [f"{k.replace('_', ' ')}: {str(v)[:30]}" for k, v in (p.get("specs") or {}).items()
+             if v and not K.n(v).startswith("no")]
     if p.get("peso_gramos"):
         specs.append(f"peso: {p['peso_gramos']} g")
     return (f"{p['nombre']} ${K.entero(p.get('precio_ars')):,}".replace(",", ".") + f", stock {K.entero(p.get('stock'))}"
@@ -166,7 +174,9 @@ def datos(p: dict, todos: list) -> str:
 def numeros(estado: dict) -> dict:
     """Cada numero de la libreta y a que apunta: "M-2" un producto mostrado, "P-1" un renglon del pedido, "R-1" una
     repregunta abierta. El ejecutor resuelve con lo mismo que vio el modelo."""
-    out = {f"M-{i}": m["id"] for i, m in enumerate(estado["mostrados"][-12:], 1)}
+    # Dos ids con el mismo nombre son, para el cliente, el mismo producto: se numera una vez, el mas reciente.
+    unicos = list({m.get("nombre") or m["id"]: m for m in estado["mostrados"]}.values())
+    out = {f"M-{i}": m["id"] for i, m in enumerate(unicos[-12:], 1)}
     out.update({f"P-{i}": a for i, a in enumerate(estado["pedido"], 1)})
     out.update({f"R-{i}": r for i, r in enumerate(estado["abiertas"], 1)})
     return out
@@ -207,14 +217,16 @@ def libreta(estado: dict, historial: list, tienda_id: str) -> str:
         r.append("- CLIENTE: " + ", ".join(f"{k} {v}" for k, v in estado["cliente"].items() if v))
     abiertas = [(k, v) for k, v in nums.items() if k[0] == "R"]
     if abiertas:
-        r += ["- ABIERTO, lo que el vendedor pregunto:"] + [f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}'
-                                                            for k, v in abiertas]
+        r += ["- ABIERTO, lo que el vendedor pregunto:"] + [
+            f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}'
+            + (f'\n    SIN ANOTAR, espera esta respuesta: {v["sin_anotar"]}' if v.get("sin_anotar") else "")
+            for k, v in abiertas]
     charla = [m for m in historial if m.get("role") in ("user", "assistant")][-2:]
     if charla:
         # Del cliente, el principio; del vendedor, el final, que es donde pregunta: las listas ya estan arriba.
-        # Si lo que pregunto ya esta en ABIERTO, no se repite.
+        # Si lo que pregunto ya esta en ABIERTO, no se repite, y del cliente basta el principio: lo suyo esta arriba.
         r += ["- LO ULTIMO:"] + [
-            f"  CLIENTE: {_plano(m.get('content'))[:400]}" if m["role"] == "user"
+            f"  CLIENTE: {_plano(m.get('content'))[:200 if abiertas else 400]}" if m["role"] == "user"
             else f"  VENDEDOR: ...{_plano(m.get('content'))[-200:]}" for m in charla
             if m["role"] == "user" or not abiertas]
     return "LIBRETA:\n" + "\n".join(r) if r else "LIBRETA: vacia, es el primer mensaje."
