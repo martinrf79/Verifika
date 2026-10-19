@@ -202,3 +202,13 @@ def test_un_pedido_que_cambia_despues_del_cierre_actualiza_el_mismo_lead(monkeyp
     # Cierra, no repite lo cerrado, y con la cantidad cambiada actualiza el mismo lead.
     assert bool(textos[0]) and textos[1] == "" and bool(textos[2]), textos
     assert creados == [1] and actualizados == ["lead-1", "lead-1"]
+
+
+def test_una_charla_de_antes_del_borrador_no_pierde_su_pedido():
+    from app.core.flujo import estado as E
+    viejo = {"pedido": [{"id": "x", "nombre": "Mouse Logitech G203 Lightsync Negro", "cantidad": 2, "destino": "Rosario"}],
+             "reparto": [{"medio": "transferencia", "porcentaje": 100}], "cliente": {"nombre": "Julio"}}
+    b = B.leer(E.leer({"estado_charla": viejo})["borrador"])
+    _, falta, arts, _ = _turno(b)
+    assert falta == [] and [(a["cantidad"], a["destino"]) for a in arts] == [(2, "Rosario")]
+    assert b["cliente"]["nombre"] == "Julio" and B.pago_listo(b)

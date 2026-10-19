@@ -18,7 +18,20 @@ TOPE_MOSTRADOS = 30
 
 def leer(conv: dict) -> dict:
     guardado = (conv or {}).get("estado_charla") or {}
-    return {k: guardado.get(k, type(v)()) for k, v in VACIO.items()}
+    out = {k: guardado.get(k, type(v)()) for k, v in VACIO.items()}
+    if not guardado.get("borrador") and guardado.get("pedido"):
+        out["borrador"] = _de_antes(guardado)
+    return out
+
+
+def _de_antes(g: dict) -> dict:
+    """UNA CHARLA EMPEZADA ANTES DEL BORRADOR no pierde su pedido: cada articulo pasa a un renglon dicho y confirmado."""
+    renglones = [{"L": f"L-{i}", "que": a.get("nombre") or "", "cantidad": a.get("cantidad") or 1, "color": "",
+                  "destino": a.get("destino") or "", "condicion": "", "cita": "", "confirmado": True}
+                 for i, a in enumerate(g["pedido"], 1)]
+    return {"renglones": renglones, "lista": g.get("por_rubro") or {}, "pago": g.get("reparto") or [],
+            "cliente": g.get("cliente") or {}, "siguiente": len(renglones) + 1,
+            "cierre": {"huella": g.get("cerrado") or "", "nombre_para": "", "lead": ""}}
 
 
 def _plata(n) -> str:

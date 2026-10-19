@@ -94,35 +94,6 @@ def identificar(nombre: str, color: str, tienda_id: str) -> dict:
     return {"veredicto": "exists", "producto": (hay or variantes)[0], "variantes": variantes, "falta_color": True}
 
 
-def nombrados(texto: str, tienda_id: str, largo: int = 4) -> list:
-    """Los productos que nombra un texto libre —"el G203 es inalambrico", "sacar el MX Master 3S"—: cada tramo de
-    hasta `largo` palabras que da un solo modelo, el mas largo primero, y sin pisarse."""
-    ws = [w for w in n(texto).split() if w not in _RELLENO]
-    hallados, usadas = [], set()
-    for tam in range(min(largo, len(ws)), 0, -1):
-        for i in range(len(ws) - tam + 1):
-            tramo = set(range(i, i + tam))
-            # Una palabra sola nombra un producto solo si es un codigo de modelo, con letras y numeros: "G203".
-            codigo = any(re.search(r"[a-z]", w) and re.search(r"\d", w) for w in ws[i:i + tam])
-            if tramo & usadas or (tam == 1 and not codigo):
-                continue
-            idt = identificar(" ".join(ws[i:i + tam]), "", tienda_id)
-            if idt["veredicto"] == "exists":
-                hallados.append((i, idt["producto"]["nombre"]))
-                usadas |= tramo
-    return [nombre for _, nombre in sorted(hallados)]
-
-
-_SUPERA = re.compile(r"\b(?:pasa de|pasa los|supera|supera los|mas de|excede)\s*\$?\s*([\d.,]+)(?![\d.,])\s*"
-                     r"(millones|millon|mil|k|lucas)?\b")
-
-
-def tope_del_total(si: str):
-    """El monto de "si el total pasa de 300 mil", o None."""
-    m = _SUPERA.search(n(si))
-    return _monto(m.group(1), m.group(2)) if m else None
-
-
 def por_id(pid: str, tienda_id: str) -> dict:
     return fc.get_product_by_id(str(pid), tienda_id=tienda_id) or {}
 
