@@ -28,7 +28,7 @@ import itertools
 
 from . import catalogo as K
 
-VACIO = {"renglones": [], "lista": {}, "criterios": {}, "total": 0, "pago": [], "cliente": {},
+VACIO = {"renglones": [], "lista": {}, "criterios": {}, "total": 0, "pago": [], "cliente": {}, "propuesta": {},
          "cierre": {"huella": "", "nombre_para": "", "lead": ""}, "siguiente": 1, "lectura": {}}
 
 
@@ -75,7 +75,10 @@ def aplicar(b: dict, ops: dict, pedidas: dict = None) -> None:
     """
     if ops.get("renglones"):
         # Lo que acepto de una lectura: los renglones quedan como los leyo el vendedor, y la lectura ya es lo dicho.
-        b["renglones"], b["lectura"] = [dict(r) for r in ops["renglones"]], {}
+        b["renglones"], b["lectura"], b["propuesta"] = [dict(r) for r in ops["renglones"]], {}, {}
+    elif any(ops.get(k) for k in ("agrega", "saca", "cambia", "reemplaza")):
+        # Un cambio nuevo deja de lado lo propuesto: se aplica sobre el pedido que el cliente tenia.
+        b["propuesta"] = {}
     if pedidas:
         b["lista"].update({r: int(c) for r, c in pedidas.items() if c})
     if ops.get("total") not in (None, ""):
@@ -150,6 +153,12 @@ def resolver(b: dict, tienda_id: str, lecturas: list = None) -> list:
     """Cada renglon con lo que es hoy: {"L", "articulos"} si se resolvio, o {"L", "falta": tipo, ...} si no. Si lo
     dicho no cierra, propone: ver `_proponer`. Con `lecturas`, deja ahi las que cierran para que elija el modelo."""
     filas = {}
+    if b.get("propuesta"):
+        # UN CAMBIO QUE SACA COSAS QUEDA PROPUESTO: se muestra como quedaria, y se aplica si lo acepta.
+        res = _resolver(b, tienda_id, [dict(r) for r in b["propuesta"]["renglones"]], filas)
+        if res:
+            res[0]["supuesto"] = {"texto": b["propuesta"]["texto"], "op": {"renglones": b["propuesta"]["renglones"]}}
+            return res
     res = _resolver(b, tienda_id, b["renglones"], filas)
     if any(x.get("falta") in ("confirmar", "otros") for x in res):
         return _proponer(b, tienda_id, res, filas, lecturas)

@@ -52,6 +52,8 @@ class Turno:
         self.nums, self.agenda, self.destinos, self.cambio, self.explicar = {}, [], [], False, None
         self.res, self.compra, self.derivado = [], None, False  # el borrador resuelto, y la compra que lo cambio
         self.lecturas, self.elegida = [], ""  # las lecturas que cierran para que elija el modelo, y la que eligio
+        self.previos = None  # los renglones de antes de un reemplazo, por si saca lo que el cliente no nombro
+        self.propuesta = {}  # lo propuesto con que llego el turno: vale solo para este
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
@@ -209,6 +211,16 @@ class Turno:
         self.res = B.resolver(b, self.tienda, self.lecturas)
         falta = B.faltantes(b, self.res)
         arts = B.articulos(self.res, falta)
+        perdidos = _perdidos(antes, arts, self.tienda) if self.previos is not None and antes else []
+        if perdidos:
+            # NUNCA SE PIERDE EL PEDIDO EN SILENCIO: un reemplazo que deja afuera rubros o destinos que estaban no se
+            # aplica de una. Queda propuesto, con lo que saldria dicho, hasta que el cliente lo acepte.
+            b["propuesta"] = {"renglones": b["renglones"], "texto": "Con ese cambio saco del pedido "
+                              + B._y(perdidos) + "."}
+            b["renglones"] = self.previos
+            self.res = B.resolver(b, self.tienda, self.lecturas)
+            falta = B.faltantes(b, self.res)
+            arts = B.articulos(self.res, falta)
         self.estado["pedido"] = arts
         self.n = self.compra or self.n
         for q in B.preguntas(b, falta):
@@ -238,6 +250,16 @@ class Turno:
             self.hechos.append({"tipo": "pedido", "articulos": arts, "n": self.n} if arts
                                else {"tipo": "pedido_vacio", "n": self.n})
             self.cambio = True
+
+
+def _perdidos(antes: list, arts: list, tienda_id: str) -> list:
+    """Los rubros y los destinos que estaban en el pedido y ya no estan, dichos para el cliente."""
+    rubro = lambda a: K.por_id(a["id"], tienda_id).get("categoria") or a["nombre"]  # noqa: E731
+    rubros = [r for r in dict.fromkeys(map(rubro, antes)) if r not in set(map(rubro, arts))]
+    destinos = [d for d in dict.fromkeys(K.n(a.get("destino")) for a in antes if a.get("destino"))
+                if d not in {K.n(a.get("destino")) for a in arts}]
+    nombre = {K.n(a.get("destino")): a["destino"] for a in antes if a.get("destino")}
+    return [f"{r}" for r in rubros] + [f"todo lo que iba a {nombre[d]}" for d in destinos]
 
 
 # ══ LAS ACCIONES: una funcion por accion del menu ═════════════════════════════
@@ -362,6 +384,8 @@ def _comprar(t: Turno, p: dict):
         if not nombre:
             return None
         agrega.append({**a, "producto": nombre, "cita": p.get("cita") or "", "condicion": p.get("condicion") or ""})
+    if p.get("reemplaza") and t.previos is None:
+        t.previos = [dict(r) for r in t.estado["borrador"]["renglones"]]
     B.aplicar(t.estado["borrador"], {**{k: p.get(k) for k in ("saca", "cambia", "confirma", "total", "reemplaza",
                                                                 "responde")}, "agrega": agrega},
               pedidas=t.pedidas if agrega else None)
@@ -463,6 +487,7 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None, elegida:
     t.elegida = elegida
     # Los numeros de la libreta se toman antes de cumplir nada: son los que vio el modelo.
     estado["borrador"] = B.leer(estado.get("borrador"))
+    t.propuesta = estado["borrador"]["propuesta"]
     t.nums, t.explicar = numeros(estado), explicar
     agenda = agenda if isinstance(agenda, dict) else {"preguntas": agenda}
     cliente = agenda.get("cliente") if isinstance(agenda.get("cliente"), dict) else {}
@@ -535,6 +560,10 @@ def _derivar(t: Turno) -> None:
     """Una vez por turno, despues de lo que cambia lo dicho y antes de la cuenta. Sin renglones no hay nada que
     derivar: la cuenta de lo consultado sigue por su lado."""
     t.derivado = True
+    # LO PROPUESTO VALE UN TURNO: si el cliente no lo acepto, se descarta y el pedido queda como lo tenia.
+    if t.estado["borrador"]["propuesta"] and t.estado["borrador"]["propuesta"] is t.propuesta:
+        t.estado["borrador"]["propuesta"] = {}
+        t.hechos.append({"tipo": "supuesto", "texto": "Dejé el pedido como estaba.", "n": t.n})
     # Todo lo dicho entra antes de resolver: el pago de la cuenta tambien, asi su medio se pregunta desde el borrador.
     for p in t.agenda:
         if p.get("accion") == "cuenta" and p.get("reparto") and t.estado["borrador"]["renglones"]:

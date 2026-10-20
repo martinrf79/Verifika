@@ -134,3 +134,36 @@ def test_otro_orden_para_lo_pedido_se_reparte_a_cada_rubro():
     for rubro in ("mouse", "teclado", "auriculares", "webcam"):
         assert f"el de gama más alta de {rubro}" in caro_, caro_
     assert "Envio a Rosario" in caro_ and "Envio a Neuquén" in caro_
+
+
+def _reemplazo_y(respuesta: str, agenda: dict) -> list:
+    """La charla de las 19:29 hasta "arma todo con lo mejor", traducido como reemplazo, y lo que contesta el cliente."""
+    c = _charla("19d2fdb852")
+    m0, t3 = c["turnos"][0]["mensaje"], c["turnos"][2]
+    R.ELEGIR[m0] = {"texto": "a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 mouse, 1 teclado y 1 auriculares; "
+                             "7 en total", "cita": "el resto a Neuquén"}
+    charla = {"id": "real_reemplazo_" + respuesta, "turnos": [{"texto": x, "casillas": []}
+                                                             for x in (m0, t3["mensaje"], respuesta)]}
+    from app.core import llm_reintento
+    puerta = llm_reintento._cliente
+    try:
+        return [t["respuesta"] for t in R.correr(charla, [c["turnos"][0]["agenda"], t3["agenda"], agenda],
+                                                 R.instalar(), {})]
+    finally:
+        R.ELEGIR.pop(m0, None)
+        llm_reintento._cliente = puerta
+
+
+def test_un_reemplazo_que_saca_cosas_queda_propuesto_y_se_descarta_si_no_lo_acepta():
+    # El reemplazo de las 19:29 dejaba afuera la webcam y los dos destinos sin que el cliente los nombrara.
+    _, propuesto, no = _reemplazo_y("no, deja todo como estaba", {"preguntas": [
+        {"n": 1, "cita": "no, deja todo como estaba", "accion": "otro", "que": "corrige"}]})
+    assert "Con ese cambio saco del pedido webcam" in propuesto and "¿Lo dejo así?" in propuesto, propuesto
+    assert "Dejé el pedido como estaba" in no and "Envio a Rosario" in no and "Envio a Neuquén" in no, no
+
+
+def test_un_reemplazo_propuesto_se_aplica_si_lo_acepta():
+    _, propuesto, dale = _reemplazo_y("dale", {"preguntas": [
+        {"n": 1, "cita": "dale", "accion": "comprar", "responde": "R-1"}]})
+    assert "Con ese cambio saco del pedido" in propuesto
+    assert "nombre" in dale and "Dejé el pedido como estaba" not in dale, dale
