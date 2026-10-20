@@ -1,0 +1,117 @@
+{
+ "id": "890d797d59",
+ "desde": "2026-10-20T16:56:07",
+ "turnos": [
+  {
+   "trace": "ce12ab55",
+   "mensaje": "Quiero precio de 4 mouse y 2 monitor. Un mouse y el monitor van a Rosario, lo otro va a Mendoza, y sumame una webcam para Mendoza",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Quiero precio de 4 mouse",
+      "accion": "buscar",
+      "rubro": "mouse",
+      "cantidad": 4
+     },
+     {
+      "n": 2,
+      "cita": "y 2 monitor.",
+      "accion": "buscar",
+      "rubro": "monitor",
+      "cantidad": 2
+     },
+     {
+      "n": 3,
+      "cita": "Un mouse y el monitor van a Rosario,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "mouse",
+        "cantidad": 1,
+        "destino": "Rosario"
+       },
+       {
+        "producto": "monitor",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 4,
+      "cita": "lo otro va a Mendoza,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "mouse",
+        "cantidad": 3,
+        "destino": "Mendoza"
+       },
+       {
+        "producto": "monitor",
+        "cantidad": 1,
+        "destino": "Mendoza"
+       }
+      ]
+     },
+     {
+      "n": 5,
+      "cita": "y sumame una webcam para Mendoza",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "webcam",
+        "cantidad": 1,
+        "destino": "Mendoza"
+       }
+      ]
+     }
+    ],
+    "cliente": {}
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n\nEn monitor tengo:\n- Monitor LG 24MK430H: $167.500\n- Monitor LG 27GP850 UltraGear: $594.000\n- Monitor LG 32GN600: $417.500\n\nEntendí tu pedido así: a Rosario, 1 mouse y 1 monitor; a Mendoza, 3 mouse, 1 monitor y 1 webcam; 7 en total.\n\nPara el presupuesto tomé la primera opción de mouse, Mouse Logitech G203 Lightsync Negro, la primera opción de monitor, Monitor LG 24MK430H, la primera opción de webcam, Webcam Logitech C920 HD Pro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\n- 1x Monitor LG 24MK430H: $167.500 c/u = $167.500\nSubtotal: $205.000\nEnvio a Rosario: $7.000\nTotal: $212.000\nPresupuesto:\n- 3x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $112.500\n- 1x Monitor LG 24MK430H: $167.500 c/u = $167.500\n- 1x Webcam Logitech C920 HD Pro: $141.000 c/u = $141.000\nSubtotal: $421.000\nEnvio a Mendoza: gratis\nTotal: $421.000\nTotal general: $633.000\n\n¿Lo dejo así?"
+  },
+  {
+   "trace": "3bdfda7a",
+   "mensaje": "Ok \"¿Qué cuotas tienen?\"",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Ok",
+      "accion": "comprar",
+      "confirma": [
+       "L-1"
+      ]
+     },
+     {
+      "n": 2,
+      "cita": "\"¿Qué cuotas tienen?\"",
+      "accion": "politica",
+      "tema": "cuotas"
+     }
+    ]
+   },
+   "respondio": "Tenemos hasta 6 cuotas sin interes con Visa y Mastercard. Hasta 12 cuotas con interes.\n\nPara reservarlo, ¿me decís tu nombre?"
+  },
+  {
+   "trace": "c83db361",
+   "mensaje": "Joaquin",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Joaquin",
+      "accion": "otro",
+      "que": "dato"
+     }
+    ],
+    "cliente": {
+     "nombre": "Joaquin"
+    }
+   },
+   "respondio": "Listo Joaquin, tomamos tu pedido.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\n- 1x Monitor LG 24MK430H: $167.500 c/u = $167.500\nSubtotal: $205.000\nEnvio a Rosario: $7.000\nTotal: $212.000\nPresupuesto:\n- 3x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $112.500\n- 1x Monitor LG 24MK430H: $167.500 c/u = $167.500\n- 1x Webcam Logitech C920 HD Pro: $141.000 c/u = $141.000\nSubtotal: $421.000\nEnvio a Mendoza: gratis\nTotal: $421.000\nTotal general: $633.000\nEl equipo te contacta para coordinar el pago por el medio que elijas y el envio a Rosario, Mendoza. Gracias por tu compra.\nPodés pagar acá: https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=3466948838-6e187e48-d242-4bc1-8d12-ad140b37624b"
+  }
+ ]
+}

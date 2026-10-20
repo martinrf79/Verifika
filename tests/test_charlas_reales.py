@@ -19,17 +19,22 @@ def _charla(id_: str) -> dict:
     return json.load(open(f"banco_pruebas/reales/{id_}.json", encoding="utf-8"))
 
 
-@pytest.fixture(scope="module")
-def joaquin():
-    """La de los siete articulos a tres destinos del 20-oct, 15:26, que cerro con nombre y pago."""
+def _repetir(id_: str) -> list:
+    """Lo que recibe el cliente hoy, turno por turno, con las agendas que grabo produccion."""
     from app.core import llm_reintento
     puerta = llm_reintento._cliente
     it = R.instalar()
-    c = _charla("f95def4b1d")
+    c = _charla(id_)
     charla = {"id": "real_" + c["id"], "turnos": [{"texto": t["mensaje"], "casillas": []} for t in c["turnos"]]}
     turnos = R.correr(charla, [t["agenda"] for t in c["turnos"]], it, {})
-    yield [t["respuesta"] for t in turnos]
     llm_reintento._cliente = puerta
+    return [t["respuesta"] for t in turnos]
+
+
+@pytest.fixture(scope="module")
+def joaquin():
+    """La de los siete articulos a tres destinos del 20-oct, 15:26, que cerro con nombre y pago."""
+    return _repetir("f95def4b1d")
 
 
 def test_el_cierre_no_repite_la_cuenta_recien_leida(joaquin):
@@ -52,3 +57,17 @@ def test_lo_elegido_sin_buscar_se_avisa(joaquin):
     # El teclado se pidio sin buscar su rubro: entra al pedido como lo eligio el codigo, y se dice.
     con_pedido = next(r for r in joaquin if "Teclado" in r and "Presupuesto:" in r)
     assert "Para el presupuesto tomé" in con_pedido and "teclado" in con_pedido.split("Para el presupuesto tomé")[1]
+
+
+def test_el_cierre_no_repite_la_cuenta_leida_antes_de_otra_pregunta():
+    # 20-oct, 16:56: la cuenta, despues las cuotas, despues el nombre. La cuenta ya leida no vuelve en el cierre.
+    c = _charla("890d797d59")
+    # En produccion el modelo eligio la unica lectura que cierra: la webcam aparte de la lista.
+    R.ELEGIR[c["turnos"][0]["mensaje"]] = {"texto": "a Rosario, 1 mouse y 1 monitor; a Mendoza, 3 mouse, 1 monitor y "
+                                                    "1 webcam; 7 en total", "cita": "y sumame una webcam para Mendoza"}
+    try:
+        cuenta, cuotas, cierre = _repetir("890d797d59")
+    finally:
+        R.ELEGIR.pop(c["turnos"][0]["mensaje"], None)
+    assert "Presupuesto:" in cuenta and "cuotas" in cuotas and "Presupuesto:" not in cuotas
+    assert "tomamos tu pedido" in cierre and "Presupuesto:" not in cierre, cierre

@@ -15,7 +15,7 @@ Estados: **DONDE VA** · **SIGUE** · **ABIERTO** · **ESPERA A MARTIN**.
 
 ---
 
-- **DONDE VA** · 20-oct, tarde: los tres detalles de las charlas del 20-oct arreglados por clase, falta el push. El cierre no repite la cuenta que el cliente acaba de leer ni pone "Resumen:" encima de "Presupuesto:"; con el pedido armado, la FAQ sale con su respuesta llana y no invita a elegir producto; lo que el código elige de un rubro que el cliente nunca vio se avisa. Lo controla `tests/test_charlas_reales.py` con la charla real grabada. Después del push, se ve en WhatsApp.
+- **DONDE VA** · 20-oct, tarde: los tres detalles de las charlas del 20-oct deployados y vistos en WhatsApp a las 16:56: la FAQ con pedido sale llana y lo elegido se avisa. El cierre todavía repetía la cuenta si entre la cuenta y el nombre hubo otra pregunta; arreglado para cualquier mensaje anterior de la charla, falta el push. Lo controla `tests/test_charlas_reales.py` con las dos charlas reales grabadas.
 - **SIGUE 1** · La próxima compleja: K08 de la vara, siete artículos por rubro, presupuesto de crisis y tres destinos. Misma familia que la de hoy: prueba que lo hecho es de clase. Un guion nuevo en el simulador con su piso, y después WhatsApp. Siguen K13, mayorista, y C46, "de los que te mencioné", una por sesión.
 - **SIGUE 2** · La FICHA 72, paso 3: la llamada de venta. El modelo redacta con los hechos del turno y el código controla que cada monto y cada producto salga de los hechos. Resuelve "¿qué me conviene más?", que hoy se contesta en general y sin la cuenta del pedido.
 - **ESPERA A MARTIN** · Las formas en que un cliente real dice cada complicada, en texto simple: cada una se vuelve un guion del simulador y suma al piso. Y la corrida nocturna que junta las charlas y corre los casos.
