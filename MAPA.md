@@ -27,7 +27,8 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Entrada de WhatsApp y Telegram, webhooks | `app/main.py` |
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
 | El turno entero: leer, interpretar, ejecutar, redactar, cerrar, guardar | `app/core/flujo/turno.py` |
-| Las dos llamadas al modelo: traducir a la agenda y explicar; la consigna, los seis ejemplos y la libreta | `app/core/flujo/interprete.py` |
+| Las llamadas al modelo: traducir a la agenda, elegir la lectura y explicar; la consigna, los seis ejemplos y la libreta | `app/core/flujo/interprete.py` |
+| Lo que dijo el cliente, las lecturas que cierran y lo supuesto hasta que acepta | `app/core/flujo/borrador.py` |
 | La agenda: el menu de acciones y el control de lo que falta | `app/core/flujo/agenda.py` |
 | Lo que el codigo reconoce en el mensaje antes del modelo | `app/core/flujo/marcador.py` |
 | Cada pregunta de la agenda, cumplida con las herramientas, y el candado | `app/core/flujo/ejecutor.py` |
@@ -58,6 +59,7 @@ permiso.
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
 | Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
+| La multipregunta de los siete artículos miles de veces, con el cliente y el modelo simulados | `banco_pruebas/simulador.py` |
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |
 | Si lo que recibe el modelo alcanza, sin modelo | `banco_pruebas/suficiencia.py` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
