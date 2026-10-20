@@ -1,0 +1,114 @@
+{
+ "id": "4f976d21f1",
+ "desde": "2026-10-20T23:07:41",
+ "turnos": [
+  {
+   "trace": "ce06a449",
+   "mensaje": "\"Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil. Dos mouse y un teclado a Rosario, el resto a Neuquén, sumame una webcam para Rosario. Pago mitad transferencia y mitad Mastercard",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil.",
+      "accion": "buscar",
+      "rubro": "mouse",
+      "cantidad": 3,
+      "orden": "mas barato",
+      "condiciones": [
+       "tope 600000"
+      ]
+     },
+     {
+      "n": 2,
+      "cita": "dos teclados",
+      "accion": "buscar",
+      "rubro": "teclado",
+      "cantidad": 2,
+      "orden": "mas barato",
+      "condiciones": [
+       "tope 600000"
+      ]
+     },
+     {
+      "n": 3,
+      "cita": "y un par de auriculares",
+      "accion": "buscar",
+      "rubro": "auriculares",
+      "cantidad": 2,
+      "orden": "mas barato",
+      "condiciones": [
+       "tope 600000"
+      ]
+     },
+     {
+      "n": 4,
+      "cita": "Dos mouse y un teclado a Rosario,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "mouse",
+        "cantidad": 2,
+        "destino": "Rosario"
+       },
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 5,
+      "cita": "el resto a Neuquén,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "los otros",
+        "cantidad": 4,
+        "destino": "Neuquén"
+       }
+      ]
+     },
+     {
+      "n": 6,
+      "cita": "sumame una webcam para Rosario.",
+      "accion": "buscar",
+      "rubro": "webcam",
+      "cantidad": 1
+     },
+     {
+      "n": 7,
+      "cita": "Pago mitad transferencia y mitad Mastercard",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 50
+       },
+       {
+        "medio": "Mastercard",
+        "porcentaje": 50
+       }
+      ]
+     }
+    ]
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n- Mouse Genius NX-7000 Negro: $14.000\n\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\n\nEn webcam tengo:\n- Webcam Logitech C920 HD Pro: $141.000\n- Webcam Logitech C922 Pro: $178.000\n- Webcam Logitech Brio 100: $92.000\n- Webcam Genius FaceCam 2000X: $45.000\n- Webcam Razer Kiyo X: $114.500\n\nLo de \"tope 600000\" no figura en las fichas, así que no pude filtrar por eso.\n\n¿Cuáles son los otros? De la lista quedan 1 mouse, 1 teclado, 2 auriculares, 1 webcam."
+  },
+  {
+   "trace": "add7f269",
+   "mensaje": "No mas de $600000 entre todos",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "No mas de $600000 entre todos",
+      "accion": "cuenta",
+      "tope": 600000
+     }
+    ]
+   },
+   "respondio": "Mouse Genius DX-110 Negro: $8.500, hay stock.\n\nTeclado Genius KB-110X Blanco: $12.000, hay stock.\n\n¿Cuáles son los otros? De la lista quedan 2 auriculares, 1 webcam, 1 mouse, 1 teclado."
+  }
+ ]
+}
