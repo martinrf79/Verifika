@@ -1,0 +1,256 @@
+{
+ "id": "19d2fdb852",
+ "desde": "2026-10-20T19:26:12",
+ "turnos": [
+  {
+   "trace": "43843ec2",
+   "mensaje": "Necesito tres mouse, dos teclados y un par de auriculares. No quiero gastar más de 600 mil en total. Dos mouse y un teclado van a Rosario, el resto a Neuquén, y sumame una webcam para Rosario. Pago la mitad con transferencia y la mitad con Mastercard",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Necesito tres mouse,",
+      "accion": "buscar",
+      "rubro": "mouse",
+      "cantidad": 3
+     },
+     {
+      "n": 2,
+      "cita": "dos teclados",
+      "accion": "buscar",
+      "rubro": "teclado",
+      "cantidad": 2
+     },
+     {
+      "n": 3,
+      "cita": "y un par de auriculares.",
+      "accion": "buscar",
+      "rubro": "auriculares",
+      "cantidad": 1
+     },
+     {
+      "n": 4,
+      "cita": "No quiero gastar más de 600 mil en total.",
+      "accion": "cuenta",
+      "tope": 600000
+     },
+     {
+      "n": 5,
+      "cita": "Dos mouse y un teclado van a Rosario,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "mouse",
+        "cantidad": 2,
+        "destino": "Rosario"
+       },
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 6,
+      "cita": "el resto a Neuquén,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "los otros",
+        "cantidad": 3,
+        "destino": "Neuquén"
+       }
+      ]
+     },
+     {
+      "n": 7,
+      "cita": "y sumame una webcam para Rosario.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "webcam",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 8,
+      "cita": "Pago la mitad con transferencia y la mitad con Mastercard",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 50
+       },
+       {
+        "medio": "Mastercard",
+        "porcentaje": 50
+       }
+      ]
+     }
+    ],
+    "cliente": {}
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n\nEn teclado tengo:\n- Teclado Logitech G915 TKL Negro: $512.500\n- Teclado Logitech K380 Negro: $55.000\n- Teclado Logitech G413 TKL SE Blanco: $98.500\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n\nPresupuesto:\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Webcam Genius FaceCam 2000X: $45.000 c/u = $45.000\nSubtotal: $74.000\nEnvio a Rosario: $7.000\nTotal: $81.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $78.000\nEnvio a Neuquén: $9.500\nTotal: $87.500\nTotal general: $168.500\n\nPago dividido:\n- transferencia (50%): $84.250 - 10% descuento = $75.825\n- Mastercard (50%): $84.250\nTotal final: $160.075\n\nEntendí tu pedido así: a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 mouse, 1 teclado y 1 auriculares; 7 en total.\n\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de webcam, Webcam Genius FaceCam 2000X. Si preferís otro, decime cuál.\n\n¿Lo dejo así?"
+  },
+  {
+   "trace": "2bbc9ca9",
+   "mensaje": "y si en vez de pedirte lo mas barato me presupuestas lo mejor que tengas",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "y si en vez de pedirte lo mas barato me presupuestas lo mejor que tengas",
+      "accion": "buscar",
+      "rubro": "auriculares",
+      "orden": "mas caro",
+      "entre_lo_mostrado": true
+     }
+    ]
+   },
+   "respondio": "En auriculares tengo:\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\n\nEntendí tu pedido así: a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 teclado, 1 auriculares y 1 mouse; 7 en total.\n\n¿Lo dejo así?"
+  },
+  {
+   "trace": "09f851cd",
+   "mensaje": "Arma todo con lo mejor que tengas",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Arma todo con lo mejor que tengas",
+      "accion": "comprar",
+      "responde": "R-1",
+      "reemplaza": true,
+      "agrega": [
+       {
+        "producto": "auriculares",
+        "cantidad": 1,
+        "orden": "mas caro"
+       },
+       {
+        "producto": "teclado",
+        "cantidad": 2,
+        "orden": "mas caro"
+       },
+       {
+        "producto": "mouse",
+        "cantidad": 3,
+        "orden": "mas caro"
+       }
+      ]
+     }
+    ]
+   },
+   "respondio": "Para el presupuesto tomé el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Auriculares Sony WH-1000XM5 Blanco: $680.500 c/u = $680.500\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\n- 3x Mouse Genius DX-110 Negro: $8.500 c/u = $25.500\nSubtotal: $730.000\nTotal: $730.000\n\nPago dividido:\n- transferencia (50%): $365.000 - 10% descuento = $328.500\n- Mastercard (50%): $365.000\nTotal final: $693.500\n\nPara reservarlo, ¿me decís tu nombre?"
+  },
+  {
+   "trace": "53ba6117",
+   "mensaje": "No tomes lo mas barato toma lo mas caro",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "No tomes lo mas barato toma lo mas caro",
+      "accion": "comprar",
+      "reemplaza": true,
+      "agrega": [
+       {
+        "producto": "M-1",
+        "cantidad": 1
+       },
+       {
+        "producto": "M-3",
+        "cantidad": 2
+       },
+       {
+        "producto": "M-12",
+        "cantidad": 1
+       }
+      ]
+     }
+    ]
+   },
+   "respondio": "Presupuesto:\n- 1x Mouse Logitech MX Master 3S Negro: $203.000 c/u = $203.000\n- 2x Teclado Logitech G915 TKL Negro: $512.500 c/u = $1.025.000\n- 1x Auriculares Sony WH-1000XM5 Blanco: $680.500 c/u = $680.500\nSubtotal: $1.908.500\nTotal: $1.908.500\n\nPago dividido:\n- transferencia (50%): $954.250 - 10% descuento = $858.825\n- Mastercard (50%): $954.250\nTotal final: $1.813.075\n\nPara reservarlo, ¿me decís tu nombre?"
+  },
+  {
+   "trace": "89f372f2",
+   "mensaje": "¿Cuánto tarda el envío a Neuquén",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "¿Cuánto tarda el envío a Neuquén",
+      "accion": "politica",
+      "tema": "plazo_envio"
+     },
+     {
+      "n": 2,
+      "cita": "¿Cuánto tarda el envío a Neuquén",
+      "accion": "envio",
+      "destino": "Neuquén"
+     }
+    ]
+   },
+   "respondio": "CABA y GBA 2 a 3 dias habiles desde el pago acreditado. Interior 4 a 7 dias habiles.\n\nEnvío a Neuquén: $9.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000."
+  },
+  {
+   "trace": "0e7f6821",
+   "mensaje": "Sumame el envio a neuquen tomare el pedido mas barato",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Sumame el envio a neuquen",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "destino": "Neuquén"
+       }
+      ]
+     },
+     {
+      "n": 2,
+      "cita": "tomare el pedido mas barato",
+      "accion": "comprar",
+      "reemplaza": true,
+      "agrega": [
+       {
+        "producto": "M-2",
+        "cantidad": 1
+       },
+       {
+        "producto": "M-4",
+        "cantidad": 1
+       },
+       {
+        "producto": "M-9",
+        "cantidad": 1
+       }
+      ]
+     }
+    ]
+   },
+   "respondio": "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\n- 1x Teclado Logitech K380 Negro: $55.000 c/u = $55.000\n- 1x Auriculares HyperX Cloud Stinger 2 Negro: $70.000 c/u = $70.000\nSubtotal: $137.000\nTotal: $137.000\n\nPago dividido:\n- transferencia (50%): $68.500 - 10% descuento = $61.650\n- Mastercard (50%): $68.500\nTotal final: $130.150\n\nPara reservarlo, ¿me decís tu nombre?"
+  },
+  {
+   "trace": "fcd98266",
+   "mensaje": "Joaquin",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Joaquin",
+      "accion": "otro",
+      "que": "nombre"
+     }
+    ],
+    "cliente": {
+     "nombre": "Joaquin"
+    }
+   },
+   "respondio": "Listo Joaquin, tomamos tu pedido.\nEl equipo te contacta para coordinar el pago por transferencia y Mastercard. Gracias por tu compra.\nPara pagar por transferencia:\nCBU: 0000000000000000000000\nAlias: demo.verifika\nTitular: Verifika (cuenta demo)\nBanco: Banco Demo\nMonto: $61.650\nCuando transfieras, mandame el comprobante y coordinamos el envío.\nPodés pagar acá: https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=3466948838-ad995559-9e10-4820-8f6d-e9ffe5a10e24"
+  }
+ ]
+}
