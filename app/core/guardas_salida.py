@@ -78,57 +78,6 @@ def linea_saludo(business_name: str) -> str:
 _UNEN = r"(?:\s+(?:de|del|la|el|en))*\s+"
 
 
-def _patron_de_campo(campo: str):
-    """El campo del catalogo como lo escribiria un vendedor."""
-    partes = [re.escape(p) for p in _norm(campo).split("_") if p]
-    if not partes:
-        return None
-    return re.compile(r"\b" + _UNEN.join(partes) + r"\b")
-
-
-def campos_nombrados(texto: str, campos) -> list:
-    """Los campos del catalogo que el texto nombra."""
-    plano = _norm(texto)
-    fuera = []
-    for campo in campos or ():
-        patron = _patron_de_campo(campo)
-        if patron and patron.search(plano):
-            fuera.append(str(campo))
-    return fuera
-
-
-def afirmo_sin_mirar(texto: str, tocados, tienda_id: str,
-                     trace_id: str = "") -> list:
-    """Los campos que la respuesta nombra y que el turno NUNCA tuvo delante."""
-    try:
-        from app.core.filtros_catalogo import campos_filtrables
-        campos = set(campos_filtrables(tienda_id) or {})
-    except Exception as e:  # noqa: BLE001 — sin registro no se juzga nada
-        log.warning("guarda_estado_sin_campos", trace_id=trace_id,
-                    error=f"{type(e).__name__}: {str(e)[:120]}")
-        return []
-    # LOS TOCADOS SE SACAN ANTES DE MIRAR EL TEXTO, y no despues: un campo
-    # respaldado no tiene por que costar una busqueda en la respuesta.
-    sin_respaldo = sorted(campos_nombrados(
-        texto, campos - {str(t) for t in (tocados or ())}))
-    if sin_respaldo:
-        # EL RENGLON ES LA PIEZA. Sale con el campo y con cuantos campos tuvo el turno en la mano, que es lo
-        # que permite leer el falso positivo: un turno que no busco nada y nombra un campo no es lo mismo que
-        # uno que trajo diez fichas y nombro el unico que no miro.
-        log.warning("afirmo_sin_mirar", trace_id=trace_id,
-                    campos=sin_respaldo[:6], tocados=len(tocados or ()))
-    return sin_respaldo
-
-
 # QUE CAMPO SE CORRIGE, Y LA RESPUESTA ES: CUALQUIERA QUE LA FUENTE TENGA.
 
-
-def para_corregir(sin_respaldo, tienda_id: str) -> tuple:
-    """El campo que vale la pena devolverle al modelo, con lo que la fuente dice de el."""
-    from app.core.filtros_catalogo import que_dice_la_fuente_de
-    for campo in sin_respaldo or ():
-        dice = que_dice_la_fuente_de(str(campo), tienda_id)
-        if dice:
-            return str(campo), dice
-    return None, ""
 

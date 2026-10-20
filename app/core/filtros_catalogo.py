@@ -45,15 +45,6 @@ SIN_CAMPO = "sin_campo_en_la_fuente"
 
 # ── EL VOCABULARIO: CUANDO UN CAMPO SE ENUMERA Y CUANDO NO ──────────────────
 LARGO_ETIQUETA = 60
-# Y LA LISTA ENTERA COMPITE POR UN PRESUPUESTO UNICO.
-TECHO_LEYENDA = 900
-
-# Un campo cargado en menos de esto no se enumera y se avisa aparte: filtrar
-# por ahi devuelve casi nada, y ese casi nada se lee como "no lo tenemos".
-CARGA_FLACA = 0.30
-
-# Cuantos valores de un campo se le devuelven al modelo cuando se lo corrige.
-VALORES_AL_CORREGIR = 8
 
 # Cuantos valores reales se le muestran al modelo cuando escribio uno que no existe.
 TOPE_HUECO = 5
@@ -235,94 +226,6 @@ def vocabulario(tienda_id: str) -> dict[str, dict]:
     return out
 
 
-def leyenda(tienda_id: str) -> str:
-    """EL VOCABULARIO COMO LO LEE EL MODELO, un renglon por campo."""
-    voc = vocabulario(tienda_id)
-    total = recorrida(tienda_id).get("productos") or 0
-    if not voc or not total:
-        return ""
-    r = recorrida(tienda_id)
-    numericos, veredictos, candidatos, flacos = [], [], [], []
-    for campo, d in sorted(voc.items()):
-        # UN NUMERO NO SE ENUMERA, SE ACOTA. Listarle 386 precios al modelo no le dice nada; el rango le dice
-        # todo lo que necesita para escribir un `menor` que no vuelva vacio.
-        if d["tipo"] == "numero":
-            lo, hi = _rango(campo, d, r)
-            numericos.append(f"{campo} de {lo} a {hi}" if lo is not None
-                             else campo)
-            continue
-        # UN VEREDICTO NO SE ENUMERA TAMPOCO: su vocabulario son dos palabras.
-        if d["tipo"] == "si_no":
-            veredictos.append(f"{campo} ({d['llenos']}/{total})")
-            continue
-        if d["llenos"] < CARGA_FLACA * total:
-            flacos.append(campo)
-            continue
-        if not d["valores"] or not d["etiqueta"]:
-            continue
-        renglon = (f"{campo} ({d['llenos']}/{total}): "
-                   + " | ".join(d["valores"]))
-        candidatos.append((d["llenos"] / len(renglon), len(renglon), renglon))
-
-    gastado = 0
-    elegidos = []
-    for _, costo, renglon in sorted(candidatos, key=lambda x: -x[0]):
-        if gastado + costo > TECHO_LEYENDA:
-            continue
-        elegidos.append(renglon)
-        gastado += costo
-
-    partes = []
-    if numericos:
-        partes.append("NUMEROS, con mayor o menor: " + "; ".join(numericos)
-                      + ".")
-    if veredictos:
-        partes.append(
-            "DE SI O NO, con `igual si` o `igual no` y nada mas. La fuente "
-            "escribe el veredicto adelante y despues la explicacion, y yo "
-            "comparo el veredicto: no copies la frase entera ni la inventes. "
-            "Entre parentesis, en cuantos esta cargado: al que no lo tiene no "
-            "lo cuenta ni el si ni el no. " + "; ".join(veredictos) + ".")
-    if elegidos:
-        partes.append("LAS PALABRAS QUE USA LA FUENTE. Filtra con estas, no "
-                      "con las tuyas:\n" + "\n".join(sorted(elegidos)))
-    if flacos:
-        partes.append("CARGADOS EN POCOS PRODUCTOS. Filtrar por estos deja "
-                      "afuera a los que no tienen el dato cargado, que no es "
-                      "lo mismo que no cumplirlo: " + ", ".join(flacos) + ".")
-    partes.append("El resto de los campos del enum existe y se busca con "
-                  "`contiene`; sus valores son muchos para listarlos.")
-    return "\n\n".join(partes)
-
-
-def que_dice_la_fuente_de(campo: str, tienda_id: str) -> str:
-    """LO QUE LA FUENTE TIENE DE UN CAMPO, en un renglon, para UN campo solo."""
-    voc = vocabulario(tienda_id)
-    d = voc.get(campo)
-    if not d:
-        return ""
-    r = recorrida(tienda_id)
-    total = r.get("productos") or 0
-    llenos = d.get("llenos") or 0
-    if d["tipo"] == "numero":
-        lo, hi = _rango(campo, d, r)
-        cuerpo = (f"va de {lo} a {hi}" if lo is not None else "es un numero")
-    elif d["tipo"] == "si_no":
-        cuerpo = "es de si o no, y se filtra con `igual si` o `igual no`"
-    elif d.get("valores"):
-        # SE ACOTA, Y NO ES UN DETALLE. `origen` tiene 84 valores distintos y cada uno es una frase entera
-        # —"marca logitech de suiza. fabricado en china."—: devolverlos todos es un chorro de prosa adentro de
-        # un bloque que tiene que leerse de un vistazo.
-        vals = list(d["valores"])
-        cuerpo = "la fuente escribe: " + " | ".join(vals[:VALORES_AL_CORREGIR])
-        if len(vals) > VALORES_AL_CORREGIR:
-            cuerpo += f" ... y {len(vals) - VALORES_AL_CORREGIR} mas"
-    else:
-        cuerpo = ("tiene demasiados valores distintos para listarlos; se busca "
-                  "con `contiene`")
-    return f"{campo} ({llenos} de {total} productos lo tienen cargado): {cuerpo}"
-
-
 def _rango(campo: str, d: dict, r: dict):
     """El minimo y el maximo de un campo numerico."""
     if campo == "precio_ars":
@@ -482,15 +385,6 @@ def _ordenar_por_preferencia(prods: list, campo: str, operador: str,
 
 
 # ── EL ATERRIZAJE — de un valor al campo donde vive ─────────────────────────
-
-
-def campos_cargados(prods: list[dict], tienda_id: str) -> list[str]:
-    """Los campos filtrables que ESTE universo tiene con dato."""
-    # SE LEE CON `_valor_crudo` Y NO CON `p.get`, y la diferencia no es de estilo: campos como `conexion` los
-    # DERIVA `fuente_producto.enriquecer` y no estan en el dict que devuelve el catalogo.
-    return sorted(campo for campo in campos_filtrables(tienda_id)
-                  if any(str(_valor_crudo(p, campo) or "").strip()
-                         for p in prods))
 
 
 def campos_con_el_valor(prods: list[dict], valor, tienda_id: str) -> list[str]:

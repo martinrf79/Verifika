@@ -98,13 +98,6 @@ def test_el_resto_del_pedido_sobrevive_al_campo_muerto():
 
 # ── EL ATERRIZAJE: DONDE VIVE ESE VALOR ─────────────────────────────────────
 
-def test_campos_cargados_no_es_lo_mismo_que_campos_filtrables():
-    procs = _procesadores()
-    delrubro = FC.campos_cargados(procs, TIENDA)
-    assert "color" not in delrubro
-    assert "marca" in delrubro and "precio_ars" in delrubro
-    assert "color" in FC.campos_filtrables(TIENDA)
-
 
 def test_el_indice_encuentra_el_campo_donde_vive_el_valor():
     todos = _todo()

@@ -38,10 +38,6 @@ def _una(consulta: dict) -> dict:
     return MT.buscar([consulta], TIENDA)["resultados"][0]
 
 
-
-
-
-
 # ── EL CONTRATO: NUNCA VUELVE VACIA SIN MOTIVO ──────────────────────────────
 
 def test_ninguna_consulta_vuelve_vacia_sin_motivo_escrito():
@@ -247,16 +243,6 @@ def test_la_ficha_que_devuelve_trae_el_precio_ya_escrito():
     r = _una({"categoria": "mouse", "cuantos": 1})
     f = r["filas"][0]
     assert f["precio"].startswith("$") and f["precio_ars"]
-
-
-def test_las_fichas_de_varias_consultas_no_se_repiten():
-    """Es lo que la guarda de procedencia consume: un precio que no este en
-    estas fichas no sale al cliente, y da igual en cual consulta aparecio."""
-    r = MT.buscar([{"categoria": "mouse", "cuantos": 3},
-                   {"categoria": "mouse", "cuantos": 3}], TIENDA)
-    fichas = MT.fichas_de(r)
-    ids = [f["id"] for f in fichas]
-    assert len(ids) == len(set(ids))
 
 
 def test_una_consulta_rota_no_se_lleva_puestas_las_otras():
@@ -1070,7 +1056,6 @@ def test_un_destino_en_TEXTO_PELADO_sigue_valiendo():
     r = MT.buscar([], TIENDA, "t", envios=["Posadas"])
     filas = (r.get("envios") or {}).get("filas") or []
     assert filas and filas[0].get("monto_ars"), f"{filas}"
-
 
 
 # ── EL MISMO PRECIO NO ES "CADA UNO SALE DISTINTO" (16-oct) ─────────────────

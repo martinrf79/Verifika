@@ -11,7 +11,7 @@ Locks:
 import re
 
 from app.core.guia_venta_prosa import (
-    GUIA_VENTA, consultar_guia_venta, texto_de, tool_schema)
+    GUIA_VENTA, consultar_guia_venta, texto_de)
 
 
 def test_guia_sin_digitos():
@@ -88,7 +88,3 @@ def test_texto_de_resuelve_id_real_y_rechaza_falso():
     assert texto_de("no_existe") is None
 
 
-def test_schema_lista_los_temas_reales():
-    desc = tool_schema()["function"]["parameters"]["properties"]["tema"]["description"]
-    for tema in GUIA_VENTA:
-        assert tema in desc

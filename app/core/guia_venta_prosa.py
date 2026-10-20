@@ -108,31 +108,6 @@ def texto_de(chunk_id: str) -> str | None:
     return corpus["guia_venta"].get(str(chunk_id).strip())
 
 
-def tool_schema() -> dict:
-    """Schema OpenAI de la tool, para sumarla al menu del solver."""
-    lista = ", ".join(temas())
-    return {
-        "type": "function",
-        "function": {
-            "name": "consultar_guia_venta",
-            "description": (
-                "Guia de venta de la casa. Trae dos cosas de cada tema: el "
-                "CRITERIO desde donde razonar (uso, comparativa, marcas, "
-                "durabilidad, compatibilidad) y la MOVIDA con la que se "
-                "conduce la situacion (objetivo, como armar el mensaje y "
-                "cuando NO usarla). Usala para opinar, comparar, decir si un "
-                "producto sirve para un uso, y para saber COMO manejar una "
-                "objecion de precio, un regateo, una queja, una postergacion, "
-                "un cierre o una despedida. No trae numeros; el dato duro sale "
-                "de las otras tools. Temas: " + lista),
-            "parameters": {
-                "type": "object",
-                "properties": {"tema": {
-                    "type": "string",
-                    "description": "uno de: " + lista}},
-                "required": ["tema"]}}}
-
-
 def _sin_digitos(texto) -> str:
     """La prosa de la fuente no lleva numeros. Un campo con un digito se descarta entero en vez de viajar: es la
     misma regla que protege al criterio, y vale igual para la movida."""

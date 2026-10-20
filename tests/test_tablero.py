@@ -8,90 +8,9 @@ del motor, borrado el 16-oct con su techo: el turno vivo no lo usaba.
 import pytest
 
 from app.core import motor as MT
-from app.core.filtros_catalogo import (CARGA_FLACA, LARGO_ETIQUETA,
-                                       que_dice_la_fuente_de,
-                                       condicion_sin_vocabulario, leyenda,
-                                       vocabulario)
+from app.core.filtros_catalogo import condicion_sin_vocabulario, vocabulario
 
 TIENDA = "verifika_prod"
-
-
-def test_la_leyenda_dice_las_palabras_del_campo_que_se_erraba(firestore_doble):
-    """`pais_fabricacion` es el defecto medido: `igual china` trae 633 y
-    `contiene china` trae 789, 156 de diferencia, y el modelo elegia el
-    operador sin ver los 5 valores que la fuente usa."""
-    L = leyenda(TIENDA)
-    assert "pais_fabricacion" in L
-    for v in ("china", "taiwan o china segun linea",
-              "china, taiwan o corea segun linea"):
-        assert v in L, f"falta el valor '{v}' en la leyenda"
-
-
-def test_la_marca_no_se_enumera_y_el_hueco_la_cubre(firestore_doble):
-    """DA VUELTA LA VARA DEL 13-sep, y el requisito cambio de verdad.
-
-    Hasta hoy este test exigia lo contrario: que `marca` entrara en la leyenda
-    porque es de los campos que mas nombra un cliente. Lo que se midio despues
-    es que la leyenda no alcanza sola —el 19-sep, cuatro veces seguidas, el
-    modelo tuvo los cinco valores de `pais_fabricacion` delante y escribio
-    igual `no_contiene china`— y que `marca` es el renglon que PEOR rinde:
-    724 caracteres, el 35% del gasto, para 75 valores.
-
-    La cobertura no se pierde, cambia de mecanismo: el HUECO DE VALOR devuelve
-    los valores reales del campo cuando el modelo escribe uno que la fuente no
-    usa. Seguro pagado por adelantado contra pago al usar.
-    """
-    L = leyenda(TIENDA)
-    assert "logitech" not in L, "marca volvio a la leyenda: son 724 caracteres"
-    cubre = que_dice_la_fuente_de("marca", TIENDA)
-    for m in ("logitech", "asus"):
-        assert m in cubre, f"el hueco de valor no cubre la marca '{m}'"
-
-
-def test_la_leyenda_no_lleva_prosa(firestore_doble):
-    """`contenido_caja` tiene 22 valores distintos -poca variedad- y cada uno
-    es un parrafo. Enumerarlo pesaba 675 tokens que no le sirven a nadie."""
-    voc = vocabulario(TIENDA)
-    L = leyenda(TIENDA)
-    largos = [v for d in voc.values() for v in (d["valores"] or [])
-              if len(v) > LARGO_ETIQUETA and v in L]
-    assert not largos, f"se colo prosa en la leyenda: {largos[:2]}"
-
-
-def test_la_leyenda_avisa_los_campos_flacos(firestore_doble):
-    """`memoria_video` esta en 18 de 880. Filtrar por ahi devuelve casi nada, y
-    ese casi nada se lee como "no lo tenemos" en vez de "no esta cargado". Es
-    la respuesta 2 dicha como la 3, el defecto mas caro del nicho."""
-    from app.core.filtros_catalogo import recorrida
-    L = leyenda(TIENDA)
-    voc = vocabulario(TIENDA)
-    total = recorrida(TIENDA)["productos"]
-    flacos = [c for c, d in voc.items()
-              if d["tipo"] != "numero" and d["llenos"] < CARGA_FLACA * total]
-    assert flacos, "la tienda de prueba tiene que tener algun campo flaco"
-    for c in flacos:
-        assert c in L, f"el campo flaco '{c}' no se avisa"
-
-
-def test_un_campo_de_veredicto_se_dice_en_veredicto(firestore_doble):
-    """LA CONSIGNA DE LA FICHA 54: el tablero tiene que decir lo mismo que las
-    bocas. `evaluar` compara los campos de si o no por `_si_no` -la primera
-    palabra- y la leyenda enumeraba las 19 formas en que la fuente escribe que
-    algo tiene bluetooth. Eran dos idiomas para el mismo campo, y el que el
-    modelo veia era el que el motor no usa."""
-    L = leyenda(TIENDA)
-    voc = vocabulario(TIENDA)
-    si_no = [c for c, d in voc.items() if d["tipo"] == "si_no"]
-    assert si_no, "la tienda de prueba tiene que tener campos de si o no"
-    # Se mira el renglon ENUMERADO, no la leyenda entera: "no, se conecta por
-    # usb" es un valor legitimo de `wifi`, que es de texto y si se enumera.
-    enumerados = {r.split(" (")[0] for r in L.splitlines() if "): " in r}
-    for campo in si_no:
-        assert campo in L, f"el campo de veredicto '{campo}' no se nombra"
-        assert campo not in enumerados, (
-            f"se enumero la prosa de un veredicto: {campo}")
-    assert "igual si" in L and "igual no" in L, (
-        "la leyenda no dice con que se filtra un campo de si o no")
 
 
 def test_el_hueco_de_un_veredicto_contesta_si_o_no(firestore_doble):

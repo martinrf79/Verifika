@@ -55,15 +55,6 @@ def test_c_detecta_provincia_de_los_pueblos():
     assert clasificar_provincia("son pueblos de cordoba") == "cordoba"
 
 
-def test_c_estado_persiste_provincia():
-    """construir_estado levanta la provincia guardada, asi sobrevive entre turnos
-    y no hay que volver a pedirla."""
-    from app.core import estado_venta
-    estado = estado_venta.construir_estado({"provincia_envio": "cordoba"}, None)
-    assert estado.get("provincia_envio") == "cordoba"
-
-
-
 # ── CP PELADO: el cliente responde el codigo postal solo, sin la palabra "CP" ──
 # Hallado en el estres (2-jul): cuando el bot pide el codigo postal y el cliente
 # contesta el numero pelado ('5000', '1414'), el clasificador daba None y el bot

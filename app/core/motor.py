@@ -904,13 +904,3 @@ def buscar(consultas: list, tienda_id: str, trace_id: str = "",
                    afirmaciones)
 
 
-def fichas_de(resultado: dict) -> list[dict]:
-    """Las fichas de todas las consultas, sin repetir."""
-    fuera, vistos = [], set()
-    for r in (resultado or {}).get("resultados") or []:
-        for f in r.get("filas") or []:
-            i = str(f.get("id"))
-            if i not in vistos:
-                vistos.add(i)
-                fuera.append(f)
-    return fuera
