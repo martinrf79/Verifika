@@ -1,0 +1,82 @@
+{
+ "id": "18d53656eb",
+ "desde": "2026-10-20T22:11:25",
+ "turnos": [
+  {
+   "trace": "1f76634b",
+   "mensaje": "Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil. Dos mouse y un teclado a Rosario, el resto a Neuquén, sumame una webcam para Rosario. Pago mitad transferencia y mitad Mastercard",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil.",
+      "accion": "buscar",
+      "rubro": "lo pedido",
+      "cantidad": 6,
+      "condiciones": [
+       "tope de precio 600000"
+      ]
+     },
+     {
+      "n": 2,
+      "cita": "Dos mouse y un teclado a Rosario,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "mouse",
+        "cantidad": 2,
+        "destino": "Rosario"
+       },
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 3,
+      "cita": "el resto a Neuquén,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "los otros",
+        "cantidad": 3,
+        "destino": "Neuquén"
+       }
+      ]
+     },
+     {
+      "n": 4,
+      "cita": "sumame una webcam para Rosario.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "webcam",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 5,
+      "cita": "Pago mitad transferencia y mitad Mastercard",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 50
+       },
+       {
+        "medio": "Mastercard",
+        "porcentaje": 50
+       }
+      ]
+     }
+    ],
+    "cliente": {}
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock.\n\nTeclado Logitech G915 TKL Negro: $512.500, hay stock.\n\nWebcam Logitech C920 HD Pro: $141.000, hay stock.\n\n¿Cuáles son los otros?\n\nNo llegué a resolver \"Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil.\". ¿Me lo decís de otra forma?"
+  }
+ ]
+}

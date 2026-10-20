@@ -113,7 +113,7 @@ class Turno:
 
     def busqueda(self, b: dict):
         nombre = str(b.get("rubro") or "")
-        if K.n(nombre) == "lo pedido":
+        if K.n(nombre) == "el pedido":
             # OTRO ORDEN PARA TODO LO PEDIDO: el modelo dice una busqueda y el codigo la reparte a cada rubro del pedido,
             # que es la lista que se olvidaba. Sin pedido no hay nada que reordenar.
             b_ = self.estado["borrador"]
