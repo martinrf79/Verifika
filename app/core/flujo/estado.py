@@ -11,6 +11,7 @@ Es lo unico que pasa de un turno al siguiente, ademas del historial. Vive en el 
   abiertas    lo que el vendedor pregunto y el cliente no contesto: [{"texto", "cita", "pregunta"}]. Es la R de la
               libreta: la respuesta del turno siguiente se ata a la pregunta que la pidio.
 """
+from app.core.calculadora import _money as _plata
 
 VACIO = {"mostrados": [], "pedido": [], "busqueda": {}, "abiertas": [], "borrador": {}}
 TOPE_MOSTRADOS = 30
@@ -32,13 +33,6 @@ def _de_antes(g: dict) -> dict:
     return {"renglones": renglones, "lista": g.get("por_rubro") or {}, "pago": g.get("reparto") or [],
             "cliente": g.get("cliente") or {}, "siguiente": len(renglones) + 1,
             "cierre": {"huella": g.get("cerrado") or "", "nombre_para": "", "lead": ""}}
-
-
-def _plata(n) -> str:
-    try:
-        return "$" + f"{int(float(n)):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return ""
 
 
 def mostrar(estado: dict, filas: list) -> None:

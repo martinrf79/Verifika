@@ -44,9 +44,9 @@ def _efecto_porcentaje(tema: str, concepto: str, valor: dict) -> str:
 def _money(n) -> str:
     """Formatea un entero como pesos con separador de miles: 273000 -> $273.000."""
     try:
-        return "$" + f"{int(round(n)):,}".replace(",", ".")
-    except Exception:
-        return str(n)
+        return "$" + f"{int(round(float(n))):,}".replace(",", ".")
+    except (TypeError, ValueError):
+        return str(n or "")
 
 
 def _label_extra(e: dict) -> str:

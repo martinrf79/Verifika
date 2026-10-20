@@ -71,3 +71,19 @@ def test_el_cierre_no_repite_la_cuenta_leida_antes_de_otra_pregunta():
         R.ELEGIR.pop(c["turnos"][0]["mensaje"], None)
     assert "Presupuesto:" in cuenta and "cuotas" in cuotas and "Presupuesto:" not in cuotas
     assert "tomamos tu pedido" in cierre and "Presupuesto:" not in cierre, cierre
+
+
+def test_con_tope_elige_lo_mas_barato_y_el_pago_partido_no_queda_sin_resolver():
+    # 20-oct, 18:39: siete articulos a dos destinos, "no mas de 600 mil" y "mitad transferencia, mitad Mastercard".
+    # Se elegia la primera opcion de cada rubro, 1,4 millones sin aviso, y la segunda pregunta de plata quedaba suelta.
+    c = _charla("4fd4fffe62")
+    R.ELEGIR[c["turnos"][0]["mensaje"]] = {"texto": "a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 mouse, 1 "
+                                                    "teclado y 1 auriculares; 7 en total", "cita": "el resto a Neuquén"}
+    try:
+        cuenta = _repetir("4fd4fffe62")[0]
+    finally:
+        R.ELEGIR.pop(c["turnos"][0]["mensaje"], None)
+    assert "No llegué a resolver" not in cuenta, cuenta
+    assert "Pago dividido" in cuenta and "el más barato de teclado" in cuenta
+    total = int(cuenta.split("Total final: $")[1].split()[0].replace(".", ""))
+    assert total <= 600000, cuenta

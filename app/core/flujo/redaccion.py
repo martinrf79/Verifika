@@ -4,13 +4,7 @@ Sin modelo: cada tipo de hecho tiene su renglon fijo. Todo nombre, precio y mont
 fuente o de la calculadora. Las preguntas van al final, una por renglon.
 """
 from .catalogo import con_stock
-
-
-def _plata(n) -> str:
-    try:
-        return "$" + f"{int(round(float(n))):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return str(n or "")
+from app.core.calculadora import _money as _plata
 
 
 def _otros_colores(h: dict) -> str:

@@ -22,6 +22,7 @@ from . import agenda as A
 from . import borrador as B
 from . import catalogo as K
 from .estado import mostrar
+from app.core.calculadora import _money as _plata
 
 log = get_logger(__name__)
 
@@ -170,6 +171,9 @@ class Turno:
                     b["renglones"] = [r for r in b["renglones"] if r["L"] not in fuera]
                     self.estado["pedido"] = quedan
                 return self.cuenta(quedan, reparto)
+        if tope and total > tope:
+            # Sin decir que saca, un total que pasa el tope no se da por bueno: se le pregunta.
+            self.preguntar(f"El total pasa tu tope de {_plata(tope)}. ¿Saco algo o cambio algún producto?")
         self.hechos.append({"tipo": "cuenta", "bloques": bloques, "general": general})
 
     def general(self, bloques: list, reparto: list) -> dict:
@@ -356,11 +360,16 @@ def _comprar(t: Turno, p: dict):
 def _cuenta(t: Turno, p: dict):
     _reparto(t, p)
     if any(h["tipo"] == "cuenta" for h in t.hechos):
-        # UNA CUENTA POR TURNO: "el 70 transferencia" y "armame presupuestos" piden la misma, con todo lo dicho.
+        # UNA CUENTA POR TURNO: "el 70 transferencia" y "armame presupuestos" piden la misma, con todo lo dicho, y
+        # esa cuenta las contesta a las dos.
+        t.estados[t.n] = "respondida"
         return True
-    si_pasa = _uno(t, p.get("si_pasa")) if p.get("si_pasa") else ""
+    # El tope y lo que sale si pasa valen dichos en cualquiera de las preguntas de plata del mensaje.
+    cuentas = [x for x in t.agenda if x.get("accion") == "cuenta"]
+    tope = next((x["tope"] for x in cuentas if K.entero(x.get("tope"))), None)
+    si_pasa = next((_uno(t, x["si_pasa"]) for x in cuentas if x.get("si_pasa")), "")
     if t.estado["pedido"]:
-        t.cuenta(t.estado["pedido"], B.pago_listo(t.estado["borrador"]), p.get("tope"), si_pasa)
+        t.cuenta(t.estado["pedido"], B.pago_listo(t.estado["borrador"]), tope, si_pasa)
         return True
     compras = {x["n"] for x in t.agenda if x.get("accion") == "comprar"}
     if t.estado["borrador"]["renglones"]:
@@ -517,6 +526,15 @@ def _derivar(t: Turno) -> None:
     for p in t.agenda:
         if p.get("accion") == "cuenta" and p.get("reparto") and t.estado["borrador"]["renglones"]:
             B.aplicar(t.estado["borrador"], {"reparto": [r for r in _lista(p["reparto"]) if isinstance(r, dict)]})
+    # CON UN TOPE DE PLATA, LO QUE ELIGE EL CODIGO ES LO MAS BARATO: el rubro sin orden dicho no toma la primera opcion,
+    # que era el teclado de 512 mil con un tope de 600. El criterio queda en el borrador para los turnos siguientes.
+    b = t.estado["borrador"]
+    if any(p.get("accion") == "cuenta" and K.entero(p.get("tope")) for p in t.agenda):
+        rubros = set(b["criterios"]) | set(b["lista"]) | {K.solo_rubro(r["que"], t.tienda) for r in b["renglones"]}
+        for rub in rubros - {""}:
+            c = b["criterios"].get(rub) or {"condiciones": [], "orden": "nada"}
+            if K.n(c.get("orden") or "nada") == "nada":
+                b["criterios"][rub] = {**c, "orden": "mas barato"}
     # Un pedido sin renglones que lo digan no existe: se re-deriva a vacio, tambien el guardado antes del borrador.
     if t.estado["borrador"]["renglones"] or t.compra or t.estado["pedido"]:
         n = t.n

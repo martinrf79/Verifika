@@ -2,17 +2,11 @@
 import re
 
 from app.logger import get_logger
+from app.core.calculadora import _money
 
 log = get_logger(__name__)
 
 _HUECO_RE = re.compile(r"\{\{(\w+)\}\}")
-
-
-def _money(n) -> str:
-    try:
-        return "$" + f"{int(round(n)):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return str(n)
 
 
 def _fmt_valor(v: dict) -> str | None:

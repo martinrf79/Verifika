@@ -1,0 +1,129 @@
+{
+ "id": "4fd4fffe62",
+ "desde": "2026-10-20T18:39:59",
+ "turnos": [
+  {
+   "trace": "917e13ed",
+   "mensaje": "Necesito tres mouse, dos teclados y un par de auriculares. No quiero gastar más de 600 mil en total. Dos mouse y un teclado van a Rosario, el resto a Neuquén, y sumame una webcam para Rosario. Pago la mitad con transferencia y la mitad con Mastercard",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Necesito tres mouse,",
+      "accion": "buscar",
+      "rubro": "mouse",
+      "cantidad": 3
+     },
+     {
+      "n": 2,
+      "cita": "dos teclados",
+      "accion": "buscar",
+      "rubro": "teclado",
+      "cantidad": 2
+     },
+     {
+      "n": 3,
+      "cita": "y un par de auriculares.",
+      "accion": "buscar",
+      "rubro": "auriculares",
+      "cantidad": 1
+     },
+     {
+      "n": 4,
+      "cita": "No quiero gastar más de 600 mil en total.",
+      "accion": "cuenta",
+      "tope": 600000
+     },
+     {
+      "n": 5,
+      "cita": "Dos mouse y un teclado van a Rosario,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "mouse",
+        "cantidad": 2,
+        "destino": "Rosario"
+       },
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 6,
+      "cita": "el resto a Neuquén,",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "los otros",
+        "cantidad": 3,
+        "destino": "Neuquén"
+       }
+      ]
+     },
+     {
+      "n": 7,
+      "cita": "y sumame una webcam para Rosario.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "webcam",
+        "cantidad": 1,
+        "destino": "Rosario"
+       }
+      ]
+     },
+     {
+      "n": 8,
+      "cita": "Pago la mitad con transferencia y la mitad con Mastercard",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 50
+       },
+       {
+        "medio": "Mastercard",
+        "porcentaje": 50
+       }
+      ]
+     }
+    ],
+    "cliente": {}
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n\nEn teclado tengo:\n- Teclado Logitech G915 TKL Negro: $512.500\n- Teclado Logitech K380 Negro: $55.000\n- Teclado Logitech G413 TKL SE Blanco: $98.500\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n\nPresupuesto:\n- 2x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $75.000\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\n- 1x Webcam Logitech C920 HD Pro: $141.000 c/u = $141.000\nSubtotal: $728.500\nEnvio a Rosario: gratis\nTotal: $728.500\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\nSubtotal: $675.500\nEnvio a Neuquén: gratis\nTotal: $675.500\nTotal general: $1.404.000\n\nPago dividido:\n- transferencia (50%): $702.000 - 10% descuento = $631.800\n- Mastercard (50%): $702.000\nTotal final: $1.333.800\n\nEntendí tu pedido así: a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 mouse, 1 teclado y 1 auriculares; 7 en total.\n\nPara el presupuesto tomé la primera opción de mouse, Mouse Logitech G203 Lightsync Negro, la primera opción de teclado, Teclado Logitech G915 TKL Negro, la primera opción de auriculares, Auriculares HyperX Cloud II Negro, la primera opción de webcam, Webcam Logitech C920 HD Pro. Si preferís otro, decime cuál.\n\n¿Lo dejo así?\n\nNo llegué a resolver \"Pago la mitad con transferencia y la mitad con Mastercard\". ¿Me lo decís de otra forma?"
+  },
+  {
+   "trace": "58303642",
+   "mensaje": "¿Cuánto tarda el envío a Neuquén",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "¿Cuánto tarda el envío a Neuquén",
+      "accion": "politica",
+      "tema": "plazo_envio"
+     }
+    ]
+   },
+   "respondio": "CABA y GBA 2 a 3 dias habiles desde el pago acreditado. Interior 4 a 7 dias habiles.\n\nEntendí tu pedido así: a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 auriculares, 1 teclado y 1 mouse; 7 en total.\n\n¿Lo dejo así?"
+  },
+  {
+   "trace": "30a74bf3",
+   "mensaje": "Tienen garantía?”",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Tienen garantía?",
+      "accion": "politica",
+      "tema": "garantia"
+     }
+    ]
+   },
+   "respondio": "Todos los productos tienen garantia oficial del fabricante, minimo 6 meses. El detalle exacto figura en cada producto.\n\nEntendí tu pedido así: a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 auriculares, 1 teclado y 1 mouse; 7 en total.\n\n¿Lo dejo así?"
+  }
+ ]
+}

@@ -2,6 +2,7 @@
 import unicodedata
 
 from app.logger import get_logger
+from app.core.calculadora import _money as _plata
 
 log = get_logger(__name__)
 
@@ -135,14 +136,6 @@ def certificar_temas(nombres: list, tienda_id: str) -> dict:
 
 
 # ── LOS PRODUCTOS QUE EL MENSAJE NOMBRA ─────────────────────────────────────
-
-
-def _plata(n) -> str:
-    """El precio como se escribe, no como se guarda."""
-    try:
-        return "$" + f"{int(round(float(n))):,}".replace(",", ".")
-    except (TypeError, ValueError):
-        return ""
 
 
 # LA PROSA DE LA FICHA, y es lo que se PIDE desde el 14-sep.
