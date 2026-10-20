@@ -34,11 +34,6 @@ def _si(v) -> bool:
     return v is True or (isinstance(v, str) and K.n(v) in ("true", "si"))
 
 
-def _destino(d) -> str:
-    d = str(d or "").strip()
-    return "" if K.n(d) in ("", "null", "none", "nada", "sin destino", "sin definir", "a definir") else d
-
-
 def _modelo(nombre: str, tienda_id: str) -> str:
     """El modelo que nombra un candidato, para contar si una referencia apunta a uno o a varios: dos colores del
     mismo modelo son uno solo. Lo que no es un producto cuenta por su texto."""
@@ -217,7 +212,11 @@ class Turno:
         if B.huella(arts) != B.huella(antes) and self.compra:
             elegidos = {r: {"nombre": nom, "orden": (b["criterios"].get(r) or {}).get("orden") or "nada"}
                         for x in self.res for r, nom in (x.get("elegidos") or {}).items()}
-            if elegidos and set(elegidos) & set(self.listas):
+            # SE DICE LO ELEGIDO DE UNA LISTA DE ESTE TURNO, y lo que el cliente nunca vio: el teclado pedido sin buscar
+            # entraba como la primera opcion, el de 512 mil, sin aviso.
+            vistos = {m["nombre"] for m in self.estado["mostrados"]}
+            elegidos = {r: e for r, e in elegidos.items() if r in self.listas or e["nombre"] not in vistos}
+            if elegidos:
                 self.hechos.append({"tipo": "elegidos", "rubros": elegidos, "n": self.n})
             self.hechos.append({"tipo": "pedido", "articulos": arts, "n": self.n} if arts
                                else {"tipo": "pedido_vacio", "n": self.n})
@@ -279,9 +278,10 @@ def _compatibilidad(t: Turno, p: dict):
 
 
 def _politica(t: Turno, p: dict):
-    pols = fuente.politicas_de([str(p["tema"])], t.tienda).get("politicas") or []
+    pols = fuente.politicas_de([str(p["tema"])], t.tienda, con_base=True).get("politicas") or []
     # Solo las politicas: el criterio de la FAQ es una instruccion para el que redacta, no texto para el cliente.
-    t.hechos += [{"tipo": "politica", "tema": x.get("tema"), "texto": x.get("texto")} for x in pols]
+    t.hechos += [{"tipo": "politica", "tema": x.get("tema"), "texto": x.get("texto"), "base": x.get("base")}
+                 for x in pols]
     if not pols:
         t.hechos.append({"tipo": "sin_politica"})
 
@@ -387,7 +387,7 @@ def _cuenta(t: Turno, p: dict):
 
 def _envio(t: Turno, p: dict):
     """Los envios se cotizan juntos al final, los que no entraron en una cuenta."""
-    t.destinos.append(_destino(p.get("destino")))
+    t.destinos.append(B._destino(p.get("destino")))
 
 
 def _explicar(t: Turno, p: dict):
@@ -469,6 +469,12 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None, elegida:
         t.cuenta(t.estado["pedido"], B.pago_listo(t.estado["borrador"]))
         for h in t.hechos[antes:]:
             h.setdefault("n", t.n)
+    # CON EL PEDIDO ARMADO, LA FAQ VA LLANA: la curada termina invitando a elegir un producto, y ya lo eligio. Se decide
+    # al final porque la politica se cumple antes que la compra del mismo mensaje.
+    if t.estado["pedido"]:
+        for h in t.hechos:
+            if h["tipo"] == "politica" and h.get("base"):
+                h["texto"] = h["base"]
     # LOS ENVIOS que no entraron en una cuenta, en una sola cotizacion.
     cotizados = {K.n(b["destino"]) for h in t.hechos if h["tipo"] == "cuenta" for b in h["bloques"]}
     destinos = list(dict.fromkeys(d for d in t.destinos if d and K.n(d) not in cotizados))

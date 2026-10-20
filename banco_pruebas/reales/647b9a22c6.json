@@ -1,0 +1,112 @@
+{
+ "id": "647b9a22c6",
+ "desde": "2026-10-20T15:37:21",
+ "turnos": [
+  {
+   "trace": "0105e9aa",
+   "mensaje": "Dame precio de 3 auriculares, dos mouse y 4 memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes de estados unidos posibles.  Dos auriculares y dos mouse será envío a Córdoba capital. Un teclado y 3 memorias será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta transferencia, ya que veré en la fase siguiente cómo seguimos",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Dame precio de 3 auriculares,",
+      "accion": "buscar",
+      "rubro": "auriculares",
+      "cantidad": 3,
+      "orden": "nada"
+     },
+     {
+      "n": 2,
+      "cita": "dos mouse",
+      "accion": "buscar",
+      "rubro": "mouse",
+      "cantidad": 2,
+      "orden": "nada"
+     },
+     {
+      "n": 3,
+      "cita": "y 4 memorias.",
+      "accion": "buscar",
+      "rubro": "memoria ram",
+      "cantidad": 4,
+      "orden": "nada"
+     },
+     {
+      "n": 4,
+      "cita": "El precio no sería tan importante.",
+      "accion": "otro",
+      "que": "dato"
+     },
+     {
+      "n": 5,
+      "cita": "Lo que sí que necesito que lleven las menos partes de estados unidos posibles.",
+      "accion": "politica",
+      "tema": "contenido_caja"
+     },
+     {
+      "n": 6,
+      "cita": "Dos auriculares y dos mouse será envío a Córdoba capital.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "auriculares",
+        "cantidad": 2,
+        "destino": "Córdoba capital"
+       },
+       {
+        "producto": "mouse",
+        "cantidad": 2,
+        "destino": "Córdoba capital"
+       }
+      ]
+     },
+     {
+      "n": 7,
+      "cita": "Un teclado y 3 memorias será envío a Concordia.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "Concordia"
+       },
+       {
+        "producto": "memoria ram",
+        "cantidad": 3,
+        "destino": "Concordia"
+       }
+      ]
+     },
+     {
+      "n": 8,
+      "cita": "Los otros dos artículos serán con envío a posadas.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "los otros",
+        "cantidad": 2,
+        "destino": "posadas"
+       }
+      ]
+     },
+     {
+      "n": 9,
+      "cita": "Divide el presupuesto en setenta treinta transferencia, ya que veré en la fase siguiente cómo seguimos",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 70
+       },
+       {
+        "medio": "sin decir",
+        "porcentaje": 30
+       }
+      ]
+     }
+    ]
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nEntendí tu pedido así: a Córdoba capital, 2 auriculares y 2 mouse; a Concordia, 1 teclado y 3 memoria ram; a posadas, 1 auriculares y 1 memoria ram; 10 en total.\n\nPara el presupuesto tomé la primera opción de auriculares, Auriculares HyperX Cloud II Negro, la primera opción de mouse, Mouse Logitech G203 Lightsync Negro, la primera opción de teclado, Teclado Logitech G915 TKL Negro, la primera opción de memoria ram, Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 2x Auriculares HyperX Cloud II Negro: $125.500 c/u = $251.000\n- 2x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $75.000\nSubtotal: $326.000\nEnvio a Córdoba capital: gratis\nTotal: $326.000\nPresupuesto:\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\n- 3x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $103.500\nSubtotal: $616.000\nEnvio a Concordia: gratis\nTotal: $616.000\nPresupuesto:\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\n- 1x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $34.500\nSubtotal: $160.000\nEnvio a posadas: $10.000\nTotal: $170.000\nTotal general: $1.112.000\n\n¿Lo dejo así?\n\n¿Con qué medio pagás el 30%?"
+  }
+ ]
+}

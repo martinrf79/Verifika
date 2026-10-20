@@ -1,0 +1,223 @@
+{
+ "id": "f95def4b1d",
+ "desde": "2026-10-20T06:10:12",
+ "turnos": [
+  {
+   "trace": "3c26a706",
+   "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Dame precio de dos auriculares,",
+      "accion": "buscar",
+      "rubro": "auriculares",
+      "cantidad": 2,
+      "orden": "nada"
+     },
+     {
+      "n": 2,
+      "cita": "dos mouse",
+      "accion": "buscar",
+      "rubro": "mouse",
+      "cantidad": 2,
+      "orden": "nada"
+     },
+     {
+      "n": 3,
+      "cita": "y dos memorias.",
+      "accion": "buscar",
+      "rubro": "memoria ram",
+      "cantidad": 2,
+      "orden": "nada"
+     },
+     {
+      "n": 4,
+      "cita": "El precio no sería tan importante.",
+      "accion": "otro",
+      "que": "dato"
+     },
+     {
+      "n": 5,
+      "cita": "Lo que sí que necesito que lleven las menos partes chinas posibles.",
+      "accion": "politica",
+      "tema": "contenido_caja"
+     },
+     {
+      "n": 6,
+      "cita": "Un auricular y un mouse será envío a Córdoba capital.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "auriculares",
+        "cantidad": 1,
+        "destino": "Córdoba capital"
+       },
+       {
+        "producto": "mouse",
+        "cantidad": 1,
+        "destino": "Córdoba capital"
+       }
+      ]
+     },
+     {
+      "n": 7,
+      "cita": "Un teclado y un mouse será envío a Concordia.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "teclado",
+        "cantidad": 1,
+        "destino": "Concordia"
+       },
+       {
+        "producto": "mouse",
+        "cantidad": 1,
+        "destino": "Concordia"
+       }
+      ]
+     },
+     {
+      "n": 8,
+      "cita": "Los otros dos artículos serán con envío a posadas.",
+      "accion": "comprar",
+      "agrega": [
+       {
+        "producto": "los otros",
+        "cantidad": 2,
+        "destino": "Posadas"
+       }
+      ]
+     },
+     {
+      "n": 9,
+      "cita": "Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "sin decir",
+        "porcentaje": 70
+       },
+       {
+        "medio": "sin decir",
+        "porcentaje": 30
+       }
+      ]
+     }
+    ],
+    "cliente": {}
+   },
+   "respondio": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\n\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\n\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nPediste teclado para Concordia, pero en la lista había auriculares, mouse, memoria ram: ¿lo sumo o era otra cosa de la lista?\n\n¿Cuáles son los otros? De la lista quedan 1 auriculares, 2 memoria ram.\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?"
+  },
+  {
+   "trace": "535634c9",
+   "mensaje": "Son 7 cosas, el teclado va a posadas no concordia, lo demas esta bien el  70 transferencia",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Son 7 cosas,",
+      "accion": "comprar",
+      "total": 7
+     },
+     {
+      "n": 2,
+      "cita": "el teclado va a posadas no concordia,",
+      "accion": "comprar",
+      "cambia": [
+       {
+        "es": "L-3",
+        "destino": "Posadas"
+       }
+      ]
+     },
+     {
+      "n": 3,
+      "cita": "lo demas esta bien",
+      "accion": "comprar",
+      "confirma": [
+       "L-1",
+       "L-2",
+       "L-4",
+       "L-5"
+      ]
+     },
+     {
+      "n": 4,
+      "cita": "el 70 transferencia",
+      "accion": "cuenta",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 70
+       },
+       {
+        "medio": "sin decir",
+        "porcentaje": 30
+       }
+      ]
+     }
+    ]
+   },
+   "respondio": "Presupuesto:\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $163.000\nEnvio a Córdoba capital: $7.500\nTotal: $170.500\nPresupuesto:\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $69.000\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\nSubtotal: $707.000\nEnvio a Posadas: gratis\nTotal: $707.000\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Concordia: $6.500\nTotal: $44.000\nTotal general: $921.500\n\n¿Con qué medio pagás el 30%?"
+  },
+  {
+   "trace": "cc1c52f0",
+   "mensaje": "Que medios de pago tenes aparte de transferencia",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Que medios de pago tenes aparte de transferencia",
+      "accion": "politica",
+      "tema": "formas_pago"
+     }
+    ]
+   },
+   "respondio": "Aceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Con tarjeta de credito podes pagar de forma directa o a traves de Mercado Pago, como te quede mas comodo. Por transferencia ademas tenes descuento. Contame que producto te interesa y te paso el total con cada forma de pago.\n\n¿Con qué medio pagás el 30%?"
+  },
+  {
+   "trace": "57c71d54",
+   "mensaje": "Tarjeta visa",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Tarjeta visa",
+      "accion": "cuenta",
+      "responde": "R-1",
+      "reparto": [
+       {
+        "medio": "transferencia",
+        "porcentaje": 70
+       },
+       {
+        "medio": "Tarjeta Visa",
+        "porcentaje": 30
+       }
+      ]
+     }
+    ]
+   },
+   "respondio": "Presupuesto:\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $163.000\nEnvio a Córdoba capital: $7.500\nTotal: $170.500\nPresupuesto:\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $69.000\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\nSubtotal: $707.000\nEnvio a Posadas: gratis\nTotal: $707.000\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Concordia: $6.500\nTotal: $44.000\nTotal general: $921.500\n\nPago dividido:\n- transferencia (70%): $645.050 - 10% descuento = $580.545\n- Tarjeta Visa (30%): $276.450\nTotal final: $856.995\n\nPara reservarlo, ¿me decís tu nombre?"
+  },
+  {
+   "trace": "8501f269",
+   "mensaje": "Joaquin",
+   "agenda": {
+    "preguntas": [
+     {
+      "n": 1,
+      "cita": "Joaquin",
+      "accion": "otro",
+      "que": "dato"
+     }
+    ],
+    "cliente": {
+     "nombre": "Joaquin"
+    }
+   },
+   "respondio": "Listo Joaquin, tomamos tu pedido.\nResumen:\nPresupuesto:\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $163.000\nEnvio a Córdoba capital: $7.500\nTotal: $170.500\nPresupuesto:\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\n- 2x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $69.000\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\nSubtotal: $707.000\nEnvio a Posadas: gratis\nTotal: $707.000\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Concordia: $6.500\nTotal: $44.000\nTotal general: $921.500\n\nPago dividido:\n- transferencia (70%): $645.050 - 10% descuento = $580.545\n- Tarjeta Visa (30%): $276.450\nTotal final: $856.995\nEl equipo te contacta para coordinar el pago por transferencia y Tarjeta Visa y el envio a Córdoba capital, Posadas, Concordia. Gracias por tu compra.\nPara pagar por transferencia:\nCBU: 0000000000000000000000\nAlias: demo.verifika\nTitular: Verifika (cuenta demo)\nBanco: Banco Demo\nMonto: $580.545\nCuando transfieras, mandame el comprobante y coordinamos el envío.\nPodés pagar acá: https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=3466948838-af5421a1-387b-4169-a5d4-46833b5003c1"
+  }
+ ]
+}

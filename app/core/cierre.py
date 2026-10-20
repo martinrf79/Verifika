@@ -19,10 +19,10 @@ def mensaje_confirmacion(lead: dict, presupuesto: str = "") -> str:
     nombre = str(lead.get("nombre", "")).split(" ")[0] if lead.get("nombre") else ""
     partes = [mensaje("cierre_tomamos_pedido", "Listo{nombre}, tomamos tu pedido.",
                       nombre=(f" {nombre}" if nombre else ""))]
-    # EL TITULO SOLO SI HAY CUENTA. De aca nacio el "Resumen:" huerfano que le llego a Martin en TRES charlas:
-    # el titulo se pegaba y el bloque se podaba despues, dejando la promesa sin nada abajo.
+    # SIN TITULO PROPIO: el presupuesto de la calculadora ya abre con el suyo, y "Resumen:" encima de "Presupuesto:"
+    # quedaba suelto, como le llego a Martin el 20-oct.
     if (presupuesto or "").strip():
-        partes.append(mensaje("cierre_titulo_resumen", "Resumen:") + "\n" + presupuesto)
+        partes.append(presupuesto)
     direccion = str(lead.get("direccion", "")).strip()
     pago = str(lead.get("forma_pago", "")).strip()
     cola = mensaje("cierre_equipo_contacta", "El equipo te contacta para coordinar")

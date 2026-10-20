@@ -68,8 +68,11 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
             presupuesto += "\n" + cuentas[-1]["general"]["detalle"]
         presupuesto = presupuesto[-1500:]
     if not t.preguntas:
-        cierre = await cerrar(estado, user_id, canal, tienda_id, presupuesto or conv.get("ultimo_presupuesto") or "",
-                              trace_id, resumen=not cuentas)
+        # LA CUENTA NO SE REPITE si va en este mensaje o si fue el mensaje anterior del bot: el que da el nombre la
+        # acaba de leer, y repetirla entera era el cierre del 20-oct.
+        previo = presupuesto or conv.get("ultimo_presupuesto") or ""
+        leida = bool(previo) and bool(history) and previo in str(history[-1].get("content") or "")
+        cierre = await cerrar(estado, user_id, canal, tienda_id, previo, trace_id, resumen=not cuentas and not leida)
         texto = f"{texto}\n\n{cierre}".strip() if cierre else texto
     texto = texto or "¿En qué te puedo ayudar?"
     if not history:

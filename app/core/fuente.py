@@ -208,11 +208,11 @@ TOPE_TEMAS = 6
 TOPE_CRITERIO = 3
 
 
-def _texto_del_tema(tema: str, faq: dict) -> str:
+def _texto_del_tema(tema: str, faq: dict, campo: str = "respuesta_curada") -> str:
     """La politica de la casa sobre ese tema, con los numeros ya estampados."""
     from app.core.curadas import estampar_valores
     dato = faq.get(tema) or {}
-    texto = dato.get("respuesta_curada") or ""
+    texto = dato.get(campo) or ""
     if texto:
         texto = estampar_valores(texto, dato) or ""
     return texto
@@ -235,14 +235,16 @@ def _criterio_del_tema(tema: str) -> dict:
 
 
 def _de_la_casa(pedidos: list, faq: dict, tienda_id: str, tope: int,
-                evento: str) -> dict:
-    """EL REPARTO POR AREA: de cada tema certificado, la boca que lo contesta."""
+                evento: str, con_base: bool = False) -> dict:
+    """EL REPARTO POR AREA: de cada tema certificado, la boca que lo contesta. `con_base` suma la respuesta llana de la
+    FAQ, sin la invitacion de venta de la curada, para quien ya tiene el pedido armado."""
     v = certificar_temas(pedidos, tienda_id)
     politicas, criterio, sin_resolver = [], [], list(v["sin_resolver"])
     for tema in v["temas"][:tope]:
         texto = _texto_del_tema(tema, faq)
         if texto:
-            politicas.append({"tema": tema, "texto": texto})
+            politicas.append({"tema": tema, "texto": texto} if not con_base
+                             else {"tema": tema, "texto": texto, "base": _texto_del_tema(tema, faq, "respuesta")})
             continue
         c = _criterio_del_tema(tema)
         if c:
@@ -273,7 +275,7 @@ def criterio_de(nombres: list, tienda_id: str,
     return _de_la_casa(pedidos, faq, tienda_id, tope, "fuente_criterio")
 
 
-def politicas_de(nombres: list, tienda_id: str, tope: int = TOPE_TEMAS) -> dict:
+def politicas_de(nombres: list, tienda_id: str, tope: int = TOPE_TEMAS, con_base: bool = False) -> dict:
     """LO QUE EL MODELO NOMBRO, CERTIFICADO. Es el mapa 3 de la FICHA 50."""
     from app.storage.firestore_client import get_all_faq
     pedidos = [str(n).strip() for n in (nombres or []) if str(n or "").strip()]
@@ -284,7 +286,7 @@ def politicas_de(nombres: list, tienda_id: str, tope: int = TOPE_TEMAS) -> dict:
     except Exception as e:  # noqa: BLE001 — sin FAQ no se inventa una politica
         log.warning("fuente_faq_error", error=f"{type(e).__name__}: {e}")
         return {"politicas": [], "criterio": [], "sin_resolver": pedidos}
-    return _de_la_casa(pedidos, faq, tienda_id, tope, "fuente_politicas")
+    return _de_la_casa(pedidos, faq, tienda_id, tope, "fuente_politicas", con_base)
 
 
 # ── EL INVENTARIO: LO QUE EL MODELO TIENE QUE SABER SIEMPRE ────────────────

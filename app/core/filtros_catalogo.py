@@ -226,20 +226,6 @@ def vocabulario(tienda_id: str) -> dict[str, dict]:
     return out
 
 
-def _rango(campo: str, d: dict, r: dict):
-    """El minimo y el maximo de un campo numerico."""
-    if campo == "precio_ars":
-        return r.get("precio_min"), r.get("precio_max")
-    nums = [n for n in (_a_numero(v) for v in (d.get("valores") or []))
-            if n is not None]
-    if not nums:
-        crudos = (r.get("valores") or {}).get(campo, {}).get("vistos") or {}
-        nums = [n for n in (_a_numero(v) for v in crudos) if n is not None]
-    if not nums:
-        return None, None
-    return int(min(nums)), int(max(nums))
-
-
 def condicion_sin_vocabulario(campo: str, operador: str, valor,
                               tienda_id: str) -> list | None:
     """EL HUECO DE VALOR. Si NINGUN valor de la fuente puede cumplir esta condicion, devuelve los valores que SI
