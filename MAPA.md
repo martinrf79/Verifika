@@ -61,6 +61,7 @@ permiso.
 | Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
 | La multipregunta de los siete artículos miles de veces, con el cliente y el modelo simulados | `banco_pruebas/simulador.py` |
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |
+| Cada compleja dicha de muchas formas, con el modelo real: la vara para cambiar la consigna | `banco_pruebas/variantes.py` |
 | Si lo que recibe el modelo alcanza, sin modelo | `banco_pruebas/suficiencia.py` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
