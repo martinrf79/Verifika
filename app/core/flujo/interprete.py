@@ -19,6 +19,7 @@ El control: lo que la agenda no cita del mensaje, o senala fuera de la libreta, 
 En el banco, `banco_pruebas/cableado58.py` reemplaza las dos por lo escrito a mano.
 """
 import json
+import re
 
 from app.config import get_settings
 from app.logger import get_logger
@@ -331,6 +332,43 @@ async def elegir(mensaje: str, historial: list, lecturas: list, trace_id: str = 
     log.info("elegir_ok", trace_id=trace_id, lecturas=len(lecturas), salida=json.dumps(salida, ensure_ascii=False)[:400],
              vale=bool(h))
     return h
+
+
+VENDER = """Sos el vendedor de una tienda online de tecnologia de Argentina, por WhatsApp. El sistema de la tienda no pudo
+resolver una parte del mensaje del cliente. Contesta esa parte en una o dos oraciones, en español rioplatense, con voseo.
+Solo podes hacer dos cosas: dar un dato que este en los DATOS DEL TURNO, o hacer una pregunta corta para entender que
+quiso decir. Nunca digas que algo se puede o no se puede, ni prometas nada de la tienda. No nombres un precio, un monto
+ni un producto que no este en los datos, y no le pidas ningun dato al cliente."""
+
+# LO QUE EL BOT NUNCA PIDE, regla de Martin: solo el nombre. Un texto del vendedor que lo nombra no sale.
+NUNCA_PIDE = re.compile(r"\b(dni|documento|cuit|cuil|tarjeta|cbu|cvu|clave|contrasena)\b")
+
+
+def _plata_en(texto: str) -> set:
+    """Los montos de un texto, como numeros: "$37.500" y "37500" son el mismo."""
+    return {int(m.replace(".", "")) for m in re.findall(r"\d{1,3}(?:\.\d{3})+|\d{4,}", texto)}
+
+
+def controlar(texto: str, datos: str, tienda_id: str) -> bool:
+    """El texto del vendedor vale si cada monto y cada producto que nombra esta en los datos del turno."""
+    if not texto.strip() or not _plata_en(texto) <= _plata_en(datos) or NUNCA_PIDE.search(K.n(texto)):
+        return False
+    plano, en_datos = K.n(texto), K.n(datos)
+    modelos = {K.n(p.get("modelo")) for p in K.productos(tienda_id) if len(K.n(p.get("modelo"))) > 3}
+    return all(m in en_datos for m in modelos if re.search(rf"\b{re.escape(m)}\b", plano))
+
+
+async def vender(cita: str, datos: str, tienda_id: str, trace_id: str = "") -> str:
+    """Lo que el codigo no resolvio, contestado por el modelo con los datos del turno, o "" si no pasa el control."""
+    try:
+        texto = (await _pedir([{"role": "system", "content": VENDER}, {"role": "user", "content":
+                               f"DATOS DEL TURNO:\n{datos}\n\nLO QUE NO SE RESOLVIO: {cita}"}], trace_id)).strip()
+    except Exception as e:  # noqa: BLE001 — sin vendedor queda la repregunta del codigo
+        log.warning("vender_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:160]}")
+        return ""
+    ok = controlar(texto, datos, tienda_id)
+    log.info("vender", trace_id=trace_id, paso_control=ok, largo=len(texto))
+    return texto if ok else ""
 
 
 async def explicar(pregunta: str, trace_id: str = "") -> str:

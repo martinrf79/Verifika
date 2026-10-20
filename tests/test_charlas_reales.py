@@ -167,3 +167,19 @@ def test_un_reemplazo_propuesto_se_aplica_si_lo_acepta():
         {"n": 1, "cita": "dale", "accion": "comprar", "responde": "R-1"}]})
     assert "Con ese cambio saco del pedido" in propuesto
     assert "nombre" in dale and "Dejé el pedido como estaba" not in dale, dale
+
+
+def test_el_vendedor_no_puede_nombrar_un_monto_ni_un_producto_fuera_de_los_datos():
+    from banco_pruebas import clon_produccion as C
+    from app.core.flujo import interprete as I
+    C.preparar_entorno()
+    C.instalar()
+    datos = "Mouse Logitech G203 Lightsync Negro: $37.500, hay stock.\nEn el pedido: 2x Mouse Logitech G203 Lightsync Negro"
+    casos = {"El G203 Lightsync sale $37.500 y lo tenés en stock.": True,
+             "¿Para qué lo vas a usar? Así te digo si el G203 Lightsync te conviene.": True,
+             "El G203 Lightsync sale $35.000.": False,
+             "Te conviene más el G502 Hero, que es mejor para gaming.": False,
+             "": False}
+    for texto, vale in casos.items():
+        assert I.controlar(texto, datos, "verifika_prod") is vale, texto
+    print(f"\nCONTROL DEL VENDEDOR: {len(casos)} casos")

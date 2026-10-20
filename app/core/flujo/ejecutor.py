@@ -54,6 +54,7 @@ class Turno:
         self.lecturas, self.elegida = [], ""  # las lecturas que cierran para que elija el modelo, y la que eligio
         self.previos = None  # los renglones de antes de un reemplazo, por si saca lo que el cliente no nombro
         self.propuesta = {}  # lo propuesto con que llego el turno: vale solo para este
+        self.sueltas = []  # lo que el candado no pudo resolver: lo puede contestar el vendedor, controlado
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
@@ -547,8 +548,10 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None, elegida:
             # EL CANDADO: ninguna pregunta se pierde en silencio.
             log.warning("flujo_pregunta_sin_estado", accion=p.get("accion"), cita=str(p.get("cita") or "")[:120])
             t.n = n
-            t.preguntar(f"No llegué a resolver \"{p['cita']}\". ¿Me lo decís de otra forma?" if p.get("cita")
-                        else "No llegué a resolver una parte de tu mensaje. ¿Me la decís de otra forma?")
+            q = (f"No llegué a resolver \"{p['cita']}\". ¿Me lo decís de otra forma?" if p.get("cita")
+                 else "No llegué a resolver una parte de tu mensaje. ¿Me la decís de otra forma?")
+            t.preguntar(q)
+            t.sueltas.append({"cita": str(p.get("cita") or ""), "pregunta": q})
             t.estados[n] = "sin_estado"
     t.hechos.sort(key=lambda h: h.get("n", 0))
     citas = {p["n"]: str(p.get("cita") or "") for p in preguntas}

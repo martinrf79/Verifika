@@ -50,6 +50,10 @@ def instalar():
         n = next((i for i, x in enumerate(lecturas, 1) if e and x["texto"] == e["texto"]), 0)
         return interprete.eleccion({"lectura": n, "cita": (e or {}).get("cita")}, mensaje, historial, lecturas)
     interprete.elegir = _elegir
+
+    async def _vender(*a, **k):
+        return ""  # sin modelo, lo que el codigo no resolvio queda con su repregunta
+    interprete.vender = _vender
     return interprete
 
 

@@ -54,6 +54,17 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
         and b["cierre"].get("nombre_para") != huella
     if pide_nombre:
         b["cierre"]["nombre_para"] = huella
+    if t.sueltas:
+        # LO QUE EL CODIGO NO RESOLVIO LO CONTESTA EL VENDEDOR, con los datos del turno y nada mas: cada monto y cada
+        # producto que nombre tiene que estar en ellos. Si no pasa el control, queda la repregunta del codigo.
+        datos = "\n".join([redaccion.texto(t.hechos, [], False)]
+                          + [f"En el pedido: {a['cantidad']}x {a['nombre']} a {a.get('destino') or 'sin destino'}"
+                             for a in estado["pedido"]]
+                          + [f"Mostrado: {m['nombre']} {m['precio']}" for m in estado["mostrados"][-10:]])
+        for s in t.sueltas:
+            dicho = await interprete.vender(s["cita"], datos, tienda_id, trace_id)
+            if dicho and s["pregunta"] in t.preguntas:
+                t.preguntas[t.preguntas.index(s["pregunta"])] = dicho
     texto = redaccion.texto(t.hechos, t.preguntas, pide_nombre)
     log.info("flujo_turno", trace_id=trace_id, estados=[t.estados.get(p.get("n")) for p in preguntas(agenda)],
              hechos=[h["tipo"] for h in t.hechos], preguntas=len(t.preguntas),
