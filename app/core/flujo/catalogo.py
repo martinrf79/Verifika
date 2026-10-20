@@ -62,11 +62,27 @@ def _colores_de(p: dict, todos: list) -> list:
             and q.get("marca") == p.get("marca") and q.get("categoria") == p.get("categoria")]
 
 
+_IDENTIDAD = {}  # (tienda, nombre, color) -> (el catalogo con que se calculo, el veredicto)
+
+
 def identificar(nombre: str, color: str, tienda_id: str) -> dict:
     """{"veredicto": "exists", "producto", "variantes"} con el producto ya en su color si se pudo elegir;
     "falta_color": True si hay varios colores con stock y no dijo cual. {"veredicto": "ambiguous", "opciones"} si
-    nombra varios modelos. {"veredicto": "not_found"} si no nombra ninguno."""
+    nombra varios modelos. {"veredicto": "not_found"} si no nombra ninguno.
+
+    Se recuerda mientras el catalogo sea el mismo, para las lecturas del borrador: la lista es nueva en cada lectura,
+    los productos no."""
     todos = productos(tienda_id)
+    clave, marca = (tienda_id, nombre, color), (len(todos), todos[0] if todos else None)
+    viejo = _IDENTIDAD.get(clave)
+    if not (viejo and viejo[0][0] == marca[0] and viejo[0][1] is marca[1]):
+        if len(_IDENTIDAD) > 2000:
+            _IDENTIDAD.clear()
+        viejo = _IDENTIDAD[clave] = (marca, _identificar(nombre, color, todos))
+    return dict(viejo[1])
+
+
+def _identificar(nombre: str, color: str, todos: list) -> dict:
     texto = f"{nombre} {color or ''}".strip()
     hallados = los_que_lo_nombran_entero(todos, texto) or los_que_lo_nombran_entero(todos, nombre)
     if not hallados:
