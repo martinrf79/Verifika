@@ -113,6 +113,15 @@ class Turno:
 
     def busqueda(self, b: dict):
         nombre = str(b.get("rubro") or "")
+        if K.n(nombre) == "lo pedido":
+            # OTRO ORDEN PARA TODO LO PEDIDO: el modelo dice una busqueda y el codigo la reparte a cada rubro del pedido,
+            # que es la lista que se olvidaba. Sin pedido no hay nada que reordenar.
+            b_ = self.estado["borrador"]
+            rubros = dict.fromkeys(r for r in [*b_["lista"], *(K.solo_rubro(x["que"], self.tienda)
+                                                                for x in b_["renglones"])] if r)
+            # Reordena el catalogo entero de cada rubro: "entre lo mostrado" no vale para un orden nuevo de lo pedido.
+            return all([self.busqueda({**b, "rubro": r, "cantidad": None, "entre_lo_mostrado": False})
+                        for r in rubros]) if rubros else False
         toda = K.n(nombre) in ("toda la tienda", "todo", "")
         rub = "" if toda else K.rubro(nombre, self.tienda)
         if not toda and not rub:

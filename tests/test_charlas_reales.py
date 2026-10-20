@@ -111,3 +111,26 @@ def test_cambiar_el_criterio_del_pedido_mantiene_los_destinos():
     mejor_ = respuestas[1]
     assert "Envio a Rosario" in mejor_ and "Envio a Neuquén" in mejor_ and "Webcam" in mejor_, mejor_
     assert "el de gama más alta de teclado" in mejor_ and "Total general" in mejor_
+
+
+def test_otro_orden_para_lo_pedido_se_reparte_a_cada_rubro():
+    # "No tomes lo mas barato, toma lo mas caro", como lo tradujo Gemini el 20-oct con la consigna nueva: una busqueda
+    # con rubro "lo pedido". El codigo la reparte a los cuatro rubros, webcam incluida, y "entre lo mostrado" no vale.
+    c = _charla("19d2fdb852")
+    m0 = c["turnos"][0]["mensaje"]
+    R.ELEGIR[m0] = {"texto": "a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 mouse, 1 teclado y 1 auriculares; "
+                             "7 en total", "cita": "el resto a Neuquén"}
+    caro = {"preguntas": [{"n": 1, "cita": "No tomes lo mas barato toma lo mas caro", "accion": "buscar",
+                           "rubro": "lo pedido", "orden": "mas caro", "entre_lo_mostrado": True}]}
+    charla = {"id": "real_lo_pedido", "turnos": [{"texto": m0, "casillas": []},
+                                                 {"texto": "No tomes lo mas barato toma lo mas caro", "casillas": []}]}
+    from app.core import llm_reintento
+    puerta = llm_reintento._cliente
+    try:
+        caro_ = R.correr(charla, [c["turnos"][0]["agenda"], caro], R.instalar(), {})[1]["respuesta"]
+    finally:
+        R.ELEGIR.pop(m0, None)
+        llm_reintento._cliente = puerta
+    for rubro in ("mouse", "teclado", "auriculares", "webcam"):
+        assert f"el de gama más alta de {rubro}" in caro_, caro_
+    assert "Envio a Rosario" in caro_ and "Envio a Neuquén" in caro_

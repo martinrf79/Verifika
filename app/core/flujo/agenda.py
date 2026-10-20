@@ -18,8 +18,8 @@ ACCIONES = {
     "buscar": 'productos sin modelo concreto, uno por rubro. "rubro" de la lista; "cantidad"; "orden": "mas barato" '
               '—economico, "de acuerdo a la crisis"—, "mas caro" —lo mejor—, "mas <dato>" o "nada"; "condiciones" '
               'en palabras del cliente —marca, color, tope de precio, "que no sea X"—; "entre_lo_mostrado" true si elige '
-              'entre lo mostrado. Las exclusiones de la libreta van en cada busqueda. Otro orden para lo pedido '
-              '—"todo lo mejor"—: un buscar por rubro.',
+              'entre lo mostrado. Las exclusiones de la libreta van en cada busqueda. Otro orden para lo '
+              'pedido —"todo lo mejor"—: rubro "lo pedido".',
     "producto": 'un modelo concreto. "producto" es lo que dijo el cliente, o el numero de la libreta si lo senala: "M-2". '
                 'Si lo que senala puede ser varios, la lista: ["M-1", "M-2"], y el codigo pregunta. "quiere_saber": precio, '
                 'stock o el dato que pide; "color" si lo dijo; "afirma" lo que da por cierto del producto.',
