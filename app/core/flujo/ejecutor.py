@@ -55,6 +55,7 @@ class Turno:
         self.resultados, self.estados = {}, {}  # por pregunta: si dio que si, para "si no hay"; y como termino
         self.nums, self.agenda, self.destinos, self.cambio, self.explicar = {}, [], [], False, None
         self.res, self.compra, self.derivado = [], None, False  # el borrador resuelto, y la compra que lo cambio
+        self.lecturas, self.elegida = [], ""  # las lecturas que cierran para que elija el modelo, y la que eligio
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
@@ -141,9 +142,10 @@ class Turno:
     def cuenta(self, articulos: list, reparto: list, tope=None, si_pasa: str = "") -> None:
         """Una cuenta por destino. Con mas de un destino, el total general es la suma de los totales y el reparto
         del pago se calcula una sola vez, sobre ese total."""
-        grupos = {}
+        grupos, nombre = {}, {}  # por destino sin mayusculas ni tildes, con el nombre como lo escribio primero
         for a in articulos:
-            grupos.setdefault(a.get("destino") or "", []).append({"id": a["id"], "cantidad": a["cantidad"]})
+            d = nombre.setdefault(K.n(a.get("destino")), a.get("destino") or "")
+            grupos.setdefault(d, []).append({"id": a["id"], "cantidad": a["cantidad"]})
         varios = len(grupos) > 1
         tope = K.entero(tope)
         bloques = []
@@ -192,7 +194,8 @@ class Turno:
     def derivar(self) -> None:
         """EL BORRADOR, re-derivado entero: lo que falta y lo supuesto se preguntan desde ahi; el pedido es lo resuelto."""
         b, antes = self.estado["borrador"], self.estado["pedido"]
-        self.res = B.resolver(b, self.tienda)
+        B.elegir(b, self.elegida, self.tienda)
+        self.res = B.resolver(b, self.tienda, self.lecturas)
         falta = B.faltantes(b, self.res)
         arts = B.articulos(self.res, falta)
         self.estado["pedido"] = arts
@@ -296,6 +299,41 @@ def _reparto(t: Turno, p: dict) -> bool:
     return completo
 
 
+CAMBIAN = ("agrega", "saca", "cambia", "reemplaza", "total")
+# Lo que dice un "si" y nada mas: si es lo unico que contesta a "¿Lo dejo así?", acepta lo supuesto sin modelo.
+AFIRMA = set("si sii dale ok oka okey listo perfecto bueno va joya correcto exacto asi esta bien dejalo deja genial "
+             "barbaro de una seguro claro buenisimo".split())
+
+
+def _supuestos(t: Turno) -> list:
+    return [x["L"] for x in B.resolver(t.estado["borrador"], t.tienda) if x.get("supuesto")]
+
+
+def _acepta(t: Turno, p: dict) -> list:
+    """Lo supuesto que acepta esta pregunta, aunque el modelo no haya escrito "acepta": confirmar lo supuesto es
+    aceptarlo, y contestar que si a "¿Lo dejo así?" sin cambiar nada tambien."""
+    acepta = _lista(p.get("acepta"))
+    sup = _supuestos(t) if p.get("confirma") or p.get("responde") else []
+    acepta += [r for r in _lista(p.get("confirma")) if r in sup]
+    r = t.nums.get(str(p.get("responde") or "").strip())
+    # Contestar "¿Lo dejo así?" es aceptar si el mensaje no cambia nada: "el teclado va aparte" la contesta corrigiendo.
+    if isinstance(r, dict) and r.get("texto") == B.LO_DEJO and not _cambia(t):
+        acepta += sup
+    return list(dict.fromkeys(acepta))
+
+
+def _cambia(t: Turno) -> bool:
+    return any(_lista(p.get(k)) for p in t.agenda for k in CAMBIAN)
+
+
+def _solo_si(t: Turno) -> bool:
+    """El mensaje entero es un "si", y lo unico abierto es "¿Lo dejo así?"."""
+    if [a["texto"] for a in t.estado["abiertas"]] != [B.LO_DEJO]:
+        return False
+    palabras = [w for p in t.agenda for w in A.palabras(p.get("cita"))]
+    return bool(palabras) and all(w in AFIRMA or w in A._VACIAS for w in palabras) and not _cambia(t)
+
+
 def _comprar(t: Turno, p: dict):
     """El cambio de este mensaje sobre lo dicho: va al borrador, que re-deriva el pedido entero."""
     cambio = _reparto(t, p)
@@ -307,9 +345,6 @@ def _comprar(t: Turno, p: dict):
         if not nombre:
             return None
         agrega.append({**a, "producto": nombre, "cita": p.get("cita") or "", "condicion": p.get("condicion") or ""})
-    if _lista(p.get("acepta")):
-        # Lo que acepto de lo supuesto pasa a lo dicho, antes de lo demas de esta compra.
-        B.aplicar(t.estado["borrador"], B.aceptar(t.estado["borrador"], _lista(p["acepta"]), t.tienda))
     B.aplicar(t.estado["borrador"], {**{k: p.get(k) for k in ("saca", "cambia", "confirma", "total", "reemplaza",
                                                                 "responde")}, "agrega": agrega},
               pedidas=t.pedidas if agrega else None)
@@ -388,15 +423,22 @@ def _cumplir(t: Turno, p: dict) -> None:
         elif r is not None and r != (K.n(si.get("da")) != "no"):
             t.estados[t.n] = "no_aplica"
             return
+    acepta = _acepta(t, p)
+    if acepta:
+        # Lo que acepto de lo supuesto pasa a lo dicho antes que lo demas, aunque venga anotado como un dato.
+        B.aplicar(t.estado["borrador"], B.aceptar(t.estado["borrador"], acepta, t.tienda))
+        t.compra = t.compra or t.n
     t.resultados[t.n] = ACCIONES[p["accion"]](t, p)
     for h in t.hechos[antes:]:
         h.setdefault("n", t.n)
 
 
-def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno:
-    """La agenda entera, pregunta por pregunta."""
+def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None, elegida: str = "") -> Turno:
+    """La agenda entera, pregunta por pregunta. `elegida` es la huella de la lectura que eligio el modelo entre las que
+    dejo `t.lecturas` una pasada anterior: ver `turno.procesar_turno`."""
     from .interprete import numeros
     t = Turno(estado, tienda_id)
+    t.elegida = elegida
     # Los numeros de la libreta se toman antes de cumplir nada: son los que vio el modelo.
     estado["borrador"] = B.leer(estado.get("borrador"))
     t.nums, t.explicar = numeros(estado), explicar
@@ -406,6 +448,9 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None) -> Turno
     preguntas = t.agenda = A.preguntas(agenda)
     for i, p in enumerate(preguntas, 1):
         p.setdefault("n", i)
+    if _solo_si(t):
+        B.aplicar(estado["borrador"], B.aceptar(estado["borrador"], _supuestos(t), tienda_id))
+        t.compra = preguntas[0]["n"]
     # CADA COMPRA SE APLICA AL BORRADOR EN SU ORDEN: "los otros" lo cuenta el borrador con todo lo dicho, asi que no hace
     # falta juntarlas. Juntarlas perdia lo que no era agrega, saca o cambia: la confirmacion y el total.
     # Una accion fuera del menu no se cumple: la agarra el candado de abajo.

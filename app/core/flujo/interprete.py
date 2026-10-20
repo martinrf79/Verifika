@@ -1,7 +1,10 @@
-"""LAS DOS LLAMADAS AL MODELO — traducir el mensaje a una agenda y explicar saber general (20-oct-2026).
+"""LAS LLAMADAS AL MODELO — traducir el mensaje a una agenda, elegir la lectura y explicar saber general (20-oct-2026).
 
   interpretar   el ultimo mensaje, la libreta y la tabla del marcador -> la agenda de `agenda.py`. Es la unica que
                 decide que pidio el cliente.
+  elegir        solo si lo dicho no cierra: lo que dijo el cliente y las lecturas que cierran, que arma el codigo ->
+                el numero de una, con la cita que la justifica, o ninguna. FICHA 72. El codigo controla que la cita
+                este en lo que dijo el cliente; sin cita, ninguna.
   explicar      una pregunta de saber general -> un parrafo corto, sin precios ni productos.
 
 Lo que recibe el modelo, y nada mas:
@@ -57,6 +60,13 @@ EJEMPLOS:
 DEVUELTA = """Revisa tu agenda antes de que la use el codigo:
 {faltas}
 Devolve el JSON entero de nuevo, con la misma forma."""
+
+ELEGIR = """Sos el interprete de una tienda online de tecnologia de Argentina. El pedido del cliente no cierra tal como
+lo anoto el codigo: falta saber como se reparte. El codigo armo las lecturas que cierran con los numeros del cliente.
+Elegi la que dicen las PALABRAS del cliente, sobre todo las del ultimo mensaje, que corrigen a las anteriores.
+"cita" son las palabras literales del cliente que la deciden, copiadas tal cual. Si ninguna lectura la dicen sus
+palabras, o hay mas de una que encaja, la lectura es 0.
+Devolve SOLO el JSON: {"lectura": n, "cita": "..."}"""
 
 EXPLICAR = """Sos el vendedor de una tienda online de tecnologia de Argentina. Contesta la pregunta de saber general en
 dos o tres oraciones, en español rioplatense, con voseo. No nombres precios, productos, marcas ni modelos: de eso se
@@ -278,6 +288,49 @@ async def interpretar(mensaje: str, historial: list, estado: dict, tienda_id: st
     log.info("interprete_ok", trace_id=trace_id, acciones=[p.get("accion") for p in A.preguntas(salida)],
              agenda=json.dumps(salida, ensure_ascii=False)[:4000])
     return salida
+
+
+def _dichos(mensaje: str, historial: list) -> list:
+    """Lo que dijo el cliente en la charla, del mas viejo al ultimo mensaje: de ahi sale la cita."""
+    return [str(m.get("content") or "") for m in historial if m.get("role") == "user"][-2:] + [mensaje]
+
+
+def mensajes_elegir(mensaje: str, historial: list, lecturas: list) -> list:
+    dichos = _dichos(mensaje, historial)
+    return [{"role": "system", "content": ELEGIR},
+            {"role": "user", "content": "LO QUE DIJO EL CLIENTE, del mas viejo al ultimo:\n"
+             + "\n".join(f"- {_plano(d)}" for d in dichos)
+             + "\nLAS LECTURAS QUE CIERRAN:\n" + "\n".join(f"{i}. {l['texto']}" for i, l in enumerate(lecturas, 1))}]
+
+
+def eleccion(salida: dict, mensaje: str, historial: list, lecturas: list) -> str:
+    """La huella de la lectura elegida, si el numero existe y la cita esta en lo que dijo el cliente. Si no, "".
+    La cita se compara por palabras, sin tildes ni signos: "va aparte envio a posadas" vale en "va aparte, envío a
+    Posadas"."""
+    n = K.entero((salida or {}).get("lectura"), 0)
+    cita = A.palabras((salida or {}).get("cita"))
+    if not (1 <= n <= len(lecturas)) or len([w for w in cita if w not in A._VACIAS]) < 2:
+        return ""
+    dicho = " " + " ".join(w for d in _dichos(mensaje, historial) for w in A.palabras(d)) + " "
+    return lecturas[n - 1]["huella"] if f" {' '.join(cita)} " in dicho else ""
+
+
+TOPE_LECTURAS = 8
+
+
+async def elegir(mensaje: str, historial: list, lecturas: list, trace_id: str = "") -> str:
+    """La huella de la lectura que dicen las palabras del cliente, o "" si ninguna o si el modelo no contesto."""
+    lecturas = lecturas[:TOPE_LECTURAS]
+    try:
+        salida = _json(await _pedir(mensajes_elegir(mensaje, historial, lecturas), trace_id,
+                                    {"type": "json_object"}))
+    except Exception as e:  # noqa: BLE001 — sin eleccion, el borrador propone o pregunta como siempre
+        log.warning("elegir_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:160]}")
+        return ""
+    h = eleccion(salida, mensaje, historial, lecturas)
+    log.info("elegir_ok", trace_id=trace_id, lecturas=len(lecturas), salida=json.dumps(salida, ensure_ascii=False)[:400],
+             vale=bool(h))
+    return h
 
 
 async def explicar(pregunta: str, trace_id: str = "") -> str:

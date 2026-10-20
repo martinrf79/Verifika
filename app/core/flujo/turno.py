@@ -1,4 +1,6 @@
 """EL TURNO — el mensaje, la agenda del interprete, la agenda cumplida y la respuesta (20-oct-2026)."""
+import copy
+
 from app.config import get_settings
 from app.core import guardas_salida as gs
 from app.core.contexto_turno import set_current_tienda
@@ -30,7 +32,16 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
     explicado = {str(p.get("pregunta")): await interprete.explicar(str(p.get("pregunta")), trace_id)
                  for p in preguntas(agenda) if p.get("accion") == "explicar"}
     try:
-        t = ejecutar(agenda, estado, tienda_id, explicar=explicado.get)
+        # LO DICHO QUE NO CIERRA SE ELIGE ENTRE LECTURAS, FICHA 72: una pasada sobre una copia deja las lecturas que
+        # cierran; si hay, el modelo elige con las palabras del cliente y la pasada de verdad la anota supuesta.
+        prueba = copy.deepcopy(estado)
+        t = ejecutar(agenda, prueba, tienda_id, explicar=explicado.get)
+        if t.lecturas:
+            elegida = await interprete.elegir(raw_message, history, t.lecturas, trace_id)
+            if elegida:
+                prueba = copy.deepcopy(estado)
+                t = ejecutar(agenda, prueba, tienda_id, explicar=explicado.get, elegida=elegida)
+        estado = prueba
     except Exception as e:  # noqa: BLE001 — una agenda que el codigo no puede cumplir no deja al cliente sin nada
         log.error("flujo_ejecutor_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:200]}",
                   acciones=[p.get("accion") for p in preguntas(agenda)])

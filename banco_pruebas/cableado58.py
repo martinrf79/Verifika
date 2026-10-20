@@ -17,6 +17,9 @@ import sys
 from banco_pruebas import clon_produccion as C
 
 LLAMADAS_AL_MODELO = []
+# LA ELECCION DEL MODELO, ESCRITA A MANO: por mensaje del cliente, la lectura en palabras y la cita. Pasa por el mismo
+# control que la del modelo, `interprete.eleccion`. Sin una para ese mensaje, ninguna: el borrador propone o pregunta.
+ELEGIR = {}
 
 
 # Las complejas de la vara que ya entraron: varios rubros a varios destinos, la clase que Martin probo en vivo, y la
@@ -40,6 +43,13 @@ def instalar():
         LLAMADAS_AL_MODELO.append(1)
         raise RuntimeError("el cableado58 no llama al modelo")
     llm_reintento._cliente = _sin_modelo
+
+    async def _elegir(mensaje, historial, lecturas, trace_id=""):
+        e = ELEGIR.get(mensaje)
+        lecturas = lecturas[:interprete.TOPE_LECTURAS]
+        n = next((i for i, x in enumerate(lecturas, 1) if e and x["texto"] == e["texto"]), 0)
+        return interprete.eleccion({"lectura": n, "cita": (e or {}).get("cita")}, mensaje, historial, lecturas)
+    interprete.elegir = _elegir
     return interprete
 
 
