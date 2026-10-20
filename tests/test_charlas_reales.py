@@ -87,3 +87,27 @@ def test_con_tope_elige_lo_mas_barato_y_el_pago_partido_no_queda_sin_resolver():
     assert "Pago dividido" in cuenta and "el más barato de teclado" in cuenta
     total = int(cuenta.split("Total final: $")[1].split()[0].replace(".", ""))
     assert total <= 600000, cuenta
+
+
+def test_cambiar_el_criterio_del_pedido_mantiene_los_destinos():
+    # 20-oct, 19:29: con el pedido armado, "arma todo con lo mejor que tengas". Se tradujo como rehacer el pedido y se
+    # perdieron la webcam y los destinos. Traducido como manda la consigna, un buscar por rubro con el orden nuevo, el
+    # codigo rearma el pedido con lo mismo dicho, lo cuenta y la lectura elegida sigue valiendo.
+    c = _charla("19d2fdb852")
+    m0 = c["turnos"][0]["mensaje"]
+    R.ELEGIR[m0] = {"texto": "a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 mouse, 1 teclado y 1 auriculares; "
+                             "7 en total", "cita": "el resto a Neuquén"}
+    mejor = {"preguntas": [{"n": i, "cita": "Arma todo con lo mejor que tengas", "accion": "buscar", "rubro": r,
+                            "orden": "mas caro"} for i, r in enumerate(("mouse", "teclado", "auriculares", "webcam"), 1)]}
+    charla = {"id": "real_mejor", "turnos": [{"texto": m0, "casillas": []},
+                                             {"texto": "Arma todo con lo mejor que tengas", "casillas": []}]}
+    from app.core import llm_reintento
+    puerta = llm_reintento._cliente
+    try:
+        respuestas = [t["respuesta"] for t in R.correr(charla, [c["turnos"][0]["agenda"], mejor], R.instalar(), {})]
+    finally:
+        R.ELEGIR.pop(m0, None)
+        llm_reintento._cliente = puerta
+    mejor_ = respuestas[1]
+    assert "Envio a Rosario" in mejor_ and "Envio a Neuquén" in mejor_ and "Webcam" in mejor_, mejor_
+    assert "el de gama más alta de teclado" in mejor_ and "Total general" in mejor_

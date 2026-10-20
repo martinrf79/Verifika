@@ -15,26 +15,27 @@ import re
 import unicodedata
 
 ACCIONES = {
-    "buscar": 'productos sin modelo concreto, uno por rubro. "rubro" de la lista; "cantidad"; "orden": "mas barato", '
-              '"mas caro", "mas <dato>" o "nada" —economico o "de acuerdo a la crisis" es "mas barato"—; "condiciones" '
+    "buscar": 'productos sin modelo concreto, uno por rubro. "rubro" de la lista; "cantidad"; "orden": "mas barato" '
+              '—economico, "de acuerdo a la crisis"—, "mas caro" —lo mejor—, "mas <dato>" o "nada"; "condiciones" '
               'en palabras del cliente —marca, color, tope de precio, "que no sea X"—; "entre_lo_mostrado" true si elige '
-              'entre lo ya mostrado. Las exclusiones vigentes de la libreta van en cada busqueda nueva.',
+              'entre lo mostrado. Las exclusiones de la libreta van en cada busqueda. Otro orden para lo pedido '
+              '—"todo lo mejor"—: un buscar por rubro.',
     "producto": 'un modelo concreto. "producto" es lo que dijo el cliente, o el numero de la libreta si lo senala: "M-2". '
                 'Si lo que senala puede ser varios, la lista: ["M-1", "M-2"], y el codigo pregunta. "quiere_saber": precio, '
                 'stock o el dato que pide; "color" si lo dijo; "afirma" lo que da por cierto del producto.',
     "envio": '"destino" a cotizar, con las palabras del cliente.',
-    "cuenta": 'pide sumar o un presupuesto. "tope" si pone un monto; "si_pasa" lo que saca si el total lo pasa; '
+    "cuenta": 'pide sumar o presupuesto. "tope" si pone un monto; "si_pasa" lo que saca si el total lo pasa; '
               '"reparto" [{"medio", "porcentaje"}] si dice como paga —sin medio, "sin decir"—.',
-    "politica": 'una regla de la tienda: "tema" de la lista; "afirma" lo que da por cierto de la tienda.',
+    "politica": 'una regla de la tienda: "tema" de la lista; "afirma" lo que da por cierto de ella.',
     "compatibilidad": 'si un producto anda con algo: "producto", "con"; "falta_modelo" true si es un equipo suyo sin '
                       'modelo —"mi notebook"—.',
     "comprar": 'lo que decide llevar, o la lista con cantidades y destinos para el presupuesto. Solo el cambio de este '
                'mensaje: "agrega" [{"producto", "cantidad", "color", "destino"}] —un modelo, un "M-2", un rubro o "los '
                'otros", que sin cantidad es lo que queda de la lista—; "saca" ["L-1"]; "cambia" [{"es": "L-1", y producto, '
                'cantidad, color o destino}]; "confirma" ["L-2"] si dice que si a lo que falta confirmar; "acepta" ["L-2"] '
-               'si acepta lo SUPUESTO; "total" si dice cuantos son en total; "reemplaza" true si rehace el pedido y '
+               'si acepta lo SUPUESTO; "total" si dice cuantos son; "reemplaza" true si rehace el pedido y '
                '"agrega" es como queda; "reparto" como en cuenta.',
-    "explicar": 'saber general de tecnologia, que no es de la tienda: "pregunta".',
+    "explicar": 'saber general de tecnologia, no de la tienda: "pregunta".',
     "otro": '"que": saludo, dato —lo que dice de si mismo, que va en "cliente"—, corrige —lo que retiro en el mismo '
             'mensaje—, humano, fuera_de_tema o catalogo.',
 }

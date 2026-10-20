@@ -363,7 +363,9 @@ def _cierra(b: dict, res: list, tienda_id: str) -> bool:
 def _proponer(b: dict, tienda_id: str, res: list, filas: dict, pedir: list = None) -> list:
     ls = todas(b, tienda_id, filas)
     elegida = b.get("lectura") or {}
-    x = next((l for l in ls if l["huella"] == elegida.get("huella")), None) if elegida.get("base") == base(b) else None
+    # LA ELEGIDA SE RECONOCE POR SU REPARTO, no por los productos: "todo con lo mejor" cambia los modelos y no lo dicho.
+    x = next((l for l in ls if _combo(l) == elegida.get("combo") or l["huella"] == elegida.get("huella")), None) \
+        if elegida.get("base") == base(b) else None
     if x:
         # LA QUE ELIGIO EL MODELO, supuesta: se dice entera, y si la acepta pasa a ser lo dicho.
         r2 = x["res"]
@@ -402,12 +404,17 @@ def _proponer(b: dict, tienda_id: str, res: list, filas: dict, pedir: list = Non
     return r2
 
 
+def _combo(lectura: dict) -> list:
+    # En texto: Firestore no guarda una lista dentro de otra, y la charla entera no se guardaba.
+    return [f"{L}|{que}" for L, que, _ in lectura["combo"]]
+
+
 def elegir(b: dict, huella_: str, tienda_id: str) -> bool:
     """Anota la lectura que eligio el modelo, si es una de las que cierran con lo dicho hoy."""
-    if huella_ and any(l["huella"] == huella_ for l in todas(b, tienda_id)):
-        b["lectura"] = {"huella": huella_, "base": base(b)}
-        return True
-    return False
+    x = next((l for l in todas(b, tienda_id) if l["huella"] == huella_), None) if huella_ else None
+    if x:
+        b["lectura"] = {"huella": huella_, "base": base(b), "combo": _combo(x)}
+    return bool(x)
 
 
 def aceptar(b: dict, refs: list, tienda_id: str) -> dict:

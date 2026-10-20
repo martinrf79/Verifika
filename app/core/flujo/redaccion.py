@@ -43,7 +43,9 @@ def _lista(h: dict, filas: int = 5) -> list:
         out.append(f"No tengo {h['rubro']} con stock ahora.")
     out += [_fila(p) for p in h["filas"][:filas]]
     if h["orden_desconocido"]:
-        out.append(f"No tengo un dato en las fichas para ordenar por \"{h['orden_desconocido']}\".")
+        # SIN EL DATO NO SE INVENTA, PERO LA VENTA SIGUE: se dice que falta y se ofrece lo que si se puede.
+        out.append(f"No tengo el dato de \"{h['orden_desconocido']}\" para ordenarlos. Si me contás para qué lo vas a "
+                   "usar, te digo cuál te conviene de estos.")
     return out
 
 
@@ -78,7 +80,8 @@ RENGLONES = {
                                                   for a in h["articulos"]) + "."],
     "pedido_vacio": lambda h: ["Listo, saqué todo del pedido."],
     "elegidos": lambda h: ["Para el presupuesto tomé " + ", ".join(
-        f"{'el más barato' if 'barato' in e['orden'] else 'la primera opción'} de {r}, {e['nombre']}"
+        f"{'el más barato' if 'barato' in e['orden'] else 'el de gama más alta' if 'caro' in e['orden'] else 'la primera opción'}"
+        f" de {r}, {e['nombre']}"
         for r, e in h["rubros"].items()) + ". Si preferís otro, decime cuál."],
     "supuesto": lambda h: [h["texto"]],
     "pasa_tope": lambda h: [f"El total pasaba de {_plata(h['tope'])}, así que saqué el {h['saca']}."],

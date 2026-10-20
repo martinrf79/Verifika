@@ -130,7 +130,10 @@ class Turno:
         mostrar(self.estado, r["filas"])
         self.estado["busqueda"] = {"rubro": rub, "condiciones": conds, "orden": orden}
         if rub:
-            B.anotar_busqueda(self.estado["borrador"], rub, conds, orden, entre)
+            # Un orden sin dato en las fichas —"el mas vendido"— no cambia lo que ya se eligio para el pedido.
+            vale = orden if not r["orden_desconocido"] else \
+                (self.estado["borrador"]["criterios"].get(rub) or {}).get("orden") or "nada"
+            B.anotar_busqueda(self.estado["borrador"], rub, conds, vale, entre)
         return bool(r["filas"]) and not r["vacio_por"]
 
     # ── la plata ─────────────────────────────────────────────────────────────
@@ -213,12 +216,13 @@ class Turno:
         # LO SUPUESTO SE DICE mientras no lo acepte: la pregunta de si se deja asi no queda sin su contexto.
         self.hechos += [{"tipo": "supuesto", "texto": x["supuesto"]["texto"], "n": self.n} for x in self.res
                         if x.get("supuesto")]
-        if B.huella(arts) != B.huella(antes) and self.compra:
+        # UN PEDIDO QUE CAMBIO se dice, lo haya cambiado una compra o un criterio nuevo: "todo con lo mejor".
+        if B.huella(arts) != B.huella(antes) and (self.compra or antes):
             elegidos = {r: {"nombre": nom, "orden": (b["criterios"].get(r) or {}).get("orden") or "nada"}
                         for x in self.res for r, nom in (x.get("elegidos") or {}).items()}
-            # SE DICE LO ELEGIDO DE UNA LISTA DE ESTE TURNO, y lo que el cliente nunca vio: el teclado pedido sin buscar
-            # entraba como la primera opcion, el de 512 mil, sin aviso.
-            vistos = {m["nombre"] for m in self.estado["mostrados"]}
+            # SE DICE LO ELEGIDO DE UNA LISTA DE ESTE TURNO, y lo que el cliente nunca vio ni estaba en su pedido: el
+            # teclado pedido sin buscar entraba como la primera opcion, el de 512 mil, sin aviso.
+            vistos = {m["nombre"] for m in self.estado["mostrados"]} | {a["nombre"] for a in antes}
             elegidos = {r: e for r, e in elegidos.items() if r in self.listas or e["nombre"] not in vistos}
             if elegidos:
                 self.hechos.append({"tipo": "elegidos", "rubros": elegidos, "n": self.n})
