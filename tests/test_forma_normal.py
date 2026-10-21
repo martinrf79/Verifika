@@ -77,6 +77,14 @@ def test_la_regla_de_envios_con_un_lugar_es_un_envio_por_lugar(tienda):
     assert _normal([{"accion": "politica", "tema": "costo_envio", "cita": "hacen envios?"}], _estado(), tienda)[1] == []
 
 
+def test_la_regla_de_envios_sin_lugar_usa_el_del_cliente(tienda):
+    from app.core.flujo import borrador as B
+    b = B.leer({})
+    b["cliente"]["localidad"] = "Posadas"
+    out, _ = _normal([{"accion": "politica", "tema": "costo_envio", "cita": "con envio?"}], _estado(borrador=b), tienda)
+    assert out == [{"accion": "envio", "destino": "Posadas"}]
+
+
 def test_un_destino_en_el_mensaje_es_el_del_pedido_sin_destino(tienda):
     out, reglas = _normal([{"accion": "buscar", "rubro": "mouse", "cantidad": 2, "orden": "mas barato"},
                            {"accion": "comprar", "agrega": [{"producto": "mouse", "cantidad": 2}]},
