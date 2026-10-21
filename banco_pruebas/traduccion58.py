@@ -43,7 +43,62 @@ PROVEEDORES = {"deepseek": ("DEEPSEEK_API_KEY", "https://api.deepseek.com", "dee
                "haiku": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "anthropic/claude-haiku-5.5"),
                "luna": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.6-luna"),
                "mini54": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.4-mini"),
-               "terra": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.6-terra")}
+               "terra": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.6-terra"),
+               "gemini_or": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "google/gemini-3.1-flash-lite")}
+
+# LA INFORMACION IDEAL, por clase (21-oct): lo mismo que recibe el modelo en produccion, con tres cambios que el codigo
+# podria hacer solo. Si con esto traduce bien, el arreglo es que el marcador arme esto; si no, es el modelo.
+#   destinos   cada localidad del mensaje se marca como destino de envio, con `envio.clasificar_provincia`.
+#   repiten    fuera las pistas de temas que repiten una accion: el costo de un envio es la accion envio.
+#   producto   con un producto nombrado, la pista de garantia se va: la garantia de un producto es un dato suyo.
+REPITEN = {"costo_envio", "envios", "plazo_envio", "stock_disponibilidad", "especificaciones", "compatibilidad",
+           "garantia_como_usar"}
+
+
+def ideal() -> bool:
+    return os.environ.get("TRAD_IDEAL", "") == "1"
+
+
+def _tabla_ideal(mensaje: str, tienda_id: str) -> str:
+    from app.core.envio import clasificar_provincia
+    from app.core.flujo import marcador
+    marcas = marcador.marcar(mensaje, tienda_id)
+    hay_producto = any(e.startswith("el producto") for _, e in marcas)
+    out = []
+    for d, e in marcas:
+        temas = re.findall(r"el tema ([a-z_]+(?: o [a-z_]+)*)", e)
+        if temas:
+            quedan = [t for t in temas[0].split(" o ") if t not in REPITEN and not (hay_producto and t == "garantia")]
+            if not quedan:
+                continue
+            e = "SOLO si pregunta una regla de la tienda, el tema " + " o ".join(quedan)
+        out.append(f'- "{d}" es {e}')
+    ws = re.findall(r"[A-Za-zÁÉÍÓÚáéíóúñÑ]+", mensaje)
+    usadas = set()
+    for n in (1, 2, 3):  # el tramo mas corto que nombra una localidad, sin pisar uno ya marcado
+        for i in range(len(ws) - n + 1):
+            if usadas & set(range(i, i + n)):
+                continue
+            frase = " ".join(ws[i:i + n])
+            if len(frase) > 3 and clasificar_provincia(frase):
+                usadas |= set(range(i, i + n))
+                out.append(f'- "{frase}" es una localidad: un destino de envio')
+    if not out:
+        return "LO QUE EL CODIGO RECONOCIO EN EL MENSAJE: nada."
+    return "LO QUE EL CODIGO RECONOCIO EN EL MENSAJE:\n" + "\n".join(out)
+
+
+def instalar_ideal() -> None:
+    from app.core.flujo import interprete
+
+    def mensajes(mensaje, historial, estado, tienda_id):
+        temas = ", ".join(t for t in __import__("app.core.agente", fromlist=["indice"]).indice(tienda_id)["temas"]
+                          if t not in REPITEN)
+        sistema = re.sub(r"TEMAS: .*", "TEMAS: " + temas, interprete.consigna(tienda_id), count=1)
+        return [{"role": "system", "content": sistema},
+                {"role": "user", "content": interprete.libreta(estado, historial, tienda_id) + "\n"
+                 + _tabla_ideal(mensaje, tienda_id) + f"\nULTIMO MENSAJE: {mensaje}"}]
+    interprete.mensajes = mensajes
 GASTO = os.path.join(AQUI, "traduccion58_gasto.jsonl")
 TOPE_OTRO = float(os.environ.get("TRAD_TOPE", "2.00"))
 
@@ -72,7 +127,8 @@ def _puerta_otra(nombre: str):
         k["model"] = modelo
         if url.startswith("https://openrouter.ai"):
             # Sin razonamiento, como Gemini al minimo, y con el costo real que cobra OpenRouter, no el de la tabla.
-            k["extra_body"] = {"reasoning": {"effort": "none"}, "usage": {"include": True}}
+            k["extra_body"] = {"reasoning": {"effort": "minimal" if modelo.startswith("google/") else "none"},
+                               "usage": {"include": True}}
         r = crear(*a, **k)
         u = getattr(r, "usage", None)
         e, sa = int(getattr(u, "prompt_tokens", 0) or 0), int(getattr(u, "completion_tokens", 0) or 0)
@@ -143,7 +199,7 @@ def _explicacion(agenda: dict, explicar: dict) -> str:
     return next((explicar.get(p.get("pregunta"), "") for p in A.preguntas(agenda) if p.get("accion") == "explicar"), "")
 
 
-def correr(parte: int, partes: int, solo: list = None) -> bool:
+def correr(parte: int, partes: int, solo: list = None, turnos: set = None) -> bool:
     """Corre lo que falta. Devuelve False si el modelo dejo de contestar."""
     from banco_pruebas import cableado58 as R
     from banco_pruebas import clon_produccion as C
@@ -156,11 +212,16 @@ def correr(parte: int, partes: int, solo: list = None) -> bool:
     from banco_pruebas.sonda_charlas import nota_casilla
     it = R.instalar()
     llm_reintento._cliente = puerta  # el modelo real: lo que se mide es su traduccion
-    nombre = proveedor()
+    nombre = proveedor() + ("+ideal" if ideal() else "")
     reps = REPS
-    if nombre != "gemini":
-        otra = _puerta_otra(nombre)
-        llm_reintento._cliente, llm_reintento._modelo, reps = (lambda: otra), (lambda: PROVEEDORES[nombre][2]), 1
+    if ideal():
+        instalar_ideal()
+    base = nombre.split("+")[0]
+    if base != "gemini":
+        otra = _puerta_otra(base)
+        llm_reintento._cliente, llm_reintento._modelo, reps = (lambda: otra), (lambda: PROVEEDORES[base][2]), 1
+    if ideal():
+        reps = 1
     elegir_mano = it.elegir
     huella, hechas, protegidas = _huella(), _leidas(), _protegidas()
     trabajo = []
@@ -169,6 +230,8 @@ def correr(parte: int, partes: int, solo: list = None) -> bool:
             if solo and charla["id"] not in solo:
                 continue
             for k, t in enumerate(charla["turnos"]):
+                if turnos and (charla["id"], k) not in turnos:
+                    continue
                 for forma, texto in formas_de(charla["id"], k, t["texto"], protegidas).items():
                     clave = (huella, charla["id"], k, forma, rep, nombre)
                     if clave not in hechas and zlib.crc32(repr(clave[1:]).encode()) % partes == parte - 1:
@@ -258,7 +321,9 @@ def main(argv: list) -> int:
         parte, partes = 1, 1
         if "--parte" in argv:
             parte, partes = map(int, argv[argv.index("--parte") + 1].split("/"))
-        if not correr(parte, partes, [a for a in argv if re.fullmatch(r"[CK]\d\d", a)]):
+        turnos = {(a.split(":")[0], int(a.split(":")[1])) for a in argv if re.fullmatch(r"[CK]\d\d:\d+", a)}
+        if not correr(parte, partes, [a for a in argv if re.fullmatch(r"[CK]\d\d", a)] or sorted({c for c, _ in turnos}),
+                      turnos):
             return 2
     informe()
     comparar()
