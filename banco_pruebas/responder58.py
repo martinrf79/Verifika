@@ -123,7 +123,10 @@ def correr(parte: int, partes: int) -> bool:
 
 
 def informe() -> None:
+    from banco_pruebas import clon_produccion as C
     from banco_pruebas.traduccion58 import FORMAS, _leidas, _huella
+    C.preparar_entorno()
+    C.instalar()
     filas = list(map(json.loads, open(CORRIDAS, encoding="utf-8"))) if os.path.exists(CORRIDAS) else []
     huella, trad = _huella(), _leidas()
     print(f"\nEL MODELO RESPONDE SOLO, {MODELO}, con la fuente entera · gastado {_gastado():.2f} dolares")
