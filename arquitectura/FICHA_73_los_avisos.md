@@ -112,6 +112,45 @@ Lo que dejó: qué información resuelve cada clase. De ahí salieron los avisos
   referencia tiene varios candidatos, y que el código le diga cuando algo no se puede cumplir. Eso son los avisos.
 - **Al modelo no se le pregunta: se lo prueba.** Se le cambia la información en un caso, se mide, y queda lo que funciona.
 
+## La lengua en que escribe el modelo: lo medido al cierre
+
+**El cuello está en llevar el pedido al menú, no en entenderlo.** De las 70 fallas de producción en las 525, en 59 el
+modelo eligió otras herramientas que la agenda a mano. En solo 11 eligió las mismas y erró un dato.
+
+**Tokens del mismo contenido en cuatro formas**, contados con el contador del modelo de producción,
+`tokens_formas.py`:
+
+| contenido | JSON | español común | español controlado | Python |
+|---|---|---|---|---|
+| lo que escribe el modelo, las 105 agendas a mano, por turno | 70 | 49 | 21 | 46 |
+| el menú de herramientas | 640 | 611 | 611 | 659 |
+| la memoria de K21, turno 4 | 872 | 852, la libreta de hoy | | 874 |
+
+- En lo que **entra** al modelo, la forma no cambia nada: lo que pesa es el contenido. Lugar no falta; el límite es que
+  el texto compartido distrae, y eso ya se midió en la FICHA 65.
+- En lo que **sale**, el español controlado ocupa la tercera parte que el JSON. La salida es lo más caro y lo más lento.
+
+**Pasar el mensaje a Python**, `python_libre.py`, cuatro mensajes complejos, por OpenRouter, menos de un centavo:
+
+- **Libre, sin el menú,** arma una estructura de datos que conserva casi todo: en K21 cada artículo con su destino,
+  incluido el teclado que no estaba en la lista, "menos partes chinas" y el 70/30; en C56 la condición de precio.
+- **Con nuestras funciones,** pierde justo lo que falla en la vara: qué artículo va a qué destino en K08, K21 y C26, y
+  en C56 pone los 10 mil como tope del total.
+- **Límites del Python libre:** cada mensaje sale con nombres distintos y el código no puede usarlos directo; rellena
+  huecos sin avisar, como qué artículos van a Villa María en K08; a veces empieza a resolver. Se lee, nunca se ejecuta.
+
+**Otras propuestas, evaluadas con lo medido:**
+
+- **Español neutro en la entrada:** la forma redactada de la vara es eso, y producción saca 93 de 105 contra 89 con el
+  original. Ayuda poco, y reescribir cuesta una llamada que puede perder datos.
+- **Pseudocódigo paso a paso:** hacer que el modelo escriba primero qué entendió dio 1 de 8 contra 6 de 8 sin eso.
+- **JavaScript o TypeScript:** sus objetos son el JSON de hoy. **Ruby:** sin evidencia a favor, y más frágil de leer
+  desde Python. **SQL:** sirve solo para la búsqueda en el catálogo, que es la parte que ya anda.
+
+**El paso 1 de la sesión nueva** sale de acá: en los 60 difíciles, medir la salida en español controlado, en Python con
+nuestras funciones, y en dos pasos —Python libre primero, como mapa fiel, y después llevado a nuestras funciones—. Los
+candados verifican el resultado igual, porque leen la agenda ya traducida, en cualquier lengua.
+
 ## Lo que sigue
 
 1. **DeepSeek con el mismo método.** `traduccion58_corridas.jsonl` ya tiene las 525 de DeepSeek, una vez cada una. Se
@@ -150,5 +189,6 @@ casillas que fallan. `replay.py` y `medir_primera` lo leen por defecto.
 | `fichas_gemini.py`, `fichas_gemini.txt` | las fichas reescritas por el modelo |
 | `comandos525.jsonl`, `informe525.py`, `tabla.py`, `comparar.py` | sus resultados |
 | `entrevista.py`, `entrevista2.py`, `entrevista.json`, `entrevista2.json`, `casos6.pkl` | las dos entrevistas |
+| `tokens_formas.py`, `python_libre.py` | los tokens por forma y el mensaje pasado a Python |
 
 **Gasto de la sesión:** cerca de 1,80 dólares de la paga, con el tope subido a 4 por orden de Martín para el día.
