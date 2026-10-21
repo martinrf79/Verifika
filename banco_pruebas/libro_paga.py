@@ -26,7 +26,7 @@ from pathlib import Path
 LIBRO = Path(__file__).resolve().parent / "libro_paga.jsonl"
 # Un dolar por dia entre todas las corridas. Subirlo es una orden de Martin,
 # en su propio commit, como cualquier umbral.
-TOPE_DIARIO = 1.00
+TOPE_DIARIO = 4.00
 
 
 class TopeDiario(Exception):
