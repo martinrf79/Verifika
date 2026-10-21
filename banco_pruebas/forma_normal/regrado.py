@@ -99,6 +99,32 @@ def correr(solo=None, modelos=MODELOS) -> dict:
     return out
 
 
+def calificar(cid: str, n: int, texto: str, agenda: dict) -> dict:
+    """Un turno con una agenda escrita aca, por el flujo vivo y con la vara: para probar una forma antes de pedirsela al
+    modelo. {"bien", "malas", "respuesta"}."""
+    from banco_pruebas import cableado58 as R
+    from banco_pruebas import clon_produccion as C
+    from banco_pruebas.agendas58 import AGENDAS, EXPLICAR
+    from banco_pruebas.sonda_charlas import nota_casilla
+    from banco_pruebas.traduccion58 import _explicacion
+    it = R.instalar()
+    ch, ags, uid = {c["id"]: c for c in R.charlas()}[cid], AGENDAS[cid], "calificar"
+    C.reiniciar_cliente(uid)
+    previas = []
+    for i, t in enumerate(ch["turnos"][:n + 1]):
+        ag = agenda if i == n else ags[i]
+
+        async def _mano(*a, _ag=ag, **kw):
+            return copy.deepcopy(_ag)
+
+        async def _expl(pregunta, *a, _ag=ags[i], **kw):
+            return _explicacion(_ag, EXPLICAR)
+        it.interpretar, it.explicar = _mano, _expl
+        previas.append("\n".join(asyncio.run(C.turno(uid, texto if i == n else t["texto"]))))
+    malas = [c["n"] for c in ch["turnos"][n]["casillas"] if nota_casilla(c, [], previas[-1], previas) is not True]
+    return {"bien": not malas, "malas": malas, "respuesta": previas[-1]}
+
+
 def informe(res: dict, contra: dict = None) -> None:
     print(f"\n{'modelo':9} {'grabado':>8} {'hoy':>5} {'de':>5}")
     for m in MODELOS:
@@ -120,6 +146,11 @@ def informe(res: dict, contra: dict = None) -> None:
         print("  arreglos por regla:", por)
 
 
+def _ruta(nombre: str) -> str:
+    """Un nombre suelto vive en esta carpeta; una ruta, donde dice."""
+    return nombre if os.sep in nombre else os.path.join(AQUI, nombre + ".json")
+
+
 def _clave(k) -> str:
     return json.dumps(list(k))
 
@@ -132,8 +163,8 @@ if __name__ == "__main__":
     res = correr(solo)
     ref = None
     if contra:
-        ref = {tuple(json.loads(k)): v for k, v in json.load(open(os.path.join(AQUI, contra + ".json"))).items()}
+        ref = {tuple(json.loads(k)): v for k, v in json.load(open(_ruta(contra))).items()}
     informe(res, ref)
     if guardar:
-        json.dump({_clave(k): v for k, v in res.items()}, open(os.path.join(AQUI, guardar + ".json"), "w",
+        json.dump({_clave(k): v for k, v in res.items()}, open(_ruta(guardar), "w",
                   encoding="utf-8"), ensure_ascii=False)

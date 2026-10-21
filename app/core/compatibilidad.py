@@ -167,6 +167,26 @@ def conectores_del_mensaje(mensaje: str, tienda_id: str | None = None) -> list[s
     return out
 
 
+def por_conector(prod: dict, mensaje: str, tienda_id: str | None = None) -> tuple[str, str]:
+    """EL EQUIPO DICHO SOLO POR SU RANURA: "una placa DDR5", "un zocalo AM5". Si el producto requiere un conector de esa
+    familia, anda si es ese y no anda si es otro. ("", "") si el mensaje no nombra un conector de una familia que el
+    producto requiera."""
+    compat = compat_de(prod, tienda_id)
+    fam = vocabulario(tienda_id)["familias"]
+    requiere = compat.get("requiere") or []
+    nombre = str(prod.get("nombre") or "el producto")
+    for c in conectores_del_mensaje(mensaje, tienda_id):
+        mismos = [r for r in requiere if fam.get(r, r) == fam.get(c, c)]
+        if not mismos:
+            continue
+        nota = (" " + compat["nota"]) if compat.get("nota") else ""
+        if c in mismos:
+            return "compatible", f"{nombre} va en un equipo con {etiqueta_conector(c, tienda_id)}.{nota}"
+        return "incompatible", (f"{nombre} no va en un equipo con {etiqueta_conector(c, tienda_id)}: necesita "
+                                f"{etiqueta_conector(mismos[0], tienda_id)}.{nota}")
+    return "", ""
+
+
 def choca_con_lo_dicho(prod: dict, mensaje: str, tienda_id: str | None = None) -> str:
     """EL EQUIPO DICHO CON SU RANURA: "una PC con placa DDR5". Si el cliente nombra un conector de la misma familia que
     uno que el producto requiere, y no es ese, y la nota de la ficha dice que en ese no va, no es compatible aunque la

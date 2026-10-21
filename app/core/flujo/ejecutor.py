@@ -47,6 +47,12 @@ def _modelo_de(p: dict) -> tuple:
     return (p.get("marca"), p.get("modelo") or p.get("id"))
 
 
+def _no_achica(filas: list, entre: list, rubro: str, tienda_id: str) -> bool:
+    """Las condiciones no dejan afuera nada de lo mostrado del rubro: entre lo mostrado no eligieron nada."""
+    del_rubro = {_modelo_de(p) for p in (K.por_id(i, tienda_id) for i in entre) if not rubro or p.get("categoria") == rubro}
+    return {_modelo_de(p) for p in filas} >= del_rubro
+
+
 class Turno:
     def __init__(self, estado: dict, tienda_id: str):
         self.estado, self.tienda = estado, tienda_id
@@ -102,8 +108,9 @@ class Turno:
         palabra —"inalambrico" vive en conexion—. Primero la frase entera, despues palabra por palabra, sin las del
         nombre del producto. Si no esta en ningun campo, lo dice."""
         q = K.n(quiere_saber)
-        if q in ("", "todo", "precio", "stock", "disponibilidad", "precio y stock", "existencia"):
-            return {}
+        if q in ("", "todo", "precio", "stock", "disponibilidad", "precio y stock", "existencia") \
+                or "tope" in K.atar(quiere_saber, [], self.tienda):
+            return {}  # un tope de plata se contesta con el precio, que ya va
         datos = {**(p.get("specs") or {}), "garantia": (p.get("specs") or {}).get("garantia")
                  or (f"{p['garantia_meses']} meses" if p.get("garantia_meses") else None)}
         propias = set(K.n(p.get("nombre")).split())
@@ -147,7 +154,8 @@ class Turno:
             afuera = K.buscar(rub, conds, orden, cuantos, self.tienda)
             if afuera["filas"] and not afuera["vacio_por"]:
                 r, entre, aviso = afuera, None, "fuera"
-        elif (entre is None or not conds) and K.n(orden) in ("nada", "") and r["filas"]:
+        elif (entre is None or not conds or _no_achica(r["filas"], entre, rub, self.tienda)) \
+                and K.n(orden) in ("nada", "") and r["filas"]:
             # LO MISMO DE NUEVO NO ES UNA RESPUESTA: si todo lo que trae ya lo vio, van los que no vio. Entre lo mostrado
             # y sin condicion tampoco elige nada: es pedir otras opciones.
             vistos = {_modelo_de(K.por_id(m["id"], self.tienda)) for m in self.estado["mostrados"]}
@@ -396,13 +404,52 @@ def _solo_si(t: Turno) -> bool:
     return bool(palabras) and all(w in AFIRMA or w in A._VACIAS for w in palabras) and not _cambia(t)
 
 
+def _el_que_cumple(t: Turno, a: dict, cond: str):
+    """LA COMPRA CON CONDICION —"si sale menos de 10 mil llevo dos", "de estos dos, el inalambrico", "me lo llevo si
+    anda con Mac"—: el codigo mira cada producto contra la condicion, y queda el que la cumple. Devuelve su nombre,
+    "" si ninguno la cumple, None si no se pudo saber, o False si la cumplen varios, y ahi pregunta cual."""
+    from app.core.compatibilidad import plataformas_del_mensaje
+    nombres = _nombres(t, a.get("producto"))
+    juicios = []
+    for nombre in nombres:
+        if plataformas_del_mensaje(cond, t.tienda):
+            juicios.append((nombre, _compatibilidad(t, {"producto": nombre, "con": cond})))
+        else:
+            juicios.append((nombre, t.producto(nombre, cond, str(a.get("color") or ""))))
+    si = [n for n, ok in juicios if ok]
+    if len(si) == 1:
+        return si[0]
+    if len(si) > 1:
+        t.preguntar("¿Cuál querés: " + " o ".join(si) + "?")
+        return False
+    if any(ok is None for _, ok in juicios):
+        return None
+    t.hechos.append({"tipo": "no_cumple", "que": cond, "varios": len(nombres) > 1})
+    return ""
+
+
 def _comprar(t: Turno, p: dict):
     """El cambio de este mensaje sobre lo dicho: va al borrador, que re-deriva el pedido entero."""
     cambio = _reparto(t, p)
     agrega = []
-    for a in _lista(p.get("agrega")):
-        if not isinstance(a, dict) or not a.get("producto"):
-            continue
+    items = [a for a in _lista(p.get("agrega")) if isinstance(a, dict) and a.get("producto")]
+    if p.get("si_cumple") and len(items) > 1 and not any(isinstance(a["producto"], list) for a in items):
+        # "De estos dos, dame el inalambrico" escrito como dos articulos con una condicion: son candidatos de uno.
+        items = [{**items[0], "producto": [a["producto"] for a in items]}]
+    for a in items:
+        cond = str(a.get("si_cumple") or p.get("si_cumple") or "").strip()
+        if cond:
+            nombre = _el_que_cumple(t, a, cond)
+            if nombre is False:
+                continue
+            if nombre is None:
+                a = {**a, "producto": _nombres(t, a.get("producto"))[0]}
+                p = {**p, "condicion": "sin_saber"}
+            elif not nombre:
+                continue
+            else:
+                agrega.append({**a, "producto": nombre, "cita": p.get("cita") or "", "condicion": ""})
+                continue
         nombre = _uno(t, a.get("producto"))
         if not nombre:
             return None

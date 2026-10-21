@@ -313,6 +313,9 @@ def el_pedido_sin_pedido(c: _Ctx) -> bool:
 def color_ajeno(c: _Ctx) -> bool:
     """UN COLOR QUE NINGUN PRODUCTO DE LA TIENDA TIENE no es un color: "indistinto", "el que sea". Sale del cambio, y el
     cambio que solo traia eso tambien."""
+    if not any(isinstance(a, dict) and a.get("color") for p in c.acciones("comprar")
+               for k in ("agrega", "cambia") for a in _lista(p.get(k))):
+        return False
     colores = {K.n(p.get("color")) for p in K.productos(c.tienda) if p.get("color")}
     hizo = False
     for p in c.acciones("comprar"):
@@ -355,10 +358,21 @@ def compatibilidad_de_un_rubro(c: _Ctx) -> bool:
     return hizo
 
 
+def un_medio_es_todo(c: _Ctx) -> bool:
+    """UN SOLO MEDIO DE PAGO SIN PORCENTAJE —"pago con transferencia"— es el cien por ciento."""
+    hizo = False
+    for p in c.acciones("cuenta", "comprar"):
+        rep = [r for r in _lista(p.get("reparto")) if isinstance(r, dict)]
+        if len(rep) == 1 and not K.entero(rep[0].get("porcentaje")) and K.n(rep[0].get("medio")) not in B.SIN_MEDIO:
+            p["reparto"] = [{**rep[0], "porcentaje": 100}]
+            hizo = True
+    return hizo
+
+
 REGLAS = (referencias_cruzadas, color_ajeno, si_sin_efecto, politica_de_envio_con_lugar, envio_a_varios,
           dato_del_producto, compatibilidad_de_un_rubro, el_pedido_sin_pedido, uno_por_cada_nombrado,
           cuenta_de_lo_nombrado, cuenta_de_lo_buscado,
-          un_destino_para_el_pedido, precio_con_envio)
+          un_destino_para_el_pedido, precio_con_envio, un_medio_es_todo)
 
 
 def _numerar(ps: list) -> list:

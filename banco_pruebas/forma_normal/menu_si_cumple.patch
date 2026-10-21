@@ -1,0 +1,27 @@
+diff --git a/app/core/flujo/agenda.py b/app/core/flujo/agenda.py
+index 5b9e86e..d11f5c5 100644
+--- a/app/core/flujo/agenda.py
++++ b/app/core/flujo/agenda.py
+@@ -34,7 +34,8 @@ ACCIONES = {
+                'otros", que sin cantidad es lo que queda de la lista—; "saca" ["L-1"]; "cambia" [{"es": "L-1", y producto, '
+                'cantidad, color o destino}]; "confirma" ["L-2"] si dice que si a lo que falta confirmar; "acepta" ["L-2"] '
+                'si acepta lo SUPUESTO; "total" si dice cuantos son; "reemplaza" true si rehace el pedido y '
+-               '"agrega" es como queda; "reparto" como en cuenta.',
++               '"agrega" es como queda; "reparto" como en cuenta; "si_cumple" la condicion para llevarlo, "menos '
++               'de 10 mil": entre varios, el que la cumple.',
+     "explicar": 'saber general de tecnologia, no de la tienda: "pregunta".',
+     "otro": '"que": saludo, dato —lo que dice de si mismo, que va en "cliente"—, corrige —lo que retiro '
+             'en el mensaje—, humano, fuera_de_tema o catalogo.',
+diff --git a/app/core/flujo/interprete.py b/app/core/flujo/interprete.py
+index 60cbdf6..81d6dee 100644
+--- a/app/core/flujo/interprete.py
++++ b/app/core/flujo/interprete.py
+@@ -44,7 +44,7 @@ COMO SE HACE:
+ 5. Lo que dice para varias —"los dos", "de cada uno", "todo"— va en cada una de esas preguntas.
+ 6. El rubro, el tema y el producto salen de la tabla de lo que el codigo reconocio. Nunca escribas un precio ni un dato
+    de la tienda: los verifica el codigo. "politica" es solo para una regla de la tienda que pregunta —factura,
+-   garantia, cuotas—: pedir un envio, una cuenta o una condicion del producto no es politica.
++   cuotas—.
+ 7. "cliente" es lo que dice de si mismo: "es" —revendedor, empresa, jubilado—, "nombre", "localidad", "equipo".
+ 
+ EL MENU:

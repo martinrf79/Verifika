@@ -696,6 +696,10 @@ def _evaluar(prod: dict, con: str, porid: dict, tienda_id: str) -> dict:
 
     equipos = plataformas_del_mensaje(con, tienda_id)
     if not equipos:
+        from app.core.compatibilidad import por_conector
+        veredicto, motivo = por_conector(prod, con, tienda_id)
+        if veredicto:
+            return {"con_equipo": con, "veredicto": veredicto, "motivo": motivo}
         return {"veredicto": "sin_dato",
                 "motivo": f"no reconozco '{con}' como un equipo ni como un id "
                           f"del catalogo; los equipos que conozco son: "

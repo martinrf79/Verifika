@@ -180,15 +180,18 @@ def atar(condicion: str, universo: list, tienda_id: str) -> dict:
         if any(_contiene(_valores(p, campo), valor) for p in universo):
             return {"campo": campo, "valor": valor, "niega": niega}
     # Toda la frase no esta: cada palabra por su lado, y todas tienen que estar.
-    partes = [atar(("no " if niega else "") + w, universo, tienda_id) for w in valor.split()] if " " in valor else []
+    partes = [atar(w, universo, tienda_id) for w in valor.split()] if " " in valor else []
     if partes and all("campo" in x for x in partes):
-        return {"todas": partes}
+        # "Que no sea Kingston Fury Beast DDR4 16GB" saca lo que tiene TODAS esas palabras, no cada una por su lado.
+        return {"ninguno_de": partes} if niega else {"todas": partes}
     return {"sin_campo": condicion}
 
 
 def cumple(prod: dict, filtro: dict) -> bool:
     if "todas" in filtro:
         return all(cumple(prod, f) for f in filtro["todas"])
+    if "ninguno_de" in filtro:
+        return not all(cumple(prod, f) for f in filtro["ninguno_de"])
     if "tope" in filtro:
         lado, monto = filtro["tope"]
         precio = int(prod.get("precio_ars") or 0)

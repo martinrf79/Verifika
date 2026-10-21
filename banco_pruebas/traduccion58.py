@@ -44,7 +44,8 @@ PROVEEDORES = {"deepseek": ("DEEPSEEK_API_KEY", "https://api.deepseek.com", "dee
                "luna": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.6-luna"),
                "mini54": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.4-mini"),
                "terra": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.6-terra"),
-               "gemini_or": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "google/gemini-3.1-flash-lite")}
+               "gemini_or": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "google/gemini-3.1-flash-lite"),
+               "minimax_gratis": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "minimax/minimax-m3.1-flash:free")}
 
 # LA INFORMACION IDEAL, por clase (21-oct): lo mismo que recibe el modelo en produccion, con tres cambios que el codigo
 # podria hacer solo. Si con esto traduce bien, el arreglo es que el marcador arme esto; si no, es el modelo.
@@ -139,7 +140,9 @@ def _puerta_otra(nombre: str):
         k["model"] = modelo
         if url.startswith("https://openrouter.ai"):
             # Sin razonamiento, como Gemini al minimo, y con el costo real que cobra OpenRouter, no el de la tabla.
-            k["extra_body"] = {"reasoning": {"effort": "minimal" if modelo.startswith("google/") else "none"},
+            # Los gratis de OpenRouter no dejan apagar el razonamiento: va al minimo que aceptan.
+            k["extra_body"] = {"reasoning": {"effort": "minimal" if modelo.startswith("google/") else
+                                             "low" if modelo.endswith(":free") else "none"},
                                "usage": {"include": True}}
         r = crear(*a, **k)
         u = getattr(r, "usage", None)

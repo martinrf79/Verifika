@@ -88,6 +88,8 @@ RENGLONES = {
         f" de {r}, {e['nombre']}"
         for r, e in h["rubros"].items()) + ". Si preferís otro, decime cuál."],
     "supuesto": lambda h: [h["texto"]],
+    "no_cumple": lambda h: [("Ninguno cumple" if h.get("varios") else "No cumple") + f" con \"{h['que']}\", así que no "
+                            "lo sumé al pedido."],
     "pasa_tope": lambda h: [f"El total pasaba de {_plata(h['tope'])}, así que saqué el {h['saca']}."],
     "cuenta": _cuenta,
     "envio": _envio,

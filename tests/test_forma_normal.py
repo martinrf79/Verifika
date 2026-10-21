@@ -144,3 +144,27 @@ def test_el_piso_de_las_traducciones_grabadas_de_produccion(tienda):
           f"{sum(r['antes'] for r in res.values())}")
     assert len(res) == 525
     assert bien >= PISO_PRODUCCION
+
+
+@pytest.mark.parametrize("cid,n,texto,agenda", [
+    ("C32", 0, "entre el G305 y el G203, dame el que sea inalambrico",
+     [{"accion": "comprar", "agrega": [{"producto": ["G305", "G203"], "cantidad": 1}], "si_cumple": "inalambrico"}]),
+    ("C56", 0, "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos",
+     [{"accion": "politica", "tema": "promociones", "afirma": "50% off"},
+      {"accion": "comprar", "agrega": [{"producto": "K120", "color": "negro", "cantidad": 2}],
+       "si_cumple": "menos de 10 mil"}]),
+    ("C29", 0, "Me llevo el G305 si es compatible con Mac.",
+     [{"accion": "comprar", "agrega": [{"producto": "G305", "cantidad": 1}], "si_cumple": "compatible con Mac"}]),
+], ids=["el_que_cumple", "no_cumple_el_precio", "cumple_la_compatibilidad"])
+def test_la_compra_con_condicion_la_juzga_el_codigo(tienda, cid, n, texto, agenda):
+    """"si_cumple" en una compra: el codigo mira cada producto contra la condicion y lleva el que la cumple."""
+    from banco_pruebas.forma_normal import regrado
+    r = regrado.calificar(cid, n, texto, {"preguntas": [{"n": i, "cita": "", **p} for i, p in enumerate(agenda, 1)]})
+    assert r["bien"], (r["malas"], r["respuesta"])
+
+
+@pytest.mark.xfail(strict=True, reason="PLAN: el menu ofrece si_cumple, banco_pruebas/forma_normal/menu_si_cumple.patch. "
+                                       "Entra cuando la cuota gratis de Gemini mida las 525 y las variantes sin bajar")
+def test_el_menu_ofrece_la_compra_con_condicion():
+    from app.core.flujo import agenda as A
+    assert '"si_cumple"' in A.ACCIONES["comprar"]
