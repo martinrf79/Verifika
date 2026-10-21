@@ -56,7 +56,13 @@ REPITEN = {"costo_envio", "envios", "plazo_envio", "stock_disponibilidad", "espe
 
 
 def ideal() -> bool:
-    return os.environ.get("TRAD_IDEAL", "") == "1"
+    return os.environ.get("TRAD_IDEAL", "") in ("1", "tabla")
+
+
+def solo_tabla() -> bool:
+    """La mejora va solo en la tabla de pistas, que es por mensaje: la consigna queda igual y lo que no cambia de
+    entrada no puede cambiar de traduccion. Se corre solo donde la tabla cambia."""
+    return os.environ.get("TRAD_IDEAL", "") == "tabla"
 
 
 def _tabla_ideal(mensaje: str, tienda_id: str) -> str:
@@ -88,13 +94,19 @@ def _tabla_ideal(mensaje: str, tienda_id: str) -> str:
     return "LO QUE EL CODIGO RECONOCIO EN EL MENSAJE:\n" + "\n".join(out)
 
 
+def marcador_tabla(texto: str) -> str:
+    from app.core.flujo import marcador
+    return marcador.tabla(texto, "verifika_prod")
+
+
 def instalar_ideal() -> None:
     from app.core.flujo import interprete
 
     def mensajes(mensaje, historial, estado, tienda_id):
         temas = ", ".join(t for t in __import__("app.core.agente", fromlist=["indice"]).indice(tienda_id)["temas"]
                           if t not in REPITEN)
-        sistema = re.sub(r"TEMAS: .*", "TEMAS: " + temas, interprete.consigna(tienda_id), count=1)
+        sistema = interprete.consigna(tienda_id) if solo_tabla() else \
+            re.sub(r"TEMAS: .*", "TEMAS: " + temas, interprete.consigna(tienda_id), count=1)
         return [{"role": "system", "content": sistema},
                 {"role": "user", "content": interprete.libreta(estado, historial, tienda_id) + "\n"
                  + _tabla_ideal(mensaje, tienda_id) + f"\nULTIMO MENSAJE: {mensaje}"}]
@@ -212,7 +224,7 @@ def correr(parte: int, partes: int, solo: list = None, turnos: set = None) -> bo
     from banco_pruebas.sonda_charlas import nota_casilla
     it = R.instalar()
     llm_reintento._cliente = puerta  # el modelo real: lo que se mide es su traduccion
-    nombre = proveedor() + ("+ideal" if ideal() else "")
+    nombre = proveedor() + ("+tabla" if solo_tabla() else "+ideal" if ideal() else "")
     reps = REPS
     if ideal():
         instalar_ideal()
@@ -233,6 +245,8 @@ def correr(parte: int, partes: int, solo: list = None, turnos: set = None) -> bo
                 if turnos and (charla["id"], k) not in turnos:
                     continue
                 for forma, texto in formas_de(charla["id"], k, t["texto"], protegidas).items():
+                    if solo_tabla() and marcador_tabla(texto) == _tabla_ideal(texto, "verifika_prod"):
+                        continue
                     clave = (huella, charla["id"], k, forma, rep, nombre)
                     if clave not in hechas and zlib.crc32(repr(clave[1:]).encode()) % partes == parte - 1:
                         trabajo.append((charla, k, forma, texto, rep))
