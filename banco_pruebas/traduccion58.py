@@ -40,9 +40,12 @@ REPS = 3
 # OTROS MODELOS, para comparar con el de produccion (21-oct, orden de Martin): una sola vez, por su propia puerta, con
 # su gasto anotado en GASTO y un tope por proveedor. `TRAD_PROVEEDOR=deepseek` o `haiku`; sin eso, Gemini.
 PROVEEDORES = {"deepseek": ("DEEPSEEK_API_KEY", "https://api.deepseek.com", "deepseek-chat"),
-               "haiku": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "anthropic/claude-haiku-5.5")}
+               "haiku": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "anthropic/claude-haiku-5.5"),
+               "luna": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.6-luna"),
+               "mini54": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.4-mini"),
+               "terra": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "openai/gpt-5.6-terra")}
 GASTO = os.path.join(AQUI, "traduccion58_gasto.jsonl")
-TOPE_OTRO = 2.00
+TOPE_OTRO = float(os.environ.get("TRAD_TOPE", "2.00"))
 
 
 def proveedor() -> str:
@@ -67,12 +70,15 @@ def _puerta_otra(nombre: str):
         if gastado_otro(nombre) >= TOPE_OTRO:
             raise RuntimeError(f"tope de {TOPE_OTRO} dolares para {nombre}")
         k["model"] = modelo
+        if url.startswith("https://openrouter.ai"):
+            # Sin razonamiento, como Gemini al minimo, y con el costo real que cobra OpenRouter, no el de la tabla.
+            k["extra_body"] = {"reasoning": {"effort": "none"}, "usage": {"include": True}}
         r = crear(*a, **k)
         u = getattr(r, "usage", None)
         e, sa = int(getattr(u, "prompt_tokens", 0) or 0), int(getattr(u, "completion_tokens", 0) or 0)
         with open(GASTO, "a", encoding="utf-8") as f:
             f.write(json.dumps({"proveedor": nombre, "entrada": e, "salida": sa,
-                                "dolares": round(costo.dolares(e, sa, modelo), 6)}) + "\n")
+                                "dolares": round(float(getattr(u, "cost", 0) or 0) or costo.dolares(e, sa, modelo), 6)}) + "\n")
         return r
     cli.chat.completions.create = create
     return cli
