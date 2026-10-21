@@ -27,7 +27,7 @@ import zlib
 AQUI = os.path.dirname(os.path.abspath(__file__))
 CORRIDAS = os.path.join(AQUI, "responder58_corridas.jsonl")
 MODELO = "anthropic/claude-haiku-5.5"
-TOPE = 2.00
+TOPE = 3.90  # el saldo de OpenRouter, orden de Martin del 21-oct: correrla completa aunque se agote
 FUENTE_DIR = os.path.join(os.path.dirname(AQUI), "data", "clientes", "verifika_prod")
 
 SISTEMA = """Sos el vendedor de Verifika Tech, una tienda online de tecnologia de Argentina, por WhatsApp. Contesta en
