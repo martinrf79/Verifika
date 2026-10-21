@@ -22,6 +22,7 @@ from . import agenda as A
 from . import borrador as B
 from . import catalogo as K
 from .estado import mostrar
+from .normal import normalizar
 from app.core.calculadora import _money as _plata
 
 log = get_logger(__name__)
@@ -42,6 +43,10 @@ def _modelo(nombre: str, tienda_id: str) -> str:
     return p.get("modelo") or K.n(nombre)
 
 
+def _modelo_de(p: dict) -> tuple:
+    return (p.get("marca"), p.get("modelo") or p.get("id"))
+
+
 class Turno:
     def __init__(self, estado: dict, tienda_id: str):
         self.estado, self.tienda = estado, tienda_id
@@ -55,6 +60,7 @@ class Turno:
         self.previos = None  # los renglones de antes de un reemplazo, por si saca lo que el cliente no nombro
         self.propuesta = {}  # lo propuesto con que llego el turno: vale solo para este
         self.sueltas = []  # lo que el candado no pudo resolver: lo puede contestar el vendedor, controlado
+        self.normal = []  # las reglas de la forma normal que se aplicaron a la agenda
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
@@ -135,7 +141,23 @@ class Turno:
         entre = [m["id"] for m in self.estado["mostrados"]] if _si(b.get("entre_lo_mostrado")) else None
         conds = [str(c) for c in _lista(b.get("condiciones"))]
         r = K.buscar(rub, conds, orden, cuantos, self.tienda, entre)
-        self.hechos.append({"tipo": "lista", "rubro": rub or "la tienda", **r})
+        aviso = ""
+        if entre is not None and conds and (not r["filas"] or r["vacio_por"]):
+            # ENTRE LO MOSTRADO NO HAY LO QUE PIDE: se busca en la tienda, que es lo que quiere saber, y se dice.
+            afuera = K.buscar(rub, conds, orden, cuantos, self.tienda)
+            if afuera["filas"] and not afuera["vacio_por"]:
+                r, entre, aviso = afuera, None, "fuera"
+        elif (entre is None or not conds) and K.n(orden) in ("nada", "") and r["filas"]:
+            # LO MISMO DE NUEVO NO ES UNA RESPUESTA: si todo lo que trae ya lo vio, van los que no vio. Entre lo mostrado
+            # y sin condicion tampoco elige nada: es pedir otras opciones.
+            vistos = {_modelo_de(K.por_id(m["id"], self.tienda)) for m in self.estado["mostrados"]}
+            if all(_modelo_de(p) in vistos for p in r["filas"]):
+                ids = [str(p["id"]) for p in K.productos(self.tienda) if (not rub or p.get("categoria") == rub)
+                       and _modelo_de(p) not in vistos]
+                otros = K.buscar(rub, conds, orden, cuantos, self.tienda, ids)
+                if otros["filas"] and not otros["vacio_por"]:
+                    r, aviso = otros, "otros"
+        self.hechos.append({"tipo": "lista", "rubro": rub or "la tienda", "aviso": aviso, **r})
         if rub:
             self.listas[rub] = {"filas": r["filas"], "orden": orden}
             self.pedidas[rub] = self.pedidas.get(rub, 0) + max(1, K.entero(b.get("cantidad"), 1))
@@ -490,7 +512,8 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None, elegida:
     estado["borrador"] = B.leer(estado.get("borrador"))
     t.propuesta = estado["borrador"]["propuesta"]
     t.nums, t.explicar = numeros(estado), explicar
-    agenda = agenda if isinstance(agenda, dict) else {"preguntas": agenda}
+    # LA FORMA NORMAL: lo que dijo el modelo, en la forma que se cumple aca. Ver `normal.py`.
+    agenda, t.normal = normalizar(agenda, estado, tienda_id, t.nums)
     cliente = agenda.get("cliente") if isinstance(agenda.get("cliente"), dict) else {}
     estado["borrador"]["cliente"].update({k: v for k, v in cliente.items() if v and k in ("localidad", "nombre", "es")})
     preguntas = t.agenda = A.preguntas(agenda)

@@ -31,6 +31,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Lo que dijo el cliente, las lecturas que cierran y lo supuesto hasta que acepta | `app/core/flujo/borrador.py` |
 | La agenda: el menu de acciones y el control de lo que falta | `app/core/flujo/agenda.py` |
 | Lo que el codigo reconoce en el mensaje antes del modelo | `app/core/flujo/marcador.py` |
+| Lo que dijo el modelo, llevado a la forma que cumple el ejecutor: la forma normal | `app/core/flujo/normal.py` |
 | Cada pregunta de la agenda, cumplida con las herramientas, y el candado | `app/core/flujo/ejecutor.py` |
 | Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |
 | La respuesta al cliente, escrita por el código | `app/core/flujo/redaccion.py` |
@@ -63,6 +64,7 @@ permiso.
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |
 | Cada compleja dicha de muchas formas, con el modelo real: la vara para cambiar la consigna | `banco_pruebas/variantes.py` |
 | Si lo que recibe el modelo alcanza, sin modelo | `banco_pruebas/suficiencia.py` |
+| Las traducciones grabadas de seis modelos, calificadas con el codigo de hoy, sin modelo | `banco_pruebas/forma_normal/regrado.py` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
 | La vara de las 58 | `banco_pruebas/vara_58.py` |

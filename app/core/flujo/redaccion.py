@@ -37,6 +37,10 @@ def _lista(h: dict, filas: int = 5) -> list:
     if h["vacio_por"]:
         out.append(f"No hay {h['rubro']} con {', '.join(h['vacio_por'])}." +
                    (" Te muestro lo más parecido:" if h["filas"] else ""))
+    elif h["filas"] and h.get("aviso") == "fuera":
+        out.append(f"Entre los que te mostré no hay. En {h['rubro']} tengo:")
+    elif h["filas"] and h.get("aviso") == "otros":
+        out.append(f"Además de los que ya te mostré, en {h['rubro']} tengo:")
     elif h["filas"]:
         out.append(f"En {h['rubro']} tengo:")
     else:

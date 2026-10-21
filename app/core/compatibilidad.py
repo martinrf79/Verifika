@@ -156,6 +156,35 @@ def plataformas_del_mensaje(mensaje: str,
     return out
 
 
+def conectores_del_mensaje(mensaje: str, tienda_id: str | None = None) -> list[str]:
+    """Las ranuras, zocalos y puertos que el cliente dijo que tiene su equipo, por alias del vocabulario."""
+    m = _norm(mensaje)
+    v = vocabulario(tienda_id)
+    out: list[str] = []
+    for alias in sorted(v["alias_conector"], key=len, reverse=True):
+        if m and re.search(r"\b" + re.escape(alias) + r"\b", m):
+            out += [c for c in sorted(v["alias_conector"][alias]) if c not in out]
+    return out
+
+
+def choca_con_lo_dicho(prod: dict, mensaje: str, tienda_id: str | None = None) -> str:
+    """EL EQUIPO DICHO CON SU RANURA: "una PC con placa DDR5". Si el cliente nombra un conector de la misma familia que
+    uno que el producto requiere, y no es ese, y la nota de la ficha dice que en ese no va, no es compatible aunque la
+    plataforma lo sea. Devuelve la etiqueta del conector que choca, o "". Sin la nota no se afirma nada."""
+    compat = compat_de(prod, tienda_id)
+    fam = vocabulario(tienda_id)["familias"]
+    requiere = set(compat.get("requiere") or [])
+    nota = _norm(compat.get("nota"))
+    v = vocabulario(tienda_id)
+    for c in conectores_del_mensaje(mensaje, tienda_id):
+        if c in requiere or not any(fam.get(r, r) == fam.get(c, c) for r in requiere):
+            continue
+        alias = [a for a, ids in v["alias_conector"].items() if c in ids]
+        if any(re.search(r"\b" + re.escape(a) + r"\b", nota) for a in alias):
+            return etiqueta_conector(c, tienda_id)
+    return ""
+
+
 def etiqueta_plataforma(pid: str, tienda_id: str | None = None) -> str:
     v = vocabulario(tienda_id)
     return (v["plataformas"].get(pid) or {}).get("etiqueta", pid)

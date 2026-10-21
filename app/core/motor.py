@@ -706,6 +706,14 @@ def _evaluar(prod: dict, con: str, porid: dict, tienda_id: str) -> dict:
                 "motivo": f"'{con}' puede ser {' o '.join(etqs)}: no elijas, "
                           f"pregunta cual tiene"}
     veredicto, motivo = evaluar(prod, equipos[0], tienda_id)
+    from app.core.compatibilidad import choca_con_lo_dicho
+    choca = choca_con_lo_dicho(prod, con, tienda_id) if veredicto == "compatible" else ""
+    if choca:
+        # LA PLATAFORMA NO ALCANZA si el cliente dijo tambien la ranura: una memoria DDR4 en una PC con placa DDR5.
+        from app.core.compatibilidad import compat_de
+        nota = str(compat_de(prod, tienda_id).get("nota") or "").strip()
+        return {"con_equipo": etiqueta_plataforma(equipos[0], tienda_id), "veredicto": "incompatible",
+                "motivo": f"{prod.get('nombre')} no va en un equipo con {choca}. {nota}".strip()}
     return {"con_equipo": etiqueta_plataforma(equipos[0], tienda_id),
             "veredicto": veredicto,
             "motivo": motivo or (

@@ -68,7 +68,7 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
     texto = redaccion.texto(t.hechos, t.preguntas, pide_nombre)
     log.info("flujo_turno", trace_id=trace_id, estados=[t.estados.get(p.get("n")) for p in preguntas(agenda)],
              hechos=[h["tipo"] for h in t.hechos], preguntas=len(t.preguntas),
-             herramientas=[x["herramienta"] for x in t.llamadas])
+             herramientas=[x["herramienta"] for x in t.llamadas], normal=t.normal)
 
     cuentas = [h for h in t.hechos if h["tipo"] == "cuenta"]
     presupuesto = None

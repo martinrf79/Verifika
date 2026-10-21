@@ -204,11 +204,13 @@ ORDEN = {"mas barato": ("precio_ars", 1), "mas caro": ("precio_ars", -1),
 def buscar(rubro_: str, condiciones: list, orden: str, cuantos: int, tienda_id: str, entre: list = None) -> dict:
     """{"filas", "sin_campo", "vacio_por", "orden_desconocido"}. Las filas son productos con stock, uno por modelo.
     Si las condiciones juntas dejan cero, vuelve lo que hay sin la que vacio y `vacio_por` dice cual fue."""
-    universo = [p for p in productos(tienda_id) if (not rubro_ or p.get("categoria") == rubro_)
-                and (entre is None or str(p["id"]) in entre)]
+    del_rubro = [p for p in productos(tienda_id) if not rubro_ or p.get("categoria") == rubro_]
+    universo = [p for p in del_rubro if entre is None or str(p["id"]) in entre]
     filtros, sin_campo = [], []
     for c in condiciones or []:
-        f = atar(str(c), universo, tienda_id)
+        # La condicion se ata en todo el rubro: "que no sea Redragon" es un filtro aunque entre lo mostrado no haya
+        # ninguno Redragon.
+        f = atar(str(c), del_rubro, tienda_id)
         (sin_campo.append(f["sin_campo"]) if "sin_campo" in f else filtros.append((str(c), f)))
     quedan = [p for p in universo if con_stock(p) and all(cumple(p, f) for _, f in filtros)]
     vacio_por = []

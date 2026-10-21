@@ -87,9 +87,15 @@ def aplicar(b: dict, ops: dict, pedidas: dict = None) -> None:
     if reparto:
         # Un medio ya dicho no se pierde porque el modelo no lo repitio: "sin decir" toma el de ese porcentaje.
         dichos = {p["porcentaje"]: p["medio"] for p in b["pago"] if K.n(p["medio"]) not in SIN_MEDIO}
-        b["pago"] = [{"medio": str(r.get("medio") or "sin decir") if K.n(r.get("medio")) not in SIN_MEDIO
-                      else dichos.get(K.entero(r["porcentaje"]), "sin decir"), "porcentaje": K.entero(r["porcentaje"])}
-                     for r in reparto]
+        nuevo = [{"medio": str(r.get("medio") or "sin decir") if K.n(r.get("medio")) not in SIN_MEDIO
+                  else dichos.get(K.entero(r["porcentaje"]), "sin decir"), "porcentaje": K.entero(r["porcentaje"])}
+                 for r in reparto]
+        # UN REPARTO DICHO A MEDIAS se completa con lo que ya estaba: "70 por ciento transferencia" con el 70/30 dicho.
+        resto = [p for p in b["pago"] if K.n(p["medio"]) not in SIN_MEDIO
+                 and K.n(p["medio"]) not in {K.n(x["medio"]) for x in nuevo}]
+        if sum(x["porcentaje"] for x in nuevo) + sum(K.entero(p["porcentaje"]) for p in resto) == 100 and resto:
+            nuevo += [dict(p) for p in resto]
+        b["pago"] = nuevo
     for ref in ops.get("saca") or []:
         b["renglones"] = [r for r in b["renglones"] if r["L"] != str(ref).strip()]
     for c in ops.get("cambia") or []:
