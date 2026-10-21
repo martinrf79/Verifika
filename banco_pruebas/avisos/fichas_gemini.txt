@@ -1,0 +1,50 @@
+LOS NUEVE TIPOS DE PEDIDO. Cada pedido es un comando con sus casillas. Usa palabras del cliente o números de la LIBRETA.
+
+1. PRODUCTO producto="" quiere_saber="" color="" afirma=""
+   Un modelo específico. producto: nombre del modelo o "[M-1, M-2]" si es ambiguo. quiere_saber: dato técnico, precio o stock. afirma: dato que el cliente da por cierto.
+   VA: "precio del X", "el X tiene bluetooth?", "garantía del X".
+   NO VA: si no hay modelo, es BUSCAR.
+   FRONTERA: Si pide elegir entre dos por un dato, es PRODUCTO de cada uno + AGREGAR con si="n:si".
+
+2. BUSCAR rubro="" cantidad="" orden="" condiciones="" entre_lo_mostrado="si"
+   Productos sin modelo. rubro: de la lista. cantidad: número de ítems. orden: "mas barato", "mas caro" o "mas <dato>". condiciones: filtros (marca, color, specs). entre_lo_mostrado: solo si es sobre lo ya visto.
+   VA: "tenés teclados mecánicos?", "busco algo más barato".
+   NO VA: si nombra un modelo, es PRODUCTO.
+   FRONTERA: "Mostrame más" no es entre_lo_mostrado.
+
+3. ENVIO destino=""
+   Cotizar envío a un lugar. destino: lugar dicho o localidad del cliente.
+   VA: "cuánto a [lugar]?", "envío a mi casa".
+   NO VA: política general de envíos (es POLITICA).
+
+4. CUENTA tope="" si_pasa="" reparto=""
+   Sumar el total. tope: monto límite. si_pasa: qué hacer si excede. reparto: cómo se paga (ej: "efectivo 50; tarjeta 50").
+   VA: "cuánto es todo?", "sumame el envío".
+   NO VA: precio de un solo producto (es PRODUCTO).
+
+5. POLITICA tema="" afirma=""
+   Reglas de la tienda. tema: de la lista. afirma: lo que el cliente cree saber.
+   VA: "hacen cuotas?", "me dijeron que hay descuento".
+   NO VA: datos de un producto o costo de envío a un lugar.
+
+6. COMPATIBILIDAD producto="" con="" falta_modelo="si"
+   Si un producto funciona con otro. con: el equipo. falta_modelo: "si" si es un equipo genérico del cliente.
+   VA: "el X anda con mi notebook?".
+   NO VA: buscar un producto que cumpla una función (es BUSCAR).
+
+7. COMPRA: AGREGAR producto="" cantidad="" color="" destino="" | SACAR renglon="L-1" | CAMBIAR renglon="L-1" | CONFIRMAR renglon="L-2" | ACEPTAR renglon="L-2" | TOTAL cantidad="" | REEMPLAZAR
+   Acciones sobre el carrito. AGREGAR: decidir llevar algo. Los otros: modificar lo que ya está en la LIBRETA.
+   VA: "me llevo el X", "sacá el primero", "confirmo".
+   NO VA: preguntar precio o pedir ver (es PRODUCTO o BUSCAR).
+
+8. EXPLICAR pregunta=""
+   Duda técnica general, no sobre la tienda.
+   VA: "qué es mejor, X o Y?".
+   NO VA: dudas sobre stock o precios (es PRODUCTO).
+
+9. OTRO que=""
+   Lo que no es pedido: saludos, datos personales, correcciones ("ah no"), fuera de tema.
+   VA: "hola", "soy de Córdoba", "ah no, mejor el otro".
+   CLIENTE es="" nombre="" localidad="" equipo="" (datos del usuario).
+
+PARA TODOS: si depende de algo previo, usar si="n:si" o si="n:no". Si responde al vendedor, usar responde="R-n".

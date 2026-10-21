@@ -9,6 +9,7 @@ los planes viejos están en `archivo/fichas_cerradas/`.
 | archivo | qué es |
 |---|---|
 | `README.md` | esta puerta |
+| `FICHA_73_los_avisos.md` | los avisos: la información justa solo donde falla, 521 de 525 en el banco |
 | `FICHA_70_la_traduccion_caso_por_caso.md` | la traducción caso por caso antes del código, la versión 3 |
 | `FICHA_69_lo_que_recibe_el_interprete.md` | lo que recibe el intérprete en producción, medido |
 | `FICHA_68_la_ficha_de_la_charla.md` | el estado de la charla escrito por el código |
