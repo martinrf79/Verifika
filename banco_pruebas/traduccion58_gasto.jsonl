@@ -1083,3 +1083,5 @@
 {"proveedor": "haiku", "entrada": 5848, "salida": 1541, "dolares": 0.001355}
 {"proveedor": "haiku", "entrada": 5848, "salida": 1873, "dolares": 0.001521}
 {"proveedor": "haiku", "entrada": 5848, "salida": 1527, "dolares": 0.001348}
+{"proveedor": "responder", "entrada": 138640, "cache": 0, "salida": 421, "dolares": 0.087698}
+{"proveedor": "responder", "entrada": 138629, "cache": 138605, "salida": 118, "dolares": 0.007237}
