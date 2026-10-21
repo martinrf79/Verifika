@@ -4,13 +4,13 @@ Dos candados:
   cada regla   una agenda como la escriben los modelos, y la forma en que queda; y una que la regla no toca.
   el piso      las traducciones grabadas del modelo de produccion en las 525 de `traduccion58`, pasadas por el flujo
                vivo con el codigo de hoy y calificadas con la vara: `banco_pruebas/forma_normal/regrado.py`. Grabado
-               dio 455; con la forma normal, 501. Sin modelo.
+               dio 455; con la forma normal, 506. Sin modelo.
 """
 import pytest
 
 from banco_pruebas import cableado58 as R
 
-PISO_PRODUCCION = 501
+PISO_PRODUCCION = 506
 
 
 @pytest.fixture(scope="module")
