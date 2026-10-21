@@ -159,7 +159,8 @@ def correr(parte: int, partes: int, solo: list = None) -> bool:
         malas = [c["n"] for c in casillas if nota_casilla(c, [], texto_r, respuestas) is not True]
         x = {"huella": huella, "charla": charla["id"], "turno": k, "forma": forma, "rep": rep, "texto": texto,
              "bien": not malas, "malas": malas, "acciones_iguales": _acciones(vistas[-1]) == _acciones(agendas[k]),
-             "agenda": vistas[-1], "respuesta": texto_r, "segundos": round(time.time() - t0, 1)}
+             "agenda": vistas[-1], "respuesta": texto_r,
+             "clave": "paga" if os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true" else "gratis", "segundos": round(time.time() - t0, 1)}
         with open(CORRIDAS, "a", encoding="utf-8") as out:
             out.write(json.dumps(x, ensure_ascii=False) + "\n")
         print(f"[parte {parte}] {charla['id']} T{k} {forma} r{rep}: {'bien' if not malas else 'MAL ' + '; '.join(malas)}",
