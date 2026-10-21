@@ -37,6 +37,46 @@ CORRIDAS = os.path.join(AQUI, "traduccion58_corridas.jsonl")
 FORMAS = ("original", "plano", "whatsapp", "redactada", "coloquial")
 REPS = 3
 
+# OTROS MODELOS, para comparar con el de produccion (21-oct, orden de Martin): una sola vez, por su propia puerta, con
+# su gasto anotado en GASTO y un tope por proveedor. `TRAD_PROVEEDOR=deepseek` o `haiku`; sin eso, Gemini.
+PROVEEDORES = {"deepseek": ("DEEPSEEK_API_KEY", "https://api.deepseek.com", "deepseek-chat"),
+               "haiku": ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1", "anthropic/claude-haiku-5.5")}
+GASTO = os.path.join(AQUI, "traduccion58_gasto.jsonl")
+TOPE_OTRO = 2.00
+
+
+def proveedor() -> str:
+    return os.environ.get("TRAD_PROVEEDOR", "gemini")
+
+
+def gastado_otro(nombre: str) -> float:
+    if not os.path.exists(GASTO):
+        return 0.0
+    return sum(json.loads(x)["dolares"] for x in open(GASTO, encoding="utf-8") if json.loads(x)["proveedor"] == nombre)
+
+
+def _puerta_otra(nombre: str):
+    """El cliente del otro proveedor, con cada llamada anotada y el tope mirado antes."""
+    from openai import OpenAI
+    from banco_pruebas import costo
+    env, url, modelo = PROVEEDORES[nombre]
+    cli = OpenAI(api_key=os.environ[env], base_url=url)
+    crear = cli.chat.completions.create
+
+    def create(*a, **k):
+        if gastado_otro(nombre) >= TOPE_OTRO:
+            raise RuntimeError(f"tope de {TOPE_OTRO} dolares para {nombre}")
+        k["model"] = modelo
+        r = crear(*a, **k)
+        u = getattr(r, "usage", None)
+        e, sa = int(getattr(u, "prompt_tokens", 0) or 0), int(getattr(u, "completion_tokens", 0) or 0)
+        with open(GASTO, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"proveedor": nombre, "entrada": e, "salida": sa,
+                                "dolares": round(costo.dolares(e, sa, modelo), 6)}) + "\n")
+        return r
+    cli.chat.completions.create = create
+    return cli
+
 _ABREVIA = {"que": "q", "porque": "xq", "tambien": "tmb", "auriculares": "auris", "mensaje": "msj", "favor": "fa"}
 
 
@@ -83,7 +123,7 @@ def _leidas() -> dict:
     if os.path.exists(CORRIDAS):
         for linea in open(CORRIDAS, encoding="utf-8"):
             x = json.loads(linea)
-            out[(x["huella"], x["charla"], x["turno"], x["forma"], x["rep"])] = x
+            out[(x["huella"], x["charla"], x["turno"], x["forma"], x["rep"], x.get("modelo", "gemini"))] = x
     return out
 
 
@@ -110,16 +150,21 @@ def correr(parte: int, partes: int, solo: list = None) -> bool:
     from banco_pruebas.sonda_charlas import nota_casilla
     it = R.instalar()
     llm_reintento._cliente = puerta  # el modelo real: lo que se mide es su traduccion
+    nombre = proveedor()
+    reps = REPS
+    if nombre != "gemini":
+        otra = _puerta_otra(nombre)
+        llm_reintento._cliente, llm_reintento._modelo, reps = (lambda: otra), (lambda: PROVEEDORES[nombre][2]), 1
     elegir_mano = it.elegir
     huella, hechas, protegidas = _huella(), _leidas(), _protegidas()
     trabajo = []
-    for rep in range(REPS):
+    for rep in range(reps):
         for charla in R.charlas():
             if solo and charla["id"] not in solo:
                 continue
             for k, t in enumerate(charla["turnos"]):
                 for forma, texto in formas_de(charla["id"], k, t["texto"], protegidas).items():
-                    clave = (huella, charla["id"], k, forma, rep)
+                    clave = (huella, charla["id"], k, forma, rep, nombre)
                     if clave not in hechas and zlib.crc32(repr(clave[1:]).encode()) % partes == parte - 1:
                         trabajo.append((charla, k, forma, texto, rep))
     print(f"[parte {parte}/{partes}] faltan {len(trabajo)} corridas, consigna {huella}", flush=True)
@@ -158,10 +203,11 @@ def correr(parte: int, partes: int, solo: list = None) -> bool:
         respuestas.append(texto_r)
         casillas = charla["turnos"][k]["casillas"]
         malas = [c["n"] for c in casillas if nota_casilla(c, [], texto_r, respuestas) is not True]
-        x = {"huella": huella, "charla": charla["id"], "turno": k, "forma": forma, "rep": rep, "texto": texto,
+        x = {"huella": huella, "modelo": nombre, "charla": charla["id"], "turno": k, "forma": forma, "rep": rep, "texto": texto,
              "bien": not malas, "malas": malas, "acciones_iguales": _acciones(vistas[-1]) == _acciones(agendas[k]),
              "agenda": vistas[-1], "respuesta": texto_r,
-             "clave": "paga" if os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true" else "gratis", "segundos": round(time.time() - t0, 1)}
+             "clave": nombre if nombre != "gemini" else
+             "paga" if os.environ.get("BANCO_CLAVE_PAGA", "").lower() == "true" else "gratis", "segundos": round(time.time() - t0, 1)}
         with open(CORRIDAS, "a", encoding="utf-8") as out:
             out.write(json.dumps(x, ensure_ascii=False) + "\n")
         print(f"[parte {parte}] {charla['id']} T{k} {forma} r{rep}: {'bien' if not malas else 'MAL ' + '; '.join(malas)}",
@@ -177,7 +223,7 @@ def informe() -> None:
     huella, hechas = _huella(), _leidas()
     turnos = [(c["id"], k) for c in R.charlas() for k in range(len(c["turnos"]))]
     print(f"\nLO QUE EL MODELO TRADUCE, consigna {huella}: {len(turnos)} turnos, {len(FORMAS)} formas, {REPS} veces")
-    hechas_h = {k[1:]: v for k, v in hechas.items() if k[0] == huella}
+    hechas_h = {k[1:5]: v for k, v in hechas.items() if k[0] == huella and k[5] == "gemini"}
     print(f"  corridas: {len(hechas_h)} de {len(turnos) * len(FORMAS) * REPS}")
     estables = {}
     for forma in FORMAS:
@@ -209,7 +255,26 @@ def main(argv: list) -> int:
         if not correr(parte, partes, [a for a in argv if re.fullmatch(r"[CK]\d\d", a)]):
             return 2
     informe()
+    comparar()
     return 0
+
+
+def comparar() -> None:
+    """Los otros modelos, una vez, contra la primera vuelta de Gemini en los mismos turnos y formas."""
+    huella, hechas = _huella(), _leidas()
+    gem = {k[1:4]: v["bien"] for k, v in hechas.items() if k[0] == huella and k[5] == "gemini" and k[4] == 0}
+    for nombre in PROVEEDORES:
+        otro = {k[1:4]: v["bien"] for k, v in hechas.items() if k[0] == huella and k[5] == nombre}
+        if not otro:
+            continue
+        print(f"\n{nombre.upper()}, una vez, contra Gemini en lo mismo · gastado {gastado_otro(nombre):.2f} dolares")
+        for forma in FORMAS:
+            ks = [k for k in otro if k[2] == forma]
+            print(f"  {forma:10} {nombre} {sum(otro[k] for k in ks)} · gemini {sum(gem.get(k, False) for k in ks)} · de {len(ks)}")
+        mejor = sorted({(k[0], k[1]) for k in otro if otro[k] and not gem.get(k, True)})
+        peor = sorted({(k[0], k[1]) for k in otro if not otro[k] and gem.get(k, False)})
+        print(f"  arregla alguna forma de: {' '.join(f'{c}T{t}' for c, t in mejor) or 'ninguno'}")
+        print(f"  rompe alguna forma de:   {' '.join(f'{c}T{t}' for c, t in peor) or 'ninguno'}")
 
 
 if __name__ == "__main__":
