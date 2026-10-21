@@ -102,6 +102,7 @@ def correr(parte: int, partes: int, solo: list = None) -> bool:
     from banco_pruebas import cableado58 as R
     from banco_pruebas import clon_produccion as C
     C.preparar_entorno()
+    C.instalar()  # antes de tomar la puerta: con la paga, `instalar` la envuelve con el libro y su tope diario
     from app.core import llm_reintento
     from app.core.flujo import interprete
     puerta, real_interpretar, real_elegir = llm_reintento._cliente, interprete.interpretar, interprete.elegir
