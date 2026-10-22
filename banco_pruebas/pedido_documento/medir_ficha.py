@@ -9,7 +9,7 @@ LAS CONSULTAS: cada pregunta de la ficha tiene que estar, por lo que nombra.
 Por turno: BIEN, el pedido y las consultas como la ficha; DUDO, no esta bien pero anoto una duda; MAL SIN AVISAR.
 Es otra vara que la de `pregunta_razonada/calificar.py`: aquella miraba las acciones, esta el resultado.
 
-    python3 banco_pruebas/pedido_documento/medir_ficha.py [--ver]
+    python3 banco_pruebas/pedido_documento/medir_ficha.py [--ver] [--archivo ficha_v2.jsonl]
 """
 import collections
 import json
@@ -197,9 +197,9 @@ def calificar(tu: dict, salida: str) -> dict:
             "dudas": dudas}
 
 
-def main(ver: bool = False) -> None:
-    filas = {(r["charla"], r["turno"]): r for r in map(json.loads, open(os.path.join(AQUI, "ficha.jsonl"),
-                                                                          encoding="utf-8")) if not r.get("error")}
+def main(ver: bool = False, archivo: str = "ficha.jsonl", rep: int = 0) -> None:
+    filas = {(r["charla"], r["turno"]): r for r in map(json.loads, open(os.path.join(AQUI, archivo), encoding="utf-8"))
+             if not r.get("error") and r.get("rep", 0) == rep}
     cuenta, tipos, por_t = collections.Counter(), collections.Counter(), collections.Counter()
     dudas_en_bien = 0
     for ch in CHARLAS:
@@ -219,7 +219,7 @@ def main(ver: bool = False) -> None:
                 if c["dudas"]:
                     print(f"    dudas: {c['dudas']}")
     total = sum(cuenta[v] for v in ("BIEN", "DUDO", "MAL SIN AVISAR"))
-    print(f"\nFICHA NATIVA · {total} turnos")
+    print(f"\nFICHA NATIVA · {archivo}, repeticion {rep} · {total} turnos")
     print(f"  BIEN {cuenta['BIEN']} · DUDO {cuenta['DUDO']} · MAL SIN AVISAR {cuenta['MAL SIN AVISAR']}")
     print("  por turno de la charla: " + " · ".join(f"t{t}: {por_t[(t, True)]} de {por_t[(t, True)] + por_t[(t, False)]}"
                                                     for t in range(3)))
@@ -231,4 +231,8 @@ def main(ver: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    main("--ver" in sys.argv)
+    a = sys.argv[1:]
+    archivo = a[a.index("--archivo") + 1] if "--archivo" in a else "ficha.jsonl"
+    reps = sorted({r.get("rep", 0) for r in map(json.loads, open(os.path.join(AQUI, archivo), encoding="utf-8"))})
+    for k in reps:
+        main("--ver" in a, archivo, k)
