@@ -172,7 +172,9 @@ def calificar(tu: dict, salida: str) -> dict:
         return {"veredicto": "MAL SIN AVISAR", "fallas": ["no se pudo leer"], "dudas": []}
     arts, salen, orden_todo = pedido_correcto(tu)
     its = articulos(ficha)
-    prefs = n(" ".join(str(x) for x in _lista(ficha.get("preferencias"))))
+    pr = ficha.get("preferencias")
+    prefs = n(" ".join(str(x) for x in (_lista(pr.get("condiciones")) + [pr.get("orden") or ""] if isinstance(pr, dict)
+                                        else _lista(pr))))
     fallas, usados = [], set()
     for a in sorted(arts, key=lambda a: a["opt"]):
         cand = [(comparar_articulo(a, it, prefs) if not a["flex"] else [], i) for i, it in enumerate(its)

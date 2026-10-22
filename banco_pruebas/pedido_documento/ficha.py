@@ -7,7 +7,7 @@ entero, como queda despues del mensaje: no los pasos para llegar.
 
 El prompt no lleva menu de funciones, ejemplos ni fuente. Corre los 48 turnos de `pregunta_razonada/fichas.py`, con
 su memoria. Con la paga y la marca de Martin, freno a los 10 centavos:
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/pedido_documento/ficha.py [--v2] [--reps 3]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/pedido_documento/ficha.py [--v2 | --v3] [--reps 3]
 Lo que devuelve queda en `ficha.jsonl`, o en `ficha_v2.jsonl` con la duda ajustada; `medir_ficha.py` lo compara con las fichas.
 """
 import asyncio
@@ -31,8 +31,9 @@ from app.core import llm_reintento  # noqa: E402
 from banco_pruebas import costo  # noqa: E402
 from experimento import memoria, limpio  # noqa: E402
 from fichas import CHARLAS  # noqa: E402
+from app.core.flujo import catalogo as K  # noqa: E402
 
-SALIDA = os.path.join(AQUI, "ficha_v2.jsonl" if "--v2" in sys.argv else "ficha.jsonl")
+SALIDA = os.path.join(AQUI, next((f"ficha_{v}.jsonl" for v in ("v2", "v3") if f"--{v}" in sys.argv), "ficha.jsonl"))
 
 TOPE_USD = 0.12
 
@@ -63,7 +64,44 @@ FICHA_V2 = FICHA.replace(
     '"dudas": solo lo que impide cumplir algo de ESTE mensaje y hay que preguntarle al cliente, ["..."]; no lo que\n'
     '    falta para cerrar la venta, como el nombre o la localidad, ni lo que el programa resuelve con la tienda.\n'
     '    Si no hay, []')
-VERSION = "v2" if "--v2" in sys.argv else "v1"
+# EL CONTRATO, v3: lo que en la fuente es cerrado se le ofrece cerrado. Medido en `atar_ficha.py` sobre la v2: el
+# orden no se ataba nunca —"lo mas economico" no es una clave del codigo—, la condicion venia con relleno —"sin
+# especificar", el tope total, el medio de pago— y las busquedas vagas llegaban como consulta de un producto.
+ORDENES = " | ".join(list(K.ORDEN) + ["nada"])
+FICHA_V3 = f"""Sos parte del sistema de una tienda online de tecnologia de Argentina. No le contestas al cliente. Con la
+MEMORIA y el ULTIMO MENSAJE, llena esta ficha en JSON. Los valores van en palabras, claros y completos, como los
+entenderia alguien que no leyo la charla. No agregues nada que no este en el mensaje o en la memoria: los precios y los
+datos de la tienda los pone otro programa. Lo que senala de la memoria —"ese", "el segundo"— va con su nombre y su
+numero, M2 o L1.
+
+{{
+  "pedido": como queda el pedido ENTERO despues de este mensaje: lo que ya estaba y sigue, con lo que cambio. Solo lo
+    que el cliente decidio llevar; lo que solo pregunta va en consultas.
+    [{{"destino": "...", "items": [{{"producto": "...", "cantidad": 1, "color": "...", "condiciones": ["..."],
+                                     "orden": "...", "renglon": "L1 si ya estaba"}}]}}]
+    Lo que todavia no tiene destino va con "destino": "sin decir".
+  "preferencias": lo que pide para todo el pedido: {{"condiciones": ["..."], "orden": "..."}},
+  "pago": {{"medios": [{{"medio": "... o sin decir", "porcentaje": 100}}], "tope_total": pesos o null}},
+  "consultas": lo que pregunta o pide saber, en su orden:
+    [{{"tipo": "...", "sobre": "...", "condiciones": ["..."], "orden": "...", "si": "de que depende, si depende"}}],
+  "cliente": lo que dice de si mismo: nombre, localidad,
+  "dudas": solo lo que impide cumplir algo de ESTE mensaje y hay que preguntarle al cliente, ["..."]; no lo que
+    falta para cerrar la venta, como el nombre o la localidad, ni lo que el programa resuelve con la tienda. Si no hay, []
+}}
+
+"condiciones": cada una corta, una cosa que pide que tenga el producto: "inalambrico", "no fabricado en China". Si no
+pide nada, []. El tope de plata del total va en "pago", y el medio de pago tambien.
+"orden": uno de estos, tal cual: {ORDENES}.
+"tipo" de consulta, uno de estos:
+  buscar              pide opciones de una clase de producto: "que tenes para...", "mostrame..."
+  producto            pregunta un dato de un producto ya nombrado o mostrado: precio, stock, si aguanta el agua
+  comparar            dos o mas productos por un dato
+  compatibilidad      si un producto anda con algo que tiene el cliente
+  envio               cuanto sale o cuanto tarda mandar a un lugar
+  cuenta              cuanto da el total
+  regla de la tienda  como trabaja la tienda: medios de pago, cuotas, garantia, factura, retiro, devoluciones
+  saber general       tecnologia en general, que no depende de la tienda"""
+VERSION = "v3" if "--v3" in sys.argv else ("v2" if "--v2" in sys.argv else "v1")
 REPS = int(sys.argv[sys.argv.index("--reps") + 1]) if "--reps" in sys.argv else 1
 
 GASTO = {"usd": 0.0}
@@ -80,7 +118,7 @@ async def una(cid: str, t: int, tu: dict, sem, rep: int = 0) -> dict:
             r = await llm_reintento.llamar_con_reintento(
                 lambda: cli.chat.completions.create(
                     model=llm_reintento._modelo(), temperature=0, response_format={"type": "json_object"},
-                    messages=[{"role": "system", "content": FICHA_V2 if VERSION == "v2" else FICHA},
+                    messages=[{"role": "system", "content": {"v1": FICHA, "v2": FICHA_V2, "v3": FICHA_V3}[VERSION]},
                               {"role": "user", "content": f"{memoria(tu['mem'])}\n\nULTIMO MENSAJE: {limpio(tu['msg'])}"}]),
                 timeout_s=90, trace_id="ficha_nativa")
         except Exception as e:  # noqa: BLE001

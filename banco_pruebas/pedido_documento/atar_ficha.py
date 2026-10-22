@@ -93,7 +93,9 @@ def main(archivo: str = "ficha_v2.jsonl") -> None:
             mem = tu["mem"]
             arts, _, _ = pedido_correcto(tu)
             its = articulos(ficha)
-            prefs = frases(ficha.get("preferencias"))
+            pr = ficha.get("preferencias")
+            prefs = frases(pr.get("condiciones") if isinstance(pr, dict) else pr)
+            ordenes = [n(pr.get("orden"))] if isinstance(pr, dict) and pr.get("orden") else []
             for it in its:
                 # El articulo de la ficha de la charla que le corresponde, para saber que era lo correcto.
                 oro = next((a for a in arts if tiene(it["texto"], a["que"]) and (not a["dest"] or n(a["dest"]).split()[0]
@@ -116,6 +118,11 @@ def main(archivo: str = "ficha_v2.jsonl") -> None:
                     if not ls:
                         sueltas["destino"][d] += 1
                 univ = [p for p in PS if p.get("categoria") == rub]
+                for o in ordenes + ([n(it["orden"])] if it.get("orden") else []):
+                    if o not in VACIO and o != "nada":
+                        c["orden"]["atado" if o in K.ORDEN else "no atado"] += 1
+                        if o not in K.ORDEN:
+                            sueltas["orden"][o] += 1
                 for f in frases(it.get("condiciones")) + prefs:
                     if any(w in n(f) for w in BARATO + ["caro", "mejor", "liviano"]):
                         c["orden"]["atado" if n(f) in K.ORDEN else "no atado"] += 1
