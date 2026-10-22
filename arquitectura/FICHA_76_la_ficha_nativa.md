@@ -64,6 +64,13 @@ con listas cerradas de valores. Hoy se le pide JSON libre. Con el esquema, la fo
 —el orden, el tipo de consulta— los fija la API y no el prompt. Se prueba sobre las 48 de `ficha_v3`: que no baje de 38
 y que ningún valor cerrado salga fuera de su lista, porque una fuente no oficial dice que a veces no se respetan.
 
+**Medido el 22-oct, con la paga, 8 centavos.** Con `response_format` de tipo `json_schema` por la puerta compatible:
+- **v5, el esquema solo:** 39 de 48 bien, 8 mal sin avisar, ningún valor cerrado fuera de su lista. Pasa.
+- **v4, el esquema con un campo `lectura` libre adelante:** 36 de 48, 11 mal sin avisar. Leer antes de llenar empeora:
+  no entra.
+- La v4 con la gratis y con la paga dio idéntico, turno por turno: misma entrada, misma salida. Por eso el banco guarda
+  lo que contesta el modelo, `libro_paga.recordar`, y lo ya preguntado no se paga dos veces.
+
 ### 1. La base, antes de tocar nada
 
 Correr el intérprete de hoy con el modelo, sobre:

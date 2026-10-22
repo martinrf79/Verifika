@@ -142,17 +142,20 @@ def instalar() -> dict:
     # envuelve la unica puerta del bot al modelo, `llm_reintento._cliente`.
     # DEEPSEEK TAMBIEN ES PLATA (2-oct): no tiene cuota gratis, cada llamada
     # se cobra, y va al mismo libro y al mismo tope del dia.
+    # Y LO QUE YA SE PREGUNTO NO SE PREGUNTA DE NUEVO, con la gratis o la paga: `libro_paga.recordar` va por
+    # fuera del libro, asi una respuesta guardada no se anota ni mira el tope.
     paga = (os.environ.get("GEMINI_API_KEY_PROD") or "").strip()
     deepseek = os.environ.get("LLM_PROVIDER", "").lower() == "deepseek"
-    if deepseek or (paga and (os.environ.get("GEMINI_API_KEY") or "").strip() == paga):
-        from app.core import llm_reintento
-        from banco_pruebas import libro_paga
-        puerta = llm_reintento._cliente
-        if not getattr(puerta, "_libro", False):
-            def _cliente_anotado():
-                return libro_paga.envolver(puerta())
-            _cliente_anotado._libro = True
-            llm_reintento._cliente = _cliente_anotado
+    cobra = deepseek or (paga and (os.environ.get("GEMINI_API_KEY") or "").strip() == paga)
+    from app.core import llm_reintento
+    from banco_pruebas import libro_paga
+    puerta = llm_reintento._cliente
+    if not getattr(puerta, "_libro", False):
+        def _cliente_anotado():
+            c = puerta()
+            return libro_paga.envolver(c) if cobra else libro_paga.recordar(c)
+        _cliente_anotado._libro = True
+        llm_reintento._cliente = _cliente_anotado
 
     from app.config import get_settings
     from app.core.leads import modo_cierre

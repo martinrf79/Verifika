@@ -16,14 +16,25 @@ llamada no sale. El tope es por dia y para todas las sesiones.
 LO QUE NO VE: las llamadas que no pasan por el clon y lo que cobra Google de
 mas por su cuenta. La verdad es la consola de facturacion; esto es el piso.
 
+LO QUE YA SE PREGUNTO NO SE PAGA DOS VECES (Martin, 22-oct). Con temperatura 0
+Gemini contesta igual al mismo pedido: medido el 23-oct, tres repeticiones de la
+ficha nativa identicas. `recordar` envuelve el cliente para la gratis y la paga:
+el mismo modelo con los mismos mensajes, formato y temperatura devuelve lo
+guardado en `respuestas_modelo.jsonl`, sin llamada, sin cuota y sin gasto. La
+gratis tambien gana: se traba y tarda, y lo que ya contesto no se le pide.
+Se borra una linea del archivo, o el archivo, para volver a preguntar.
+
   python3 -m banco_pruebas.libro_paga            lo gastado hoy y en el mes
 """
 import datetime
+import hashlib
 import json
 import os
 from pathlib import Path
+from types import SimpleNamespace
 
 LIBRO = Path(__file__).resolve().parent / "libro_paga.jsonl"
+RESPUESTAS = Path(__file__).resolve().parent / "respuestas_modelo.jsonl"
 # Un dolar por dia entre todas las corridas. Subirlo es una orden de Martin,
 # en su propio commit, como cualquier umbral.
 TOPE_DIARIO = 1.00
@@ -75,7 +86,7 @@ def anotar(modelo: str, entrada: int, salida: int) -> float:
 
 
 def envolver(cliente):
-    """El cliente del modelo con cada llamada mirada y anotada."""
+    """El cliente del modelo con cada llamada mirada y anotada, y lo ya preguntado sin volver a pagarlo."""
     if cliente is None or getattr(cliente, "_libro", False):
         return cliente
     crear = cliente.chat.completions.create
@@ -89,6 +100,46 @@ def envolver(cliente):
         return r
     cliente.chat.completions.create = create
     cliente._libro = True
+    return recordar(cliente)
+
+
+def _clave(k: dict) -> str:
+    pedido = {c: k.get(c) for c in ("model", "messages", "response_format", "temperature")}
+    return hashlib.sha256(json.dumps(pedido, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+
+
+_GUARDADAS: dict = {}
+
+
+def _guardadas() -> dict:
+    if not _GUARDADAS and RESPUESTAS.exists():
+        _GUARDADAS.update((r["clave"], r["texto"]) for r in map(json.loads, open(RESPUESTAS, encoding="utf-8")))
+    return _GUARDADAS
+
+
+def recordar(cliente):
+    """El cliente del modelo que no vuelve a preguntar lo que ya pregunto: la respuesta guardada vuelve con cero
+    tokens, asi no se cuenta como gasto."""
+    if cliente is None or getattr(cliente, "_recuerda", False):
+        return cliente
+    crear = cliente.chat.completions.create
+
+    def create(*a, **k):
+        clave = _clave(k)
+        texto = _guardadas().get(clave)
+        if texto is None:
+            r = crear(*a, **k)
+            texto = (getattr(r, "choices", None) or [None])[0]
+            texto = getattr(getattr(texto, "message", None), "content", None)
+            if isinstance(texto, str) and texto:
+                _GUARDADAS[clave] = texto
+                with open(RESPUESTAS, "a", encoding="utf-8") as f:
+                    f.write(json.dumps({"clave": clave, "texto": texto}, ensure_ascii=False) + "\n")
+            return r
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=texto), finish_reason="stop")],
+                               usage=SimpleNamespace(prompt_tokens=0, completion_tokens=0, total_tokens=0))
+    cliente.chat.completions.create = create
+    cliente._recuerda = True
     return cliente
 
 

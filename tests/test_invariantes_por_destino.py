@@ -76,3 +76,25 @@ def test_el_libro_de_la_paga_anota_y_frena_en_el_tope_del_dia(tmp_path, monkeypa
     assert L.hoy() > 0.001
     with pytest.raises(L.TopeDiario):
         cli.chat.completions.create(model="gemini-3.1-flash-lite")
+
+
+def test_lo_ya_preguntado_no_se_paga_dos_veces(tmp_path, monkeypatch):
+    """22-oct, Martin: con temperatura 0 Gemini contesta igual al mismo pedido. El segundo no sale ni se anota."""
+    from types import SimpleNamespace as NS
+    from banco_pruebas import libro_paga as L
+    monkeypatch.setattr(L, "LIBRO", tmp_path / "libro.jsonl")
+    monkeypatch.setattr(L, "RESPUESTAS", tmp_path / "respuestas.jsonl")
+    monkeypatch.setattr(L, "_GUARDADAS", {})
+    salidas = []
+    cli = NS(chat=NS(completions=NS(create=lambda **k: salidas.append(1) or NS(
+        choices=[NS(message=NS(content="{}"))], usage=NS(prompt_tokens=100, completion_tokens=10)))))
+    L.envolver(cli)
+    pedido = {"model": "gemini-3.1-flash-lite", "messages": [{"role": "user", "content": "x"}], "temperature": 0}
+    gasto = []
+    for _ in range(3):
+        r = cli.chat.completions.create(**pedido)
+        gasto.append(L.hoy())
+    assert len(salidas) == 1 and r.choices[0].message.content == "{}" and r.usage.prompt_tokens == 0
+    assert gasto[0] == gasto[2] > 0
+    cli.chat.completions.create(**{**pedido, "temperature": 0.5})
+    assert len(salidas) == 2
