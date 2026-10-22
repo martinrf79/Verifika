@@ -1,8 +1,8 @@
-"""LA AGENDA — lo que devuelve el interprete: una pregunta por cada cosa que pide el cliente (20-oct-2026).
+"""LA AGENDA — lo que cumple el ejecutor: una pregunta por cada cosa que pide el cliente (20-oct-2026).
 
-Reemplaza a las diecinueve casillas de la ficha 10. El modelo ya no llena un formulario: corta el mensaje en
-preguntas, en el orden del cliente, y a cada una le pone UNA accion de un menu cerrado con sus datos. Asi cada pedazo
-del mensaje tiene su lugar, y el codigo puede controlar que ninguno quede sin respuesta.
+Desde el 22-oct no la escribe el modelo: el modelo llena la ficha nativa y `ficha.a_agenda` la lleva a esta forma, FICHA
+76. Cada pregunta tiene UNA accion de un menu cerrado con sus datos; las agendas a mano de `banco_pruebas/agendas58.py`
+son la vara del ejecutor.
 
   {"preguntas": [{"n": 1, "cita": "las palabras literales", "accion": "buscar", ...los datos de la accion,
                   "si": {"de": 2, "da": "si"|"no"}, "responde": "R-1"}],
@@ -46,7 +46,7 @@ OBLIGATORIO = {"buscar": "rubro", "producto": "producto", "envio": "destino", "p
 
 _REF = re.compile(r"^[MLR]-\d+$")
 
-# Palabras que no piden nada: si quedan sin citar no falta nada.
+# Palabras que no piden nada: una cita hecha solo de estas, y de las que afirman, es un si.
 _VACIAS = set("a al algo con de del el en es esta este la las lo los me mi o para pero por que se si su te tu un una "
               "uno unos unas y ya ah eh bueno che hola buenas gracias porfa favor dale ok".split())
 
@@ -59,52 +59,3 @@ def palabras(t: str) -> list:
 def preguntas(agenda) -> list:
     p = agenda.get("preguntas") if isinstance(agenda, dict) else agenda
     return [x for x in p or [] if isinstance(x, dict)]
-
-
-def sin_citar(mensaje: str, agenda) -> list:
-    """Los pedazos del mensaje que ninguna pregunta cita."""
-    citadas = {w for p in preguntas(agenda) for w in palabras(p.get("cita"))}
-    sueltos, tira = [], []
-    for w in palabras(mensaje) + [""]:
-        if w and w not in citadas:
-            tira.append(w)
-            continue
-        if any(x not in _VACIAS for x in tira):
-            sueltos.append(" ".join(tira))
-        tira = []
-    return sueltos
-
-
-def referencias(p: dict) -> list:
-    """Los numeros de la libreta que nombra una pregunta, en cualquiera de sus datos."""
-    out = []
-
-    def mirar(v):
-        if isinstance(v, str) and _REF.match(v.strip()):
-            out.append(v.strip())
-        elif isinstance(v, list):
-            [mirar(x) for x in v]
-        elif isinstance(v, dict):
-            [mirar(x) for x in v.values()]
-    mirar({k: v for k, v in p.items() if k not in ("cita", "n")})
-    return out
-
-
-def faltas(mensaje: str, agenda, numeros: set) -> list:
-    """Lo que el codigo no podria cumplir, en palabras para devolverselo al modelo una vez."""
-    out = [f'Este pedazo del mensaje no esta en ninguna pregunta: "{s}".' for s in sin_citar(mensaje, agenda)]
-    ns = {p.get("n") for p in preguntas(agenda)}
-    for p in preguntas(agenda):
-        acc, n = p.get("accion"), p.get("n")
-        if acc not in ACCIONES:
-            out.append(f"La pregunta {n} tiene la accion \"{acc}\", que no esta en el menu.")
-            continue
-        if acc in OBLIGATORIO and p.get(OBLIGATORIO[acc]) in (None, "", []):
-            out.append(f"La pregunta {n} es {acc} y no tiene \"{OBLIGATORIO[acc]}\".")
-        out += [f"La pregunta {n} senala {r}, que no esta en la libreta." for r in referencias(p) if r not in numeros]
-        si = p.get("si")
-        if isinstance(si, dict) and si.get("de") not in ns:
-            out.append(f"La pregunta {n} depende de la pregunta {si.get('de')}, que no existe.")
-    if not preguntas(agenda) and palabras(mensaje):
-        out.append("No hay ninguna pregunta.")
-    return out

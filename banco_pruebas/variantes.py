@@ -107,8 +107,10 @@ FAMILIAS = {
 
 
 def _huella() -> str:
-    from app.core.flujo import interprete
-    return hashlib.sha1(interprete.consigna("verifika_prod").encode()).hexdigest()[:10]
+    """La consigna y el esquema de la ficha, desde el 22-oct: un cambio en cualquiera de los dos se mide de nuevo."""
+    from app.core.flujo import ficha
+    return hashlib.sha1((ficha.consigna("verifika_prod") + json.dumps(ficha.formato("verifika_prod"), sort_keys=True))
+                        .encode()).hexdigest()[:10]
 
 
 def _leidas() -> dict:

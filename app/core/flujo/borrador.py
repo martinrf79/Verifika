@@ -18,6 +18,7 @@ Las partes:
   criterios   como eligio en cada rubro: {"mouse": {"condiciones", "orden", "entre"}}. Un renglon de rubro se resuelve
               con el criterio de su rubro, asi dos auriculares a dos destinos son el mismo modelo.
   total       cuantos articulos dijo que son —"son 7"—, o 0.
+  tope        lo maximo que dijo que quiere gastar en total, o 0: vale hasta que diga otro.
   pago        [{"medio", "porcentaje"}], como lo dijo.
   cliente     nombre, localidad, quien es.
   cierre      la huella de lo cerrado, para quien se pidio el nombre y el lead: la etapa se deriva de aca.
@@ -28,7 +29,7 @@ import itertools
 
 from . import catalogo as K
 
-VACIO = {"renglones": [], "lista": {}, "criterios": {}, "total": 0, "pago": [], "cliente": {}, "propuesta": {},
+VACIO = {"renglones": [], "lista": {}, "criterios": {}, "total": 0, "tope": 0, "pago": [], "cliente": {}, "propuesta": {},
          "cierre": {"huella": "", "nombre_para": "", "lead": ""}, "siguiente": 1, "lectura": {}}
 
 
@@ -587,6 +588,8 @@ def libreta(b: dict, res: list, falta: list) -> list:
         r.append("- PIDIO POR RUBRO: " + ", ".join(f"{c} {k}" for k, c in b["lista"].items()))
     if b["total"]:
         r.append(f"- DIJO QUE SON: {b['total']}")
+    if b["tope"]:
+        r.append(f"- TOPE DEL TOTAL: ${b['tope']:,}".replace(",", "."))
     if b["pago"]:
         r.append("- PAGA: " + ", ".join(f"{p['medio']} {p['porcentaje']}%" for p in b["pago"]))
     return r

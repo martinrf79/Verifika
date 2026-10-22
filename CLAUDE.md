@@ -62,11 +62,11 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 6 están 
    `flujo/agenda.py`. El corredor bloquea cualquier otra llamada.
 3. **La vara es la de Martín**: las casillas de `vara_58.json`, que no se tocan, por el webhook entero:
    `python3 -m banco_pruebas.cableado58`.
-4. **El control contra la trampa**: antes del modelo, `tests/test_agenda.py` prueba gratis que lo que ve el modelo
-   alcanza para escribir cada agenda; al final, una corrida con el modelo se compara pregunta por pregunta contra
-   `agendas58.py`. Un arreglo entra si sirve para una clase, no para un caso.
-5. **Las 58 están en la batería**, `tests/test_cableado58.py`: una charla rota frena el deploy. El intérprete usa la
-   consigna de la agenda, con seis ejemplos. `tablero.py`, `respuesta.py` y las once capas se borraron. Si falla en
+4. **El control contra la trampa**: antes del modelo, `tests/test_ficha.py` lleva gratis las fichas grabadas por el
+   adaptador y el ejecutor, con un techo que sólo baja; al final, una corrida con el modelo, `pedido_documento/medir_pedido.py
+   --vivo`, `prod7_ficha.py` y `variantes.py`. Un arreglo entra si sirve para una clase, no para un caso.
+5. **Las 58 están en la batería**, `tests/test_cableado58.py`: una charla rota frena el deploy. Desde el 22-oct el
+   intérprete llena la ficha nativa con el esquema de Gemini, y `flujo/ficha.py` la lleva a la agenda, FICHA 76. `tablero.py`, `respuesta.py` y las once capas se borraron. Si falla en
    vivo, git.
 6. **La forma normal**, 21-oct, FICHA 74: entre el intérprete y el ejecutor, `flujo/normal.py` lleva lo que dijo el
    modelo a la forma que el ejecutor cumple. No corrige al modelo ni lee el mensaje: define qué quiere decir cada
@@ -184,7 +184,7 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 6 están 
 python3 -m pytest -q                       # la batería offline, sin modelo
 python3 -m pytest tests/test_cableado58.py      # la vara fija: las 58 por el flujo vivo, sin modelo
 python3 -m banco_pruebas.cableado58 --ver        # lo mismo, con lo que recibe el cliente
-python3 -m banco_pruebas.suficiencia            # si lo que ve el modelo alcanza para cada agenda, sin modelo
+python3 -m pytest tests/test_ficha.py -s        # las fichas grabadas por el adaptador y el ejecutor, sin modelo
 python3 banco_pruebas/forma_normal/regrado.py   # las 3.107 traducciones grabadas, con el codigo de hoy, sin modelo
 uvicorn app.main:app --reload --port 8080  # correr local
 ```

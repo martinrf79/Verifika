@@ -480,6 +480,10 @@ def _cuenta(t: Turno, p: dict):
     # El tope y lo que sale si pasa valen dichos en cualquiera de las preguntas de plata del mensaje.
     cuentas = [x for x in t.agenda if x.get("accion") == "cuenta"]
     tope = next((x["tope"] for x in cuentas if K.entero(x.get("tope"))), None)
+    # EL TOPE DICHO VALE HASTA QUE DIGA OTRO: queda en el borrador, que guarda lo dicho.
+    if tope:
+        t.estado["borrador"]["tope"] = K.entero(tope)
+    tope = tope or t.estado["borrador"].get("tope") or None
     si_pasa = next((_uno(t, x["si_pasa"]) for x in cuentas if x.get("si_pasa")), "")
     if t.estado["pedido"]:
         t.cuenta(t.estado["pedido"], B.pago_listo(t.estado["borrador"]), tope, si_pasa)

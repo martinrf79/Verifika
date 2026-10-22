@@ -125,7 +125,8 @@ def politica_de_envio_con_lugar(c: _Ctx) -> bool:
     # Sin lugar en el mensaje, el del cliente: "cuanto me sale con envio" de alguien que ya dijo que es de Posadas.
     suyo = [B._destino(c.b["cliente"].get("localidad"))] if B._destino(c.b["cliente"].get("localidad")) else []
     for p in c.ps:
-        if p.get("accion") == "politica" and "envio" in K.n(p.get("tema")):
+        # Solo la regla del costo: "cuanto tarda a Neuquen" es el plazo, y la cotizacion no lo dice.
+        if p.get("accion") == "politica" and K.n(p.get("tema")) in ("envios", "envio", "costo_envio"):
             ds = [f for f, _ in lugares(p.get("cita"))] or list(dict.fromkeys(destinos)) or suyo
             if ds:
                 nuevas += [{"n": p.get("n") if i == 0 else None, "cita": p.get("cita") or "", "accion": "envio",

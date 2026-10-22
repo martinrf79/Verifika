@@ -4,8 +4,8 @@ El modelo elige entre lo que la tienda tiene, no adivina. El marcador recorre el
 reconoce en la fuente: un modelo del catalogo, un rubro, un tema de la FAQ, algo que la tienda no vende, un porcentaje
 o un monto. Todo sale de la fuente de la tienda; las unicas palabras fijas son numeros escritos en letras.
 
-Es una tabla corta que va en el mensaje al modelo. No decide nada: lo que el marcador no reconoce, el modelo lo copia
-del cliente y el codigo lo verifica despues.
+Desde la ficha nativa, FICHA 76, no va al modelo: el rubro y el tema se le ofrecen como listas cerradas en el esquema.
+Lo usan el paso de la ficha a la agenda, `ficha.py`, y la forma normal, `normal.py`, para atar palabras a la fuente.
 """
 import re
 
@@ -141,10 +141,3 @@ def marcar(mensaje: str, tienda_id: str) -> list:
         if m.group(2) or m.group(3):
             out.append((m.group(0).strip(), f"{K._monto(m.group(1) or m.group(3), m.group(2) or ''):,} pesos".replace(",", ".")))
     return out
-
-
-def tabla(mensaje: str, tienda_id: str) -> str:
-    marcas = marcar(mensaje, tienda_id)
-    if not marcas:
-        return "LO QUE EL CODIGO RECONOCIO EN EL MENSAJE: nada."
-    return "LO QUE EL CODIGO RECONOCIO EN EL MENSAJE:\n" + "\n".join(f'- "{d}" es {e}' for d, e in marcas)

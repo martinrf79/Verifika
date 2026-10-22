@@ -1,8 +1,7 @@
 # FICHA 76 — La ficha nativa: el pedido como documento, con los nombres del modelo
 
-22 y 23-oct-2026, sesión con Martín. Viene de la FICHA 75. **Lo que está en el bot:** el índice en `catalogo.atar`,
-commit bc9bcf4, deployado. **Lo que no:** la ficha nativa. **El procedimiento de abajo es una recomendación:** es un cambio grande y se
-arranca solo si Martín lo decide en la sesión.
+22 y 23-oct-2026, sesión con Martín. Viene de la FICHA 75. **En el bot desde el 22-oct, con la orden de Martín:** la
+ficha nativa es el intérprete. Lo medido al llevarla está al final, en "La ficha en el bot".
 El experimento entero está en `banco_pruebas/pregunta_razonada/` y `banco_pruebas/pedido_documento/`.
 
 ## Lo medido, en orden
@@ -175,3 +174,40 @@ Con el ok de Martín. Se vuelve con `git revert` del commit del intérprete.
    porque reescribirlo todo pierde datos en charlas largas. Acá se midió lo contrario, pero en charlas de tres turnos:
    antes de confiar, se prueba la ficha en charlas de seis o más.
    [ParsingDST](https://arxiv.org/pdf/2310.10520), [DST con esquema](https://arxiv.org/pdf/2109.07506).
+
+## La ficha en el bot, 22-oct
+
+Con la orden de Martín y 49 centavos de la paga. El intérprete llena la ficha con el esquema, `flujo/ficha.py`, y
+`a_agenda` la lleva a la agenda que el ejecutor ya cumplía. Se borraron la consigna de la agenda, los seis ejemplos, la
+devuelta de faltas y la tabla del marcador al modelo.
+
+| Vara | La agenda de antes | La ficha |
+| --- | --- | --- |
+| Las 48 de razonamiento con memoria, por el pedido que queda en el bot, `medir_pedido.py` | 30 bien, 8 duda, 10 mal | **36 bien, 3 duda, 9 mal** |
+| Los siete casos de producción, charla entera, `prod7_ficha.py` | 5 de 7 | **6 de 7** |
+| Variantes: siete artículos, lo mejor, el más vendido; pisos 9, 7 y 4 | — | 10, 10 y 4 |
+| Las 3.107 grabadas, `regrado.py` | 3.014 | 3.014 |
+
+**Lo que se le ofrece cerrado al modelo**, porque en la fuente es cerrado: el orden, el tipo de consulta, el rubro y el
+tema de la FAQ. Con el rubro abierto, "la señal wifi" caía en auriculares por parecido. Cada lista tiene su salida,
+"ninguno" u "otro" con el texto: lo que la tienda no tiene llega al código, y el código dice que no tiene el dato.
+
+**Lo que define el adaptador**, cada regla con su test en `tests/test_ficha.py`:
+- el pedido igual al borrador no es un cambio; uno distinto lo reemplaza entero;
+- el modelo de lenguaje no elige productos: un modelo entra al pedido si el cliente lo nombró, o si lo leyó y no pidió un
+  orden; con "lo mejor", el producto lo elige el orden. La familia cuenta: la Fury Beast de 32 es la de 16 que vio;
+- un envío por lugar, sin lugar a los destinos del pedido, y el plazo por su regla: la cotización no lo dice;
+- sin pedido, el tope del total acota la búsqueda; el tope ya dicho vive en el borrador y no se vuelve a contar;
+- un mensaje que no cambia ni consulta nada, con pedido, ve la cuenta;
+- "son 7" va al borrador, que lo controla contra lo anotado;
+- una consulta de producto sin producto es una búsqueda de su rubro, o nada.
+
+**Lo que se arregló del código de antes**, encontrado al medir: `normal.politica_de_envio_con_lugar` convertía cualquier
+tema con "envio" en cotización, también el plazo; ahora sólo el costo. Las 3.107, igual.
+
+**El banco no paga dos veces:** con temperatura 0 la v4 dio idéntico con la gratis y con la paga, turno por turno.
+`libro_paga.recordar` guarda cada respuesta y la devuelve sin llamada.
+
+**Lo que queda mal, por clase:** dos renglones del mismo rubro con condiciones distintas por destino toman la del primero,
+xfail; lo condicional, `si`, se cumple sin condición, xfail; una búsqueda con tope y sin pedido entra al pedido por
+`normal.cuenta_de_lo_buscado`, igual que antes; P06 sigue sin cerrar el 70 por ciento.

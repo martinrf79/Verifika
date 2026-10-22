@@ -18,8 +18,7 @@ def _evs() -> list:
     return [
         {"event": "message_received", "trace_id": "abc123", "_t": "2026-10-19T15:29:15Z",
          "msg_preview": "me llevo el G305 negro, mandalo a Rosario"},
-        {"event": "interprete_devuelta", "trace_id": "abc123", "faltas": 1},
-        {"event": "interprete_ok", "trace_id": "abc123", "casillas": ["envios", "pedido"]},
+        {"event": "interprete_ok", "trace_id": "abc123", "casillas": ["envios", "pedido"], "ficha": '{"pedido": []}'},
         {"event": "flujo_turno", "trace_id": "abc123", "casillas": ["envios", "pedido"],
          "hechos": ["pedido", "cuenta"], "preguntas": 0, "herramientas": ["cuenta"]},
         {"event": "flujo_cierre", "trace_id": "abc123", "articulos": 1, "medio": "transferencia"},
@@ -30,7 +29,7 @@ def test_la_pelicula_muestra_lo_que_tradujo_y_lo_que_hizo():
     t = "\n".join(pelicula(_evs()))
     assert "me llevo el G305 negro" in t
     assert "TRADUJO   envios, pedido" in t
-    assert "DEVUELTA  el modelo dejo 1 cosas sin ubicar" in t
+    assert 'FICHA     {"pedido": []}' in t
     assert "HIZO      pedido, cuenta" in t and "herramientas cuenta" in t
     assert "CERRO     1 articulos, pago transferencia" in t
 

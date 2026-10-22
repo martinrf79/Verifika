@@ -42,6 +42,13 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
                 prueba = copy.deepcopy(estado)
                 t = ejecutar(agenda, prueba, tienda_id, explicar=explicado.get, elegida=elegida)
         estado = prueba
+        # LA DUDA DEL MODELO, solo si el codigo no pregunto nada: lo que impide cumplir el mensaje, FICHA 76. Pasa el
+        # mismo control que el vendedor: ningun monto ni producto que no este en lo mostrado o en el pedido.
+        vistos = "\n".join(m["nombre"] for m in estado["mostrados"]) + "\n" + "\n".join(
+            a["nombre"] for a in estado["pedido"])
+        dudas = [d for d in agenda.get("dudas") or [] if isinstance(d, str) and interprete.controlar(d, vistos, tienda_id)]
+        if dudas and not t.preguntas:
+            t.preguntas.append(dudas[0])
     except Exception as e:  # noqa: BLE001 — una agenda que el codigo no puede cumplir no deja al cliente sin nada
         log.error("flujo_ejecutor_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:200]}",
                   acciones=[p.get("accion") for p in preguntas(agenda)])

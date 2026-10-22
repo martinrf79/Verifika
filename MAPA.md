@@ -27,10 +27,11 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Entrada de WhatsApp y Telegram, webhooks | `app/main.py` |
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
 | El turno entero: leer, interpretar, ejecutar, redactar, cerrar, guardar | `app/core/flujo/turno.py` |
-| Las llamadas al modelo: traducir a la agenda, elegir la lectura y explicar; la consigna, los seis ejemplos y la libreta | `app/core/flujo/interprete.py` |
+| Las llamadas al modelo: traducir, elegir la lectura, explicar y vender; la libreta | `app/core/flujo/interprete.py` |
+| La ficha nativa: la consigna, el esquema con las listas cerradas y su paso a la agenda, FICHA 76 | `app/core/flujo/ficha.py` |
 | Lo que dijo el cliente, las lecturas que cierran y lo supuesto hasta que acepta | `app/core/flujo/borrador.py` |
-| La agenda: el menu de acciones y el control de lo que falta | `app/core/flujo/agenda.py` |
-| Lo que el codigo reconoce en el mensaje antes del modelo | `app/core/flujo/marcador.py` |
+| La agenda: el menu de acciones que cumple el ejecutor | `app/core/flujo/agenda.py` |
+| Lo que el codigo reconoce en un texto: modelos, rubros, temas, montos | `app/core/flujo/marcador.py` |
 | Lo que dijo el modelo, llevado a la forma que cumple el ejecutor: la forma normal | `app/core/flujo/normal.py` |
 | Cada pregunta de la agenda, cumplida con las herramientas, y el candado | `app/core/flujo/ejecutor.py` |
 | Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |
@@ -63,11 +64,13 @@ permiso.
 | La multipregunta de los siete artículos miles de veces, con el cliente y el modelo simulados | `banco_pruebas/simulador.py` |
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |
 | Cada compleja dicha de muchas formas, con el modelo real: la vara para cambiar la consigna | `banco_pruebas/variantes.py` |
-| Si lo que recibe el modelo alcanza, sin modelo | `banco_pruebas/suficiencia.py` |
 | Las traducciones grabadas de seis modelos, calificadas con el codigo de hoy, sin modelo | `banco_pruebas/forma_normal/regrado.py` |
 | Jev, el índice en niveles y las dos vueltas; los siete casos de producción charla entera, FICHA 75 | `banco_pruebas/jev/` |
 | Las 16 charlas de razonamiento con memoria y lo correcto de cada turno; Python con menú, FICHA 76 | `banco_pruebas/pregunta_razonada/` |
 | La ficha nativa: el paso libre, la ficha, su vara y cuánto ata el código, FICHA 76 | `banco_pruebas/pedido_documento/` |
+| El pedido que queda en el bot por la vara de la ficha: la ficha viva o las grabadas, por el ejecutor | `banco_pruebas/pedido_documento/medir_pedido.py` |
+| Los siete casos de producción, charla entera por el camino vivo, con su piso | `banco_pruebas/pedido_documento/prod7_ficha.py` |
+| Lo que ya contestó el modelo, sin volver a pagarlo | `banco_pruebas/libro_paga.py`, `respuestas_modelo.jsonl` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
 | La vara de las 58 | `banco_pruebas/vara_58.py` |

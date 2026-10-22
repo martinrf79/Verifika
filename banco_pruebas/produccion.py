@@ -444,7 +444,7 @@ def informe(revisadas: list, meta: dict | None = None) -> str:
 
 EVENTOS_PELICULA = (
     "message_received", "antijailbreak_bloqueo",
-    "interprete_ok", "interprete_devuelta", "interprete_error", "explicar_error",
+    "interprete_ok", "interprete_error", "explicar_error",
     "flujo_turno", "flujo_ejecutor_error", "flujo_cierre", "flujo_cierre_lead_error", "flujo_cobro_error",
     "flujo_guardar_error", "agente_herramienta_error", "flujo_pregunta_sin_estado")
 
@@ -519,11 +519,12 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
         for e in evs:
             ev = e.get("event")
             if ev == "interprete_ok":
-                # Desde el 20-oct el interprete devuelve una agenda: se muestra entera, que es lo que decidio el modelo.
+                # Desde el 22-oct el modelo llena la ficha nativa: se muestra entera, que es lo que decidio, y la
+                # agenda que armo el codigo con ella.
+                if e.get("ficha"):
+                    out.append("  FICHA     " + str(e["ficha"]))
                 out.append("  TRADUJO   " + str(e.get("agenda") or ", ".join(map(str, e.get("casillas") or []))
                                                 or "nada"))
-            elif ev == "interprete_devuelta":
-                out.append(f"  DEVUELTA  el modelo dejo {_n(e.get('faltas'))} cosas sin ubicar y se le pidio de nuevo")
             elif ev == "flujo_turno":
                 out.append("  HIZO      " + (", ".join(map(str, e.get("hechos") or [])) or "nada")
                            + (" · estados " + ", ".join(map(str, e.get("estados"))) if e.get("estados") else "")
