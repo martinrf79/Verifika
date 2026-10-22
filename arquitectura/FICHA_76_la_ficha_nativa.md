@@ -1,7 +1,8 @@
 # FICHA 76 — La ficha nativa: el pedido como documento, con los nombres del modelo
 
 22 y 23-oct-2026, sesión con Martín. Viene de la FICHA 75. **Lo que está en el bot:** el índice en `catalogo.atar`,
-commit bc9bcf4, deployado. **Lo que no:** la ficha nativa, que es el procedimiento de abajo, para una sesión nueva.
+commit bc9bcf4, deployado. **Lo que no:** la ficha nativa. **El procedimiento de abajo es una recomendación:** es un cambio grande y se
+arranca solo si Martín lo decide en la sesión.
 El experimento entero está en `banco_pruebas/pregunta_razonada/` y `banco_pruebas/pedido_documento/`.
 
 ## Lo medido, en orden
@@ -51,7 +52,7 @@ Con la ficha bien, el cuello pasó al paso siguiente: atar sus palabras a la fue
 - **Lo que sigue sin atar:** "silencioso", "chiquito", "que entre en el bolsillo", "de malla", "marca conocida", que
   son vagas de verdad; y comparar, que no tiene herramienta.
 
-## El procedimiento: llevar la ficha al bot
+## El procedimiento recomendado: llevar la ficha al bot
 
 Una sesión. El intérprete deja de devolver la agenda y devuelve la ficha; un adaptador la lleva a la agenda que el
 ejecutor ya cumple. El ejecutor, el borrador, la redacción y el cierre no cambian.
