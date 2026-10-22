@@ -16,7 +16,8 @@ import re
 import unicodedata
 
 from app.core import agente
-from app.core.filtros_catalogo import los_que_lo_nombran_entero, vocabulario
+from app.core.filtros_catalogo import (DERIVADOS, _si_no, _valor_crudo, campos_filtrables, los_que_lo_nombran_entero,
+                                       vocabulario)
 from app.storage import firestore_client as fc
 
 
@@ -131,12 +132,33 @@ _RELLENO = set("a al con de del el en la las lo los para por que un una unos una
 
 
 def _valores(prod: dict, campo: str) -> str:
+    """El valor de un campo: arriba de todo, en `specs` o derivado del origen —el pais de la marca y el de fabricacion,
+    que el origen trae en prosa—. Uno solo para todos: `filtros_catalogo._valor_crudo`."""
     if campo == "tags":
         return n(prod.get("tags"))
-    v = prod.get(campo)
-    if v in (None, ""):
-        v = (prod.get("specs") or {}).get(campo)
-    return n(v)
+    return n(_valor_crudo(prod, campo))
+
+
+def _pistas_derivadas(palabras: list) -> dict:
+    """Las palabras que nombran un campo derivado por su etiqueta: "fabricado" es `pais_fabricacion`, porque su
+    etiqueta dice "donde se fabrica". Por raiz, y solo palabras largas: "pais" o "marca" no distinguen."""
+    out = {}
+    for campo, etiqueta in DERIVADOS.items():
+        raices = {w[:6] for w in n(etiqueta).split() if len(w) > 5}
+        out.update({w: campo for w in palabras if len(w) > 5 and w[:6] in raices})
+    return out
+
+
+def _si_no_nombrado(c: str, universo: list, tienda_id: str) -> str:
+    """El campo de si o no que la condicion nombra por una de sus claves de `specs_preguntables` —"resistente al agua",
+    "bluetooth", "lector de huella"—, si algun producto del universo trae su veredicto. Si no, ""."""
+    from app.core.fuente_producto import specs_config
+    tipos = campos_filtrables(tienda_id)
+    for s in specs_config(tienda_id):
+        if tipos.get(s["id"]) == "si_no" and s["rx_pregunta"].search(c) \
+                and any(_si_no(_valor_crudo(p, s["id"])) for p in universo):
+            return s["id"]
+    return ""
 
 
 def _contiene(texto: str, valor: str) -> bool:
@@ -171,14 +193,22 @@ def atar(condicion: str, universo: list, tienda_id: str) -> dict:
     c = re.sub(r"\b(\d+)\s+(gb|tb|hz|w|mah|mm)\b", r"\1\2", c)
     campos = set(vocabulario(tienda_id))
     palabras = [w for w in c.split() if w not in _RELLENO]
+    derivadas = _pistas_derivadas(palabras)
     pista = [w for w in palabras if w in campos and w not in ("modelo", "nombre", "descripcion")]
-    valor = " ".join(w for w in palabras if w not in pista)
+    valor = " ".join(w for w in palabras if w not in pista and w not in derivadas)
+    si_no = _si_no_nombrado(c, universo, tienda_id)
+    if si_no and (not valor or not any(_contiene(_valores(p, x), valor) for x in PRIORIDAD for p in universo)):
+        # UN CAMPO DE SI O NO NOMBRADO por su clave se cumple por su veredicto: "resistente al agua" es el "si, ..."
+        # de `resistencia_agua`, y "sin bluetooth" su "no". Solo si la frase no es un valor que ya ata, como "rgb".
+        return {"campo": si_no, "valor": "si", "niega": niega, "si_no": True}
     if not valor:
         return {"sin_campo": condicion}
-    donde = pista + [x for x in PRIORIDAD if x not in pista]
+    donde = list(dict.fromkeys(pista + list(derivadas.values()))) + [x for x in PRIORIDAD if x not in pista]
     for campo in donde:
-        if any(_contiene(_valores(p, campo), valor) for p in universo):
-            return {"campo": campo, "valor": valor, "niega": niega}
+        for v in dict.fromkeys([valor] + [valor[:-len(f)] for f in ("s", "es") if valor.endswith(f) and len(valor) > 4]):
+            # El plural del cliente tambien: "cables" ata en "con cable usb".
+            if any(_contiene(_valores(p, campo), v) for p in universo):
+                return {"campo": campo, "valor": v, "niega": niega}
     # Toda la frase no esta: cada palabra por su lado, y todas tienen que estar.
     partes = [atar(w, universo, tienda_id) for w in valor.split()] if " " in valor else []
     if partes and all("campo" in x for x in partes):
@@ -196,7 +226,10 @@ def cumple(prod: dict, filtro: dict) -> bool:
         lado, monto = filtro["tope"]
         precio = int(prod.get("precio_ars") or 0)
         return precio <= monto if lado == "max" else precio >= monto
-    hay = _contiene(_valores(prod, filtro["campo"]), filtro["valor"])
+    if filtro.get("si_no"):
+        hay = _si_no(_valor_crudo(prod, filtro["campo"])) == filtro["valor"]
+    else:
+        hay = _contiene(_valores(prod, filtro["campo"]), filtro["valor"])
     return not hay if filtro["niega"] else hay
 
 
