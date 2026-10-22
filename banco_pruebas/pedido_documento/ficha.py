@@ -7,8 +7,8 @@ entero, como queda despues del mensaje: no los pasos para llegar.
 
 El prompt no lleva menu de funciones, ejemplos ni fuente. Corre los 48 turnos de `pregunta_razonada/fichas.py`, con
 su memoria. Con la paga y la marca de Martin, freno a los 10 centavos:
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/pedido_documento/ficha.py
-Lo que devuelve queda en `ficha.jsonl`; `medir_ficha.py` lo compara con las fichas.
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/pedido_documento/ficha.py [--v2] [--reps 3]
+Lo que devuelve queda en `ficha.jsonl`, o en `ficha_v2.jsonl` con la duda ajustada; `medir_ficha.py` lo compara con las fichas.
 """
 import asyncio
 import json
@@ -32,8 +32,9 @@ from banco_pruebas import costo  # noqa: E402
 from experimento import memoria, limpio  # noqa: E402
 from fichas import CHARLAS  # noqa: E402
 
-SALIDA = os.path.join(AQUI, "ficha.jsonl")
-TOPE_USD = 0.10
+SALIDA = os.path.join(AQUI, "ficha_v2.jsonl" if "--v2" in sys.argv else "ficha.jsonl")
+
+TOPE_USD = 0.12
 
 FICHA = """Sos parte del sistema de una tienda online de tecnologia de Argentina. No le contestas al cliente. Con la
 MEMORIA y el ULTIMO MENSAJE, llena esta ficha en JSON. Los valores van en palabras, claros y completos, como los
@@ -56,12 +57,21 @@ numero, M2 o L1.
   "dudas": lo que no se puede saber sin preguntarle, ["..."]
 }"""
 
+# LA DUDA AJUSTADA, v2: en la v1 salia en 31 de 38 turnos que estaban bien, con "nombre del cliente" o "localidad".
+FICHA_V2 = FICHA.replace(
+    '"dudas": lo que no se puede saber sin preguntarle, ["..."]',
+    '"dudas": solo lo que impide cumplir algo de ESTE mensaje y hay que preguntarle al cliente, ["..."]; no lo que\n'
+    '    falta para cerrar la venta, como el nombre o la localidad, ni lo que el programa resuelve con la tienda.\n'
+    '    Si no hay, []')
+VERSION = "v2" if "--v2" in sys.argv else "v1"
+REPS = int(sys.argv[sys.argv.index("--reps") + 1]) if "--reps" in sys.argv else 1
+
 GASTO = {"usd": 0.0}
 
 
-async def una(cid: str, t: int, tu: dict, sem) -> dict:
+async def una(cid: str, t: int, tu: dict, sem, rep: int = 0) -> dict:
     async with sem:
-        base = {"charla": cid, "turno": t}
+        base = {"charla": cid, "turno": t, "rep": rep}
         if GASTO["usd"] >= TOPE_USD:
             return {**base, "error": "tope de la corrida"}
         cli = llm_reintento._cliente()
@@ -70,7 +80,7 @@ async def una(cid: str, t: int, tu: dict, sem) -> dict:
             r = await llm_reintento.llamar_con_reintento(
                 lambda: cli.chat.completions.create(
                     model=llm_reintento._modelo(), temperature=0, response_format={"type": "json_object"},
-                    messages=[{"role": "system", "content": FICHA},
+                    messages=[{"role": "system", "content": FICHA_V2 if VERSION == "v2" else FICHA},
                               {"role": "user", "content": f"{memoria(tu['mem'])}\n\nULTIMO MENSAJE: {limpio(tu['msg'])}"}]),
                 timeout_s=90, trace_id="ficha_nativa")
         except Exception as e:  # noqa: BLE001
@@ -84,9 +94,11 @@ async def una(cid: str, t: int, tu: dict, sem) -> dict:
 async def main() -> None:
     ya = set()
     if os.path.exists(SALIDA):
-        ya = {(r["charla"], r["turno"]) for r in map(json.loads, open(SALIDA, encoding="utf-8")) if not r.get("error")}
+        ya = {(r["charla"], r["turno"], r.get("rep", 0)) for r in map(json.loads, open(SALIDA, encoding="utf-8"))
+              if not r.get("error")}
     sem = asyncio.Semaphore(4)
-    tareas = [una(ch["id"], t, tu, sem) for ch in CHARLAS for t, tu in enumerate(ch["turnos"]) if (ch["id"], t) not in ya]
+    tareas = [una(ch["id"], t, tu, sem, k) for k in range(REPS) for ch in CHARLAS for t, tu in enumerate(ch["turnos"])
+              if (ch["id"], t, k) not in ya]
     print(f"{len(tareas)} turnos, modelo {llm_reintento._modelo()}", flush=True)
     with open(SALIDA, "a", encoding="utf-8") as f:
         for fut in asyncio.as_completed(tareas):
