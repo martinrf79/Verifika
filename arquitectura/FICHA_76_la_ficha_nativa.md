@@ -57,6 +57,13 @@ Con la ficha bien, el cuello pasó al paso siguiente: atar sus palabras a la fue
 Una sesión. El intérprete deja de devolver la agenda y devuelve la ficha; un adaptador la lleva a la agenda que el
 ejecutor ya cumple. El ejecutor, el borrador, la redacción y el cierre no cambian.
 
+### 0. El esquema de Gemini, primero
+
+Medio día y unos centavos. Gemini acepta un esquema de respuesta, `responseSchema` o, desde la 2.5, `responseJsonSchema`,
+con listas cerradas de valores. Hoy se le pide JSON libre. Con el esquema, la forma de la ficha y los valores cerrados
+—el orden, el tipo de consulta— los fija la API y no el prompt. Se prueba sobre las 48 de `ficha_v3`: que no baje de 38
+y que ningún valor cerrado salga fuera de su lista, porque una fuente no oficial dice que a veces no se respetan.
+
 ### 1. La base, antes de tocar nada
 
 Correr el intérprete de hoy con el modelo, sobre:
@@ -139,3 +146,25 @@ Con el ok de Martín. Se vuelve con `git revert` del commit del intérprete.
 7. **El medio que la tienda no toma,** dicho al cliente: débito, efectivo o Naranja, que la FAQ no nombra. Es el xfail
    de `tests/test_medio_de_pago_cerrado.py`.
 8. **Producción como banco,** el SIGUE 4: los siete casos reales como instrumento fijo con piso.
+
+## Lo que dice la búsqueda, 23-oct
+
+1. **El esquema con valores cerrados de Gemini** es lo más directo: es el paso 0 del procedimiento.
+   [Google](https://ai.google.dev/gemini-api/docs/json-mode),
+   [Firebase](https://firebase.google.cn/docs/vertex-ai/structured-output?hl=en),
+   [`responseJsonSchema` en Vercel](https://github.com/vercel/ai/pull/18325); el reporte de que a veces no respeta la
+   lista, sin verificar: [gemini-coax](https://pypi.org/project/gemini-coax/0.2.4/).
+2. **Preguntar cuando dos lecturas no coinciden:** CLAIM y SAGE-Agent deciden cuándo preguntar por el desacuerdo entre
+   modelos o por la incertidumbre de cada dato. SAGE-Agent reporta más cobertura en lo ambiguo con 1,5 a 2,7 veces
+   menos preguntas. Son preprints: es la idea de la recomendación 3, a medir.
+   [ClarifyMT-Bench](https://arxiv.org/pdf/2512.21120),
+   [aclaraciones de humanos y modelos](https://arxiv.org/pdf/2507.10445).
+3. **Rasa CALM confirma el diseño:** el modelo emite comandos de una lista cerrada y la lógica del negocio, con sus
+   condiciones, vive en flujos deterministas. Es la pista para lo condicional que quedó a medias: la condición en el
+   código, no en el prompt. [Thinking CALMly](https://rasa.com/docs/rasa-pro/building-assistants/thinking-calmly),
+   [Flows](https://www.rasa.com/docs/reference/primitives/flows),
+   [reseña del paper](https://www.themoonlight.io/en/review/task-oriented-dialogue-with-in-context-learning).
+4. **El aviso:** la literatura de seguimiento del estado recomienda que el modelo mande cambios, no el estado entero,
+   porque reescribirlo todo pierde datos en charlas largas. Acá se midió lo contrario, pero en charlas de tres turnos:
+   antes de confiar, se prueba la ficha en charlas de seis o más.
+   [ParsingDST](https://arxiv.org/pdf/2310.10520), [DST con esquema](https://arxiv.org/pdf/2109.07506).
