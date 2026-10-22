@@ -138,10 +138,30 @@ def test_la_compatibilidad_de_un_rubro_con_algo_que_no_es_equipo_es_una_busqueda
     assert _normal([{"accion": "compatibilidad", "producto": "memoria ram", "con": "notebook"}], _estado(), tienda)[1] == []
 
 
-def test_varios_productos_nombrados_son_una_pregunta_por_cada_uno(tienda):
-    out, _ = _normal([{"accion": "producto", "producto": ["G305", "G203"], "quiere_saber": "inalambrico"}],
-                     _estado(), tienda)
+def test_una_lista_con_un_dato_que_filtra_se_resuelve_por_el_dato(tienda):
+    out, reglas = _normal([{"accion": "producto", "producto": ["G305", "G203"], "quiere_saber": "inalambrico"}],
+                          _estado(), tienda)
+    assert reglas == ["lista_con_dato"] and out == [{"accion": "producto", "producto": "G305",
+                                                     "quiere_saber": "inalambrico", "ofrece": True}]
+    # Lo mismo con lo mostrado, que es lo que trababa en vivo el 21-oct: "de esos, el que sea inalambrico".
+    from app.core.flujo import catalogo as K
+    e = _estado()
+    e["mostrados"] = [{"id": str(p["id"]), "nombre": p["nombre"], "precio": ""} for p in K.productos(tienda)
+                      if p.get("modelo") in ("G305 Lightspeed", "G203 Lightsync") and p.get("color") == "Negro"]
+    out, _ = _normal([{"accion": "producto", "producto": ["M-1", "M-2"], "quiere_saber": "inalambrico"}], e, tienda)
+    assert len(out) == 1 and out[0]["ofrece"]
+    # Sin un dato que filtre, lo nombrado va uno por uno.
+    out, _ = _normal([{"accion": "producto", "producto": ["G305", "G203"], "quiere_saber": "precio"}], _estado(), tienda)
     assert [p["producto"] for p in out] == ["G305", "G203"]
+
+
+def test_un_rubro_que_la_cita_no_nombra_sale_de_la_agenda(tienda):
+    out, reglas = _normal([{"accion": "buscar", "rubro": "mouse", "cita": "dos mouse"},
+                           {"accion": "buscar", "rubro": "todos", "orden": "mas caro",
+                            "cita": "el precio no seria tan importante"}], _estado(), tienda)
+    assert reglas == ["rubro_inventado"] and len(out) == 1
+    assert _normal([{"accion": "buscar", "rubro": "mouse", "cita": "un mouse"},
+                    {"accion": "buscar", "rubro": "drones", "cita": "y drones tienen?"}], _estado(), tienda)[1] == []
 
 
 def test_el_piso_de_las_traducciones_grabadas_de_produccion(tienda):

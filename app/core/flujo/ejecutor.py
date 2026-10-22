@@ -305,6 +305,8 @@ def _nombres(t: Turno, x) -> list:
             v = K.por_id(ref, t.tienda).get("nombre") or v
         elif v[:1] == "L" and isinstance(ref, dict):
             v = ref["que"]
+        elif A._REF.match(v):
+            continue  # un numero que no esta en la libreta no se le muestra al cliente: "M-2" no es un producto
         if v:
             out.append(v)
     return out
@@ -323,7 +325,11 @@ def _uno(t: Turno, x) -> str:
 def _producto(t: Turno, p: dict):
     nombre = _uno(t, p.get("producto"))
     if nombre:
-        return t.producto(nombre, str(p.get("afirma") or p.get("quiere_saber") or ""), str(p.get("color") or ""))
+        ok = t.producto(nombre, str(p.get("afirma") or p.get("quiere_saber") or ""), str(p.get("color") or ""))
+        if p.get("ofrece") and ok and not t.estado["pedido"]:
+            # ELEGIDO POR EL DATO, de una lista: el vendedor ofrece el que cumple, asi la venta sigue.
+            t.preguntar(f"¿Te reservo el {K.identificar(nombre, '', t.tienda)['producto'].get('modelo') or nombre}?")
+        return ok
 
 
 def _buscar(t: Turno, p: dict):

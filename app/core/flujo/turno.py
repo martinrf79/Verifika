@@ -86,6 +86,10 @@ async def procesar_turno(user_id: str, raw_message: str, tienda_id: str, canal: 
                                      if m.get("role") == "assistant")
         cierre = await cerrar(estado, user_id, canal, tienda_id, previo, trace_id, resumen=not cuentas and not leida)
         texto = f"{texto}\n\n{cierre}".strip() if cierre else texto
+    ultimo = next((str(m.get("content") or "") for m in reversed(history) if m.get("role") == "assistant"), "")
+    if "si_sin_efecto" in t.normal and texto.strip() == ultimo.strip():
+        # UN "OK" A UNA CUENTA RECIEN MOSTRADA no la manda de nuevo: es conformidad, y repetir era el mismo mensaje.
+        texto = "Perfecto, queda así."
     texto = texto or "¿En qué te puedo ayudar?"
     if not history:
         texto = gs.con_saludo_inicial(texto, gs.business_name(tienda_id))

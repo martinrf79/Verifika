@@ -217,24 +217,52 @@ def cuenta_de_lo_nombrado(c: _Ctx) -> bool:
     return True
 
 
-def uno_por_cada_nombrado(c: _Ctx) -> bool:
-    """VARIOS PRODUCTOS NOMBRADOS POR EL CLIENTE EN UNA PREGUNTA —"el G305 y el G203, cual es inalambrico"— son una
-    pregunta por cada uno. La lista es para lo que senala sin decir cual, con numeros de la libreta."""
+def lista_con_dato(c: _Ctx) -> bool:
+    """VARIOS PRODUCTOS EN UNA PREGUNTA CON UN DATO QUE LA TIENDA FILTRA —"el G305 y el G203, cual es inalambrico", "de
+    esos, el que no tiene cable"— se resuelven por el dato: si lo cumple uno solo, la pregunta es por ese, y el vendedor
+    ofrece reservarlo. Si no, va una pregunta por cada producto nombrado, con su dato. Sin un dato que filtre, la lista de
+    la libreta queda como esta: senala sin decir cual, y el codigo pregunta."""
     hizo, nuevas = False, []
     for p in c.ps:
         xs = p.get("producto") if p.get("accion") == "producto" else None
-        if isinstance(xs, list) and len(xs) > 1 and not any(_es(str(x), "M") or _es(str(x), "L") for x in xs):
-            idts = [K.identificar(str(x), "", c.tienda) for x in xs]
-            modelos = {(i["producto"].get("marca"), i["producto"].get("modelo")) for i in idts
-                       if i["veredicto"] == "exists"}
-            if all(i["veredicto"] == "exists" for i in idts) and len(modelos) == len(xs):
-                nuevas += [{**p, "n": p.get("n") if j == 0 else None, "producto": str(x)} for j, x in enumerate(xs)]
-                hizo = True
-                continue
-        nuevas.append(p)
+        if not (isinstance(xs, list) and len(xs) > 1) or any(_es(str(x), "L") for x in xs):
+            nuevas.append(p)
+            continue
+        nombres = [K.por_id(c.nums.get(str(x).strip()), c.tienda).get("nombre") if _es(str(x), "M") else str(x)
+                   for x in xs]
+        idts = [K.identificar(str(x or ""), "", c.tienda) for x in nombres]
+        prods = [i.get("producto") for i in idts if i["veredicto"] == "exists"]
+        if len(prods) != len(xs) or len({(q.get("marca"), q.get("modelo")) for q in prods}) != len(xs):
+            nuevas.append(p)
+            continue
+        universo = [q for q in K.productos(c.tienda) if q.get("categoria") in {x.get("categoria") for x in prods}]
+        f = K.atar(str(p.get("quiere_saber") or ""), universo, c.tienda)
+        filtra = "campo" in f and f["campo"] not in ("nombre", "modelo", "descripcion", "tags") or "todas" in f
+        cumplen = [x for x, q in zip(xs, prods) if filtra and K.cumple(q, f)]
+        if len(cumplen) == 1:
+            nuevas.append({**p, "producto": str(cumplen[0]), "ofrece": True})
+        elif filtra or not any(_es(str(x), "M") for x in xs):
+            nuevas += [{**p, "n": p.get("n") if j == 0 else None, "producto": str(x)} for j, x in enumerate(xs)]
+        else:
+            nuevas.append(p)
+            continue
+        hizo = True
     if hizo:
         c.agenda["preguntas"] = _numerar(nuevas)
     return hizo
+
+
+def rubro_inventado(c: _Ctx) -> bool:
+    """UNA BUSQUEDA DE UN RUBRO QUE LA TIENDA NO TIENE Y QUE LA CITA NO NOMBRA —"el precio no es tan importante" como
+    buscar "todos"— no es algo que el cliente pidio: sale de la agenda. Si la cita lo nombra, "tienen drones?", queda, y
+    el codigo dice que no se vende."""
+    fuera = [p for p in c.acciones("buscar") if K.n(p.get("rubro")) not in ("", "todo", "toda la tienda", "el pedido")
+             and not K.rubro(str(p.get("rubro")), c.tienda)
+             and not set(K.n(p.get("rubro")).split()) & set(K.n(p.get("cita")).split())]
+    if not fuera or len(fuera) == len(c.ps):
+        return False
+    c.agenda["preguntas"] = [p for p in c.ps if p not in fuera]
+    return True
 
 
 def dato_del_producto(c: _Ctx) -> bool:
@@ -372,7 +400,7 @@ def un_medio_es_todo(c: _Ctx) -> bool:
 
 
 REGLAS = (referencias_cruzadas, color_ajeno, si_sin_efecto, politica_de_envio_con_lugar, envio_a_varios,
-          dato_del_producto, compatibilidad_de_un_rubro, el_pedido_sin_pedido, uno_por_cada_nombrado,
+          dato_del_producto, compatibilidad_de_un_rubro, el_pedido_sin_pedido, lista_con_dato, rubro_inventado,
           cuenta_de_lo_nombrado, cuenta_de_lo_buscado,
           un_destino_para_el_pedido, precio_con_envio, un_medio_es_todo)
 
