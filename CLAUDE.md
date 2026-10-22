@@ -52,7 +52,7 @@ conciso, sin repetir; que la memoria de la charla no se pierda.
 ### El plan, en este orden
 
 Cambiado por Martín el 19-oct: **el cableado desde cero, sobre las 58, sin modelos.** Reemplaza al plan de la
-FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 5 están hechos: el flujo es el camino vivo.
+FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 6 están hechos: el flujo es el camino vivo.
 
 1. **El flujo vive en `app/core/flujo/`.** Estado, intérprete, ejecutor, catálogo, redacción y cierre, escritos de
    cero. De lo viejo usa sólo las herramientas: motor, calculadora, envío, políticas, compatibilidad, `leads` y
@@ -68,7 +68,12 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 5 están 
 5. **Las 58 están en la batería**, `tests/test_cableado58.py`: una charla rota frena el deploy. El intérprete usa la
    consigna de la agenda, con seis ejemplos. `tablero.py`, `respuesta.py` y las once capas se borraron. Si falla en
    vivo, git.
-6. **Después, Martín dice cómo se sigue.**
+6. **La forma normal**, 21-oct, FICHA 74: entre el intérprete y el ejecutor, `flujo/normal.py` lleva lo que dijo el
+   modelo a la forma que el ejecutor cumple. No corrige al modelo ni lee el mensaje: define qué quiere decir cada
+   forma. Una regla nueva entra si en `banco_pruebas/forma_normal/regrado.py` no rompe ninguna de las 3.107
+   traducciones grabadas de seis modelos, y si la batería sigue verde.
+7. **Lo que sigue, por orden de Martín del 21-oct:** cada pregunta del bot con su espera —qué respuesta espera y qué
+   hace con ella—, porque la memoria entre turnos es lo más frágil que se vio en vivo. Está en `PENDIENTE.md`.
 
 ### Qué es parche, y cómo no se cae en eso
 
@@ -177,6 +182,7 @@ python3 -m pytest -q                       # la batería offline, sin modelo
 python3 -m pytest tests/test_cableado58.py      # la vara fija: las 58 por el flujo vivo, sin modelo
 python3 -m banco_pruebas.cableado58 --ver        # lo mismo, con lo que recibe el cliente
 python3 -m banco_pruebas.suficiencia            # si lo que ve el modelo alcanza para cada agenda, sin modelo
+python3 banco_pruebas/forma_normal/regrado.py   # las 3.107 traducciones grabadas, con el codigo de hoy, sin modelo
 uvicorn app.main:app --reload --port 8080  # correr local
 ```
 
