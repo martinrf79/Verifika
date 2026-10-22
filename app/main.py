@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.core.orchestrator import process_message
 from app.connectors.telegram import get_telegram_connector
 from app.connectors.whatsapp import (
+    estados_de_whatsapp,
     get_whatsapp_connector_for_tienda,
     parse_whatsapp_payload,
 )
@@ -336,6 +337,8 @@ async def whatsapp_webhook(request: Request, background: BackgroundTasks):
     """Recibe webhook de Meta Cloud API. Resuelve la tienda por phone_number_id presente en el payload."""
     payload = await request.json()
     log.info("whatsapp_webhook_received")
+    for st in estados_de_whatsapp(payload):
+        (log.warning if st["errores"] or st["estado"] == "failed" else log.info)("whatsapp_estado", **st)
 
     # Extraer phone_number_id del payload (identifica al cliente B2B)
     parsed = parse_whatsapp_payload(payload)

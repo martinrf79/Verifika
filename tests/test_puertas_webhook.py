@@ -279,3 +279,19 @@ def test_sin_clave_de_transcripcion_el_audio_devuelve_nada_y_no_revienta(monkeyp
     import app.core.transcriber as tr
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     assert tr.transcribir_audio(b"lo que sea") is None
+
+
+def test_los_avisos_de_entrega_de_meta_se_leen_con_su_error():
+    """Un mensaje que Meta acepto y no llego solo se ve en el aviso de estado: se registra con su error (21-oct, el
+    "Ok" que quedo sin respuesta en el telefono de Martin)."""
+    from app.connectors.whatsapp import estados_de_whatsapp, parse_whatsapp_payload
+    payload = {"entry": [{"changes": [{"value": {"metadata": {"phone_number_id": "1"}, "statuses": [
+        {"id": "wamid.A", "status": "delivered"},
+        {"id": "wamid.B", "status": "failed", "errors": [{"code": 131047, "title": "Re-engagement message",
+                                                          "error_data": {"details": "mas de 24 horas"}}]}]}}]}]}
+    assert parse_whatsapp_payload(payload) is None
+    assert estados_de_whatsapp(payload) == [
+        {"wamid": "wamid.A", "estado": "delivered", "errores": []},
+        {"wamid": "wamid.B", "estado": "failed",
+         "errores": [{"codigo": 131047, "titulo": "Re-engagement message", "detalle": "mas de 24 horas"}]}]
+    assert estados_de_whatsapp({"entry": [{"changes": [{"value": {"messages": []}}]}]}) == []

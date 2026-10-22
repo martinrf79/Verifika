@@ -33,6 +33,12 @@ class WhatsAppMetaConnector:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(url, json=payload, headers=headers)
                 response.raise_for_status()
+                # EL ID DEL MENSAJE QUE ACEPTO META: con el se cruza el aviso de entrega o de falla que llega despues.
+                try:
+                    wamid = ((response.json().get("messages") or [{}])[0] or {}).get("id", "")
+                except (ValueError, AttributeError, IndexError):
+                    wamid = ""  # salio igual: el id es para mirar, no decide nada
+                log.info("whatsapp_enviado", wamid=wamid, largo=len(text))
                 return True
         except httpx.HTTPStatusError as e:
             log.error("whatsapp_send_http_error",
@@ -68,6 +74,23 @@ def get_whatsapp_connector_for_tienda(access_token: str,
                                       phone_number_id: str) -> WhatsAppMetaConnector:
     """Devuelve un conector configurado para una tienda especifica."""
     return WhatsAppMetaConnector(access_token, phone_number_id)
+
+
+def estados_de_whatsapp(payload: dict) -> list:
+    """Los avisos de Meta sobre lo que mando el bot: enviado, entregado, leido o fallado, con el error si fallo.
+    [{"wamid", "estado", "errores"}]. Sin esto, un mensaje que Meta acepto y nunca llego no se ve en ningun lado."""
+    out = []
+    try:
+        for entry in payload.get("entry") or []:
+            for change in entry.get("changes") or []:
+                for st in (change.get("value") or {}).get("statuses") or []:
+                    out.append({"wamid": st.get("id", ""), "estado": st.get("status", ""),
+                                "errores": [{"codigo": e.get("code"), "titulo": e.get("title"),
+                                             "detalle": ((e.get("error_data") or {}).get("details") or "")[:200]}
+                                            for e in st.get("errors") or []]})
+    except (AttributeError, TypeError):
+        return out
+    return out
 
 
 def parse_whatsapp_payload(payload: dict) -> tuple[str, str, str, str] | None:
