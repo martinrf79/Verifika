@@ -19,16 +19,29 @@ def _fila(p: dict) -> str:
     return f"- {p['nombre']}: {_plata(p.get('precio_ars'))}" + ("" if con_stock(p) else ", sin stock")
 
 
+# Lo que el nombre de un campo dice de su unidad: "peso_gramos" es el peso, en gramos.
+_UNIDADES = ("gramos", "meses", "kg", "cm", "mm", "pulgadas", "hz", "mah", "gb", "tb", "w")
+
+
+def _etiqueta(campo: str, valor) -> str:
+    partes = str(campo).split("_")
+    unidad = partes[-1] if len(partes) > 1 and partes[-1] in _UNIDADES else ""
+    nombre = " ".join(partes[:-1] if unidad else partes).capitalize()
+    v = str(valor).strip().rstrip(".")
+    return f"{nombre}: {v} {unidad}".rstrip() if unidad and not v.lower().endswith(unidad) else f"{nombre}: {v}"
+
+
 def _producto(h: dict) -> list:
     p = h["producto"]
     stock = "hay stock" if con_stock(p) else "sin stock por ahora"
     out = [f"{p['nombre']}: {_plata(p.get('precio_ars'))}, {stock}{_otros_colores(h)}."]
     d = h.get("dato") or {}
     if d.get("valor"):
-        out.append(f"{d['campo'].replace('_', ' ').capitalize()}: {d['valor']}.")
+        out.append(f"{_etiqueta(d['campo'], d['valor'])}.")
     elif d:
-        out.append(f"El dato de {d['campo']} no figura en la ficha." +
-                   (f" La ficha dice: {d['descripcion']}" if d.get("descripcion") else ""))
+        # LO QUE LA TIENDA NO TIENE LO DICE EL CODIGO, corto: de la ficha, solo la oracion que habla de eso.
+        out.append(f"No tengo el dato de {d['campo']} de ese producto." + (f" La ficha dice: {d['dice']}" if d.get("dice")
+                                                                             else ""))
     return out
 
 
@@ -75,7 +88,7 @@ RENGLONES = {
     "producto": _producto,
     "no_existe": lambda h: [f"No encontré \"{h['nombre']}\" en el catálogo."],
     "lista": _lista,
-    "no_vende": lambda h: [f"No vendemos {h['que']}."],
+    "no_vende": lambda h: [f"No tengo {h['que']} en la tienda."],
     "compat": lambda h: [h.get("motivo") or f"{h.get('nombre')}: {h.get('veredicto')}."],
     "politica": lambda h: [h["texto"]],
     "sin_politica": lambda h: ["Sobre eso no tengo información escrita."],

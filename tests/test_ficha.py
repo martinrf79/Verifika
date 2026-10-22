@@ -229,6 +229,65 @@ def test_la_duda_pasa_el_control_del_vendedor():
     assert not interprete.controlar("¿Te sirve el G305 a $80.500?", "", TIENDA)
 
 
+# ══ 4. LO QUE LA TIENDA TIENE Y LO QUE NO: lo dice el codigo ════════════════
+
+def _responde(preguntas: list) -> str:
+    from app.core.flujo import estado as E, redaccion
+    from app.core.flujo.ejecutor import ejecutar
+    for i, p in enumerate(preguntas, 1):
+        p.setdefault("n", i)
+        p.setdefault("cita", "x")
+    t = ejecutar({"preguntas": preguntas}, E.leer({}), TIENDA, explicar=lambda q: "")
+    return redaccion.texto(t.hechos, t.preguntas, False)
+
+
+@pytest.mark.parametrize("pregunta, dice", [
+    ("peso", "Peso: 139 gramos"),                      # un campo arriba de todo, no en las specs
+    ("de que material es", "Material: Plastico ABS"),
+    ("garantia", "Garantia: 24 meses"),                 # dos campos empatan: el de respuesta directa
+    ("si es resistente al agua", "no es resistente al agua"),
+    ("cuanto dura la carga", "Bateria:"),               # por la frase del alias de la tienda
+])
+def test_cada_campo_del_catalogo_es_un_dato(M, pregunta, dice):
+    assert dice in _responde([{"accion": "producto", "producto": "G305", "quiere_saber": pregunta}])
+
+
+@pytest.mark.parametrize("pregunta", ["cuanto consume en watts", "que temperatura soporta"])
+def test_lo_que_no_esta_en_la_ficha_lo_dice_el_codigo(M, pregunta):
+    t = _responde([{"accion": "producto", "producto": "G305", "quiere_saber": pregunta}])
+    assert f"No tengo el dato de {pregunta}" in t
+
+
+def test_un_tema_que_la_faq_no_tiene_no_se_adivina(M):
+    """"Instalacion a domicilio" encontraba por parecido la regla de cambio de direccion."""
+    assert _responde([{"accion": "politica", "tema": "instalacion a domicilio"}]) == \
+        "Sobre eso no tengo información escrita."
+
+
+def test_lo_que_la_tienda_no_vende_no_trae_otra_cosa(M):
+    assert _responde([{"accion": "buscar", "rubro": "toda la tienda", "condiciones": ["drones"]}]) == \
+        "No tengo drones en la tienda."
+
+
+def test_una_busqueda_sin_rubro_ni_condicion_muestra_lo_que_vende(F):
+    ag = F.a_agenda(_ficha(consultas=[{"tipo": "buscar", "sobre": "que tenes", "rubro": "ninguno", "condiciones": [],
+                                       "orden": "nada", "si": ""}]), _estado(), TIENDA)
+    assert _acciones(ag) == [("otro", "")] and ag["preguntas"][0]["que"] == "catalogo"
+
+
+def test_cada_tipo_de_consulta_va_a_una_sola_accion(F):
+    """El mapa es la pregunta: cada tipo de la ficha tiene una accion, y ninguna consulta queda sin una."""
+    from app.core.flujo import agenda as A
+    base = {"sobre": "precio y si anda", "rubro": "mouse", "tema": "garantia", "producto": "G305", "con": "Mac",
+            "lugar": "Rosario", "condiciones": [], "orden": "nada", "si": ""}
+    vistas = {}
+    for tipo in F.TIPOS:
+        ag = F.a_agenda(_ficha(consultas=[{**base, "tipo": tipo}]), _estado(), TIENDA)
+        vistas[tipo] = {p["accion"] for p in ag["preguntas"]}
+        assert vistas[tipo] and vistas[tipo] <= set(A.ACCIONES), (tipo, vistas[tipo])
+    print(f"\nTIPOS: {len(F.TIPOS)} de {len(F.TIPOS)} con su accion: {vistas}")
+
+
 # ══ 3. LO QUE QUEDA A MEDIAS ══════════════════════════════════════════════════
 
 @pytest.mark.xfail(strict=True, reason="A MEDIAS: lo condicional de la ficha va en palabras, `si`, y la agenda necesita "

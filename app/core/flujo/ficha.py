@@ -390,8 +390,11 @@ def a_agenda(ficha: dict, estado: dict, tienda_id: str, mensaje: str = "") -> di
             rub = _rubro(prod or sobre, tienda_id, str(c.get("rubro") or ""))
             if rub in busquedas:
                 continue
-            pregunta("buscar", cita, rubro=rub or "toda la tienda",
-                     condiciones=_conds(c.get("condiciones"), pref_conds, hasta), orden=_orden_de(c, pref_orden))
+            conds = _conds(c.get("condiciones"), pref_conds, hasta)
+            if not rub and not _conds(c.get("condiciones")):
+                pregunta("otro", cita, que="catalogo")  # sin rubro ni condicion no hay que buscar: lo que vende
+                continue
+            pregunta("buscar", cita, rubro=rub or "toda la tienda", condiciones=conds, orden=_orden_de(c, pref_orden))
         elif tipo in ("producto", "comparar"):
             # Sin un producto nombrado no hay a quien preguntarle: si nombra un rubro es una busqueda, si no, nada. "El
             # mouse mas vendido" es una busqueda con su orden; si la tienda no tiene ese dato, la busqueda lo dice.
@@ -429,7 +432,8 @@ def a_agenda(ficha: dict, estado: dict, tienda_id: str, mensaje: str = "") -> di
                 cuenta = pregunta("cuenta", cita)
         elif tipo == "regla de la tienda":
             temas = _tema(c, sobre, tienda_id)
-            pregunta("politica", cita, tema=temas[0] if temas else sobre)
+            # Sin tema de la FAQ no se adivina uno por parecido: el codigo dice que no tiene informacion escrita.
+            pregunta("politica", cita, tema=temas[0] if temas else NINGUNO)
         elif tipo == "saber general":
             pregunta("explicar", cita, pregunta=sobre)
 

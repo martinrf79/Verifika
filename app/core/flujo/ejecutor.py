@@ -15,6 +15,7 @@ Los montos salen de la calculadora, por `agente.h_cuenta` y `agente.h_envio`.
 
 Un hecho es un dict con "tipo" y "n", la pregunta que lo pidio. `redaccion.texto` los pasa a palabras en ese orden.
 """
+import re
 from app.core import agente, fuente
 from app.logger import get_logger
 
@@ -104,26 +105,25 @@ class Turno:
         return ok
 
     def dato(self, p: dict, quiere_saber: str) -> dict:
-        """El dato que pregunto, del producto: por el nombre del campo, o por el campo del rubro donde vive esa
-        palabra —"inalambrico" vive en conexion—. Primero la frase entera, despues palabra por palabra, sin las del
-        nombre del producto. Si no esta en ningun campo, lo dice."""
+        """El dato que pregunto, del producto. Cada campo del catalogo es un dato —el registro sale del catalogo vivo,
+        `filtros_catalogo.campos_filtrables`—, y se lo reconoce por su nombre o por como lo llaman los clientes, el
+        alias de la tienda. Despues, por el campo donde vive la palabra —"inalambrico" vive en conexion—. Si no esta,
+        {"valor": None} y, de la descripcion, solo la oracion que habla de eso: el codigo dice que no tiene el dato."""
         q = K.n(quiere_saber)
         if q in ("", "todo", "precio", "stock", "disponibilidad", "precio y stock", "existencia") \
                 or "tope" in K.atar(quiere_saber, [], self.tienda):
             return {}  # un tope de plata se contesta con el precio, que ya va
-        datos = {**(p.get("specs") or {}), "garantia": (p.get("specs") or {}).get("garantia")
-                 or (f"{p['garantia_meses']} meses" if p.get("garantia_meses") else None)}
         propias = set(K.n(p.get("nombre")).split())
+        pedidas = [w for w in q.split() if len(w) > 2 and w not in propias and w not in K._RELLENO]
+        clave = _campo_de(p, set(pedidas), self.tienda)
+        if clave:
+            return {"campo": clave, "valor": _valor_de(p, clave)}
         universo = [x for x in K.productos(self.tienda) if x.get("categoria") == p.get("categoria")]
-        for parte in [q] + [w for w in q.split() if len(w) > 2 and w not in propias and w not in K._RELLENO]:
-            palabras = set(parte.split())
-            clave = next((k for k in datos if datos[k] and set(K.n(k).replace("_", " ").split()) & palabras), None)
-            if clave:
-                return {"campo": clave, "valor": datos[clave]}
+        for parte in [q] + pedidas:
             f = K.atar(parte, universo, self.tienda)
-            if "campo" in f and f["campo"] not in ("nombre", "modelo", "descripcion", "tags", "marca"):
-                return {"campo": f["campo"], "valor": K._valores(p, f["campo"]) or "no figura"}
-        return {"campo": quiere_saber, "valor": None, "descripcion": p.get("descripcion") or ""}
+            if "campo" in f and f["campo"] not in NO_SON_DATOS:
+                return {"campo": f["campo"], "valor": _valor_de(p, f["campo"]) or None}
+        return {"campo": quiere_saber, "valor": None, "dice": _oracion(p.get("descripcion"), pedidas)}
 
     # ── busquedas ────────────────────────────────────────────────────────────
 
@@ -143,10 +143,14 @@ class Turno:
         if not toda and not rub:
             self.hechos.append({"tipo": "no_vende", "que": nombre})
             return False
+        conds = [str(c) for c in _lista(b.get("condiciones"))]
+        if toda and conds and all("sin_campo" in K.atar(c, K.productos(self.tienda), self.tienda) for c in conds):
+            # EN TODA LA TIENDA, LO QUE NINGUNA FICHA NOMBRA ES ALGO QUE LA TIENDA NO TIENE: "drones" no trae mouses.
+            self.hechos.append({"tipo": "no_vende", "que": ", ".join(conds)})
+            return False
         orden = str(b.get("orden") or "nada")
         cuantos = K.entero(b.get("cantidad"), 1) if K.n(orden) not in ("nada", "") else 5
         entre = [m["id"] for m in self.estado["mostrados"]] if _si(b.get("entre_lo_mostrado")) else None
-        conds = [str(c) for c in _lista(b.get("condiciones"))]
         r = K.buscar(rub, conds, orden, cuantos, self.tienda, entre)
         aviso = ""
         if entre is not None and conds and (not r["filas"] or r["vacio_por"]):
@@ -283,6 +287,66 @@ class Turno:
             self.cambio = True
 
 
+# Lo que nombra al producto o lo vende, no lo describe: no es un dato que se pregunta.
+NO_SON_DATOS = ("nombre", "modelo", "descripcion", "tags", "precio_ars", "stock", "categoria", "id")
+
+
+def _valor_de(p: dict, campo: str) -> str:
+    from app.core.filtros_catalogo import _valor_crudo
+    if campo == "garantia_meses" and p.get("garantia_meses"):
+        return f"{p['garantia_meses']} meses"
+    v = _valor_crudo(p, campo)
+    return str(v).strip() if v not in (None, "") else ""
+
+
+def _campo_de(p: dict, palabras: set, tienda_id: str) -> str:
+    """El campo con valor en este producto que nombra la pregunta: por la raiz de su nombre —"peso" es peso_gramos—, o
+    por una frase entera de como lo llaman los clientes —"cuanto dura la carga" es bateria—. Las frases van enteras: de
+    a una palabra, "compacto" llevaba "compatibilidad" a las dimensiones."""
+    from app.core.filtros_catalogo import campos_filtrables
+    if not palabras:
+        return ""
+    raices = {w[:5] for w in palabras if len(w) > 3}
+    frases = _frases_de_campos(tienda_id)
+    puntos = {}
+    for c in dict.fromkeys(list(campos_filtrables(tienda_id)) + list((p.get("specs") or {}).keys())):
+        if c in NO_SON_DATOS or not _valor_de(p, c):
+            continue
+        n_ = 2 * len({w[:5] for w in K.n(c).replace("_", " ").split() if len(w) > 3} & raices)
+        n_ += sum(1 for f in frases.get(c, ()) if f <= palabras)
+        if n_:
+            puntos[c] = n_
+    if not puntos:
+        return ""
+    # Si dos campos empatan —garantia_meses y garantia_detalle—, el de valor mas corto: es la respuesta directa.
+    tope = max(puntos.values())
+    return min((c for c, n_ in puntos.items() if n_ == tope), key=lambda c: len(_valor_de(p, c)))
+
+
+_FRASES = {}
+
+
+def _frases_de_campos(tienda_id: str) -> dict:
+    """{campo: [palabras de cada frase del alias, sin relleno]}, de `alias.json` de la tienda."""
+    if tienda_id not in _FRASES:
+        from app.core import agente
+        al = agente._alias(tienda_id).get("campos") or {}
+        _FRASES[tienda_id] = {c: [set(w for w in K.n(f).split() if w not in K._RELLENO and len(w) > 2) - {""}
+                                  for f in fs] for c, fs in al.items()}
+        _FRASES[tienda_id] = {c: [f for f in fs if f] for c, fs in _FRASES[tienda_id].items()}
+    return _FRASES[tienda_id]
+
+
+def _oracion(descripcion, palabras: list) -> str:
+    """De la descripcion, la oracion que nombra lo que pregunto. Si ninguna lo nombra, la descripcion entera: puede
+    decirlo con otras palabras —"sirve para jugar" y "Ideal para Gaming"—, y lo conciso no vale una respuesta."""
+    raices = {w[:5] for w in palabras if len(w) > 3}
+    for o in re.split(r"(?<=[.!?])\s+", str(descripcion or "")):
+        if raices & {w[:5] for w in re.findall(r"[a-z0-9]+", K.n(o))}:
+            return o.strip()
+    return str(descripcion or "").strip()
+
+
 def _perdidos(antes: list, arts: list, tienda_id: str) -> list:
     """Los rubros y los destinos que estaban en el pedido y ya no estan, dichos para el cliente."""
     rubro = lambda a: K.por_id(a["id"], tienda_id).get("categoria") or a["nombre"]  # noqa: E731
@@ -354,6 +418,11 @@ def _compatibilidad(t: Turno, p: dict):
 
 
 def _politica(t: Turno, p: dict):
+    # SOLO UN TEMA DE LA FAQ: un texto suelto encontraba por parecido otra regla —"instalacion a domicilio" daba la de
+    # cambio de direccion—. Lo que la FAQ no tiene, el codigo dice que no tiene informacion escrita.
+    if str(p["tema"]) not in agente.indice(t.tienda)["temas"]:
+        t.hechos.append({"tipo": "sin_politica"})
+        return
     pols = fuente.politicas_de([str(p["tema"])], t.tienda, con_base=True).get("politicas") or []
     # Solo las politicas: el criterio de la FAQ es una instruccion para el que redacta, no texto para el cliente.
     t.hechos += [{"tipo": "politica", "tema": x.get("tema"), "texto": x.get("texto"), "base": x.get("base")}
