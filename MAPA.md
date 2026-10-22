@@ -66,6 +66,8 @@ permiso.
 | Si lo que recibe el modelo alcanza, sin modelo | `banco_pruebas/suficiencia.py` |
 | Las traducciones grabadas de seis modelos, calificadas con el codigo de hoy, sin modelo | `banco_pruebas/forma_normal/regrado.py` |
 | Jev, el índice en niveles y las dos vueltas; los siete casos de producción charla entera, FICHA 75 | `banco_pruebas/jev/` |
+| Las 16 charlas de razonamiento con memoria y lo correcto de cada turno; Python con menú, FICHA 76 | `banco_pruebas/pregunta_razonada/` |
+| La ficha nativa: el paso libre, la ficha, su vara y cuánto ata el código, FICHA 76 | `banco_pruebas/pedido_documento/` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
 | La vara de las 58 | `banco_pruebas/vara_58.py` |
