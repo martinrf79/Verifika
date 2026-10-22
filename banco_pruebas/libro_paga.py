@@ -35,9 +35,10 @@ from types import SimpleNamespace
 
 LIBRO = Path(__file__).resolve().parent / "libro_paga.jsonl"
 RESPUESTAS = Path(__file__).resolve().parent / "respuestas_modelo.jsonl"
-# Un dolar por dia entre todas las corridas. Subirlo es una orden de Martin,
+# Un dolar con sesenta por dia entre todas las corridas: 22-oct, Martin da 80 centavos
+# para la ficha nativa con 0,79 ya gastados ese dia. Subirlo es una orden de Martin,
 # en su propio commit, como cualquier umbral.
-TOPE_DIARIO = 1.00
+TOPE_DIARIO = 1.60
 
 
 class TopeDiario(Exception):
