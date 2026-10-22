@@ -1,0 +1,61 @@
+{
+  "_que_es": "Casos sacados de las charlas reales de produccion del 15 al 21 de octubre, con las palabras literales de Martin. Las casillas usan los tipos de vara_58 y las escribio Claude: Martin las revisa antes de correr. Los montos y plazos salen de la fuente.",
+  "charlas": [
+    {"id": "P01", "de": "5493547504287_20261020T192601", "clase": "multidestino con tope de plata y pago partido", "turnos": [
+      {"texto": "Necesito tres mouse, dos teclados y un par de auriculares. No quiero gastar más de 600 mil en total. Dos mouse y un teclado van a Rosario, el resto a Neuquén, y sumame una webcam para Rosario. Pago la mitad con transferencia y la mitad con Mastercard",
+       "casillas": [
+         {"tipo": "articulos", "minimos": {"mouse": 3, "teclado": 2, "auricular": 1, "webcam": 1}, "n": "los 7 articulos"},
+         {"tipo": "tope_plata", "monto": 600000, "n": "ningun monto pasa los 600 mil"},
+         {"tipo": "dice", "palabras": ["rosario", "neuquen"], "n": "dice los dos destinos"},
+         {"tipo": "dice", "palabras": ["mastercard"], "n": "dice mastercard"},
+         {"tipo": "no_patron", "patron": "no llegue a resolver", "n": "no deja el pago sin resolver"}]},
+      {"texto": "¿Cuánto tarda el envío a Neuquén",
+       "casillas": [{"tipo": "dice", "palabras": ["4 a 7"], "n": "dice el plazo al interior"}]},
+      {"texto": "Tienen garantía?”",
+       "casillas": [{"tipo": "dice", "palabras": ["garantia"], "n": "contesta la garantia"}]}]},
+    {"id": "P02", "de": "5493547504287_20261020T183934", "clase": "multidestino, cuotas y nombre", "turnos": [
+      {"texto": "Quiero precio de 4 mouse y 2 monitor. Un mouse y el monitor van a Rosario, lo otro va a Mendoza, y sumame una webcam para Mendoza",
+       "casillas": [
+         {"tipo": "articulos", "minimos": {"mouse": 4, "monitor": 2, "webcam": 1}, "n": "los 7 articulos"},
+         {"tipo": "dice", "palabras": ["rosario", "mendoza"], "n": "dice los dos destinos"},
+         {"tipo": "total_general", "n": "da el total general"}]},
+      {"texto": "Ok \"¿Qué cuotas tienen?\"",
+       "casillas": [{"tipo": "dice", "palabras": ["cuotas", "6"], "n": "dice las cuotas"}]},
+      {"texto": "Joaquin",
+       "casillas": [{"tipo": "dice", "palabras": ["joaquin"], "n": "toma el nombre"},
+                    {"tipo": "dice", "palabras": ["pagar|pago|link"], "n": "cierra con el cobro"}]}]},
+    {"id": "P03", "de": "5493547504287", "clase": "compra con condicion de compatibilidad", "turnos": [
+      {"texto": "quiero el K380 pero solo si funciona con mi iPad",
+       "casillas": [{"tipo": "dice", "palabras": ["k380"], "n": "dice k380"},
+                    {"tipo": "dice", "palabras": ["ipad"], "n": "contesta por el ipad"},
+                    {"tipo": "no_patron", "patron": "que modelo es tu ipad", "n": "no pide el modelo: el K380 anda con cualquier iPad"}]}]},
+    {"id": "P04", "de": "5493547504287_20261021T042215", "clase": "pregunta suelta con relleno", "turnos": [
+      {"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia",
+       "casillas": [{"tipo": "dice", "palabras": ["g305"], "n": "dice g305"},
+                    {"tipo": "dice", "palabras": ["24 meses"], "n": "dice los 24 meses de la ficha"}]}]},
+    {"id": "P05", "de": "5493547504287_20261021T042053", "clase": "envio suelto", "turnos": [
+      {"texto": "cuanto sale el envio a Posadas",
+       "casillas": [{"tipo": "plata", "monto": 10000, "n": "el envio a Posadas, 10.000"}]}]},
+    {"id": "P06", "de": "5493547504287_20261020T152947", "clase": "la de los siete articulos, con correccion, medios de pago y nombre", "turnos": [
+      {"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+       "casillas": [{"tipo": "dice", "palabras": ["cordoba", "concordia", "posadas"], "n": "dice los tres destinos"},
+                    {"tipo": "alguna", "opciones": [{"tipo": "pregunta"}, {"tipo": "articulos", "minimos": {"teclado": 1}}], "n": "el teclado que no estaba en la lista: lo pregunta o lo suma"}]},
+      {"texto": "Son 7 cosas, el teclado va a posadas no concordia, lo demas esta bien el  70 transferencia",
+       "casillas": [{"tipo": "articulos_exactos", "cantidades": {"auricular": 2, "mouse": 2, "memoria": 2, "teclado": 1}, "n": "los 7 articulos, ni uno de mas"},
+                    {"tipo": "total_general", "n": "da el total general"},
+                    {"tipo": "reparto_total", "pct": 70, "n": "el 70 por ciento del total"}]},
+      {"texto": "Que medios de pago tenes aparte de transferencia",
+       "casillas": [{"tipo": "dice", "palabras": ["tarjeta|mercado pago|visa|mastercard"], "n": "nombra otros medios"}]},
+      {"texto": "Tarjeta visa",
+       "casillas": [{"tipo": "dice", "palabras": ["visa"], "n": "toma visa como el otro medio"},
+                    {"tipo": "no_patron", "patron": "no llegue a resolver|me lo decis de otra forma", "n": "no lo deja sin resolver"}]},
+      {"texto": "Joaquin",
+       "casillas": [{"tipo": "dice", "palabras": ["joaquin"], "n": "toma el nombre"}]}]},
+    {"id": "P07", "de": "5493547504287_20261021T041919", "clase": "tope corregido en el turno siguiente", "turnos": [
+      {"texto": "\"Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil. Dos mouse y un teclado a Rosario, el resto a Neuquén, sumame una webcam para Rosario. Pago mitad transferencia y mitad Mastercard",
+       "casillas": [{"tipo": "articulos", "minimos": {"mouse": 3, "teclado": 2, "auricular": 1, "webcam": 1}, "n": "los 7 articulos"}]},
+      {"texto": "No mas de $600000 entre todos",
+       "casillas": [{"tipo": "tope_plata", "monto": 600000, "n": "ningun monto pasa los 600 mil"},
+                    {"tipo": "total_general", "n": "da el total general"}]}]}
+  ]
+}

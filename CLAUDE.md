@@ -72,8 +72,11 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 6 están 
    modelo a la forma que el ejecutor cumple. No corrige al modelo ni lee el mensaje: define qué quiere decir cada
    forma. Una regla nueva entra si en `banco_pruebas/forma_normal/regrado.py` no rompe ninguna de las 3.107
    traducciones grabadas de seis modelos, y si la batería sigue verde.
-7. **Lo que sigue, por orden de Martín del 21-oct:** cada pregunta del bot con su espera —qué respuesta espera y qué
-   hace con ella—, porque la memoria entre turnos es lo más frágil que se vio en vivo. Está en `PENDIENTE.md`.
+7. **Lo que sigue, por orden de Martín del 22-oct:** la pregunta como pista. Como las 58 clasifican charlas, cada
+   pregunta se clasifica por la forma de respuesta que la tienda puede dar según el índice, y cada clase activa su
+   herramienta, código o modelo, solo cuando hace falta. El primer paso, medido en la FICHA 75, es atar las condiciones
+   por el índice. Después, cada pregunta del bot con su espera. Jev como contexto en cada mensaje no entró: empeora las
+   charlas reales. Está en `PENDIENTE.md`.
 
 ### Qué es parche, y cómo no se cae en eso
 
