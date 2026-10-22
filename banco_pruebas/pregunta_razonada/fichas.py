@@ -215,7 +215,7 @@ CHARLAS = [
                  g("AG", rubro="teclado", cant=1, orden="barato", dest="Río Tercero"),
                  g("AG", rubro="mouse", cant=1, orden="barato", dest="Río Tercero"),
                  g("CU", reparto=[(100, "transferencia")]),
-                 g("PO", pal=["tard", "demora", "llega", "plazo"], tema=["plazo_envio", "envios"])]},
+                 g("PO", pal=["tard", "demora", "llega", "plazo"], tema=["plazo_envio", "envios"], alt="E")]},
         {"msg": "La de Río Tercero es la gerencia, ahí poné algo más lindo: |el teclado que sea inalámbrico |y el mouse "
                 "silencioso.",
          "mem": {"M": ["TEC0020", "MOU0023"],

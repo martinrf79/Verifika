@@ -213,7 +213,11 @@ def slots(oro: dict, f: str, a: dict, cond: bool, mem: dict, todas: list) -> lis
     if oro.get("color"):
         out.append(("color", n(oro["color"]) in texto, None))
     if oro.get("orden") == "barato":
+        # El orden de una clase de producto puede ir en su busqueda o en su compra, como las condiciones.
         o = a.get("orden")
+        if not any(w in n(o) for w in BARATO) and rub:
+            o = next((b.get("orden") for g, b, _ in todas if g in ("buscar", "agregar")
+                      and rubro_de(b.get("que"), mem) == rub and any(w in n(b.get("orden")) for w in BARATO)), o)
         p1 = any(w in n(o) for w in BARATO) or any(w in n(a.get("condiciones")) for w in BARATO)
         out.append(("orden", p1, K.ORDEN.get(n(o), (0, 0))[1] == 1))
     if oro.get("tope"):
@@ -240,7 +244,7 @@ def slots(oro: dict, f: str, a: dict, cond: bool, mem: dict, todas: list) -> lis
             elif c["campos"]:
                 p2 = False
             out.append(("condicion: " + c["pal"][0], p1, p2))
-    if oro.get("pal"):
+    if oro.get("pal") and not (oro.get("alt") == "E" and f == "envio"):
         out.append(("lo que pregunta", any(w in texto for w in oro["pal"]), None))
     if oro.get("tema"):
         temas = {t for ts in marcador._temas(" ".join(str(v) for v in a.values() if isinstance(v, str)), TID).values()
@@ -268,6 +272,12 @@ def comparar_oro(oro: dict, todas: list, mem: dict) -> dict:
     cuentas = [x for x in todas if x[0] == "cuenta"]
     junta = [("cuenta", {k: v for x in cuentas for k, v in x[1].items() if v not in (None, "", [], {})},
               any(x[2] for x in cuentas))] if len(cuentas) > 1 else []
+    # UN CAMBIO AL MISMO RENGLON es uno aunque lo diga en varias llamadas: la cantidad en una y el destino en otra.
+    for ref in {str(c) for x in todas if x[0] == "cambiar" for c in _lista(x[1].get("cual"))}:
+        mismas = [x for x in todas if x[0] == "cambiar" and _lista(x[1].get("cual")) == [ref]]
+        if len(mismas) > 1:
+            junta.append(("cambiar", {k: v for x in mismas for k, v in x[1].items() if v not in (None, "", [], {})},
+                          any(x[2] for x in mismas)))
     for x in todas + junta:
         if x[0] not in funcs:
             continue

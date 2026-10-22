@@ -28,7 +28,9 @@ sys.path.insert(0, REPO)
 sys.path.insert(0, AQUI)
 os.chdir(REPO)
 PAGA = os.environ.get("PAGA") == "1"
-if not PAGA:
+if PAGA:
+    os.environ["BANCO_CLAVE_PAGA"] = "true"  # clon_produccion pasa a la paga solo con esto
+else:
     os.environ.pop("GEMINI_API_KEY_PROD", None)  # la gratis: clon_produccion no la cambia por la paga
 
 from banco_pruebas import clon_produccion as C  # noqa: E402
