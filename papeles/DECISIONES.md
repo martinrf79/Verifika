@@ -156,3 +156,12 @@ Todas salen de lo medido en `PASO0_CENSO.md`. Ninguna es una preferencia.
     pregunta cuál, con el precio si es el mismo en todos.** No se cuenta sin saber cuál. Motivo:
     Martín dio las dos por válidas; esta es la que el código ya hace, no elige por el cliente y
     le da el dato para decidir.
+
+## 23-oct-2026 — La configuración vive en el motor, adaptable a cada tienda
+
+47. **Toda regla o texto nuevo va en el motor, el corazón de Verifika, con un defecto que cada
+    tienda puede cambiar.** Nada propio de una tienda queda fijo en el flujo. Una regla va en su
+    herramienta, con el valor por defecto en el código y su clave en los archivos de la tienda,
+    como `familias_adentro` en el vocabulario de compatibilidad. Un texto al cliente sale por
+    `guia_venta_prosa.mensaje`, con su clave y su defecto. Motivo: orden de Martín, el bot tiene
+    que servir para otras tiendas.
