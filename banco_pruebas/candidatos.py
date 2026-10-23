@@ -15,6 +15,8 @@ Por cada cosa esperada: si esta entre los seis de alguna parte, y si es el prime
 
 --completa, paso 1 del plan: la consigna pide cada parte entera, que se entienda sola, una clase de producto por parte,
 y lo que senala de la libreta por su numero. Eso se mide aparte, en la capa "numero". En las 48 se suma el acto.
+--pulida, lo mismo y ademas: la pregunta sigue pregunta y lo que pregunta no se junta con lo que decide; y el codigo
+pasa un M-n que ya esta en el pedido a su renglon.
 
     MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/candidatos.py [--ver] [--completa] [--solo48|--solo58]
 """
@@ -25,7 +27,8 @@ import re
 import sys
 
 VER = "--ver" in sys.argv
-COMPLETA = "--completa" in sys.argv
+PULIDA = "--pulida" in sys.argv
+COMPLETA = "--completa" in sys.argv or PULIDA
 SOLO = "48" if "--solo48" in sys.argv else "58" if "--solo58" in sys.argv else ""
 sys.argv = [sys.argv[0]]
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -56,7 +59,19 @@ def familias_de(nombre: str) -> set:
     return {familia(p) for p in ps}
 
 
-def seis(partes: list, libreta: str) -> list:
+def a_renglon(estado: dict) -> dict:
+    """Lo mostrado que ya esta en el pedido, al renglon que lo tiene: "M-1" -> ["L-2"]. Sin modelo."""
+    from app.core.flujo import borrador as B
+    b = B.leer(estado.get("borrador"))
+    res = B.resolver(b, TID) if b["renglones"] else []
+    en = collections.defaultdict(list)
+    for r in res:
+        for a in r.get("articulos") or []:
+            en[a.get("id")].append(r["L"])
+    return {k: en[v] for k, v in interprete.numeros(estado).items() if k[0] == "M" and en.get(v)}
+
+
+def seis(partes: list, libreta: str, mapa: dict = None) -> list:
     """Por cada parte, los seis de cada capa. "numero" es lo que la parte senala de la libreta, con --completa."""
     charla = ET._charla(libreta)
     vc = dict(zip(charla, ET.vectores(list(charla.values())))) if charla else {}
@@ -67,7 +82,8 @@ def seis(partes: list, libreta: str) -> list:
         c = {g: [k for k, _ in sorted(((k, ET._coseno(v, q)) for k, v in d.items()), key=lambda x: -x[1])[:SEIS]]
              for g, d in idx.items()}
         c["charla"] = [k for k, _ in sorted(((k, ET._coseno(v, q)) for k, v in vc.items()), key=lambda x: -x[1])[:SEIS]]
-        c["numero"] = [_ref(x, False) for x in p.get("senala") or [] if _ref(x, False)]
+        c["numero"] = [y for x in p.get("senala") or [] if _ref(x, False)
+                       for y in ((mapa or {}).get(_ref(x, False)) or [_ref(x, False)])]
         out.append(c)
     return out
 
@@ -81,6 +97,11 @@ parte: "¿el mouse viene en blanco?". Una parte habla de una sola clase de produ
 partes. En "senala" van los numeros de la libreta de lo que la parte nombra o senala —M-2 lo mostrado, L-1 un renglon
 del borrador—; [] si no senala nada de la libreta."""
 
+# LO PULIDO, 23-oct: completar no es cambiar lo que dijo. La pregunta completa volvia orden lo que era pregunta.
+PULIDA_TXT = """
+Completar no es cambiar lo que dijo: una pregunta sigue siendo pregunta, con su signo, y un pedido sigue siendo pedido.
+No juntes en una parte lo que pregunta con lo que decide: "¿hay tres? si hay, llevo tres" son dos partes."""
+
 
 def formato_completo() -> dict:
     import copy
@@ -92,7 +113,7 @@ def formato_completo() -> dict:
 
 
 async def traducir(mensaje: str, libreta: str) -> list:
-    consigna = A.consigna_unida() + (COMPLETA_TXT if COMPLETA else "")
+    consigna = A.consigna_unida() + (COMPLETA_TXT if COMPLETA else "") + (PULIDA_TXT if PULIDA else "")
     msgs = [{"role": "system", "content": consigna},
             {"role": "user", "content": libreta + f"\nULTIMO MENSAJE: {A.limpio(mensaje)}"}]
     r = interprete._json(await interprete._pedir(msgs, "candidatos", formato_completo() if COMPLETA
@@ -209,7 +230,7 @@ def las_48(desde: float) -> None:
             lib = interprete.libreta(estado, historial, TID)
             with Puerta():
                 partes = asyncio.run(traducir(tu["msg"], lib))
-                cands = seis(partes, lib)
+                cands = seis(partes, lib, a_renglon(estado) if PULIDA else None)
             notar("48", f"{ch['id']} t{i}", A.limpio(tu["msg"]), partes, cands, esperado_48(tu["oro"]))
             quiere = {A.DEL_ORO[x["tipo"]] for x in tu["oro"] if not x.get("opt")}
             puso = {p.get("acto") for p in A.definir([dict(p) for p in partes], tu["mem"])}
@@ -233,10 +254,11 @@ def las_58(desde: float) -> None:
             if gastado(desde) >= TOPE:
                 return
             conv = fc.get_conversation(uid, tienda_id=TID) or {}
-            lib = interprete.libreta(E.leer(conv), conv.get("history") or [], TID)
+            estado = E.leer(conv)
+            lib = interprete.libreta(estado, conv.get("history") or [], TID)
             with Puerta():
                 partes = asyncio.run(traducir(t["texto"], lib))
-                cands = seis(partes, lib)
+                cands = seis(partes, lib, a_renglon(estado) if PULIDA else None)
             notar("58", f"{charla['id']} t{i}", t["texto"], partes, cands, esperado_58(ag, rubros))
 
             async def _interpretar(*a, _ag=ag, **k):
@@ -260,7 +282,8 @@ def main() -> None:
             print(f"    {msg[:160]}")
             for p, m in zip(partes, mejor):
                 print(f"      {str(p)[:70]:70} -> {', '.join(m)}")
-    print("\nLOS SEIS CANDIDATOS SOBRE LA PRIMERA TRADUCCION" + (", CON LA PREGUNTA COMPLETA" if COMPLETA else ""))
+    print("\nLOS SEIS CANDIDATOS SOBRE LA PRIMERA TRADUCCION" + (", CON LA PREGUNTA COMPLETA" if COMPLETA else "")
+          + (", PULIDA" if PULIDA else ""))
     for fuente in ("48", "58"):
         for capa in CAPAS:
             n = NOTA[(fuente, capa)]
