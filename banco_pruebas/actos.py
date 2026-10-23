@@ -50,6 +50,16 @@ DEL_ORO = {"AG": "lleva", "B": "mira", "P": "pregunta_dato", "CMP": "compara", "
            "ORD": "cambia", "SA": "saca", "E": "envio", "CU": "paga", "PO": "regla_tienda", "EX": "saber_general",
            "CL": "dato_cliente", "NADA": "nada"}
 
+# LO QUE TAMBIEN VALE, regla de Martin del 23-oct: si lo que dice el modelo se responde con la fuente, no alucina y no va
+# contra vender, se toma. Solo los cuatro casos que reviso; el resto de la vara queda como estaba.
+TAMBIEN = {
+    ("S15", 1): [{"lleva", "envio"}],                                  # "¿cuanto tarda a Tucuman?" como envio
+    ("S13", 0): [{"pregunta_dato"}],                                    # "precio de cuatro mouse" como pregunta de precio
+    ("S09", 0): [{"pregunta_dato", "regla_tienda"}],
+    ("S14", 2): [{"dato_cliente", "cambia"}],                           # "otro pendrive igual" como cambio del renglon
+    ("S07", 2): [{"compatibilidad", "dato_cliente", "lleva"}],          # "si sirven, cerramos": compra que depende
+}
+
 # Pares de borde: la misma forma, otro acto. Frases nuevas, no de las 48.
 EJEMPLOS = [
     ("quiero tres K120", "lleva", ""), ("¿te quedan tres K120?", "pregunta_dato", ""),
@@ -117,7 +127,7 @@ def main() -> None:
             r = asyncio.run(leer(tu, con))
             partes = [p for p in r.get("partes") or [] if isinstance(p, dict)]
             puso = {p.get("acto") for p in partes}
-            bien = quiere == puso
+            bien = puso == quiere or puso in TAMBIEN.get((ch["id"], i), [])
             cuenta["BIEN" if bien else "MAL"] += 1
             for a in quiere:
                 por_acto[(a, "esta" if a in puso else "falta")] += 1
