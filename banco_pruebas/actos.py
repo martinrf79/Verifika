@@ -11,7 +11,7 @@ de las 48, que van todos siempre.
 Por turno: BIEN si los actos que pide la vara son los que puso el modelo, sin faltar ni sobrar; y aparte, si marca la
 dependencia donde la vara dice que algo depende de otra cosa.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/actos.py [--ver] [--sin-ejemplos] [--unida]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/actos.py [--ver] [--sin-ejemplos] [--unida] [--codigo]
 """
 import asyncio
 import collections
@@ -30,6 +30,7 @@ from fichas import CHARLAS  # noqa: E402
 
 TOPE = float(os.environ.get("TOPE_CORRIDA", "0.20"))
 UNIR = "--unida" in sys.argv
+CODIGO = "--codigo" in sys.argv
 
 ACTOS = {
     "lleva": "decide comprar algo nuevo: lo suma al pedido",
@@ -142,6 +143,33 @@ async def leer(tu: dict, con_ejemplos: bool) -> dict:
     return interprete._json(await interprete._pedir(msgs, "actos", FORMATO))
 
 
+# LO QUE DEFINE EL CODIGO SOBRE LAS PARTES, sin modelo y sin leer el mensaje: solo cada parte con la fuente.
+def _rubro_de(texto: str) -> str:
+    from app.core.flujo import catalogo as K
+    from app.core.flujo.marcador import _productos
+    import re as _re
+    for tramo, _ in _productos([w for w in _re.findall(r"[a-z0-9]+", K.n(texto)) if w not in K._RELLENO], P.TID):
+        idt = K.identificar(tramo, "", P.TID)
+        if idt["veredicto"] == "exists":
+            return idt["producto"]["categoria"]
+    r = agente.ubicar(texto, "rubros", P.TID, 1)
+    return r[0] if r else ""
+
+
+def definir(partes: list, mem: dict) -> list:
+    """Comprar algo de un rubro que en el pedido tiene un renglon sin producto elegido es elegir para ese renglon:
+    cambia. La regla de los destinos se probo y se saco el 23-oct: el padron toma "Roberto Gomez" por la localidad de
+    Gomez, y en un turno con memoria "manda todo a Mendoza" es un cambio del pedido, no un detalle."""
+    sin_elegir = {rub for _, rub, pid, _ in mem.get("L") or [] if not pid}
+    out = []
+    for p in partes:
+        t = str(p.get("texto") or "")
+        if p.get("acto") == "lleva" and sin_elegir and _rubro_de(t) in sin_elegir:
+            p = {**p, "acto": "cambia"}
+        out.append(p)
+    return out
+
+
 def main() -> None:
     ver = "--ver" in sys.argv
     con = "--sin-ejemplos" not in sys.argv
@@ -156,6 +184,8 @@ def main() -> None:
             quiere = {DEL_ORO[x["tipo"]] for x in oro}
             r = asyncio.run(leer(tu, con))
             partes = [p for p in r.get("partes") or [] if isinstance(p, dict)]
+            if CODIGO:
+                partes = definir(partes, tu["mem"])
             puso = {p.get("acto") for p in partes}
             bien = puso == quiere or puso in TAMBIEN.get((ch["id"], i), [])
             cuenta["BIEN" if bien else "MAL"] += 1
@@ -173,7 +203,7 @@ def main() -> None:
                     print(f"      [{p.get('acto')}] {p.get('texto')}" + (f" · depende de {p['depende_de']}"
                                                                           if p.get("depende_de") else "")
                           + (f" · {p['cantidad']}" if p.get("cantidad") else ""))
-    print(f"\nACTOS {'consigna unida' if UNIR else ('con' if con else 'sin') + ' ejemplos'}, 48 turnos: BIEN {cuenta['BIEN']} · MAL {cuenta['MAL']}")
+    print(f"\nACTOS {'+ reglas del codigo, ' if CODIGO else ''}{'consigna unida' if UNIR else ('con' if con else 'sin') + ' ejemplos'}, 48 turnos: BIEN {cuenta['BIEN']} · MAL {cuenta['MAL']}")
     print(f"  dependencias: {dep['la marca']} de {dep['con dependencia']} turnos que tienen una")
     for a in ACTOS:
         e, f, s = por_acto[(a, "esta")], por_acto[(a, "falta")], por_acto[(a, "sobra")]

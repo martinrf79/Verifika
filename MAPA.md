@@ -70,6 +70,8 @@ permiso.
 | La ficha nativa: el paso libre, la ficha, su vara y cuánto ata el código, FICHA 76 | `banco_pruebas/pedido_documento/` |
 | El pedido que queda en el bot por la vara de la ficha: la ficha viva o las grabadas, por el ejecutor | `banco_pruebas/pedido_documento/medir_pedido.py` |
 | Los siete casos de producción, charla entera por el camino vivo, con su piso | `banco_pruebas/pedido_documento/prod7_ficha.py` |
+| Qué toca de la tienda cada parte: rubros y temas, productos y campos, por palabras y por significado, FICHA 77 | `banco_pruebas/cobertura.py`, `banco_pruebas/cobertura_capas.py` |
+| El acto de cada parte sobre las 48, con la consigna unida y las reglas del código, FICHA 77 | `banco_pruebas/actos.py` |
 | Lo que ya contestó el modelo, sin volver a pagarlo | `banco_pruebas/libro_paga.py`, `respuestas_modelo.jsonl` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
