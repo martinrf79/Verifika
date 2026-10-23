@@ -83,3 +83,21 @@ def test_cada_pregunta_con_su_espera():
     assert "mouse" in r[1].lower() and "tengo:" in r[1], r
     bien.append("tablet_otro_tema")
     print(f"\nESPERA: {len(bien)} de {len(CHARLAS)} charlas")
+
+
+def test_lo_que_va_adentro_lo_define_cada_tienda(firestore_doble):
+    """La regla vive en el motor, con un defecto, y cada tienda la cambia en su vocabulario: "familias_adentro"."""
+    from app.core import compatibilidad as CO
+    from app.core.flujo import catalogo as K
+    tienda = C.TIENDA
+    ram = K.identificar("Kingston Fury Beast DDR4 16GB", "", tienda)["producto"]
+    teclado = K.identificar("Teclado Logitech K380 Negro", "", tienda)["producto"]
+    assert CO.va_adentro(ram, tienda) and not CO.va_adentro(teclado, tienda)
+    vocab = CO.vocabulario(tienda)
+    antes = vocab["familias_adentro"]
+    try:
+        vocab["familias_adentro"] = ["inalambrico"]
+        assert not CO.va_adentro(ram, tienda) and CO.va_adentro(teclado, tienda)
+    finally:
+        vocab["familias_adentro"] = antes
+    print("\nADENTRO: 2 de 2 productos con la regla por defecto, 2 de 2 con la de la tienda")

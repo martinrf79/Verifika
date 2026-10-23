@@ -404,7 +404,8 @@ def _buscar(t: Turno, p: dict):
 
 
 def _compatibilidad(t: Turno, p: dict):
-    from app.core.compatibilidad import plataformas_del_mensaje
+    from app.core.compatibilidad import plataformas_del_mensaje, va_adentro
+    from app.core.guia_venta_prosa import mensaje
     con = str(p.get("con") or "")
     nombres = _nombres(t, p.get("producto"))
     unico = nombres[0] if len({_modelo(n, t.tienda) for n in nombres}) == 1 else ""
@@ -413,7 +414,7 @@ def _compatibilidad(t: Turno, p: dict):
     # modelo si el equipo no esta en el vocabulario, si el producto no es uno, si va adentro del equipo —una memoria
     # pide la ranura de la placa, no "PC"— o si la tabla no alcanza para decir que si, que no o entre cuales.
     if _si(p.get("falta_modelo")) and not (idt["veredicto"] == "exists" and plataformas_del_mensaje(con, t.tienda)
-                                           and not _va_adentro(idt["producto"], t.tienda)
+                                           and not va_adentro(idt["producto"], t.tienda)
                                            and _veredicto(t, idt["producto"], con) in ("compatible", "incompatible", "ambiguo")):
         t.preguntar(f"¿Qué modelo es tu {con}? Con eso te confirmo qué le sirve.",
                     espera={"tipo": "equipo", "producto": unico, "con": con, "opciones": []})
@@ -429,22 +430,13 @@ def _compatibilidad(t: Turno, p: dict):
     vs = [v for v in _lista(r.get("compatibilidad")) if isinstance(v, dict)]
     for v in [v for v in vs if v.get("veredicto") == "ambiguo"]:
         # UN EQUIPO QUE PUEDE SER VARIOS SE PREGUNTA, y la pregunta espera uno de ellos: "mi tablet", Android o iPad.
-        t.preguntar(f"¿Tu {con} es {' o '.join(v.get('candidatos') or [])}?",
+        t.preguntar(mensaje("compat_cual_equipo", "¿Tu {equipo} es {opciones}?", equipo=con,
+                            opciones=" o ".join(v.get("candidatos") or [])),
                     espera={"tipo": "equipo", "producto": idt["producto"]["nombre"], "con": con,
                             "opciones": plataformas_del_mensaje(con, t.tienda)})
     t.hechos += [{"tipo": "compat", **v} for v in vs if v.get("veredicto") != "ambiguo"]
     veredictos = {v.get("veredicto") for v in vs}
     return True if "compatible" in veredictos else (False if "incompatible" in veredictos else None)
-
-
-# Lo que va adentro del equipo depende de su placa: el zocalo, las ranuras y el formato. Familias del vocabulario.
-_ADENTRO = re.compile(r"^(socket|ranura_|formato_)")
-
-
-def _va_adentro(p: dict, tienda_id: str) -> bool:
-    from app.core.compatibilidad import compat_de, vocabulario
-    familias = vocabulario(tienda_id)["familias"]
-    return any(_ADENTRO.match(familias.get(c, "")) for c in compat_de(p, tienda_id).get("requiere") or [])
 
 
 def _veredicto(t: Turno, p: dict, con: str) -> str:
@@ -786,7 +778,10 @@ def atar_esperas(agenda: dict, t: Turno) -> None:
             p.clear()
             p.update({"n": n, "cita": cita, "accion": "otro", "que": "dato"})
             t.n = n
-            t.hechos.append({"tipo": "no_es", "dicho": etiqueta_plataforma(dicho[0], t.tienda), "con": e["con"], "n": n})
+            from app.core.guia_venta_prosa import mensaje
+            dijo = etiqueta_plataforma(dicho[0], t.tienda)
+            t.hechos.append({"tipo": "no_es", "n": n, "texto": mensaje(
+                "compat_no_es_el_equipo", "{dicho} no es tu {equipo}.", dicho=dijo[:1].upper() + dijo[1:], equipo=e["con"])})
             t.preguntar(a["texto"], espera=e)
 
 

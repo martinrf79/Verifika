@@ -46,7 +46,8 @@ def vocabulario(tienda_id: str | None = None) -> dict:
     if tid in _CACHE_VOCAB:
         return _CACHE_VOCAB[tid]
     vocab = {"plataformas": {}, "conectores": {}, "familias": {},
-             "alias_plataforma": {}, "alias_conector": {}, "preguntas": []}
+             "alias_plataforma": {}, "alias_conector": {}, "preguntas": [],
+             "familias_adentro": list(FAMILIAS_ADENTRO)}
     ruta = _ruta(tid, "compatibilidad_vocabulario.json")
     if ruta:
         try:
@@ -75,6 +76,8 @@ def vocabulario(tienda_id: str | None = None) -> dict:
                         vocab["alias_conector"].setdefault(a, set()).add(cid)
             vocab["preguntas"] = [_norm(q) for q in (crudo.get("preguntas") or [])
                                   if q]
+            if crudo.get("familias_adentro") is not None:
+                vocab["familias_adentro"] = [str(f) for f in crudo["familias_adentro"]]
         except Exception as e:
             log.warning("compatibilidad_vocab_error", tienda_id=tid,
                         error=str(e)[:150])
@@ -125,6 +128,20 @@ def tabla(tienda_id: str | None = None) -> dict:
                         tienda_id=tid, valores=sorted(desconocidos)[:12])
     _CACHE_TABLA[tid] = out
     return out
+
+
+# LO QUE VA ADENTRO DEL EQUIPO depende de su placa, no de la plataforma: una memoria pide la ranura, no "PC". Son
+# familias de conectores; cada tienda las cambia con "familias_adentro" en su vocabulario. Un nombre que termina en
+# "_" es un prefijo: "ranura_" son todas las ranuras.
+FAMILIAS_ADENTRO = ("socket", "ranura_", "formato_")
+
+
+def va_adentro(prod: dict, tienda_id: str | None = None) -> bool:
+    """Si lo que el producto requiere va adentro del equipo: entonces el equipo dicho no alcanza, hace falta su modelo."""
+    v = vocabulario(tienda_id)
+    adentro = v["familias_adentro"]
+    return any(any(f == a or (a.endswith("_") and f.startswith(a)) for a in adentro)
+               for f in (v["familias"].get(c, "") for c in compat_de(prod, tienda_id).get("requiere") or []))
 
 
 def compat_de(prod: dict, tienda_id: str | None = None) -> dict:
