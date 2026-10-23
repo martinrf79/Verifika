@@ -520,42 +520,68 @@ def _que(x: dict) -> str:
 def preguntas(b: dict, falta: list) -> list:
     out = []
     for x in falta:
-        t, q = x["falta"], ""
-        if t == "modelo":
-            q = "¿Cuál de estos querés: " + " o ".join(x["opciones"]) + "?"
-        elif t == "color":
-            antes = f"El {x['modelo']} no viene en {x['no_hay']}. " if x.get("no_hay") else ""
-            q = f"{antes}Para reservarte el {x['modelo']}, ¿en qué color: " + " o ".join(x["colores"]) + "?"
-        elif t == "stock":
-            q = (f"No tengo {x['rubro']} con stock: ¿te sirve otra cosa?" if x.get("rubro")
-                 else f"El {x['nombre']} no tiene stock: ¿te sirve otro color u otro modelo?")
-        elif t == "cantidad_stock":
-            q = f"Del {x['nombre']} me quedan {x['hay']} y pediste {x['pide']}: ¿te sirve así o lo cambio por otro?"
-        elif t == "cantidad":
-            q = f"¿Cuántos {x['renglon']['que']} querés?"
-        elif t == "condicion":
-            q = "¿Te lo confirmo así?"
-        elif t == "confirmar" and x.get("opciones"):
-            q = f"El {_que(x)} no estaba en tu lista. Si era " + " o ".join(x["opciones"]) + \
-                " cierra con lo que dijiste: ¿era eso, o va aparte?"
-        elif t == "confirmar":
-            q = f"Pediste {_que(x)}, pero en la lista había " + ", ".join(x["lista"]) + \
-                ": ¿lo sumo o era otra cosa de la lista?"
-        elif t == "supuesto":
-            q = LO_DEJO
-        elif t == "otros" and not x.get("espera"):
-            q = f"¿Cuáles son {x['renglon']['que']}?" + (" De la lista quedan " + ", ".join(
-                f"{c} {rub}" for rub, c in x["quedan"]) + "." if x["quedan"] else "")
-        elif t == "destino":
-            q = f"¿A dónde va {x['renglon']['que']}?"
-        elif t == "pago":
-            q = "Los porcentajes del pago no suman 100: ¿cómo lo repartís?"
-        elif t == "medio":
-            sin = [p for p in b["pago"] if K.n(p["medio"]) in SIN_MEDIO]
-            q = ("¿Con qué medio pagás cada parte: " if len(sin) > 1 else "¿Con qué medio pagás ") + \
-                " y ".join(f"el {p['porcentaje']}%" for p in sin) + "?"
+        q = _pregunta(b, x)
         if q and q not in out:
             out.append(q)
+    return out
+
+
+def _pregunta(b: dict, x: dict) -> str:
+    t, q = x["falta"], ""
+    if t == "modelo":
+        q = "¿Cuál de estos querés: " + " o ".join(x["opciones"]) + "?"
+    elif t == "color":
+        antes = f"El {x['modelo']} no viene en {x['no_hay']}. " if x.get("no_hay") else ""
+        q = f"{antes}Para reservarte el {x['modelo']}, ¿en qué color: " + " o ".join(x["colores"]) + "?"
+    elif t == "stock":
+        q = (f"No tengo {x['rubro']} con stock: ¿te sirve otra cosa?" if x.get("rubro")
+             else f"El {x['nombre']} no tiene stock: ¿te sirve otro color u otro modelo?")
+    elif t == "cantidad_stock":
+        q = f"Del {x['nombre']} me quedan {x['hay']} y pediste {x['pide']}: ¿te sirve así o lo cambio por otro?"
+    elif t == "cantidad":
+        q = f"¿Cuántos {x['renglon']['que']} querés?"
+    elif t == "condicion":
+        q = "¿Te lo confirmo así?"
+    elif t == "confirmar" and x.get("opciones"):
+        q = f"El {_que(x)} no estaba en tu lista. Si era " + " o ".join(x["opciones"]) + \
+            " cierra con lo que dijiste: ¿era eso, o va aparte?"
+    elif t == "confirmar":
+        q = f"Pediste {_que(x)}, pero en la lista había " + ", ".join(x["lista"]) + \
+            ": ¿lo sumo o era otra cosa de la lista?"
+    elif t == "supuesto":
+        q = LO_DEJO
+    elif t == "otros" and not x.get("espera"):
+        q = f"¿Cuáles son {x['renglon']['que']}?" + (" De la lista quedan " + ", ".join(
+            f"{c} {rub}" for rub, c in x["quedan"]) + "." if x["quedan"] else "")
+    elif t == "destino":
+        q = f"¿A dónde va {x['renglon']['que']}?"
+    elif t == "pago":
+        q = "Los porcentajes del pago no suman 100: ¿cómo lo repartís?"
+    elif t == "medio":
+        sin = [p for p in b["pago"] if K.n(p["medio"]) in SIN_MEDIO]
+        q = ("¿Con qué medio pagás cada parte: " if len(sin) > 1 else "¿Con qué medio pagás ") + \
+            " y ".join(f"el {p['porcentaje']}%" for p in sin) + "?"
+    return q
+
+
+def esperas(b: dict, falta: list) -> dict:
+    """{pregunta: lo que espera}, de lo que falta con respuesta cerrada: cual modelo, el color o confirmar la condicion.
+    "hace" es lo que pide la respuesta, con "{eleccion}" en el lugar de lo elegido: `ejecutor.atar_esperas`."""
+    out = {}
+    for x in falta:
+        if not x.get("L"):
+            continue
+        if x["falta"] == "modelo":
+            e = {"tipo": "cual", "opciones": list(x["opciones"]),
+                 "hace": [{"accion": "comprar", "cambia": [{"es": x["L"], "producto": "{eleccion}"}]}]}
+        elif x["falta"] == "color":
+            e = {"tipo": "color", "opciones": list(x["colores"]),
+                 "hace": [{"accion": "comprar", "cambia": [{"es": x["L"], "color": "{eleccion}"}]}]}
+        elif x["falta"] == "condicion":
+            e = {"tipo": "si_no", "hace": [{"accion": "comprar", "confirma": [x["L"]]}]}
+        else:
+            continue
+        out.setdefault(_pregunta(b, x), e)
     return out
 
 

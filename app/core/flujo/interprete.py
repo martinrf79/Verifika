@@ -58,11 +58,27 @@ def numeros(estado: dict) -> dict:
     out = {f"M-{i}": m["id"] for i, m in enumerate(unicos[-12:], 1)}
     out.update({r["L"]: r for r in (estado.get("borrador") or {}).get("renglones") or []})
     out.update({f"R-{i}": r for i, r in enumerate(estado["abiertas"], 1)})
+    # EL NOMBRE PEDIDO tambien es una pregunta abierta, y espera un nombre. No se guarda: se deriva del borrador, como
+    # la etapa, mientras el pedido sea el mismo para el que se pidio.
+    b = B.leer(estado.get("borrador"))
+    if b["renglones"] and B.etapa(b, [], estado["pedido"]) == "falta_nombre" \
+            and b["cierre"].get("nombre_para") == B.huella(estado["pedido"]):
+        from .redaccion import pedir_nombre
+        out[f"R-{len(estado['abiertas']) + 1}"] = {"texto": pedir_nombre(), "cita": "", "espera": {"tipo": "nombre"}}
     return out
 
 
 def _plano(texto) -> str:
     return " / ".join(x.strip() for x in str(texto or "").splitlines() if x.strip())
+
+
+# Lo que espera cada pregunta abierta, dicho al modelo: contestarla no es otra consulta.
+_ESPERA = {"equipo": ", espera: que equipo tiene, no es una compra", "color": ", espera: un color",
+           "cual": ", espera: cual de las opciones", "si_no": ", espera: si o no", "nombre": ", espera: su nombre"}
+
+
+def _espera(e: dict) -> str:
+    return _ESPERA.get(e.get("tipo"), "")
 
 
 def libreta(estado: dict, historial: list, tienda_id: str) -> str:
@@ -95,8 +111,7 @@ def libreta(estado: dict, historial: list, tienda_id: str) -> str:
     if abiertas:
         # Lo que espera la pregunta, si la espera: contestarla no es decidir una compra.
         r += ["- ABIERTO, lo que el vendedor pregunto:"] + [
-            f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}'
-            + (", espera: que equipo tiene, no es una compra" if (v.get("espera") or {}).get("tipo") == "equipo" else "")
+            f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}' + _espera(v.get("espera") or {})
             for k, v in abiertas]
     charla = [m for m in historial if m.get("role") in ("user", "assistant")][-2:]
     if charla:

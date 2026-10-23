@@ -51,6 +51,41 @@ CHARLAS = {
 }
 
 
+# LAS OTRAS ESPERAS, SIGUE 1 del 23-oct: el color, el si o no, cual de varios y el nombre. Cada respuesta corta la
+# traduce mal el modelo pero la marca con "responde": el codigo la lee contra lo que espera la pregunta.
+M170 = {"preguntas": [{"n": 1, "cita": "quiero un M170", "accion": "comprar",
+                       "agrega": [{"producto": "Mouse Logitech M170", "cantidad": 1}]}]}
+BLANCO = {"preguntas": [{"n": 1, "cita": "el blanco", "accion": "buscar", "rubro": "mouse", "condiciones": ["blanco"],
+                         "orden": "nada"}], "responde": "R-1", "respuesta": "el blanco"}
+COBRA = {"preguntas": [{"n": 1, "cita": "quiero el Cobra", "accion": "comprar",
+                        "agrega": [{"producto": "Mouse Redragon Cobra", "cantidad": 1, "color": "negro"}]}]}
+EL_KING = {"preguntas": [{"n": 1, "cita": "el King", "accion": "producto", "producto": "King Cobra",
+                          "quiere_saber": "precio"}], "responde": "R-1", "respuesta": "el king"}
+EL_PRIMERO = {"preguntas": [{"n": 1, "cita": "el primero", "accion": "otro", "que": "dato"}],
+              "responde": "R-1", "respuesta": "el primero"}
+OFRECE = {"preguntas": [{"n": 1, "cita": "el M170 negro es inalambrico?", "accion": "producto",
+                         "producto": "Mouse Logitech M170 Negro", "quiere_saber": "precio", "ofrece": True}]}
+DALE = {"preguntas": [{"n": 1, "cita": "dale", "accion": "otro", "que": "saludo"}], "responde": "R-1",
+        "respuesta": "dale"}
+NO_GRACIAS = {"preguntas": [{"n": 1, "cita": "no, gracias", "accion": "otro", "que": "saludo"}], "responde": "R-1",
+              "respuesta": "no, gracias"}
+M170_NEGRO = {"preguntas": [{"n": 1, "cita": "quiero un M170 negro", "accion": "comprar",
+                             "agrega": [{"producto": "Mouse Logitech M170 Negro", "cantidad": 1}]}]}
+# El nombre traducido como una busqueda en toda la tienda, sin "cliente".
+NOMBRE = {"preguntas": [{"n": 1, "cita": "Martina Gomez", "accion": "buscar", "rubro": "toda la tienda",
+                         "condiciones": ["Martina Gomez"], "orden": "nada"}], "responde": "R-1",
+          "respuesta": "Martina Gomez"}
+
+CHARLAS.update({
+    "color": [M170, BLANCO],
+    "cual_por_nombre": [COBRA, EL_KING],
+    "cual_primero": [COBRA, EL_PRIMERO],
+    "si": [OFRECE, DALE],
+    "no": [OFRECE, NO_GRACIAS],
+    "nombre": [M170_NEGRO, NOMBRE],
+})
+
+
 def _correr(nombre: str) -> list:
     from app.core import llm_reintento
     puerta = llm_reintento._cliente
@@ -66,7 +101,8 @@ def _correr(nombre: str) -> list:
     interprete.interpretar, interprete.explicar = _interpretar, _explicar
     try:
         C.reiniciar_cliente(f"espera_{nombre}")
-        return ["\n".join(asyncio.run(C.turno(f"espera_{nombre}", a["preguntas"][0]["cita"]))) for a in CHARLAS[nombre]]
+        return ["\n".join(asyncio.run(C.turno(f"espera_{nombre}", a.get("respuesta") or a["preguntas"][0]["cita"])))
+                for a in CHARLAS[nombre]]
     finally:
         interprete.interpretar, interprete.explicar = real
         llm_reintento._cliente = puerta
@@ -105,6 +141,61 @@ def test_cada_pregunta_con_su_espera():
     assert "mouse" in r[1].lower() and "tengo:" in r[1], r
     bien.append("tablet_otro_tema")
     print(f"\nESPERA: {len(bien)} de {len(CHARLAS)} charlas")
+
+
+def test_las_otras_esperas():
+    bien = []
+    r = _correr("color")
+    assert "color" in r[0] and "?" in r[0], r
+    assert "1x Mouse Logitech M170 Blanco" in r[1] and "tengo:" not in r[1], r
+    bien.append("color")
+
+    for n in ("cual_por_nombre", "cual_primero"):
+        r = _correr(n)
+        assert "King Cobra" in r[0] and "Cobra M711" in r[0] and "?" in r[0], r
+        elegido = "King Cobra" if n == "cual_por_nombre" else r[0].split(": ", 1)[1].split(" o ")[0].split(" Negro")[0]
+        assert "1x" in r[1] and elegido in r[1] and "Cuál" not in r[1], (elegido, r)
+        bien.append(n)
+
+    r = _correr("si")
+    assert "reservo" in r[0], r
+    assert "1x Mouse Logitech M170" in r[1], r
+    bien.append("si")
+
+    r = _correr("no")
+    assert "1x" not in r[1], r
+    bien.append("no")
+
+    r = _correr("nombre")
+    assert "nombre" in r[0], r
+    assert "Martina" in r[1] and "tengo:" not in r[1] and "nombre?" not in r[1], r
+    bien.append("nombre")
+    print(f"\nOTRAS ESPERAS: {len(bien)} de 7 charlas")
+
+
+def test_la_respuesta_corta_la_lee_el_vocabulario_de_cada_tienda(monkeypatch):
+    """Los si, los no y los ordinales tienen su defecto en el motor, y cada tienda los cambia en sus alias."""
+    from app.core import agente
+    from app.core.flujo import marcador as MK
+    tienda = C.TIENDA
+    si_no = {"tipo": "si_no"}
+    cual = {"tipo": "cual", "opciones": ["Mouse Redragon Cobra M711 Negro", "Mouse Redragon King Cobra Negro"]}
+    MK._VOCAB.clear()
+    assert MK.respuesta("dale", si_no, tienda) == "si" and MK.respuesta("no, gracias", si_no, tienda) == "no"
+    assert MK.respuesta("el segundo", cual, tienda) == cual["opciones"][1]
+    assert MK.respuesta("el king", cual, tienda) == cual["opciones"][1]
+    assert MK.respuesta("cualquiera", cual, tienda) is None
+    antes = agente._alias(tienda)
+    monkeypatch.setattr(agente, "_alias", lambda t: {**antes, "respuestas": {
+        "si": ["de una"], "no": ["ni ahi"], "ordinales": {"el de abajo": -1}}})
+    MK._VOCAB.clear()
+    try:
+        assert MK.respuesta("de una", si_no, tienda) == "si" and MK.respuesta("ni ahi", si_no, tienda) == "no"
+        assert MK.respuesta("dale", si_no, tienda) is None
+        assert MK.respuesta("el de abajo", cual, tienda) == cual["opciones"][1]
+    finally:
+        MK._VOCAB.clear()
+    print("\nVOCABULARIO: 5 de 5 con el defecto, 4 de 4 con el de la tienda")
 
 
 def test_lo_que_va_adentro_lo_define_cada_tienda(firestore_doble):

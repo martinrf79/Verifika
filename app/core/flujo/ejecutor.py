@@ -92,7 +92,10 @@ class Turno:
             self.hechos.append({"tipo": "no_existe", "nombre": nombre})
             return False
         if idt["veredicto"] == "ambiguous":
-            self.preguntar("¿Cuál de estos decís: " + " o ".join(p["nombre"] for p in idt["opciones"]) + "?")
+            opciones = [p["nombre"] for p in idt["opciones"]]
+            self.preguntar("¿Cuál de estos decís: " + " o ".join(opciones) + "?", espera={
+                "tipo": "cual", "opciones": opciones,
+                "hace": [{"accion": "producto", "producto": "{eleccion}", "quiere_saber": quiere_saber, "color": color}]})
             return None
         p = idt["producto"]
         self.hechos.append({"tipo": "producto", "producto": p, "variantes": idt["variantes"],
@@ -261,8 +264,9 @@ class Turno:
             arts = B.articulos(self.res, falta)
         self.estado["pedido"] = arts
         self.n = self.compra or self.n
+        esperas = B.esperas(b, falta)
         for q in B.preguntas(b, falta):
-            self.preguntar(q)
+            self.preguntar(q, esperas.get(q))
         if not arts and falta:
             # Lo que ya quedo claro se muestra una vez; lo elegido de un rubro no, que su lista ya esta en el mensaje.
             de_lista = {str(p["id"]) for x in self.listas.values() for p in x["filas"]}
@@ -379,23 +383,31 @@ def _nombres(t: Turno, x) -> list:
     return out
 
 
-def _uno(t: Turno, x) -> str:
-    """El unico producto que nombra, o "" despues de preguntar cual si puede ser varios."""
+def _uno(t: Turno, x, hace: dict = None) -> str:
+    """El unico producto que nombra, o "" despues de preguntar cual si puede ser varios. `hace` es la pregunta que
+    sigue con el que elija, con "{eleccion}" en su lugar: la respuesta corta la retoma, `atar_esperas`."""
     nombres = _nombres(t, x)
     if len({_modelo(n, t.tienda) for n in nombres}) > 1:
         t.preguntar("¿Cuál decís: " + " o ".join(nombres) + "?" if len(nombres) <= 4
-                    else "¿Cuál de los que te mostré decís?")
+                    else "¿Cuál de los que te mostré decís?",
+                    espera={"tipo": "cual", "opciones": nombres, "hace": [hace]} if hace else None)
         return ""
     return nombres[0] if nombres else ""
 
 
+def _sin_n(p: dict) -> dict:
+    return {k: v for k, v in p.items() if k not in ("n", "responde", "si")}
+
+
 def _producto(t: Turno, p: dict):
-    nombre = _uno(t, p.get("producto"))
+    nombre = _uno(t, p.get("producto"), hace={**_sin_n(p), "producto": "{eleccion}"})
     if nombre:
         ok = t.producto(nombre, str(p.get("afirma") or p.get("quiere_saber") or ""), str(p.get("color") or ""))
         if p.get("ofrece") and ok and not t.estado["pedido"]:
             # ELEGIDO POR EL DATO, de una lista: el vendedor ofrece el que cumple, asi la venta sigue.
-            t.preguntar(f"¿Te reservo el {K.identificar(nombre, '', t.tienda)['producto'].get('modelo') or nombre}?")
+            prod = K.identificar(nombre, str(p.get("color") or ""), t.tienda)["producto"]
+            t.preguntar(f"¿Te reservo el {prod.get('modelo') or nombre}?", espera={
+                "tipo": "si_no", "hace": [{"accion": "comprar", "agrega": [{"producto": prod["nombre"], "cantidad": 1}]}]})
         return ok
 
 
@@ -482,9 +494,6 @@ def _reparto(t: Turno, p: dict) -> bool:
 
 
 CAMBIAN = ("agrega", "saca", "cambia", "reemplaza", "total")
-# Lo que dice un "si" y nada mas: si es lo unico que contesta a "¿Lo dejo así?", acepta lo supuesto sin modelo.
-AFIRMA = set("si sii dale ok oka okey listo perfecto bueno va joya correcto exacto asi esta bien dejalo deja genial "
-             "barbaro de una seguro claro buenisimo".split())
 
 
 def _supuestos(t: Turno) -> list:
@@ -512,8 +521,11 @@ def _solo_si(t: Turno) -> bool:
     """El mensaje entero es un "si", y lo unico abierto es "¿Lo dejo así?"."""
     if [a["texto"] for a in t.estado["abiertas"]] != [B.LO_DEJO]:
         return False
+    # Lo que dice un "si" y nada mas, con las palabras de la tienda: acepta lo supuesto sin modelo.
+    from .marcador import vocabulario_respuestas
+    afirma = {w for f in vocabulario_respuestas(t.tienda)["si"] for w in f.split()}
     palabras = [w for p in t.agenda for w in A.palabras(p.get("cita"))]
-    return bool(palabras) and all(w in AFIRMA or w in A._VACIAS for w in palabras) and not _cambia(t)
+    return bool(palabras) and all(w in afirma or w in A._VACIAS for w in palabras) and not _cambia(t)
 
 
 def _el_que_cumple(t: Turno, a: dict, cond: str):
@@ -532,7 +544,9 @@ def _el_que_cumple(t: Turno, a: dict, cond: str):
     if len(si) == 1:
         return si[0]
     if len(si) > 1:
-        t.preguntar("¿Cuál querés: " + " o ".join(si) + "?")
+        sin_cond = {k: v for k, v in a.items() if k != "si_cumple"}
+        t.preguntar("¿Cuál querés: " + " o ".join(si) + "?", espera={
+            "tipo": "cual", "opciones": si, "hace": [{"accion": "comprar", "agrega": [{**sin_cond, "producto": "{eleccion}"}]}]})
         return False
     if any(ok is None for _, ok in juicios):
         return None
@@ -562,7 +576,7 @@ def _comprar(t: Turno, p: dict):
             else:
                 agrega.append({**a, "producto": nombre, "cita": p.get("cita") or "", "condicion": ""})
                 continue
-        nombre = _uno(t, a.get("producto"))
+        nombre = _uno(t, a.get("producto"), hace={"accion": "comprar", "agrega": [{**a, "producto": "{eleccion}"}]})
         if not nombre:
             return None
         agrega.append({**a, "producto": nombre, "cita": p.get("cita") or "", "condicion": p.get("condicion") or ""})
@@ -607,9 +621,14 @@ def _cuenta(t: Turno, p: dict):
     # Sin color elegido vale el precio del modelo solo si todos sus colores salen lo mismo.
     dudosos = [h for h in productos if h.get("falta_color")
                and len({v.get("precio_ars") for v in h["variantes"] if K.con_stock(v)}) > 1]
-    for h in dudosos:
-        t.preguntar(f"¿El {h['producto'].get('modelo')} en qué color? Cambia el precio.")
     destino = next(iter(t.destinos), "")
+    for h in dudosos:
+        # Con un solo producto, la respuesta corta retoma la cuenta: el producto en ese color, el envio y la cuenta.
+        colores = list(dict.fromkeys(v["color"] for v in h["variantes"] if K.con_stock(v) and v.get("color")))
+        hace = [{"accion": "producto", "producto": h["producto"]["nombre"], "color": "{eleccion}"}] \
+            + ([{"accion": "envio", "destino": destino}] if destino else []) + [{"accion": "cuenta"}]
+        t.preguntar(f"¿El {h['producto'].get('modelo')} en qué color? Cambia el precio.",
+                    espera={"tipo": "color", "opciones": colores, "hace": hace} if len(productos) == 1 else None)
     items = [{"id": str(h["producto"]["id"]), "cantidad": 1, "destino": destino} for h in productos]
     if items and not dudosos:
         t.cuenta(items, B.pago_listo(t.estado["borrador"]))
@@ -758,20 +777,71 @@ def _palabras_de(p: dict) -> str:
 
 def atar_esperas(agenda: dict, t: Turno) -> None:
     """LA RESPUESTA CORTA SE ATA A LO QUE ESPERA LA PREGUNTA DEL BOT, y se controla contra la fuente antes de seguir.
-    "¿Tu tablet es Android o iPad?" -> "la ultima de Samsung" es un equipo Android: se juzga la compatibilidad que se
-    estaba preguntando, no se buscan tablets Samsung. Si el modelo dice que el mensaje contesta esa pregunta, la
-    respuesta es el mensaje, leido solo contra el vocabulario cerrado de la espera; si no lo dice, cada consulta corta
-    por sus palabras. Lo que nombra un equipo que no es ninguno de los esperados se dice y se vuelve a preguntar, si
-    contesta esa pregunta; si no, es otro tema y la agenda queda."""
-    from app.core.compatibilidad import _norm, etiqueta_plataforma, plataformas_del_mensaje
-    from app.core.guia_venta_prosa import mensaje
-    abiertas = [(f"R-{i}", a) for i, a in enumerate(t.estado["abiertas"], 1)
-                if (a.get("espera") or {}).get("tipo") == "equipo"]
+    El equipo, `_atar_equipo`. Lo demas —el color, si o no, cual de varios, el nombre— solo si el modelo dice que el
+    mensaje contesta esa pregunta y no tradujo ningun cambio: la respuesta se lee contra la lista cerrada de la espera,
+    `marcador.respuesta`, y pasa a lo que la pregunta dejo dicho que hace. Lo que no se lee de una sola forma queda
+    como lo tradujo el modelo."""
+    abiertas = [(r, a) for r, a in t.nums.items() if r[:1] == "R" and (a.get("espera") or {}).get("tipo")]
     ps = A.preguntas(agenda)
     cortas = [p for p in ps if p.get("accion") in _CORTAS]
     if not abiertas or not cortas or not isinstance(agenda, dict):
         return
     responde = str(agenda.get("responde") or next((p.get("responde") for p in ps if p.get("responde")), "") or "")
+    if (dict(abiertas).get(responde) or {}).get("espera", {}).get("tipo") not in (None, "equipo"):
+        return _atar_respuesta(agenda, t, responde, dict(abiertas)[responde], ps, cortas)
+    equipos = [(r, a) for r, a in abiertas if a["espera"]["tipo"] == "equipo"]
+    if equipos:
+        _atar_equipo(agenda, t, responde, equipos, ps, cortas)
+
+
+def _llenar(x, eleccion: str):
+    """La pregunta que deja la espera, con lo elegido en su lugar."""
+    if isinstance(x, dict):
+        return {k: _llenar(v, eleccion) for k, v in x.items()}
+    if isinstance(x, list):
+        return [_llenar(v, eleccion) for v in x]
+    return eleccion if x == "{eleccion}" else x
+
+
+def _atar_respuesta(agenda: dict, t: Turno, r: str, a: dict, ps: list, cortas: list) -> None:
+    from .marcador import respuesta
+    e = a["espera"]
+    # Lo que cambia el pedido o la plata lo entendio el modelo: no se le suma otra lectura. La cuenta sin tope ni pago
+    # es la de "ve como queda", que pone el paso de la ficha cuando el mensaje no cambia nada.
+    if not agenda.get("respuesta") or any(p.get("accion") not in _CORTAS and not (
+            p.get("accion") == "cuenta" and not p.get("tope") and not p.get("reparto")) for p in ps):
+        return
+    dicho = respuesta(str(agenda["respuesta"]), e, t.tienda)
+    if dicho is None:
+        return
+    primera = cortas[0]
+    if e["tipo"] == "nombre":
+        cliente = agenda["cliente"] if isinstance(agenda.get("cliente"), dict) else {}
+        agenda["cliente"] = {**cliente, "nombre": cliente.get("nombre") or dicho}
+        nuevas = [{"accion": "otro", "que": "dato"}]
+    elif dicho == "no":
+        nuevas = [{"accion": "otro", "que": "dato"}]
+    else:
+        nuevas = [_llenar(h, dicho) for h in e.get("hace") or [] if isinstance(h, dict)]
+        nuevas = [{**h, "responde": r} if h.get("accion") == "comprar" else h for h in nuevas]
+    if not nuevas:
+        return
+    tope = max([K.entero(p.get("n")) for p in ps] + [0])
+    nuevas = [{**h, "n": primera.get("n") if i == 0 else tope + i, "cita": primera.get("cita")}
+              for i, h in enumerate(nuevas)]
+    fuera = {id(p) for p in cortas}
+    agenda["preguntas"] = [x for p in agenda["preguntas"]
+                           for x in (nuevas if p is primera else [] if id(p) in fuera else [p])]
+
+
+def _atar_equipo(agenda: dict, t: Turno, responde: str, abiertas: list, ps: list, cortas: list) -> None:
+    """"¿Tu tablet es Android o iPad?" -> "la ultima de Samsung" es un equipo Android: se juzga la compatibilidad que
+    se estaba preguntando, no se buscan tablets Samsung. Si el modelo dice que el mensaje contesta esa pregunta, la
+    respuesta es el mensaje, leido solo contra el vocabulario cerrado de la espera; si no lo dice, cada consulta corta
+    por sus palabras. Lo que nombra un equipo que no es ninguno de los esperados se dice y se vuelve a preguntar, si
+    contesta esa pregunta; si no, es otro tema y la agenda queda."""
+    from app.core.compatibilidad import _norm, etiqueta_plataforma, plataformas_del_mensaje
+    from app.core.guia_venta_prosa import mensaje
     r, a = next(((r, a) for r, a in abiertas if r == responde), abiertas[-1])
     e = a["espera"]
     if not e.get("producto") or not e.get("con"):

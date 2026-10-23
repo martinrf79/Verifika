@@ -114,6 +114,11 @@ RENGLONES = {
 }
 
 
+def pedir_nombre() -> str:
+    from app.core.guia_venta_prosa import mensaje
+    return mensaje("pedir_nombre", "Para reservarlo, ¿me decís tu nombre?")
+
+
 def texto(hechos: list, preguntas: list, pide_nombre: bool) -> str:
     # CON PRESUPUESTO, LAS LISTAS VAN CORTAS: la respuesta es la cuenta, y cada lista queda con tres opciones.
     con_cuenta = any(h["tipo"] == "cuenta" for h in hechos)
@@ -127,5 +132,5 @@ def texto(hechos: list, preguntas: list, pide_nombre: bool) -> str:
         bloques.append("Lo de " + " y ".join(f"\"{c}\"" for c in sin_campo)
                        + " no figura en las fichas, así que no pude filtrar por eso.")
     if pide_nombre and not preguntas:
-        preguntas = ["Para reservarlo, ¿me decís tu nombre?"]
+        preguntas = [pedir_nombre()]
     return "\n\n".join(b for b in bloques + list(preguntas) if b.strip())

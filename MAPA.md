@@ -31,7 +31,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | La ficha nativa: la consigna, el esquema con las listas cerradas y su paso a la agenda, FICHA 76 | `app/core/flujo/ficha.py` |
 | Lo que dijo el cliente, las lecturas que cierran y lo supuesto hasta que acepta | `app/core/flujo/borrador.py` |
 | La agenda: el menu de acciones que cumple el ejecutor | `app/core/flujo/agenda.py` |
-| Lo que el codigo reconoce en un texto: modelos, rubros, temas, montos | `app/core/flujo/marcador.py` |
+| Lo que el codigo reconoce en un texto: modelos, rubros, temas, montos; la respuesta corta contra lo que espera la pregunta | `app/core/flujo/marcador.py` |
 | Lo que dijo el modelo, llevado a la forma que cumple el ejecutor: la forma normal | `app/core/flujo/normal.py` |
 | Cada pregunta de la agenda, cumplida con las herramientas, y el candado | `app/core/flujo/ejecutor.py` |
 | Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |

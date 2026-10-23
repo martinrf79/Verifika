@@ -10,7 +10,8 @@ Es lo unico que pasa de un turno al siguiente, ademas del historial. Vive en el 
   busqueda    la ultima busqueda: rubro, condiciones en palabras y orden.
   abiertas    lo que el vendedor pregunto y el cliente no contesto: [{"texto", "cita", "espera"}]. Es la R de la
               libreta: la respuesta del turno siguiente se ata a la pregunta que la pidio. "espera" dice que respuesta
-              sirve —{"tipo": "equipo", "producto", "con", "opciones"}— y `ejecutor.atar_esperas` la controla.
+              sirve —{"tipo": "equipo", "producto", "con", "opciones"}, o {"tipo": "color", "cual" o "si_no",
+              "opciones", "hace"}— y `ejecutor.atar_esperas` la controla. El nombre pedido no se guarda: se deriva.
 """
 from app.core.calculadora import _money as _plata
 

@@ -141,3 +141,86 @@ def marcar(mensaje: str, tienda_id: str) -> list:
         if m.group(2) or m.group(3):
             out.append((m.group(0).strip(), f"{K._monto(m.group(1) or m.group(3), m.group(2) or ''):,} pesos".replace(",", ".")))
     return out
+
+
+# ══ LA RESPUESTA CORTA: lo que contesta una pregunta del bot, leido contra lo que esa pregunta espera ══════════════
+# Orden de Martin del 21 y 23-oct: cada pregunta del bot guarda que espera —un color, si o no, cual de varios, el
+# nombre—, y la respuesta se lee solo contra esa lista cerrada. Las palabras fijas tienen su defecto aca y cada tienda
+# las cambia en "respuestas" de su `alias.json`, decision 47: {"si": [...], "no": [...], "ordinales": {"frase": n},
+# "presentacion": [...]}. La equipo la lee la compatibilidad, con su vocabulario: ver `ejecutor.atar_esperas`.
+
+RESPUESTAS = {
+    "si": "si sii dale ok oka okey listo perfecto bueno va joya correcto exacto asi esta bien dejalo deja genial "
+          "barbaro de una seguro claro buenisimo".split(),
+    "no": ["no", "nop", "nah", "para nada", "mejor no", "todavia no", "ninguno", "ninguna"],
+    "ordinales": {"primero": 0, "primera": 0, "1": 0, "segundo": 1, "segunda": 1, "2": 1, "tercero": 2, "tercera": 2,
+                  "3": 2, "cuarto": 3, "cuarta": 3, "4": 3, "ultimo": -1, "ultima": -1},
+    "presentacion": ["me llamo", "mi nombre es", "a nombre de", "soy", "es"],
+}
+_VOCAB = {}
+
+
+def vocabulario_respuestas(tienda_id: str) -> dict:
+    """Las palabras de la respuesta corta: el defecto, con lo que la tienda cambie en sus alias."""
+    if tienda_id not in _VOCAB:
+        propio = agente._alias(tienda_id).get("respuestas") or {}
+        v = {k: propio.get(k) or d for k, d in RESPUESTAS.items()}
+        v["si"], v["no"] = [K.n(x) for x in v["si"]], [K.n(x) for x in v["no"]]
+        v["ordinales"] = {K.n(f): int(i) for f, i in v["ordinales"].items()}
+        v["presentacion"] = [K.n(x) for x in v["presentacion"]]
+        _VOCAB[tienda_id] = v
+    return _VOCAB[tienda_id]
+
+
+def _sacar(texto: str, frases) -> tuple:
+    """El texto sin las frases dichas enteras, y cuales estaban."""
+    t, dichas = f" {texto} ", []
+    for f in sorted(frases, key=len, reverse=True):
+        if f and f" {f} " in t:
+            dichas.append(f)
+            t = t.replace(f" {f} ", " ")
+    return " ".join(t.split()), dichas
+
+
+def _mismo(w: str, opcion: str) -> bool:
+    """Una palabra dice la opcion, con su genero o su plural: "negra" es "negro", "blancos" es "blanco"."""
+    return w == opcion or (len(opcion) > 3 and w.rstrip("s")[:-1] == opcion[:-1] and len(w.rstrip("s")) == len(opcion))
+
+
+def respuesta(texto: str, espera: dict, tienda_id: str):
+    """Lo que la respuesta corta contesta, de lo que la pregunta espera, o None si no lo dice de una sola forma:
+    "si" o "no"; uno de los colores; una de las opciones, por su lugar —"el primero"— o por la palabra que solo ella
+    tiene —"el King"—; o el nombre del cliente, si es solo un nombre que la tienda no reconoce como otra cosa."""
+    from .agenda import _VACIAS
+    v = vocabulario_respuestas(tienda_id)
+    t = " ".join(re.findall(r"[a-z0-9]+", K.n(texto)))
+    tipo, opciones = espera.get("tipo"), [str(o) for o in espera.get("opciones") or []]
+    if tipo == "si_no":
+        resto, nos = _sacar(t, v["no"])
+        resto, sis = _sacar(resto, v["si"])
+        if any(w not in _VACIAS for w in resto.split()) or bool(nos) == bool(sis):
+            return None
+        return "no" if nos else "si"
+    if tipo == "color":
+        ws = t.split()
+        dichos = [o for o in opciones if any(_mismo(w, K.n(o)) for w in ws)]
+        return dichos[0] if len(dichos) == 1 else None
+    if tipo == "cual":
+        _, lugares = _sacar(t, v["ordinales"])
+        if len(lugares) == 1 and -len(opciones) <= v["ordinales"][lugares[0]] < len(opciones):
+            return opciones[v["ordinales"][lugares[0]]]
+        ws = set(t.split()) - _VACIAS
+        propias = [set(K.n(o).split()) for o in opciones]
+        comunes = set.intersection(*propias) if propias else set()
+        dichos = [o for o, p in zip(opciones, propias) if ws & (p - comunes)]
+        return dichos[0] if len(dichos) == 1 and not lugares else None
+    if tipo == "nombre":
+        resto, _ = _sacar(t, v["presentacion"])
+        ws = resto.split()
+        if not 0 < len(ws) <= 4 or any(w in _VACIAS or w in v["si"] or w in v["no"] or w.isdigit() for w in ws) \
+                or marcar(resto, tienda_id):
+            return None
+        # Como lo escribio: "martina gomez" queda con mayusculas, "Martín" con su tilde.
+        crudas = [w for w in re.findall(r"[^\W\d_]+", str(texto)) if K.n(w) in ws]
+        return " ".join(w[:1].upper() + w[1:] for w in crudas) or None
+    return None
