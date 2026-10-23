@@ -13,7 +13,10 @@ formato interno del bot.
      informacion.
 Se guarda todo, con los tokens de razonamiento interno si el proveedor los informa, en `entrevista_traduccion.json`.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/entrevista_traduccion.py
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/entrevista_traduccion.py [--fallas]
+
+--fallas, la segunda: las cuatro que tradujo mal en `traduccion_sola.py`, con lo que contesto y lo que correspondia,
+dicho en palabras; que lectura hizo, que lo empujo y que ejemplo lo hubiera corregido. Queda en `entrevista_fallas.json`.
 """
 import json
 import os
@@ -131,5 +134,65 @@ def main():
             msgs += [{"role": "assistant", "content": resp}, {"role": "user", "content": siguiente}]
 
 
+
+
+# ══ LA SEGUNDA ENTREVISTA: las que tradujo mal en traduccion_sola.py ═════════
+
+SALIDA_FALLAS = os.path.join(REPO, "banco_pruebas", "entrevista_fallas.json")
+
+FALLAS = [
+    ("que no haga quilombo de ruido cuando escribo de noche",
+     "sin lista obligada: una regla de la tienda llamada 'teclado mecanico membrana'; con la lista obligada: el tipo de "
+     "switch del teclado",
+     "algo que el cliente pide que el producto tenga: que sea silencioso. Esa caracteristica no esta en la lista"),
+    ("El wifi no llega al cuarto del fondo y se corta todo el tiempo cuando estamos todos conectados",
+     "la caracteristica wifi",
+     "la clase de producto router: el cliente cuenta un problema y lo que lo resuelve es un producto"),
+    ("La notebook anda lenta cuando abro muchas pestañas, me dijeron que le agregue mas memoria para que no se trabe",
+     "la clase notebook y la caracteristica ram",
+     "la clase de producto memoria ram: quiere comprar memoria para la notebook que ya tiene, no una notebook"),
+    ("¿Es de plastico o de metal?",
+     "la caracteristica material",
+     "pregunta de que esta hecho: vale la caracteristica material o la regla de la tienda sobre material y composicion"),
+]
+
+ENTREVISTA_FALLAS = """Esto es una entrevista de diseño, no un turno con un cliente. Contestá como experto en tu propio
+funcionamiento, con sinceridad.
+
+Sos el traductor de una tienda online de tecnología de Argentina. Tu trabajo es pasar lo que dice el cliente a los
+nombres con que la tienda nombra sus cosas: clases de producto, reglas de la tienda, características de los productos y
+órdenes. El código no razona: busca exactamente lo que le decís.
+
+Así nombra la tienda sus cosas:
+{lista}
+
+Estas frases las tradujiste antes. Te muestro lo que contestaste y lo que correspondía:
+{fallas}
+
+Por cada una, en dos o tres líneas:
+a. ¿La leíste como una pregunta a la tienda, como algo que el cliente pide que tenga el producto, o como un problema
+   que el cliente cuenta? ¿Qué palabra te llevó a esa lectura?
+b. ¿Qué te hizo elegir lo que elegiste? ¿La lista te empujó a algo?
+c. ¿Qué ejemplo, de una frase parecida pero NO igual, te hubiera llevado a lo correcto?
+
+Y al final, en general:
+1. ¿Qué clases de frases confundís más: una pregunta a la tienda, un requisito del producto, un problema que cuenta el
+   cliente, algo que la tienda no vende? Dame la regla corta que te ayudaría a separarlas.
+2. Cuando lo que pide el cliente no está en la lista, ¿qué preferís: elegir lo más parecido, o decir "otro" con la
+   palabra del cliente? ¿Por qué?
+Corto y concreto."""
+
+
+def fallas():
+    import traduccion_sola as TS  # noqa: E402  — la misma lista de nombres que la prueba
+    lista = "\n".join(f"- {k}: {', '.join(vs)}" for k, vs in TS.nombres().items())
+    texto = ENTREVISTA_FALLAS.format(lista=lista, fallas="\n".join(
+        f'{n}. "{f}"\n   contestaste: {dio}\n   correspondía: {bien}' for n, (f, dio, bien) in enumerate(FALLAS, 1)))
+    resp, uso = llamar([{"role": "user", "content": texto}])
+    json.dump([{"pregunta": texto, "respuesta": resp, "uso": uso}], open(SALIDA_FALLAS, "w", encoding="utf-8"),
+              ensure_ascii=False, indent=1)
+    print(f"######## fallas {uso}\n{resp}", flush=True)
+
+
 if __name__ == "__main__":
-    main()
+    fallas() if "--fallas" in sys.argv else main()
