@@ -23,6 +23,8 @@ La base es la consigna unida de hoy, con su acto llevado a respuesta: sus respue
     python3 banco_pruebas/respuestas.py --larga                       arma la larga en ~/.cache/verifika
     MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/respuestas.py --lista base|corta|media|a0|a1 [--ver]
 
+p1, la guia A1 con las pistas de la tienda por significado sobre las oraciones del mensaje crudo, en una llamada; d2,
+dos llamadas: la primera separa y completa, la segunda elige la respuesta y el renglon con las pistas de cada parte.
 a0 y a1, la informacion A: lo minimo que el modelo devuelve para que el codigo siga solo —la pregunta completa, la
 respuesta, el renglon del pedido y de que parte depende—, con la guia sola o con los ejemplos. La vara lleva la decision
 de Martin del 23-oct: pedir algo que todavia no eligio es opciones.
@@ -243,15 +245,122 @@ def formato() -> dict:
                            "destino": {"type": "string"}}}}}}}}
 
 
+# ══ LAS PISTAS DE LA TIENDA, por significado ════════════════════════════════
+
+_CAMPOS: dict = {}
+
+
+def _campos() -> dict:
+    """Cada campo de la ficha como vector: su nombre, su etiqueta y sus valores mas comunes."""
+    if not _CAMPOS:
+        import json as _j
+        from app.core.filtros_catalogo import _valor_crudo, campos_filtrables
+        al = A.agente._alias(TID).get("campos") or {}
+        specs = {x["id"]: x.get("etiqueta") or "" for x in _j.load(open(os.path.join(
+            os.path.dirname(AQUI), "data", "clientes", TID, "specs_preguntables.json"), encoding="utf-8"))["specs"]}
+        docs = {}
+        for c in campos_filtrables(TID):
+            if c in ("descripcion", "nombre", "modelo", "precio_ars"):
+                continue
+            vals = collections.Counter(str(_valor_crudo(x, c))[:40] for x in CA.K.productos(TID)
+                                       if _valor_crudo(x, c) not in (None, ""))
+            docs[c] = (f"{c.replace('_', ' ')}: {specs.get(c, '')}. " + ", ".join(al.get(c, []))
+                       + ". Valores: " + ", ".join(v for v, _ in vals.most_common(6)))
+        _CAMPOS.update(zip(docs, CA.ET.vectores(list(docs.values()))))
+    return _CAMPOS
+
+
+TOPE_PISTA = {"rubro": 2, "tema": 2, "campo": 2, "producto": 2}
+
+
+def pistas(textos: list) -> list:
+    """Por cada texto, los mas parecidos de la tienda en cada capa."""
+    idx = {**CA.ET.tienda(), "campo": _campos()}
+    out = []
+    for q in CA.ET.vectores(textos) if textos else []:
+        out.append({g: [k for k, _ in sorted(((k, CA.ET._coseno(v, q)) for k, v in idx[g].items()),
+                                             key=lambda x: -x[1])[:n]] for g, n in TOPE_PISTA.items()})
+    return out
+
+
+def _oraciones(mensaje: str) -> list:
+    import re
+    return [o.strip() for o in re.split(r"(?<=[.?!¿\n])\s+", A.limpio(mensaje)) if len(o.strip()) > 2] or [mensaje]
+
+
+def pista_del_mensaje(mensaje: str) -> str:
+    """Lo que la tienda tiene parecido a cada oracion del mensaje crudo, junto y sin repetir: va antes de traducir."""
+    junto = collections.defaultdict(list)
+    for c in pistas(_oraciones(mensaje)):
+        for g, ks in c.items():
+            junto[g] += [k for k in ks if k not in junto[g]]
+    return ("\nPISTAS DE LA TIENDA, lo que se parece a lo que dijo el cliente; pueden estar mal:\n" + "\n".join(
+        f"- {g}: {', '.join(k.replace('_', ' ') for k in ks[:4])}" for g, ks in junto.items() if ks))
+
+
+# LA SEGUNDA LLAMADA de las dos: con cada pregunta ya completa y sus pistas, elige la respuesta y el renglon.
+SEPARAR = """Sos parte del sistema de una tienda online de tecnologia de Argentina. No le contestas al cliente. Lee la
+LIBRETA y el ULTIMO MENSAJE y devolve, por cada cosa que pide o pregunta el cliente, en su orden:
+- "texto": la pregunta o el pedido COMPLETO, que se entienda sin leer la charla, con los modelos y marcas tal cual. Si
+  el cliente no repite de que habla, lo tomas de la libreta. Una pregunta sigue siendo pregunta y un pedido, pedido.
+- "depende_de": el numero de la parte de la que depende, 0 si no depende de nada.
+El destino, el color, la cantidad y las condiciones van dentro del texto de su parte: nunca son una parte aparte."""
+
+ELEGIR = """Sos parte del sistema de una tienda online de tecnologia de Argentina. No le contestas al cliente. Otro paso
+ya separo el ULTIMO MENSAJE en PARTES completas, y el programa trae para cada una lo que se le parece en la tienda.
+Por cada parte, en su orden, devolve:
+- "respuesta": que respuesta de la tienda necesita, una de la lista.
+- "renglon": si habla de algo que ya esta en el BORRADOR de la libreta, su numero L-n; si no, "".
+Pedir algo que todavia no eligio —"necesito algo para..."— es opciones: la tienda primero le muestra.
+RESPUESTAS:
+{lista}{ejemplos}"""
+
+
+async def dos_llamadas(mensaje: str, libreta: str) -> list:
+    fmt1 = {"type": "json_schema", "json_schema": {"name": "separar", "schema": {
+        "type": "object", "required": ["partes"], "properties": {"partes": {"type": "array", "items": {
+            "type": "object", "required": ["texto", "depende_de"], "properties": {
+                "texto": {"type": "string"}, "depende_de": {"type": "integer"}}}}}}}}
+    r1 = interprete._json(await interprete._pedir(
+        [{"role": "system", "content": SEPARAR},
+         {"role": "user", "content": libreta + f"\nULTIMO MENSAJE: {A.limpio(mensaje)}"}], "separar", fmt1))
+    partes = [p for p in r1.get("partes") or [] if isinstance(p, dict)]
+    if not partes:
+        return []
+    cands = pistas([str(p.get("texto") or "") for p in partes])
+    dicho = "\n".join(f"{i}. {p.get('texto')}\n   se parece a: " + "; ".join(
+        f"{g} {', '.join(k.replace('_', ' ') for k in ks)}" for g, ks in c.items())
+        for i, (p, c) in enumerate(zip(partes, cands), 1))
+    ej = "\nEJEMPLOS, de a pares que se parecen y piden otra respuesta:\n" + "\n".join(
+        f'- "{t}" -> {DEL_ACTO[a]}' + (f" ({c})" if c else "") for t, a, c in A.EJEMPLOS)
+    fmt2 = {"type": "json_schema", "json_schema": {"name": "elegir", "schema": {
+        "type": "object", "required": ["partes"], "properties": {"partes": {"type": "array", "items": {
+            "type": "object", "required": ["respuesta", "renglon"], "properties": {
+                "respuesta": {"type": "string", "enum": list(CORTA)}, "renglon": {"type": "string"}}}}}}}}
+    r2 = interprete._json(await interprete._pedir(
+        [{"role": "system", "content": ELEGIR.format(lista=corta(), ejemplos=ej)},
+         {"role": "user", "content": f"{libreta}\nULTIMO MENSAJE: {A.limpio(mensaje)}\n\nPARTES:\n{dicho}"}],
+        "elegir", fmt2))
+    elegidas = [p for p in r2.get("partes") or [] if isinstance(p, dict)]
+    return [{**p, **(elegidas[i] if i < len(elegidas) else {"respuesta": "nada", "renglon": ""})}
+            for i, p in enumerate(partes)]
+
+
+A_LISTAS = ("a0", "a1", "p1", "d2")
+
+
 async def leer(mensaje: str, libreta: str) -> list:
-    """Las respuestas de cada parte. La base es la consigna unida de hoy, con su acto llevado a respuesta."""
+    """Las respuestas de cada parte. La base es la consigna unida de hoy, con su acto llevado a respuesta.
+    p1 es la guia A1 con las pistas de la tienda sobre el mensaje crudo; d2, dos llamadas."""
     if LISTA == "base":
         partes = await CA.traducir(mensaje, libreta)
         return [{**p, "respuesta": DEL_ACTO.get(p.get("acto"), "nada")} for p in partes]
-    guia = guia_a(LISTA == "a1") if LISTA in ("a0", "a1") else consigna(LISTA)
-    msgs = [{"role": "system", "content": guia},
-            {"role": "user", "content": libreta + f"\nULTIMO MENSAJE: {A.limpio(mensaje)}"}]
-    r = interprete._json(await interprete._pedir(msgs, "respuestas", formato_a() if LISTA in ("a0", "a1")
+    if LISTA == "d2":
+        return await dos_llamadas(mensaje, libreta)
+    guia = guia_a(LISTA in ("a1", "p1")) if LISTA in A_LISTAS else consigna(LISTA)
+    usuario = libreta + (pista_del_mensaje(mensaje) if LISTA == "p1" else "") + f"\nULTIMO MENSAJE: {A.limpio(mensaje)}"
+    msgs = [{"role": "system", "content": guia}, {"role": "user", "content": usuario}]
+    r = interprete._json(await interprete._pedir(msgs, "respuestas", formato_a() if LISTA in A_LISTAS
                                                  else formato()))
     return [p for p in r.get("partes") or [] if isinstance(p, dict)]
 
@@ -317,7 +426,7 @@ def corrida() -> None:
             for x in tu["oro"]:
                 for c in x.get("cual") if isinstance(x.get("cual"), list) else [x.get("cual")]:
                     ref = CA._ref(c, False)
-                    if ref.startswith("L-") and LISTA in ("a0", "a1"):
+                    if ref.startswith("L-") and LISTA in A_LISTAS:
                         nota["renglon casos"] += 1
                         nota["renglon bien"] += any(CA._ref(p.get("renglon"), False) == ref for p in partes)
             if not bien:
