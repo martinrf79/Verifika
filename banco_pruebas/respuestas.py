@@ -21,7 +21,11 @@ La base es la consigna unida de hoy, con su acto llevado a respuesta: sus respue
 
     python3 banco_pruebas/respuestas.py --tokens                     cuanto ocupa cada version, sin modelo
     python3 banco_pruebas/respuestas.py --larga                       arma la larga en ~/.cache/verifika
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/respuestas.py --lista base|corta|media [--ver]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/respuestas.py --lista base|corta|media|a0|a1 [--ver]
+
+a0 y a1, la informacion A: lo minimo que el modelo devuelve para que el codigo siga solo —la pregunta completa, la
+respuesta, el renglon del pedido y de que parte depende—, con la guia sola o con los ejemplos. La vara lleva la decision
+de Martin del 23-oct: pedir algo que todavia no eligio es opciones.
 """
 import asyncio
 import collections
@@ -140,6 +144,29 @@ def oro_58(agenda: dict) -> set:
     return out
 
 
+def valen_58(agenda: dict) -> list:
+    """Lo que vale en un turno de las 58. Decision de Martin del 23-oct: pedir algo que todavia no eligio es opciones,
+    asi que una compra de rubros, sin modelo ni numero, vale tambien como opciones."""
+    oro = _58(oro_58(agenda))
+    rubros = set(A.agente.indice(TID)["rubros"])
+    de_rubro = [p for p in agenda.get("preguntas") or [] if p.get("accion") == "comprar" and p.get("agrega")
+                and not p.get("reemplaza") and not p.get("cambia")
+                and all(str(a.get("producto") or "") in rubros for a in p["agrega"])]
+    if not de_rubro:
+        return [oro]
+    return [oro, (oro - {"anotar"}) | {"opciones"}, oro | {"opciones"}]
+
+
+def valen_48(ch: dict, i: int, tu: dict) -> list:
+    """La vara de actos.py, mas la decision de Martin: lo que pide sin haber elegido, sin numero de la memoria, vale
+    tambien como mirar."""
+    quiere = {A.DEL_ORO[x["tipo"]] for x in tu["oro"] if not x.get("opt")}
+    out = [quiere] + list(A.TAMBIEN.get((ch["id"], i), []))
+    if any(x["tipo"] == "AG" and not x.get("cual") for x in tu["oro"] if not x.get("opt")):
+        out += [(quiere - {"lleva"}) | {"mira"}, quiere | {"mira"}]
+    return out
+
+
 def _58(s: set) -> set:
     """En las 58 no cuentan "nada" ni la diferencia entre dato y comparar."""
     return {"dato" if x == "comparar" else x for x in s} - {"nada"}
@@ -175,6 +202,36 @@ def consigna(version: str) -> str:
     return CONSIGNA.format(lista=media() if version == "media" else corta(), nombres=nombres, ejemplos=ej)
 
 
+# LA INFORMACION A, 23-oct: lo minimo que el modelo tiene que devolver para que el codigo siga solo. El rubro, el tema y
+# el producto no se piden: los trae el codigo por significado desde la pregunta completa.
+GUIA_A = """Sos parte del sistema de una tienda online de tecnologia de Argentina. No le contestas al cliente. Lee la
+LIBRETA y el ULTIMO MENSAJE y devolve, por cada cosa que pide o pregunta el cliente, en su orden:
+- "texto": la pregunta o el pedido COMPLETO, que se entienda sin leer la charla, con los modelos y marcas tal cual. Si
+  el cliente no repite de que habla, lo tomas de la libreta. Una pregunta sigue siendo pregunta y un pedido, pedido.
+- "respuesta": que respuesta de la tienda necesita, una de la lista.
+- "renglon": si habla de algo que ya esta en el BORRADOR de la libreta, su numero L-n; si no, "".
+- "depende_de": el numero de la parte de la que depende, 0 si no depende de nada.
+El destino, el color, la cantidad y las condiciones van dentro del texto de su parte: nunca son una parte aparte.
+Pedir algo que todavia no eligio —"necesito algo para..."— es opciones: la tienda primero le muestra.
+RESPUESTAS:
+{lista}{ejemplos}"""
+
+
+def guia_a(con_ejemplos: bool) -> str:
+    ej = "\nEJEMPLOS, de a pares que se parecen y piden otra respuesta:\n" + "\n".join(
+        f'- "{t}" -> {DEL_ACTO[a]}' + (f" ({c})" if c else "") for t, a, c in A.EJEMPLOS) if con_ejemplos else ""
+    return GUIA_A.format(lista=corta(), ejemplos=ej)
+
+
+def formato_a() -> dict:
+    return {"type": "json_schema", "json_schema": {"name": "informacion_a", "schema": {
+        "type": "object", "required": ["partes"], "properties": {
+            "partes": {"type": "array", "items": {"type": "object",
+                       "required": ["texto", "respuesta", "renglon", "depende_de"], "properties": {
+                           "texto": {"type": "string"}, "respuesta": {"type": "string", "enum": list(CORTA)},
+                           "renglon": {"type": "string"}, "depende_de": {"type": "integer"}}}}}}}}
+
+
 def formato() -> dict:
     return {"type": "json_schema", "json_schema": {"name": "respuestas", "schema": {
         "type": "object", "required": ["numero", "partes"], "properties": {
@@ -191,9 +248,11 @@ async def leer(mensaje: str, libreta: str) -> list:
     if LISTA == "base":
         partes = await CA.traducir(mensaje, libreta)
         return [{**p, "respuesta": DEL_ACTO.get(p.get("acto"), "nada")} for p in partes]
-    msgs = [{"role": "system", "content": consigna(LISTA)},
+    guia = guia_a(LISTA == "a1") if LISTA in ("a0", "a1") else consigna(LISTA)
+    msgs = [{"role": "system", "content": guia},
             {"role": "user", "content": libreta + f"\nULTIMO MENSAJE: {A.limpio(mensaje)}"}]
-    r = interprete._json(await interprete._pedir(msgs, "respuestas", formato()))
+    r = interprete._json(await interprete._pedir(msgs, "respuestas", formato_a() if LISTA in ("a0", "a1")
+                                                 else formato()))
     return [p for p in r.get("partes") or [] if isinstance(p, dict)]
 
 
@@ -207,6 +266,8 @@ def tokens() -> None:
     print(f"  la consigna entera con la corta {len(consigna('corta')) // 4:6}")
     print(f"  la consigna entera con la media {len(consigna('media')) // 4:6}")
     print(f"  la consigna unida de hoy        {len(A.consigna_unida()) // 4:6}")
+    print(f"  la guia A0, informacion A       {len(guia_a(False)) // 4:6}")
+    print(f"  la guia A1, A0 con los ejemplos {len(guia_a(True)) // 4:6}")
     if os.path.exists(LARGA):
         print(f"  larga, el indice                {len(open(LARGA, encoding='utf-8').read()) // 4:6}")
 
@@ -250,8 +311,15 @@ def corrida() -> None:
             actos = A.definir([{**p, "acto": AL_ACTO.get(p.get("respuesta"), "nada")} for p in partes], tu["mem"])
             puso = {p["acto"] for p in actos}
             quiere = {A.DEL_ORO[x["tipo"]] for x in tu["oro"] if not x.get("opt")}
-            bien = puso == quiere or puso in A.TAMBIEN.get((ch["id"], i), [])
+            bien = puso in valen_48(ch, i, tu)
             nota[("48", bien)] += 1
+            # El renglon que senala, en los turnos donde el oro senala uno del pedido.
+            for x in tu["oro"]:
+                for c in x.get("cual") if isinstance(x.get("cual"), list) else [x.get("cual")]:
+                    ref = CA._ref(c, False)
+                    if ref.startswith("L-") and LISTA in ("a0", "a1"):
+                        nota["renglon casos"] += 1
+                        nota["renglon bien"] += any(CA._ref(p.get("renglon"), False) == ref for p in partes)
             if not bien:
                 faltas.append(("48", f"{ch['id']} t{i}", A.limpio(tu["msg"]), sorted(DEL_ACTO[a] for a in quiere),
                                [(DEL_ACTO.get(p["acto"]), p.get("texto")) for p in actos]))
@@ -274,8 +342,8 @@ def corrida() -> None:
             with CA.Puerta():
                 partes = asyncio.run(leer(t["texto"], lib))
             puso, quiere = _58({p.get("respuesta") for p in partes}), _58(oro_58(ag))
-            nota[("58", puso == quiere)] += 1
-            if puso != quiere:
+            nota[("58", puso in valen_58(ag))] += 1
+            if puso not in valen_58(ag):
                 faltas.append(("58", f"{charla['id']} t{i}", t["texto"], sorted(quiere),
                                [(p.get("respuesta"), p.get("texto")) for p in partes]))
 
@@ -292,6 +360,8 @@ def corrida() -> None:
     print(f"\nLA LISTA DE RESPUESTAS, version {LISTA}")
     for f in ("48", "58"):
         print(f"  las {f}: BIEN {nota[(f, True)]} de {nota[(f, True)] + nota[(f, False)]}")
+    if nota["renglon casos"]:
+        print(f"  el renglon del pedido en las 48: {nota['renglon bien']} de {nota['renglon casos']}")
     print(f"Gasto: {libro_paga.gastado(libro_paga._hoy()) - desde:.3f} dolares")
 
 
