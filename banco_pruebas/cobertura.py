@@ -8,7 +8,7 @@ se acepta cualquiera: va como un conjunto.
 El modelo de produccion traduce y separa con el numero primero, la consigna A de `cuenta_preguntas.py`; el buscador de
 hoy, `agente.ubicar`, busca sobre cada parte. Se compara contra buscar sobre el mensaje crudo entero.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.10 python3 banco_pruebas/cobertura.py [--ver]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.10 python3 banco_pruebas/cobertura.py [--ver] [--nombrar] [--significado]
 """
 import asyncio
 import collections
@@ -24,6 +24,9 @@ from app.core import agente  # noqa: E402
 TIENDA = "verifika_prod"
 SEIS = 6
 TOPE = float(os.environ.get("TOPE_CORRIDA", "0.10"))
+# A: la consigna de cuenta_preguntas. N: la misma, nombrando con los nombres de la tienda.
+FORMA = "N" if "--nombrar" in sys.argv else "A"
+SIGNIFICADO = "--significado" in sys.argv
 
 # (id, mensaje, rubros, temas): cada tema es un conjunto de los que valen.
 RUBROS = [
@@ -205,6 +208,76 @@ def casos() -> list:
     return out
 
 
+# LA OPCION 1: la traduccion recibe los rubros y los temas de la tienda y nombra cada cosa por su nombre.
+NOMBRAR = """
+Cada parte nombra lo que pide o pregunta con el nombre que usa la tienda, si es uno de estos:
+- productos: {rubros}
+- temas de la tienda: {temas}
+Si dice "algo para que me escuchen" y es un microfono, la parte dice "microfono". Si no es ninguno, con sus palabras."""
+
+
+async def contar(msg: str, forma: str) -> dict:
+    if forma == "A":
+        return await CP.contar(msg, "A")
+    from app.core.flujo import interprete
+    i = agente.indice(TIENDA)
+    consigna = CP.consigna("A") + NOMBRAR.format(rubros=", ".join(sorted(i["rubros"])),
+                                                 temas=", ".join(t.replace("_", " ") for t in i["temas"]))
+    crudo = await interprete._pedir([{"role": "system", "content": consigna},
+                                     {"role": "user", "content": f"MENSAJE: {msg}"}], "cobertura", CP.formato("A"))
+    return interprete._json(crudo)
+
+
+# LA OPCION 2: la busqueda por significado. Cada rubro y cada tema, una vez, como vector: su nombre, sus alias y, el
+# tema, su respuesta de la FAQ. Cada parte se compara por coseno. "hibrido" junta los dos rankings por posicion.
+EMBEDDINGS = "gemini-embedding-001"
+_VEC = {}
+
+
+def _vectores(textos: list) -> list:
+    from app.core.llm_reintento import _cliente
+    out = []
+    for i in range(0, len(textos), 90):
+        r = _cliente().embeddings.create(model=EMBEDDINGS, input=textos[i:i + 90])
+        out += [d.embedding for d in r.data]
+    return out
+
+
+def _indice_significado() -> dict:
+    if not _VEC:
+        from app.storage import firestore_client as fc
+        i, al = agente.indice(TIENDA), agente._alias(TIENDA)
+        faq = fc.get_all_faq(tienda_id=TIENDA) or {}
+        docs = {"rubros": {r: f"{r}: " + ", ".join((al.get("rubros") or {}).get(r, [])) for r in i["rubros"]},
+                "temas": {t: f"{t.replace('_', ' ')}: {(faq.get(t) or {}).get('respuesta') or ''} "
+                          + ", ".join((al.get("temas") or {}).get(t, [])) for t in i["temas"]}}
+        for g, d in docs.items():
+            _VEC[g] = dict(zip(d, _vectores(list(d.values()))))
+    return _VEC
+
+
+def _coseno(a: list, b: list) -> float:
+    return sum(x * y for x, y in zip(a, b)) / ((sum(x * x for x in a) ** .5) * (sum(y * y for y in b) ** .5))
+
+
+def por_significado(textos: list, grupo: str) -> list:
+    idx = _indice_significado()[grupo]
+    return [[k for k, _ in sorted(((k, _coseno(v, q)) for k, v in idx.items()), key=lambda x: -x[1])[:SEIS]]
+            for q in _vectores(textos)]
+
+
+def hibrido(palabras: list, significado: list) -> list:
+    """Los dos rankings juntos por su posicion, la fusion por rangos reciprocos: arriba lo que los dos ponen arriba."""
+    out = []
+    for a, b in zip(palabras, significado):
+        puntos = collections.Counter()
+        for lista in (a, b):
+            for pos, k in enumerate(lista):
+                puntos[k] += 1 / (60 + pos)
+        out.append([k for k, _ in puntos.most_common(SEIS)])
+    return out
+
+
 def nota(rubros: set, temas: list, cand_r: list, cand_t: list) -> dict:
     return {"rubros": len(rubros), "rubro_en_6": sum(any(r in c for c in cand_r) for r in rubros),
             "rubro_1ro": sum(any(c[:1] == [r] for c in cand_r) for r in rubros),
@@ -215,26 +288,33 @@ def nota(rubros: set, temas: list, cand_r: list, cand_t: list) -> dict:
 def main() -> None:
     ver = "--ver" in sys.argv
     desde = libro_paga.gastado(libro_paga._hoy())
-    total = {"partes": collections.Counter(), "crudo": collections.Counter()}
+    total = {}
     por_clase = collections.defaultdict(collections.Counter)
     for cid, msg, rubros, temas in casos():
         if libro_paga.gastado(libro_paga._hoy()) - desde >= TOPE:
             print(f"TOPE de la corrida: {TOPE} dolares")
             break
-        partes = asyncio.run(CP.contar(msg, "A")).get("partes") or [msg]
-        for nombre, textos in (("partes", partes), ("crudo", [msg])):
-            cr = [agente.ubicar(t, "rubros", TIENDA, SEIS) for t in textos]
-            ct = [agente.ubicar(t, "temas", TIENDA, SEIS) for t in textos]
+        partes = asyncio.run(contar(msg, FORMA)).get("partes") or [msg]
+        cr_p = [agente.ubicar(t, "rubros", TIENDA, SEIS) for t in partes]
+        ct_p = [agente.ubicar(t, "temas", TIENDA, SEIS) for t in partes]
+        busquedas = {"partes": (cr_p, ct_p),
+                     "crudo": ([agente.ubicar(msg, "rubros", TIENDA, SEIS)], [agente.ubicar(msg, "temas", TIENDA, SEIS)])}
+        if SIGNIFICADO:
+            sr, st = por_significado(partes, "rubros"), por_significado(partes, "temas")
+            busquedas["significado"] = (sr, st)
+            busquedas["hibrido"] = (hibrido(cr_p, sr), hibrido(ct_p, st))
+        for nombre, (cr, ct) in busquedas.items():
             n = nota(rubros, temas, cr, ct)
-            total[nombre].update(n)
+            total.setdefault(nombre, collections.Counter()).update(n)
             if nombre == "partes":
                 por_clase[cid.split()[0] + " " + cid.split()[-1] if cid[0] == "R" else cid[0]].update(n)
-            if ver and nombre == "partes" and (n["rubro_en_6"] < n["rubros"] or n["tema_en_6"] < n["temas"]):
-                print(f"--- {cid}: {msg}")
-                for t, a, b in zip(textos, cr, ct):
+            if ver and nombre == ("hibrido" if SIGNIFICADO else "partes") \
+                    and (n["rubro_en_6"] < n["rubros"] or n["tema_en_6"] < n["temas"]):
+                print(f"--- {nombre} {cid}: {msg}")
+                for t, a, b in zip(partes, cr, ct):
                     print(f"    {t[:100]!r}\n      rubros {a}\n      temas  {b}")
     for nombre, t in total.items():
-        print(f"\nBUSCADOR sobre {'las partes traducidas' if nombre == 'partes' else 'el mensaje crudo entero'}:")
+        print(f"\nBUSCADOR {nombre}:")
         print(f"  rubro entre los seis {t['rubro_en_6']} de {t['rubros']}, primero {t['rubro_1ro']}")
         print(f"  tema entre los seis  {t['tema_en_6']} de {t['temas']}, primero {t['tema_1ro']}")
     print("\nPOR CLASE, sobre las partes:")
