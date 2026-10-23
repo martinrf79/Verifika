@@ -13,7 +13,10 @@ Lo esperado sale de lo escrito a mano antes de correr, nunca del modelo:
 
 Por cada cosa esperada: si esta entre los seis de alguna parte, y si es el primero de alguna.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/candidatos.py [--ver] [--solo48|--solo58]
+--completa, paso 1 del plan: la consigna pide cada parte entera, que se entienda sola, una clase de producto por parte,
+y lo que senala de la libreta por su numero. Eso se mide aparte, en la capa "numero". En las 48 se suma el acto.
+
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/candidatos.py [--ver] [--completa] [--solo48|--solo58]
 """
 import asyncio
 import collections
@@ -22,6 +25,7 @@ import re
 import sys
 
 VER = "--ver" in sys.argv
+COMPLETA = "--completa" in sys.argv
 SOLO = "48" if "--solo48" in sys.argv else "58" if "--solo58" in sys.argv else ""
 sys.argv = [sys.argv[0]]
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -36,7 +40,7 @@ A, MO = ET.A, ET.MO
 TID = A.P.TID
 SEIS = 6
 TOPE = float(os.environ.get("TOPE_CORRIDA", "0.20"))
-CAPAS = ("rubro", "tema", "producto", "charla")
+CAPAS = ("rubro", "tema", "producto", "charla", "numero")
 _PUERTA = llm_reintento._cliente  # la puerta al modelo, antes de que el cableado la cierre
 
 
@@ -53,24 +57,46 @@ def familias_de(nombre: str) -> set:
 
 
 def seis(partes: list, libreta: str) -> list:
-    """Por cada parte, los seis de cada capa."""
+    """Por cada parte, los seis de cada capa. "numero" es lo que la parte senala de la libreta, con --completa."""
     charla = ET._charla(libreta)
     vc = dict(zip(charla, ET.vectores(list(charla.values())))) if charla else {}
     idx = ET.tienda()
     out = []
     textos = [str(p.get("texto") or "") for p in partes]
-    for q in ET.vectores(textos) if textos else []:
+    for p, q in zip(partes, ET.vectores(textos) if textos else []):
         c = {g: [k for k, _ in sorted(((k, ET._coseno(v, q)) for k, v in d.items()), key=lambda x: -x[1])[:SEIS]]
              for g, d in idx.items()}
         c["charla"] = [k for k, _ in sorted(((k, ET._coseno(v, q)) for k, v in vc.items()), key=lambda x: -x[1])[:SEIS]]
+        c["numero"] = [_ref(x, False) for x in p.get("senala") or [] if _ref(x, False)]
         out.append(c)
     return out
 
 
+# LA PREGUNTA COMPLETA, paso 1 del plan de Martin del 23-oct: cada parte se entiende sola, sin leer la charla, y lo
+# que senala de la libreta va por su numero, no por parecido.
+COMPLETA_TXT = """
+Cada parte es una pregunta o un pedido COMPLETO, que se entiende solo, sin leer la charla. Si el cliente no repite de
+que habla —"¿y en blanco?", "pasame otras", "el de mi hija", "de cada uno"—, lo tomas de la LIBRETA y lo escribis en la
+parte: "¿el mouse viene en blanco?". Una parte habla de una sola clase de producto: "dos teclados y dos mouse" son dos
+partes. En "senala" van los numeros de la libreta de lo que la parte nombra o senala —M-2 lo mostrado, L-1 un renglon
+del borrador—; [] si no senala nada de la libreta."""
+
+
+def formato_completo() -> dict:
+    import copy
+    f = copy.deepcopy(A.formato_unido())
+    item = f["json_schema"]["schema"]["properties"]["partes"]["items"]
+    item["properties"]["senala"] = {"type": "array", "items": {"type": "string"}}
+    item["required"].append("senala")
+    return f
+
+
 async def traducir(mensaje: str, libreta: str) -> list:
-    msgs = [{"role": "system", "content": A.consigna_unida()},
+    consigna = A.consigna_unida() + (COMPLETA_TXT if COMPLETA else "")
+    msgs = [{"role": "system", "content": consigna},
             {"role": "user", "content": libreta + f"\nULTIMO MENSAJE: {A.limpio(mensaje)}"}]
-    r = interprete._json(await interprete._pedir(msgs, "candidatos", A.formato_unido()))
+    r = interprete._json(await interprete._pedir(msgs, "candidatos", formato_completo() if COMPLETA
+                                                 else A.formato_unido()))
     return [p for p in r.get("partes") or [] if isinstance(p, dict)]
 
 
@@ -152,10 +178,13 @@ def esperado_58(agenda: dict, rubros: set) -> list:
 # ══ LA NOTA ══════════════════════════════════════════════════════════════════
 
 NOTA = collections.defaultdict(collections.Counter)
+ACTOS = collections.Counter()
 FALTAS = []
 
 
 def notar(fuente: str, cid: str, msg: str, partes: list, cands: list, esperado: list) -> None:
+    if COMPLETA:
+        esperado = esperado + [("numero", v, d) for c, v, d in esperado if c == "charla"]
     for capa, vale, dicho in esperado:
         en6 = any(vale & set(c[capa]) for c in cands)
         uno = any(vale & set(c[capa][:1]) for c in cands)
@@ -182,6 +211,9 @@ def las_48(desde: float) -> None:
                 partes = asyncio.run(traducir(tu["msg"], lib))
                 cands = seis(partes, lib)
             notar("48", f"{ch['id']} t{i}", A.limpio(tu["msg"]), partes, cands, esperado_48(tu["oro"]))
+            quiere = {A.DEL_ORO[x["tipo"]] for x in tu["oro"] if not x.get("opt")}
+            puso = {p.get("acto") for p in A.definir([dict(p) for p in partes], tu["mem"])}
+            ACTOS["BIEN" if puso == quiere or puso in A.TAMBIEN.get((ch["id"], i), []) else "MAL"] += 1
 
 
 def las_58(desde: float) -> None:
@@ -228,13 +260,15 @@ def main() -> None:
             print(f"    {msg[:160]}")
             for p, m in zip(partes, mejor):
                 print(f"      {str(p)[:70]:70} -> {', '.join(m)}")
-    print("\nLOS SEIS CANDIDATOS SOBRE LA PRIMERA TRADUCCION")
+    print("\nLOS SEIS CANDIDATOS SOBRE LA PRIMERA TRADUCCION" + (", CON LA PREGUNTA COMPLETA" if COMPLETA else ""))
     for fuente in ("48", "58"):
         for capa in CAPAS:
             n = NOTA[(fuente, capa)]
             if n["casos"]:
                 print(f"  las {fuente} · {capa:9} {n['casos']:3} casos · entre los seis {n['en los seis']:3}"
                       f" · primero {n['primero']:3}")
+    if ACTOS:
+        print(f"  el acto de las 48, con la regla del codigo: BIEN {ACTOS['BIEN']} de {sum(ACTOS.values())}")
     print(f"Gasto: {gastado(desde):.3f} dolares")
 
 
