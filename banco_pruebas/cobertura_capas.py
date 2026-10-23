@@ -192,7 +192,7 @@ def main() -> None:
     nota = collections.defaultdict(collections.Counter)
 
     for cid, msg, rubro, conds in casos_campo():
-        partes = asyncio.run(CO.contar(msg, "N")).get("partes") or [msg]
+        partes = asyncio.run(CO.contar(msg, CO.FORMA if CO.FORMA == "U" else "N")).get("partes") or [msg]
         cands = {"codigo": [campo_del_codigo(t, rubro) for t in partes],
                  "palabras": [agente.ubicar(t, "campos", TIENDA, SEIS) for t in partes],
                  "significado": por_significado(partes, "campos")}
@@ -208,7 +208,7 @@ def main() -> None:
             break
 
     for cid, msg, fams in casos_producto():
-        partes = asyncio.run(CO.contar(msg, "N")).get("partes") or [msg]
+        partes = asyncio.run(CO.contar(msg, CO.FORMA if CO.FORMA == "U" else "N")).get("partes") or [msg]
         clase = cid.split()[0] if cid.split()[0] in ("apodo", "varios") else cid.split()[-1]
         cands = {"codigo": [productos_del_codigo(t) for t in partes],
                  "codigo sobre el mensaje crudo": [productos_del_codigo(msg)],

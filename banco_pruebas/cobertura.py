@@ -25,7 +25,7 @@ TIENDA = "verifika_prod"
 SEIS = 6
 TOPE = float(os.environ.get("TOPE_CORRIDA", "0.10"))
 # A: la consigna de cuenta_preguntas. N: la misma, nombrando con los nombres de la tienda.
-FORMA = "N" if "--nombrar" in sys.argv else "A"
+FORMA = "U" if "--unida" in sys.argv else "N" if "--nombrar" in sys.argv else "A"
 SIGNIFICADO = "--significado" in sys.argv
 
 # (id, mensaje, rubros, temas): cada tema es un conjunto de los que valen.
@@ -219,6 +219,15 @@ G435" sigue diciendo "G435", y no se cambia por el rubro."""
 
 
 async def contar(msg: str, forma: str) -> dict:
+    if forma == "U":
+        # La consigna unida de `actos.py`, sin charla previa: las partes son su "texto".
+        import actos
+        from app.core.flujo import interprete
+        crudo = await interprete._pedir([{"role": "system", "content": actos.consigna_unida()},
+                                         {"role": "user", "content": f"LIBRETA: vacia\nULTIMO MENSAJE: {msg}"}],
+                                        "cobertura", actos.formato_unido())
+        r = interprete._json(crudo)
+        return {"partes": [p.get("texto") for p in r.get("partes") or [] if isinstance(p, dict) and p.get("texto")]}
     if forma == "A":
         return await CP.contar(msg, "A")
     from app.core.flujo import interprete

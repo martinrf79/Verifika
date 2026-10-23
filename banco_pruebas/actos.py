@@ -11,7 +11,7 @@ de las 48, que van todos siempre.
 Por turno: BIEN si los actos que pide la vara son los que puso el modelo, sin faltar ni sobrar; y aparte, si marca la
 dependencia donde la vara dice que algo depende de otra cosa.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/actos.py [--ver] [--sin-ejemplos]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.20 python3 banco_pruebas/actos.py [--ver] [--sin-ejemplos] [--unida]
 """
 import asyncio
 import collections
@@ -29,6 +29,7 @@ from experimento import limpio  # noqa: E402
 from fichas import CHARLAS  # noqa: E402
 
 TOPE = float(os.environ.get("TOPE_CORRIDA", "0.20"))
+UNIR = "--unida" in sys.argv
 
 ACTOS = {
     "lleva": "decide comprar algo nuevo: lo suma al pedido",
@@ -88,6 +89,30 @@ ACTOS, uno por parte:
 {actos}{ejemplos}"""
 
 
+# LA CONSIGNA UNIDA: el acto, los nombres de la tienda con los modelos tal cual, y el destino como campo de la parte.
+UNIDA = """
+Cada parte nombra lo que pide o pregunta con el nombre que usa la tienda, si es uno de estos:
+- productos: {rubros}
+- temas de la tienda: {temas}
+Un modelo, una marca o un producto concreto que nombra el cliente se copia TAL CUAL lo escribio, con sus errores.
+A donde va cada cosa se pone en "destino" de su parte: un destino nunca es una parte."""
+
+
+def consigna_unida() -> str:
+    i = agente.indice(P.TID)
+    return consigna(True) + UNIDA.format(rubros=", ".join(sorted(i["rubros"])),
+                                         temas=", ".join(t.replace("_", " ") for t in i["temas"]))
+
+
+def formato_unido() -> dict:
+    import copy
+    f = copy.deepcopy(FORMATO)
+    item = f["json_schema"]["schema"]["properties"]["partes"]["items"]
+    item["properties"]["destino"] = {"type": "string"}
+    item["required"].append("destino")
+    return f
+
+
 def consigna(con_ejemplos: bool) -> str:
     ej = "\nEJEMPLOS, de a pares que se parecen y son otro acto:\n" + "\n".join(
         f'- "{t}" -> {a}' + (f" ({c})" if c else "") for t, a, c in EJEMPLOS) if con_ejemplos else ""
@@ -106,6 +131,11 @@ FORMATO = {"type": "json_schema", "json_schema": {"name": "actos", "schema": {
 
 async def leer(tu: dict, con_ejemplos: bool) -> dict:
     estado, historial = P.estado_de(tu["mem"])
+    if UNIR:
+        msgs = [{"role": "system", "content": consigna_unida()},
+                {"role": "user", "content": interprete.libreta(estado, historial, P.TID)
+                 + f"\nULTIMO MENSAJE: {limpio(tu['msg'])}"}]
+        return interprete._json(await interprete._pedir(msgs, "actos", formato_unido()))
     msgs = [{"role": "system", "content": consigna(con_ejemplos)},
             {"role": "user", "content": interprete.libreta(estado, historial, P.TID)
              + f"\nULTIMO MENSAJE: {limpio(tu['msg'])}"}]
@@ -143,7 +173,7 @@ def main() -> None:
                     print(f"      [{p.get('acto')}] {p.get('texto')}" + (f" · depende de {p['depende_de']}"
                                                                           if p.get("depende_de") else "")
                           + (f" · {p['cantidad']}" if p.get("cantidad") else ""))
-    print(f"\nACTOS {'con' if con else 'sin'} ejemplos, 48 turnos: BIEN {cuenta['BIEN']} · MAL {cuenta['MAL']}")
+    print(f"\nACTOS {'consigna unida' if UNIR else ('con' if con else 'sin') + ' ejemplos'}, 48 turnos: BIEN {cuenta['BIEN']} · MAL {cuenta['MAL']}")
     print(f"  dependencias: {dep['la marca']} de {dep['con dependencia']} turnos que tienen una")
     for a in ACTOS:
         e, f, s = por_acto[(a, "esta")], por_acto[(a, "falta")], por_acto[(a, "sobra")]
