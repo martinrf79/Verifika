@@ -213,7 +213,9 @@ NOMBRAR = """
 Cada parte nombra lo que pide o pregunta con el nombre que usa la tienda, si es uno de estos:
 - productos: {rubros}
 - temas de la tienda: {temas}
-Si dice "algo para que me escuchen" y es un microfono, la parte dice "microfono". Si no es ninguno, con sus palabras."""
+Si dice "algo para que me escuchen" y es un microfono, la parte dice "microfono". Si no es ninguno, con sus palabras.
+Un modelo, una marca o un producto concreto que nombra el cliente se copia TAL CUAL lo escribio, con sus errores: "el
+G435" sigue diciendo "G435", y no se cambia por el rubro."""
 
 
 async def contar(msg: str, forma: str) -> dict:
