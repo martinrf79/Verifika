@@ -312,3 +312,22 @@ def test_dos_destinos_con_condiciones_distintas_del_mismo_rubro(F):
         e, TIENDA)
     conds = [p.get("condiciones") for p in ag["preguntas"] if p["accion"] == "buscar"]
     assert ["con cable"] in conds and ["inalambrico"] in conds
+
+
+def test_un_nombre_de_varios_modelos_se_pregunta_no_se_busca(F):
+    """Lo que el cliente nombra y da varios modelos queda nombrado, y el borrador pregunta cual: "sumame un Redragon
+    Cobra" en produccion, 23-oct, se busco como un mouse cualquiera y el pedido tomo el G203."""
+    ag = F.a_agenda(_ficha(pedido=[{"destino": "sin decir", "items": [_item("Redragon Cobra", "mouse")]}]), _estado(),
+                    TIENDA, "sumame también un Redragon Cobra")
+    assert [p["accion"] for p in ag["preguntas"]] == ["comprar"], ag
+    assert ag["preguntas"][0]["agrega"][0]["producto"] == "Redragon Cobra"
+    print("\nVARIOS MODELOS: 1 de 1, se nombra y no se busca")
+
+
+def test_la_duda_que_no_es_pregunta_no_llega_al_cliente(F):
+    """La duda del modelo se le dice al cliente tal cual: solo si es una pregunta. "nombre del cliente" o "Falta el
+    destino para el renglon L-12" son notas, de las fichas grabadas y de produccion."""
+    ag = F.a_agenda(_ficha(dudas=["nombre del cliente", "destino de L-10", "¿Para qué PC es la memoria?"]), _estado(),
+                    TIENDA)
+    assert ag["dudas"] == ["¿Para qué PC es la memoria?"], ag["dudas"]
+    print("\nDUDAS: 1 de 3 son preguntas, y es la unica que queda")

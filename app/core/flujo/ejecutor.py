@@ -252,7 +252,12 @@ class Turno:
         self.res = B.resolver(b, self.tienda, self.lecturas)
         falta = B.faltantes(b, self.res)
         arts = B.articulos(self.res, falta)
-        perdidos = _perdidos(antes, arts, self.tienda) if self.previos is not None and antes else []
+        # Lo que todavia falta elegir sigue en el pedido: un renglon con varios modelos no saca su rubro.
+        presentes = [a for x in self.res for a in x.get("articulos") or []] + [
+            {"id": str(K.identificar(x["opciones"][0], "", self.tienda).get("producto", {}).get("id") or ""),
+             "nombre": x["opciones"][0], "destino": (x.get("renglon") or {}).get("destino") or ""}
+            for x in falta if x.get("falta") == "modelo" and x.get("opciones")]
+        perdidos = _perdidos(antes, presentes, self.tienda) if self.previos is not None and antes else []
         if perdidos:
             # NUNCA SE PIERDE EL PEDIDO EN SILENCIO: un reemplazo que deja afuera rubros o destinos que estaban no se
             # aplica de una. Queda propuesto, con lo que saldria dicho, hasta que el cliente lo acepte.

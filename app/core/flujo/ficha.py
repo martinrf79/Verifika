@@ -221,6 +221,17 @@ def _es_modelo(texto: str, color: str, tienda_id: str, vistos: set = None) -> bo
     return idt["veredicto"] == "exists" and (vistos is None or _familia(idt["producto"]) in vistos)
 
 
+def _nombra_varios(texto: str, tienda_id: str, vistos: set = None) -> bool:
+    """Nombra un modelo que la identidad no puede certificar porque son varios —"Redragon Cobra" es el Cobra M711 y el
+    King Cobra—, todos nombrados por el cliente. No es una busqueda: el borrador pregunta cual, con su espera."""
+    from .marcador import _productos
+    if not _productos(re.findall(r"[a-z0-9]+", K.n(texto)), tienda_id):
+        return False
+    idt = K.identificar(texto, "", tienda_id)
+    return idt["veredicto"] == "ambiguous" and bool(idt.get("opciones")) \
+        and (vistos is None or all(_familia(p) in vistos for p in idt["opciones"]))
+
+
 def _familia(p: dict) -> str:
     """La marca y la linea del modelo: la Fury Beast de 32 es de la familia de la de 16 que el cliente vio."""
     return " ".join([K.n(p.get("marca"))] + K.n(p.get("modelo")).split()[:2]).strip()
@@ -259,7 +270,7 @@ def _que(it: dict, nums: dict, renglones: dict, tienda_id: str, vistos: set = No
         if vistos is None or not p or _familia(p) in vistos:
             return {"ref": M}
         return {"rubro": p.get("categoria") or ""}  # con un orden, lo mostrado no lo elige el modelo
-    if _es_modelo(texto, _dicho(it.get("color")), tienda_id, vistos):
+    if _es_modelo(texto, _dicho(it.get("color")), tienda_id, vistos) or _nombra_varios(texto, tienda_id, vistos):
         return {"modelo": texto}
     rub = _rubro(texto, tienda_id, str(it.get("rubro") or ""))
     return {"rubro": rub} if rub else {"libre": texto}
@@ -450,4 +461,5 @@ def a_agenda(ficha: dict, estado: dict, tienda_id: str, mensaje: str = "") -> di
     # LO QUE CONTESTA UNA PREGUNTA DEL BOT va con sus palabras: el ejecutor las lee solo contra lo que esa pregunta
     # espera, un vocabulario cerrado, `ejecutor.atar_esperas`.
     return {"preguntas": ps, "cliente": cliente, "responde": responde, "respuesta": mensaje if responde else "",
-            "dudas": [d for d in map(_dicho, _lista(ficha.get("dudas"))) if d]}
+            # LA DUDA LLEGA AL CLIENTE TAL CUAL: solo si es una pregunta. "nombre del cliente" es una nota del modelo.
+            "dudas": [d for d in map(_dicho, _lista(ficha.get("dudas"))) if d and "?" in d]}

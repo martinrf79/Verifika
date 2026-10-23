@@ -214,3 +214,52 @@ def test_lo_que_va_adentro_lo_define_cada_tienda(firestore_doble):
     finally:
         vocab["familias_adentro"] = antes
     print("\nADENTRO: 2 de 2 productos con la regla por defecto, 2 de 2 con la de la tienda")
+
+
+# LA CHARLA DE PRODUCCION DEL 23-OCT, 01:17, con las fichas que devolvio el modelo, por el paso a la agenda y el
+# webhook entero. "Sumame un Redragon Cobra" buscaba un mouse cualquiera, anotaba el G203 y mandaba al cliente la nota
+# "nombre del cliente". Con el Cobra sin elegir, el reemplazo ademas proponia sacar los mouses del pedido.
+SD = "sin decir"
+
+
+def _it(producto, color=SD, renglon="nuevo"):
+    return {"producto": producto, "rubro": "mouse", "cantidad": 1, "color": color, "condiciones": [], "orden": "nada",
+            "renglon": renglon}
+
+
+def _fi(items, responde="nada", dudas=()):
+    return {"pedido": [{"destino": SD, "items": items}], "preferencias": {"condiciones": [], "orden": "nada"},
+            "pago": {"medios": [{"medio": SD, "porcentaje": 100}], "tope_total": None}, "consultas": [], "son": None,
+            "responde": responde, "cliente": {"nombre": SD, "localidad": SD}, "dudas": list(dudas)}
+
+
+COBRA_VIVO = [("Quiero un Logitech M170", _fi([_it("Logitech M170", renglon="L-1")])),
+              ("blanco", _fi([_it("Logitech M170", "blanco", "L-1")], "R-1")),
+              ("sumame también un Redragon Cobra", _fi([_it("Mouse Logitech M170 Blanco", "blanco", "L-1"),
+                                                        _it("Redragon Cobra")], "R-1", ["nombre del cliente"]))]
+
+
+def test_la_charla_del_cobra_en_produccion():
+    from app.core import llm_reintento
+    from app.core.flujo import ficha
+    puerta = llm_reintento._cliente
+    interprete = CB.instalar()
+    cola = list(COBRA_VIVO)
+
+    async def _interpretar(msg, historial, estado, tienda_id, trace_id=""):
+        return ficha.a_agenda(cola.pop(0)[1], estado, tienda_id, msg)
+
+    async def _explicar(*a, **k):
+        return ""
+    real = interprete.interpretar, interprete.explicar
+    interprete.interpretar, interprete.explicar = _interpretar, _explicar
+    try:
+        C.reiniciar_cliente("espera_cobra_vivo")
+        r = ["\n".join(asyncio.run(C.turno("espera_cobra_vivo", m))) for m, _ in COBRA_VIVO]
+    finally:
+        interprete.interpretar, interprete.explicar = real
+        llm_reintento._cliente = puerta
+    assert "1x Mouse Logitech M170 Blanco" in r[1], r
+    assert "Cobra M711" in r[2] and "King Cobra" in r[2] and "?" in r[2], r
+    assert "G203" not in r[2] and "nombre del cliente" not in r[2] and "Lo dejo" not in r[2], r
+    print("\nCOBRA EN PRODUCCION: 3 de 3 turnos bien")
