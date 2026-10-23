@@ -15,7 +15,10 @@ caracteristica u orden. Cinco variantes, la misma consigna:
 Lo correcto, escrito antes de correr y sin pasar por `alias.json`: las 14 frases de la entrevista, y de `cobertura.py`
 los rubros dichos por razonamiento y con errores de tipeo, y los temas dichos de costado.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.30 python3 banco_pruebas/traduccion_sola.py [--ver] [variante ...]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> TOPE_CORRIDA=0.30 python3 banco_pruebas/traduccion_sola.py [--ver] [--dificiles] [variante ...]
+
+calibrado, despues de la entrevista de las fallas: ejemplos, mas una regla por clase de error y diez frases resueltas
+por clase. --dificiles corre las cien de `traduccion_dificil.py`, donde cada cosa que vale tiene que estar.
 """
 import asyncio
 import collections
@@ -36,7 +39,8 @@ from app.core.flujo import interprete  # noqa: E402
 
 TID = "verifika_prod"
 TOPE = float(os.environ.get("TOPE_CORRIDA", "0.30"))
-VARIANTES = ("libre", "atado", "salida", "razon", "ejemplos")
+VARIANTES = ("libre", "atado", "salida", "razon", "ejemplos", "calibrado")
+DIFICILES = "--dificiles" in ARGS
 ORDENES = ["el mas barato", "el mas caro"]
 OTRO = "otro"
 
@@ -116,6 +120,27 @@ EJEMPLOS = [
 ]
 
 
+# LA CALIBRACION, despues de la entrevista de las fallas: una regla por clase de error y diez frases resueltas por
+# clase, ninguna de las cien ni de las 108.
+REGLA_CALIBRADA = """Si el cliente cuenta un problema, lo que pide es la clase de producto que lo resuelve, no la
+caracteristica que nombra. Si pide que el producto tenga algo que no esta en la lista, va "otro" con su palabra. Si pide
+algo que la tienda no vende, va "otro" con su palabra: nunca lo cambies por lo mas parecido."""
+
+CALIBRA = [
+    ("la placa vieja no acepta el procesador nuevo", "clase de producto", "motherboard"),
+    ("el telefono se me descarga en la calle y no tengo donde enchufarlo", "clase de producto",
+     "otro: bateria portatil"),
+    ("que no se ensucie facil", "caracteristica", "otro: no se ensucie"),
+    ("que lo pueda usar con una sola mano", "caracteristica", "otro: con una sola mano"),
+    ("¿tienen freidoras de aire?", "clase de producto", "otro: freidora de aire"),
+    ("¿venden consolas retro?", "clase de producto", "otro: consola retro"),
+    ("¿cuanto tarda en cargarse completo?", "caracteristica", "bateria"),
+    ("¿me avisan cuando sale el paquete?", "regla de la tienda", "seguimiento pedido"),
+    ("algo intermedio, que no sea lo mas caro", "orden", "otro: intermedio"),
+    ("¿la notebook trae wifi?", "caracteristica", "wifi"),
+]
+
+
 def consigna(v: str) -> str:
     n = nombres()
     lista = "\n".join(f"- {k}: {', '.join(vs)}" for k, vs in n.items())
@@ -123,8 +148,10 @@ def consigna(v: str) -> str:
              if v == "razon" else '{"pide": [{"tipo": "...", "nombre": "...", "palabra": "..."}]}')
     ej = ("\nEJEMPLOS:\n" + "\n".join(
         f'- "{f}" -> {t}: ' + (f'otro, palabra "{n.split(": ", 1)[1]}"' if n.startswith("otro") else n)
-        for f, t, n in EJEMPLOS)) if v == "ejemplos" else ""
+        for f, t, n in EJEMPLOS + (CALIBRA if v == "calibrado" else []))) if v in ("ejemplos", "calibrado") else ""
     reglas = {"libre": REGLA_LIBRE, "atado": REGLA_ATADO}.get(v, REGLA_SALIDA)
+    if v == "calibrado":
+        reglas += "\n" + REGLA_CALIBRADA
     return CONSIGNA.format(reglas=reglas, lista=lista, ejemplos=ej, forma=forma)
 
 
@@ -161,32 +188,64 @@ def vale(pide: list, valen: set) -> bool:
     return False
 
 
+def vale_todas(pide: list, valen: list) -> bool:
+    """Las cien dificiles: cada conjunto tiene que estar. "otro" vale con alguna de las palabras del conjunto en la
+    palabra del cliente, o solo si el conjunto no trae palabras."""
+    def una(conj: set) -> bool:
+        palabras = [K.n(x) for x in conj if x != OTRO]
+        for p in pide:
+            nombre, palabra = K.n(p.get("nombre") or "").strip(), K.n(p.get("palabra") or "")
+            if nombre == OTRO and OTRO in conj:
+                tienda = [x for x in palabras if x in _NOMBRES_TIENDA()]
+                sueltas = [x for x in palabras if x not in tienda]
+                if not sueltas or any(x in palabra for x in sueltas):
+                    return True
+            if nombre != OTRO and any(nombre == x or (len(x) > 3 and x in nombre) for x in palabras):
+                return True
+        return False
+    return all(una(c) for c in valen)
+
+
+_NT: set = set()
+
+
+def _NOMBRES_TIENDA() -> set:
+    if not _NT:
+        _NT.update(K.n(x) for vs in nombres().values() for x in vs)
+    return _NT
+
+
 def main() -> None:
+    from traduccion_dificil import CIEN
     elegidas = [v for v in ARGS if v in VARIANTES] or list(VARIANTES)
+    lista = [(cid, f, v) for cid, f, v in CIEN] if DIFICILES else casos()
+    grupos = "PRNDTOM" if DIFICILES else "ERT"
     desde = libro_paga.gastado(libro_paga._hoy())
     nota = collections.defaultdict(collections.Counter)
     faltas = collections.defaultdict(list)
     for v in elegidas:
-        for cid, frase, valen in casos():
+        for cid, frase, valen in lista:
             if libro_paga.gastado(libro_paga._hoy()) - desde >= TOPE:
                 print(f"TOPE de la corrida: {TOPE} dolares")
                 break
             pide = asyncio.run(traducir(v, frase))
             grupo = cid[0]
-            ok = vale(pide, valen)
+            ok = vale_todas(pide, valen) if DIFICILES else vale(pide, valen)
             nota[v][(grupo, "casos")] += 1
             nota[v][(grupo, "bien")] += ok
             if not ok:
-                faltas[v].append((cid, frase, sorted(valen), [(p.get("nombre"), p.get("palabra")) for p in pide]))
+                faltas[v].append((cid, frase, valen, [(p.get("nombre"), p.get("palabra")) for p in pide]))
     if VER:
         for v in elegidas:
             print(f"\n=== {v}: lo que no salio")
             for cid, frase, valen, pide in faltas[v]:
                 print(f"  {cid}: {frase[:80]}\n      vale {valen} · dio {pide}")
-    print("\nLA TRADUCCION SOLA: E, las 14 de la entrevista; R, rubros por razonamiento y tipeo; T, temas de costado")
+    print("\nLA TRADUCCION SOLA, " + ("LAS CIEN DIFICILES: P problema, R requisito sin caracteristica, N no lo vende, "
+                                    "D dato de costado, T regla de costado, O orden, M dos cosas" if DIFICILES else
+                                    "E, las 14 de la entrevista; R, rubros por razonamiento y tipeo; T, temas de costado"))
     for v in elegidas:
-        print(f"  {v:9} " + " · ".join(f"{g} {nota[v][(g, 'bien')]} de {nota[v][(g, 'casos')]}" for g in "ERT")
-              + f" · total {sum(nota[v][(g, 'bien')] for g in 'ERT')} de {sum(nota[v][(g, 'casos')] for g in 'ERT')}")
+        print(f"  {v:9} " + " · ".join(f"{g} {nota[v][(g, 'bien')]} de {nota[v][(g, 'casos')]}" for g in grupos)
+              + f" · total {sum(nota[v][(g, 'bien')] for g in grupos)} de {sum(nota[v][(g, 'casos')] for g in grupos)}")
     print(f"Gasto: {libro_paga.gastado(libro_paga._hoy()) - desde:.3f} dolares")
 
 
