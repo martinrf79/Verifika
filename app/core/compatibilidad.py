@@ -166,10 +166,13 @@ def plataformas_del_mensaje(mensaje: str,
     v = vocabulario(tienda_id)
     out: list[str] = []
     for alias in sorted(v["alias_plataforma"], key=len, reverse=True):
-        if re.search(r"\b" + re.escape(alias) + r"\b", m):
+        patron = r"\b" + re.escape(alias) + r"\b"
+        if re.search(patron, m):
             for pid in sorted(v["alias_plataforma"][alias]):
                 if pid not in out:
                     out.append(pid)
+            # LO LEIDO NO SE LEE DOS VECES: en "tablet android", "tablet" ya es parte de lo dicho y no suma el iPad.
+            m = re.sub(patron, " ", m)
     return out
 
 

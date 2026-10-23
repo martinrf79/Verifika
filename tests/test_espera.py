@@ -29,7 +29,20 @@ COMPAT_RAM = {"preguntas": [{"n": 1, "cita": "la Fury DDR4 le sirve a mi pc de e
                              "producto": "Kingston Fury Beast DDR4 16GB", "con": "pc de escritorio",
                              "falta_modelo": True}]}
 
+# COMO LO TRADUJO EL MODELO DE PRODUCCION el 23-oct, `banco_pruebas/espera_vivo.py`: la memoria sin "falta_modelo", la
+# respuesta marcada con "responde" y sus palabras en el mensaje, no en la consulta.
+RAM_VIVO = {"preguntas": [{"n": 1, "cita": "Kingston Fury Beast DDR4 16GB", "accion": "compatibilidad",
+                           "producto": "Kingston Fury Beast DDR4 16GB", "con": "pc de escritorio"}]}
+SAMSUNG_VIVO = {"preguntas": [{"n": 1, "cita": "teclado Logitech K380", "accion": "compatibilidad",
+                               "producto": "teclado Logitech K380", "con": "teclado Logitech K380"}],
+                "responde": "R-1", "respuesta": "la ultima de Samsung"}
+ANDROID_VIVO = {"preguntas": [{"n": 1, "cita": "teclado Logitech K380", "accion": "compatibilidad",
+                               "producto": "teclado Logitech K380", "con": "tablet Android"}]}
+
 CHARLAS = {
+    "ram_vivo": [RAM_VIVO],
+    "samsung_vivo": [COMPAT_TABLET, SAMSUNG_VIVO],
+    "android_vivo": [COMPAT_TABLET, ANDROID_VIVO],
     "ipad": [COMPAT_IPAD],
     "ram": [COMPAT_RAM],
     "tablet_samsung": [COMPAT_TABLET, SAMSUNG],
@@ -68,6 +81,15 @@ def test_cada_pregunta_con_su_espera():
     r = _correr("ram")
     assert "modelo" in r[0] and "?" in r[0] and "anda con" not in r[0], r
     bien.append("ram")
+
+    r = _correr("ram_vivo")
+    assert "modelo" in r[0] and "?" in r[0] and "anda con" not in r[0], r
+    bien.append("ram_vivo")
+
+    for n in ("samsung_vivo", "android_vivo"):
+        r = _correr(n)
+        assert "Android" in r[1] and "anda con" in r[1] and "iPad" not in r[1], r
+        bien.append(n)
 
     r = _correr("tablet_samsung")
     assert "Android" in r[0] and "iPad" in r[0] and "?" in r[0], r

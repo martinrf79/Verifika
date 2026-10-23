@@ -93,8 +93,11 @@ def libreta(estado: dict, historial: list, tienda_id: str) -> str:
         r.append("- CLIENTE: " + ", ".join(f"{k} {v}" for k, v in b["cliente"].items() if v))
     abiertas = [(k, v) for k, v in nums.items() if k[0] == "R"]
     if abiertas:
+        # Lo que espera la pregunta, si la espera: contestarla no es decidir una compra.
         r += ["- ABIERTO, lo que el vendedor pregunto:"] + [
-            f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}' for k, v in abiertas]
+            f'  {k} "{v["texto"]}", para: {v.get("cita") or ""}'
+            + (", espera: que equipo tiene, no es una compra" if (v.get("espera") or {}).get("tipo") == "equipo" else "")
+            for k, v in abiertas]
     charla = [m for m in historial if m.get("role") in ("user", "assistant")][-2:]
     if charla:
         # Del cliente, el principio; del vendedor, el final, que es donde pregunta: las listas ya estan arriba.

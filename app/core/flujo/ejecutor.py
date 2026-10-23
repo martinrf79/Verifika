@@ -404,18 +404,22 @@ def _buscar(t: Turno, p: dict):
 
 
 def _compatibilidad(t: Turno, p: dict):
-    from app.core.compatibilidad import plataformas_del_mensaje, va_adentro
+    from app.core.compatibilidad import conectores_del_mensaje, plataformas_del_mensaje, va_adentro
     from app.core.guia_venta_prosa import mensaje
     con = str(p.get("con") or "")
     nombres = _nombres(t, p.get("producto"))
     unico = nombres[0] if len({_modelo(n, t.tienda) for n in nombres}) == 1 else ""
     idt = K.identificar(unico, "", t.tienda) if unico else {"veredicto": ""}
+    existe = idt["veredicto"] == "exists"
+    # LO QUE VA ADENTRO DEL EQUIPO PIDE SU MODELO: una memoria depende de la ranura de la placa, no de "PC". Salvo que
+    # el cliente ya haya dicho la ranura o el zocalo.
+    adentro = existe and va_adentro(idt["producto"], t.tienda) and not conectores_del_mensaje(con, t.tienda)
     # EL EQUIPO DEL VOCABULARIO NO PIDE MODELO: "mi iPad" ya dice con que juzgar un teclado Bluetooth. Se pregunta el
-    # modelo si el equipo no esta en el vocabulario, si el producto no es uno, si va adentro del equipo —una memoria
-    # pide la ranura de la placa, no "PC"— o si la tabla no alcanza para decir que si, que no o entre cuales.
-    if _si(p.get("falta_modelo")) and not (idt["veredicto"] == "exists" and plataformas_del_mensaje(con, t.tienda)
-                                           and not va_adentro(idt["producto"], t.tienda)
-                                           and _veredicto(t, idt["producto"], con) in ("compatible", "incompatible", "ambiguo")):
+    # modelo si el equipo no esta en el vocabulario, si el producto no es uno o si la tabla no alcanza para decir que
+    # si, que no o entre cuales.
+    conocido = existe and plataformas_del_mensaje(con, t.tienda) \
+        and _veredicto(t, idt["producto"], con) in ("compatible", "incompatible", "ambiguo")
+    if adentro or (_si(p.get("falta_modelo")) and not conocido):
         t.preguntar(f"¿Qué modelo es tu {con}? Con eso te confirmo qué le sirve.",
                     espera={"tipo": "equipo", "producto": unico, "con": con, "opciones": []})
         return None
@@ -426,15 +430,19 @@ def _compatibilidad(t: Turno, p: dict):
         if nombre:
             t.preguntar(f"¿Qué {nombre} decís, el modelo exacto?")
         return None
-    r = t.herramienta("compatibilidad", producto=str(idt["producto"]["id"]), con=con)
+    prod = idt["producto"]
+    r = t.herramienta("compatibilidad", producto=str(prod["id"]), con=con)
     vs = [v for v in _lista(r.get("compatibilidad")) if isinstance(v, dict)]
     for v in [v for v in vs if v.get("veredicto") == "ambiguo"]:
         # UN EQUIPO QUE PUEDE SER VARIOS SE PREGUNTA, y la pregunta espera uno de ellos: "mi tablet", Android o iPad.
-        t.preguntar(mensaje("compat_cual_equipo", "¿Tu {equipo} es {opciones}?", equipo=con,
-                            opciones=" o ".join(v.get("candidatos") or [])),
-                    espera={"tipo": "equipo", "producto": idt["producto"]["nombre"], "con": con,
+        t.preguntar(mensaje("compat_cual_equipo", "¿Tu {equipo} es {opciones}? Con eso te confirmo si el {producto} "
+                            "le sirve.", equipo=con, opciones=" o ".join(v.get("candidatos") or []),
+                            producto=prod["nombre"]),
+                    espera={"tipo": "equipo", "producto": prod["nombre"], "con": con,
                             "opciones": plataformas_del_mensaje(con, t.tienda)})
     t.hechos += [{"tipo": "compat", **v} for v in vs if v.get("veredicto") != "ambiguo"]
+    # El cliente leyo el producto, en la respuesta o en la pregunta: "ese" lo senala despues.
+    mostrar(t.estado, [prod])
     veredictos = {v.get("veredicto") for v in vs}
     return True if "compatible" in veredictos else (False if "incompatible" in veredictos else None)
 
@@ -751,38 +759,53 @@ def _palabras_de(p: dict) -> str:
 def atar_esperas(agenda: dict, t: Turno) -> None:
     """LA RESPUESTA CORTA SE ATA A LO QUE ESPERA LA PREGUNTA DEL BOT, y se controla contra la fuente antes de seguir.
     "¿Tu tablet es Android o iPad?" -> "la ultima de Samsung" es un equipo Android: se juzga la compatibilidad que se
-    estaba preguntando, no se buscan tablets Samsung. Lo que nombra un equipo que no es ninguno de los esperados se dice
-    y se vuelve a preguntar, si el modelo dijo que contesta esa pregunta; si no, es otro tema y la agenda queda."""
+    estaba preguntando, no se buscan tablets Samsung. Si el modelo dice que el mensaje contesta esa pregunta, la
+    respuesta es el mensaje, leido solo contra el vocabulario cerrado de la espera; si no lo dice, cada consulta corta
+    por sus palabras. Lo que nombra un equipo que no es ninguno de los esperados se dice y se vuelve a preguntar, si
+    contesta esa pregunta; si no, es otro tema y la agenda queda."""
     from app.core.compatibilidad import _norm, etiqueta_plataforma, plataformas_del_mensaje
+    from app.core.guia_venta_prosa import mensaje
     abiertas = [(f"R-{i}", a) for i, a in enumerate(t.estado["abiertas"], 1)
                 if (a.get("espera") or {}).get("tipo") == "equipo"]
     ps = A.preguntas(agenda)
-    if not abiertas or any(p.get("accion") not in _CORTAS for p in ps):
+    cortas = [p for p in ps if p.get("accion") in _CORTAS]
+    if not abiertas or not cortas or not isinstance(agenda, dict):
         return
     responde = str(agenda.get("responde") or next((p.get("responde") for p in ps if p.get("responde")), "") or "")
     r, a = next(((r, a) for r, a in abiertas if r == responde), abiertas[-1])
     e = a["espera"]
-    if not e.get("producto"):
+    if not e.get("producto") or not e.get("con"):
         return
-    for p in ps:
+    if r == responde and agenda.get("respuesta"):
+        tramos = [(cortas, str(agenda["respuesta"]))]
+    elif len(cortas) == len(ps):
+        tramos = [([p], _palabras_de(p)) for p in cortas]
+    else:
+        return
+    sobran = []
+    for grupo, texto in tramos:
         # El equipo de la pregunta no contesta: "la tablet Samsung" dice Samsung, "tablet" ya estaba.
-        dicho = plataformas_del_mensaje(re.sub(r"\b" + re.escape(_norm(e["con"])) + r"s?\b", " ",
-                                               _norm(_palabras_de(p))), t.tienda) if e["con"] else []
+        dicho = plataformas_del_mensaje(re.sub(r"\b" + re.escape(_norm(e["con"])) + r"s?\b", " ", _norm(texto)),
+                                        t.tienda)
         cumple = [x for x in dicho if not e["opciones"] or x in e["opciones"]]
+        p = grupo[0]
         n, cita = p.get("n"), p.get("cita")
         if len(cumple) == 1:
             p.clear()
-            p.update({"n": n, "cita": cita, "accion": "compatibilidad", "producto": e["producto"],
-                      "con": cumple[0]})
+            p.update({"n": n, "cita": cita, "accion": "compatibilidad", "producto": e["producto"], "con": cumple[0]})
         elif dicho and not cumple and r == responde:
             p.clear()
             p.update({"n": n, "cita": cita, "accion": "otro", "que": "dato"})
             t.n = n
-            from app.core.guia_venta_prosa import mensaje
             dijo = etiqueta_plataforma(dicho[0], t.tienda)
             t.hechos.append({"tipo": "no_es", "n": n, "texto": mensaje(
-                "compat_no_es_el_equipo", "{dicho} no es tu {equipo}.", dicho=dijo[:1].upper() + dijo[1:], equipo=e["con"])})
+                "compat_no_es_el_equipo", "{dicho} no es tu {equipo}.", dicho=dijo[:1].upper() + dijo[1:],
+                equipo=e["con"])})
             t.preguntar(a["texto"], espera=e)
+        else:
+            continue
+        sobran += [id(x) for x in grupo[1:]]
+    agenda["preguntas"] = [x for x in agenda["preguntas"] if id(x) not in sobran]
 
 
 def _derivar(t: Turno) -> None:

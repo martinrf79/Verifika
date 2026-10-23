@@ -447,4 +447,7 @@ def a_agenda(ficha: dict, estado: dict, tienda_id: str, mensaje: str = "") -> di
         pregunta("cuenta", "el pedido")
     if not ps:
         pregunta("otro", "el mensaje", que="dato" if cliente else "saludo")
-    return {"preguntas": ps, "cliente": cliente, "responde": responde, "dudas": [d for d in map(_dicho, _lista(ficha.get("dudas"))) if d]}
+    # LO QUE CONTESTA UNA PREGUNTA DEL BOT va con sus palabras: el ejecutor las lee solo contra lo que esa pregunta
+    # espera, un vocabulario cerrado, `ejecutor.atar_esperas`.
+    return {"preguntas": ps, "cliente": cliente, "responde": responde, "respuesta": mensaje if responde else "",
+            "dudas": [d for d in map(_dicho, _lista(ficha.get("dudas"))) if d]}
