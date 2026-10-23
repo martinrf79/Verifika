@@ -68,16 +68,19 @@ class Turno:
         self.propuesta = {}  # lo propuesto con que llego el turno: vale solo para este
         self.sueltas = []  # lo que el candado no pudo resolver: lo puede contestar el vendedor, controlado
         self.normal = []  # las reglas de la forma normal que se aplicaron a la agenda
+        self.esperas = {}  # lo que espera cada pregunta del bot: queda con ella en `estado.abiertas`
 
     def herramienta(self, nombre: str, **args) -> dict:
         r = agente.ejecutar(nombre, args, self.tienda)
         self.llamadas.append({"herramienta": nombre, "args": args, "vuelve": r})
         return r
 
-    def preguntar(self, texto: str) -> None:
+    def preguntar(self, texto: str, espera: dict = None) -> None:
         if texto not in self.preguntas:
             self.preguntas.append(texto)
             self.de[texto] = self.n
+        if espera:
+            self.esperas[texto] = espera
 
     # ── productos ────────────────────────────────────────────────────────────
 
@@ -401,20 +404,54 @@ def _buscar(t: Turno, p: dict):
 
 
 def _compatibilidad(t: Turno, p: dict):
-    if _si(p.get("falta_modelo")):
-        t.preguntar(f"¿Qué modelo es tu {p.get('con')}? Con eso te confirmo qué le sirve.")
+    from app.core.compatibilidad import plataformas_del_mensaje
+    con = str(p.get("con") or "")
+    nombres = _nombres(t, p.get("producto"))
+    unico = nombres[0] if len({_modelo(n, t.tienda) for n in nombres}) == 1 else ""
+    idt = K.identificar(unico, "", t.tienda) if unico else {"veredicto": ""}
+    # EL EQUIPO DEL VOCABULARIO NO PIDE MODELO: "mi iPad" ya dice con que juzgar un teclado Bluetooth. Se pregunta el
+    # modelo si el equipo no esta en el vocabulario, si el producto no es uno, si va adentro del equipo —una memoria
+    # pide la ranura de la placa, no "PC"— o si la tabla no alcanza para decir que si, que no o entre cuales.
+    if _si(p.get("falta_modelo")) and not (idt["veredicto"] == "exists" and plataformas_del_mensaje(con, t.tienda)
+                                           and not _va_adentro(idt["producto"], t.tienda)
+                                           and _veredicto(t, idt["producto"], con) in ("compatible", "incompatible", "ambiguo")):
+        t.preguntar(f"¿Qué modelo es tu {con}? Con eso te confirmo qué le sirve.",
+                    espera={"tipo": "equipo", "producto": unico, "con": con, "opciones": []})
         return None
     nombre = _uno(t, p.get("producto"))
-    idt = K.identificar(nombre, "", t.tienda) if nombre else {"veredicto": ""}
+    if nombre != unico:
+        idt = K.identificar(nombre, "", t.tienda) if nombre else {"veredicto": ""}
     if idt["veredicto"] != "exists":
         if nombre:
             t.preguntar(f"¿Qué {nombre} decís, el modelo exacto?")
         return None
-    r = t.herramienta("compatibilidad", producto=str(idt["producto"]["id"]), con=str(p.get("con") or ""))
+    r = t.herramienta("compatibilidad", producto=str(idt["producto"]["id"]), con=con)
     vs = [v for v in _lista(r.get("compatibilidad")) if isinstance(v, dict)]
-    t.hechos += [{"tipo": "compat", **v} for v in vs]
+    for v in [v for v in vs if v.get("veredicto") == "ambiguo"]:
+        # UN EQUIPO QUE PUEDE SER VARIOS SE PREGUNTA, y la pregunta espera uno de ellos: "mi tablet", Android o iPad.
+        t.preguntar(f"¿Tu {con} es {' o '.join(v.get('candidatos') or [])}?",
+                    espera={"tipo": "equipo", "producto": idt["producto"]["nombre"], "con": con,
+                            "opciones": plataformas_del_mensaje(con, t.tienda)})
+    t.hechos += [{"tipo": "compat", **v} for v in vs if v.get("veredicto") != "ambiguo"]
     veredictos = {v.get("veredicto") for v in vs}
     return True if "compatible" in veredictos else (False if "incompatible" in veredictos else None)
+
+
+# Lo que va adentro del equipo depende de su placa: el zocalo, las ranuras y el formato. Familias del vocabulario.
+_ADENTRO = re.compile(r"^(socket|ranura_|formato_)")
+
+
+def _va_adentro(p: dict, tienda_id: str) -> bool:
+    from app.core.compatibilidad import compat_de, vocabulario
+    familias = vocabulario(tienda_id)["familias"]
+    return any(_ADENTRO.match(familias.get(c, "")) for c in compat_de(p, tienda_id).get("requiere") or [])
+
+
+def _veredicto(t: Turno, p: dict, con: str) -> str:
+    """Lo que diria la tabla, sin anotarlo: para saber si hace falta preguntar el modelo."""
+    vs = [v for v in _lista(agente.ejecutar("compatibilidad", {"producto": str(p["id"]), "con": con}, t.tienda)
+                            .get("compatibilidad")) if isinstance(v, dict)]
+    return vs[0].get("veredicto") if len(vs) == 1 else ""
 
 
 def _politica(t: Turno, p: dict):
@@ -639,6 +676,7 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None, elegida:
     t.propuesta = estado["borrador"]["propuesta"]
     t.nums, t.explicar = numeros(estado), explicar
     # LA FORMA NORMAL: lo que dijo el modelo, en la forma que se cumple aca. Ver `normal.py`.
+    atar_esperas(agenda, t)
     agenda, t.normal = normalizar(agenda, estado, tienda_id, t.nums)
     cliente = agenda.get("cliente") if isinstance(agenda.get("cliente"), dict) else {}
     estado["borrador"]["cliente"].update({k: v for k, v in cliente.items() if v and k in ("localidad", "nombre", "es")})
@@ -704,8 +742,52 @@ def ejecutar(agenda: dict, estado: dict, tienda_id: str, explicar=None, elegida:
             t.estados[n] = "sin_estado"
     t.hechos.sort(key=lambda h: h.get("n", 0))
     citas = {p["n"]: str(p.get("cita") or "") for p in preguntas}
-    estado["abiertas"] = [{"texto": q, "cita": citas.get(t.de.get(q), "")} for q in t.preguntas]
+    estado["abiertas"] = [{"texto": q, "cita": citas.get(t.de.get(q), ""),
+                           **({"espera": t.esperas[q]} if q in t.esperas else {})} for q in t.preguntas]
     return t
+
+
+# Lo que puede ser una respuesta corta: lo que cambia el pedido o la plata no contesta una pregunta del bot.
+_CORTAS = ("buscar", "producto", "otro", "compatibilidad", "explicar")
+
+
+def _palabras_de(p: dict) -> str:
+    return " ".join(str(v) for k in ("cita", "rubro", "producto", "con", "quiere_saber", "condiciones", "que")
+                    for v in _lista(p.get(k)) if not A._REF.match(str(v)))
+
+
+def atar_esperas(agenda: dict, t: Turno) -> None:
+    """LA RESPUESTA CORTA SE ATA A LO QUE ESPERA LA PREGUNTA DEL BOT, y se controla contra la fuente antes de seguir.
+    "¿Tu tablet es Android o iPad?" -> "la ultima de Samsung" es un equipo Android: se juzga la compatibilidad que se
+    estaba preguntando, no se buscan tablets Samsung. Lo que nombra un equipo que no es ninguno de los esperados se dice
+    y se vuelve a preguntar, si el modelo dijo que contesta esa pregunta; si no, es otro tema y la agenda queda."""
+    from app.core.compatibilidad import _norm, etiqueta_plataforma, plataformas_del_mensaje
+    abiertas = [(f"R-{i}", a) for i, a in enumerate(t.estado["abiertas"], 1)
+                if (a.get("espera") or {}).get("tipo") == "equipo"]
+    ps = A.preguntas(agenda)
+    if not abiertas or any(p.get("accion") not in _CORTAS for p in ps):
+        return
+    responde = str(agenda.get("responde") or next((p.get("responde") for p in ps if p.get("responde")), "") or "")
+    r, a = next(((r, a) for r, a in abiertas if r == responde), abiertas[-1])
+    e = a["espera"]
+    if not e.get("producto"):
+        return
+    for p in ps:
+        # El equipo de la pregunta no contesta: "la tablet Samsung" dice Samsung, "tablet" ya estaba.
+        dicho = plataformas_del_mensaje(re.sub(r"\b" + re.escape(_norm(e["con"])) + r"s?\b", " ",
+                                               _norm(_palabras_de(p))), t.tienda) if e["con"] else []
+        cumple = [x for x in dicho if not e["opciones"] or x in e["opciones"]]
+        n, cita = p.get("n"), p.get("cita")
+        if len(cumple) == 1:
+            p.clear()
+            p.update({"n": n, "cita": cita, "accion": "compatibilidad", "producto": e["producto"],
+                      "con": cumple[0]})
+        elif dicho and not cumple and r == responde:
+            p.clear()
+            p.update({"n": n, "cita": cita, "accion": "otro", "que": "dato"})
+            t.n = n
+            t.hechos.append({"tipo": "no_es", "dicho": etiqueta_plataforma(dicho[0], t.tienda), "con": e["con"], "n": n})
+            t.preguntar(a["texto"], espera=e)
 
 
 def _derivar(t: Turno) -> None:

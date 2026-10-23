@@ -8,8 +8,9 @@ Es lo unico que pasa de un turno al siguiente, ademas del historial. Vive en el 
               de todo lo que la charla construye, FICHA 71: `borrador.py`.
   pedido      lo resuelto del borrador, re-derivado en cada turno: id, nombre, cantidad y destino. No se escribe a mano.
   busqueda    la ultima busqueda: rubro, condiciones en palabras y orden.
-  abiertas    lo que el vendedor pregunto y el cliente no contesto: [{"texto", "cita", "pregunta"}]. Es la R de la
-              libreta: la respuesta del turno siguiente se ata a la pregunta que la pidio.
+  abiertas    lo que el vendedor pregunto y el cliente no contesto: [{"texto", "cita", "espera"}]. Es la R de la
+              libreta: la respuesta del turno siguiente se ata a la pregunta que la pidio. "espera" dice que respuesta
+              sirve —{"tipo": "equipo", "producto", "con", "opciones"}— y `ejecutor.atar_esperas` la controla.
 """
 from app.core.calculadora import _money as _plata
 

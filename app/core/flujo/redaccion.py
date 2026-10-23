@@ -90,6 +90,7 @@ RENGLONES = {
     "lista": _lista,
     "no_vende": lambda h: [f"No tengo {h['que']} en la tienda."],
     "compat": lambda h: [h.get("motivo") or f"{h.get('nombre')}: {h.get('veredicto')}."],
+    "no_es": lambda h: [f"{h['dicho'][:1].upper()}{h['dicho'][1:]} no es tu {h['con']}."],
     "politica": lambda h: [h["texto"]],
     "sin_politica": lambda h: ["Sobre eso no tengo información escrita."],
     "pedido": lambda h: ["Te anoto: " + ", ".join(f"{a['cantidad']}x {a['nombre']}"

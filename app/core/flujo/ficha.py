@@ -447,4 +447,4 @@ def a_agenda(ficha: dict, estado: dict, tienda_id: str, mensaje: str = "") -> di
         pregunta("cuenta", "el pedido")
     if not ps:
         pregunta("otro", "el mensaje", que="dato" if cliente else "saludo")
-    return {"preguntas": ps, "cliente": cliente, "dudas": [d for d in map(_dicho, _lista(ficha.get("dudas"))) if d]}
+    return {"preguntas": ps, "cliente": cliente, "responde": responde, "dudas": [d for d in map(_dicho, _lista(ficha.get("dudas"))) if d]}
