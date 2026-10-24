@@ -125,6 +125,8 @@ def _votos(casos: list) -> collections.Counter:
 
 
 CORTA = 4  # palabras: una respuesta corta a lo que pregunto el vendedor
+_TOPE = re.compile(r"\b(no pase de|no pasar de|no me quiero pasar|no quiero gastar mas|hasta|como mucho|maximo|tope)\b")
+_TOTAL = re.compile(r"\b(todo|total|en total)\b")
 
 
 def resolver(partes: list, inf: list, et: list, abierta: bool = False) -> tuple:
@@ -136,9 +138,24 @@ def resolver(partes: list, inf: list, et: list, abierta: bool = False) -> tuple:
         return et, True
     out, duda = [], False
     lleva = any(e.get("respuesta") in ("anotar", "cambiar", "opciones") for e in et)
+    busca = any(e.get("respuesta") in ("opciones", "cambiar") for e in et)
     for p, x, e in zip(partes, inf, et):
         fam = FAMILIA.get(p.get("modo"), set())
         r = e.get("respuesta")
+        txt = LI.K.n(p.get("cliente") or "")
+        tops = LI.primeros(x["pedido"])
+        # UN CRITERIO SOBRE LO QUE YA ESTA EN EL PEDIDO cambia esos renglones: "anda por lo mas economico en todo", "los de
+        # musica que sean de marca conocida". Sin renglon, decidir opciones es elegir algo nuevo.
+        if p.get("modo") == "decide" and r == "opciones" and any(k.startswith("L-") for k in tops):
+            out.append({**e, "respuesta": "cambiar", "antes": r})
+            continue
+        # UN TOPE SUELTO junto a lo que busca es condicion de esa busqueda; el tope del total, "en total", es la cuenta.
+        if r == "cuenta" and busca and _TOPE.search(txt) and not _TOTAL.search(txt):
+            continue
+        # CUANTO SALE TODO, con el envio adentro, es la cuenta.
+        if r == "envio" and _TOTAL.search(txt):
+            out.append({**e, "respuesta": "cuenta", "antes": r})
+            continue
         if r in fam:
             out.append(e)
             continue
@@ -150,9 +167,7 @@ def resolver(partes: list, inf: list, et: list, abierta: bool = False) -> tuple:
                 continue
             out.append({**e, "respuesta": "cambiar", "antes": r})
             continue
-        tops = LI.primeros(x["pedido"])
         votos = [(v, n) for v, n in _votos(x["casos"]).most_common() if v in fam]
-        txt = LI.K.n(p.get("cliente") or "")
         if p.get("modo") == "decide" and any(k.startswith("L-") for k in tops):
             nueva = "sacar" if _SACA.search(txt) else "cambiar"
         elif len(fam) == 1:
