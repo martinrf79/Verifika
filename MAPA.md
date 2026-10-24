@@ -72,6 +72,11 @@ permiso.
 | Los siete casos de producción, charla entera por el camino vivo, con su piso | `banco_pruebas/pedido_documento/prod7_ficha.py` |
 | Qué toca de la tienda cada parte: rubros y temas, productos y campos, por palabras y por significado, FICHA 77 | `banco_pruebas/cobertura.py`, `banco_pruebas/cobertura_capas.py` |
 | El acto de cada parte sobre las 48, con la consigna unida y las reglas del código, FICHA 77 | `banco_pruebas/actos.py` |
+| Los seis candidatos por significado sobre la primera traducción, en las 48 y las 58, FICHA 78 | `banco_pruebas/candidatos.py` |
+| La respuesta de la tienda que pide cada parte: las tres listas, la información A, las pistas y las dos llamadas, FICHA 78 | `banco_pruebas/respuestas.py` |
+| La traducción sola, la atadura y la salida, con las cien difíciles y el examen, FICHA 78 | `banco_pruebas/traduccion_sola.py`, `traduccion_dificil.py`, `traduccion_tercera.py` |
+| Las entrevistas al modelo sobre cómo traduce y por qué falla, FICHA 78 | `banco_pruebas/entrevista_traduccion.py` |
+| El acto armado por el código y la segunda vuelta con candidatos, descartados, FICHA 78 | `banco_pruebas/modos.py`, `banco_pruebas/etiqueta.py` |
 | Lo que ya contestó el modelo, sin volver a pagarlo | `banco_pruebas/libro_paga.py`, `respuestas_modelo.jsonl` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |
