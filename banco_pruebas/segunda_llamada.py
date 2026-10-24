@@ -19,10 +19,12 @@ import asyncio
 import collections
 import json
 import os
+import re
 import sys
 
 ARGS = sys.argv[1:]
 VER = "--ver" in ARGS
+PRUDENTE = "--prudente" in ARGS  # el codigo resuelve el choque solo con evidencia fuerte; lo demas se confirma
 sys.argv = [sys.argv[0]]
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
@@ -111,11 +113,71 @@ def coincide(partes: list, inf: list, et: list) -> str:
     return ""
 
 
+# ══ EL CHOQUE, RESUELTO POR EL CODIGO ════════════════════════════════════════
+
+_SACA = re.compile(r"\b(saca|sacale|sacame|quita|quitale|sin el|sin la|sin los|sin las|al final no|dejalo afuera|"
+                   r"no va|no lo quiero|no la quiero)\b")
+
+
+def _votos(casos: list) -> collections.Counter:
+    """Las respuestas de los casos traidos: "... -> anotar + cuenta" vota anotar y cuenta."""
+    return collections.Counter(r.strip() for c in casos for r in c.rsplit("->", 1)[-1].split("+"))
+
+
+CORTA = 4  # palabras: una respuesta corta a lo que pregunto el vendedor
+
+
+def resolver(partes: list, inf: list, et: list, abierta: bool = False) -> tuple:
+    """Lo que haria un vendedor cuando el modo y la etiqueta no encajan: se queda con lo que el cliente HACE —el modo— y
+    elige dentro de eso con lo que tiene. Decidir sobre un renglon del pedido es cambiar, o sacar si lo dice; decidir sin
+    renglon es anotar si nombra algo concreto, y si no, lo que voten los casos. Una pregunta va a lo que voten los casos
+    entre las preguntas. Devuelve (la etiqueta resuelta, si quedo duda): sin regla ni voto, se confirma."""
+    if len(partes) != len(et):
+        return et, True
+    out, duda = [], False
+    lleva = any(e.get("respuesta") in ("anotar", "cambiar", "opciones") for e in et)
+    for p, x, e in zip(partes, inf, et):
+        fam = FAMILIA.get(p.get("modo"), set())
+        r = e.get("respuesta")
+        if r in fam:
+            out.append(e)
+            continue
+        # EL DESTINO SUELTO: decidir a donde va es un detalle de lo que lleva en el mismo mensaje; sin nada mas, cambia el
+        # pedido. Una respuesta corta a lo que pregunto el vendedor —"a Bahia Blanca"— no se toca: Martin, 24-oct, es envio.
+        corta = len(str(p.get("cliente") or "").split()) <= CORTA and abierta
+        if p.get("modo") == "decide" and r in ("envio", "dato_cliente", "nada") and p.get("destino") and not corta:
+            if lleva:
+                continue
+            out.append({**e, "respuesta": "cambiar", "antes": r})
+            continue
+        tops = LI.primeros(x["pedido"])
+        votos = [(v, n) for v, n in _votos(x["casos"]).most_common() if v in fam]
+        txt = LI.K.n(p.get("cliente") or "")
+        if p.get("modo") == "decide" and any(k.startswith("L-") for k in tops):
+            nueva = "sacar" if _SACA.search(txt) else "cambiar"
+        elif len(fam) == 1:
+            nueva = next(iter(fam))
+        elif PRUDENTE:
+            out.append(e)
+            duda = True
+            continue
+        elif p.get("modo") == "decide" and any(k.startswith("M-") for k in tops):
+            nueva = "anotar"
+        elif votos:
+            nueva = votos[0][0]
+        else:
+            out.append(e)
+            duda = True
+            continue
+        out.append({**e, "respuesta": nueva, "antes": r})
+    return out, duda
+
+
 def main() -> None:
     todos = MC.cargar()
     desde = libro_paga.gastado(libro_paga._hoy())
     nota = collections.Counter()
-    faltas = []
+    faltas, cambios = [], []
     with open(SALIDA, "w", encoding="utf-8") as fh:
         for fuente, cid, msg, estado, lib, turno, _ in LI.turnos():
             if libro_paga.gastado(libro_paga._hoy()) - desde >= TOPE:
@@ -127,6 +189,17 @@ def main() -> None:
                 et = asyncio.run(etiquetar(msg, lib, partes, inf)) if partes else []
                 por = coincide(partes, inf, et) if et else "sin salida"
             ok = bool(et) and DL.bien(turno, et)
+            # Lo mismo con el choque resuelto por el codigo: solo confirma lo que no resuelve, o la duda de la llamada 1.
+            er, queda = resolver(partes, inf, et, bool(estado.get("abiertas"))) if et else (et, True)
+            ok_r = bool(er) and DL.bien(turno, er)
+            conf_r = queda or por in ("duda", "partes", "sin salida")
+            nota[(fuente, "resuelto bien")] += ok_r
+            nota[(fuente, "resuelto sigue mal")] += (not ok_r) and not conf_r
+            nota[(fuente, "resuelto confirma")] += conf_r
+            nota[(fuente, "resuelto arregla")] += ok_r and not ok
+            nota[(fuente, "resuelto rompe")] += ok and not ok_r
+            if ok != ok_r:
+                cambios.append((fuente, cid, msg, turno, et, er, ok_r))
             nota[(fuente, "casos")] += 1
             nota[(fuente, "bien")] += ok
             nota[(fuente, "sigue bien")] += ok and not por
@@ -151,6 +224,16 @@ def main() -> None:
               f"SIGUE MAL {nota[(f, 'sigue mal')]} · confirma {nota[(f, 'confirma')]}, de esas estaba mal "
               f"{nota[(f, 'confirma y estaba mal')]}")
     print("  confirma por: " + (", ".join(f"{k[1]} {v}" for k, v in nota.items() if k[0] == "por" and v) or "nada"))
+    print("  CON EL CHOQUE RESUELTO POR EL CODIGO:")
+    for f in ("48", "58"):
+        print(f"    las {f}: BIEN {nota[(f, 'resuelto bien')]} de {nota[(f, 'casos')]} · SIGUE MAL "
+              f"{nota[(f, 'resuelto sigue mal')]} · confirma {nota[(f, 'resuelto confirma')]} · arregla "
+              f"{nota[(f, 'resuelto arregla')]}, rompe {nota[(f, 'resuelto rompe')]}")
+    if VER:
+        for fuente, cid, msg, turno, et, er, ok_r in cambios:
+            print(f"--- {fuente} {cid} {'ARREGLA' if ok_r else 'ROMPE'}: {A.limpio(msg)[:140]}\n    vale {turno['valen'][0]}")
+            for a, b in zip(et, er):
+                print(f"      {str(a.get('respuesta')):14} -> {str(b.get('respuesta')):14} {str(b.get('entendi'))[:80]}")
     print(f"  cada turno en {SALIDA}")
     print(f"Gasto: {libro_paga.gastado(libro_paga._hoy()) - desde:.3f} dolares")
 
