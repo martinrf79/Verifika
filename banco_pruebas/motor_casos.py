@@ -247,7 +247,10 @@ def vectores(textos: list) -> list:
                 time.sleep(35)
         _VEC.update(zip(faltan[i:i + 90], (d.embedding for d in r.data)))
         os.makedirs(CACHE, exist_ok=True)
-        json.dump(_VEC, open(VECTORES, "w", encoding="utf-8"))
+        # Se escribe aparte y se reemplaza: un corte a mitad de camino no deja el archivo roto.
+        with open(VECTORES + ".tmp", "w", encoding="utf-8") as fh:
+            json.dump(_VEC, fh)
+        os.replace(VECTORES + ".tmp", VECTORES)
     return [_VEC[t] for t in textos]
 
 

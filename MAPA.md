@@ -75,6 +75,7 @@ permiso.
 | Los seis candidatos por significado sobre la primera traducción, en las 48 y las 58, FICHA 78 | `banco_pruebas/candidatos.py` |
 | La respuesta de la tienda que pide cada parte: las tres listas, la información A, las pistas y las dos llamadas, FICHA 78 | `banco_pruebas/respuestas.py` |
 | La traducción sola, la atadura y la salida, con las cien difíciles y el examen, FICHA 78 | `banco_pruebas/traduccion_sola.py`, `traduccion_dificil.py`, `traduccion_tercera.py` |
+| El laboratorio del informe: lo que el codigo sabe de cada parte antes de la segunda llamada —la tienda, el renglon del pedido con sus razones, los casos y las premisas—, sobre la traduccion grabada, FICHA 78 | `banco_pruebas/lab_informe.py` |
 | El motor de casos resueltos: la plantilla igual para toda tienda, llenada y validada con la fuente, y los cinco más parecidos, FICHA 78 | `banco_pruebas/casos_plantilla.py`, `banco_pruebas/motor_casos.py` |
 | Las entrevistas al modelo sobre cómo traduce y por qué falla, FICHA 78 | `banco_pruebas/entrevista_traduccion.py` |
 | El acto armado por el código y la segunda vuelta con candidatos, descartados, FICHA 78 | `banco_pruebas/modos.py`, `banco_pruebas/etiqueta.py` |
