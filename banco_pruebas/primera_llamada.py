@@ -54,18 +54,21 @@ SALIDA = os.path.join(MC.CACHE, "primera_llamada" + ("_base" if BASE else "") + 
 CONSIGNA = """Sos el traductor de una tienda online de tecnologia de Argentina que vende por WhatsApp. No le contestas al
 cliente. Con la LIBRETA de la charla y el ULTIMO MENSAJE, separa el mensaje en partes, una por cada cosa que pide,
 pregunta o dice, en su orden. El destino, el color, la cantidad, para quien es y las condiciones van dentro de su parte:
-nunca son una parte aparte. No juntes en una parte lo que pregunta con lo que decide: "¿hay tres? si hay, llevo tres"
-son dos partes. Por cada parte:
+nunca son una parte aparte. Una parte habla de una sola clase de producto: "dos teclados y dos mouse" son dos partes.
+No juntes en una parte lo que pregunta con lo que decide: "¿hay tres? si hay, llevo tres" son dos partes. Por cada parte:
 - "cliente": las palabras del cliente de esa parte, tal cual, sin cambiar nada.
 - "completa": la parte entera, que se entienda sin leer la charla. Si no repite de que habla —"¿y en blanco?", "lo de
   Rosario", "el de mi hija"—, lo tomas de la libreta. Completar no es cambiar lo que dijo: una pregunta sigue siendo
   pregunta, con su signo, y un pedido sigue siendo pedido.
 - "modo": que hace el cliente con esa parte, uno de estos:
     pregunta       quiere saber algo: un dato, un precio, si anda con algo, cuanto sale el envio, una regla de la tienda
-    pide ver       quiere ver opciones de algo que todavia no eligio: "mostrame", "que tenes", "necesito algo para..."
-    decide         decide algo del pedido: llevar, cambiar, sacar, a donde va, como paga, cuanto quiere gastar
-    cuenta de si   dice algo de si mismo: su nombre, su localidad, el equipo que tiene, para que lo usa
+    pide ver       quiere ver opciones de algo que todavia no eligio: "mostrame", "que tenes", "necesito algo para...",
+                   "¿que me recomendas?"
+    decide         decide algo del pedido: llevar, cambiar, sacar, a donde va, como paga, cuanto quiere gastar o su
+                   presupuesto, y lo que pide que tenga lo que lleva: "que sean de marca conocida", "que no sea chino"
+    cuenta de si   dice algo de si mismo que no es del pedido: su nombre, su localidad, el equipo que tiene
     nada           saluda, agradece o confirma sin pedir nada
+  Lo que pide que tenga un producto es una condicion de lo que decide, no una pregunta, aunque no lleve verbo.
 - "senala": los numeros de la libreta que nombra o senala —M-2 lo mostrado, L-1 un renglon del pedido, R-1 lo que
   pregunto el vendedor—; [] si ninguno.
 - "destino": a donde va, si lo dice o lo senala; "" si no.
@@ -121,9 +124,16 @@ def notar(fuente: str, cid: str, msg: str, partes: list, inf: list, esperado: li
     LI.notar(fuente, cid, msg, inf, esperado, mapas)
     if fuente == "48":
         quiere, puso = modos_oro(oro), {p.get("modo") or DEL_ACTO.get(p.get("acto")) for p in partes}
+        # Como en la vara de las 58, "nada" no cuenta junto a otra cosa: "Bien, ..." no es una parte que falte.
+        if len(puso) > 1:
+            puso -= {"nada"}
+        valen = [quiere]
+        # La decision de Martin del 23-oct, la de respuestas.valen_48: pedir algo que todavia no eligio es pide ver.
+        if any(x["tipo"] == "AG" and not x.get("cual") for x in oro if not x.get("opt")):
+            valen += [(quiere - {"decide"}) | {"pide ver"}, quiere | {"pide ver"}]
         NOTA[fuente]["modo casos"] += 1
-        NOTA[fuente]["modo bien"] += quiere == puso
-        if quiere != puso:
+        NOTA[fuente]["modo bien"] += puso in valen
+        if puso not in valen:
             FALTAS.append((cid, msg, sorted(quiere), [(p.get("modo") or DEL_ACTO.get(p.get("acto")),
                                                        p.get("cliente") or p.get("texto")) for p in partes]))
     if not BASE:

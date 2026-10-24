@@ -180,9 +180,25 @@ def premisas(parte: dict, estado: dict) -> list:
 
 # ══ EL INFORME ═══════════════════════════════════════════════════════════════
 
+def _nombrado(p: dict, cands: dict) -> dict:
+    """Lo que el modelo nombro en su traduccion, si la tienda lo tiene, va primero; el significado completa. Asi la
+    parte puede conservar las palabras del cliente sin perder el rubro."""
+    from app.core import agente
+    i = agente.indice(TID)
+    validos = {"rubro": set(i["rubros"]), "tema": set(i["temas"])}
+    tipo = {"clase de producto": "rubro", "regla de la tienda": "tema"}
+    out = dict(cands)
+    for x in reversed([x for x in p.get("pide") or [] if isinstance(x, dict)]):
+        capa = tipo.get(K.n(x.get("tipo")))
+        nombre = str(x.get("nombre") or "").replace(" ", "_") if capa == "tema" else str(x.get("nombre") or "")
+        if capa and nombre in validos[capa]:
+            out[capa] = [nombre] + [k for k in out[capa] if k != nombre]
+    return out
+
+
 def informe(partes: list, estado: dict, lib: str, turno: dict, todos: list) -> list:
     mapa = CA.a_renglon(estado)
-    cands = CA.seis(partes, lib, mapa)
+    cands = [_nombrado(p, c) for p, c in zip(partes, CA.seis(partes, lib, mapa))]
     return [{"parte": p.get("texto"), "acto": p.get("acto"), "destino": p.get("destino"),
              "tienda": tienda(str(p.get("texto") or ""), c),
              "pedido": anclar(p, estado, lib, mapa)[:4],
