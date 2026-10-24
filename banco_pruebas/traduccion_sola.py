@@ -21,6 +21,7 @@ calibrado, despues de la entrevista de las fallas: ejemplos, mas una regla por c
 por clase. --dificiles corre las cien de `traduccion_dificil.py`, donde cada cosa que vale tiene que estar.
 duda, la salida abarcativa: calibrado, mas "duda" para lo que no se entiende y la palabra del cliente siempre; portipo,
 duda con una lista cerrada por tipo. --tercera corre las cien de `traduccion_tercera.py`, el examen.
+orden, 24-oct: duda, mas tres frases resueltas de los ordenes raros, "el mas" de algo que no es el precio.
 """
 import asyncio
 import collections
@@ -41,7 +42,7 @@ from app.core.flujo import interprete  # noqa: E402
 
 TID = "verifika_prod"
 TOPE = float(os.environ.get("TOPE_CORRIDA", "0.30"))
-VARIANTES = ("libre", "atado", "salida", "razon", "ejemplos", "calibrado", "duda", "portipo")
+VARIANTES = ("libre", "atado", "salida", "razon", "ejemplos", "calibrado", "duda", "portipo", "orden")
 DIFICILES = "--dificiles" in ARGS
 TERCERA = "--tercera" in ARGS
 DUDA = "duda"
@@ -157,6 +158,16 @@ DUDAS = [
 ]
 
 
+# LOS ORDENES RAROS, 24-oct, paso 1 de la FICHA 78: "el mas" de algo que no es el precio es la caracteristica que
+# ordena, o "otro" si la tienda no la tiene; nunca el mas barato ni el mas caro. Frases nuevas, ninguna de las pruebas.
+ORDENES_RAROS = [
+    ("el que menos lugar ocupe en el escritorio", "caracteristica", "dimensiones"),
+    ("el que mas volumen tenga, es para una fiesta", "caracteristica", "potencia"),
+    ("el mas nuevo que haya salido", "orden", "otro: el mas nuevo"),
+]
+CON_DUDA = ("duda", "portipo", "orden")
+
+
 def consigna(v: str) -> str:
     n = nombres()
     lista = "\n".join(f"- {k}: {', '.join(vs)}" for k, vs in n.items())
@@ -165,12 +176,13 @@ def consigna(v: str) -> str:
     ej = ("\nEJEMPLOS:\n" + "\n".join(
         f'- "{f}" -> {t}: ' + (f'{n.split(": ", 1)[0]}, palabra "{n.split(": ", 1)[1]}"'
                               if n.startswith(("otro:", "duda:")) else n)
-        for f, t, n in EJEMPLOS + (CALIBRA if v in ("calibrado", "duda", "portipo") else [])
-        + (DUDAS if v in ("duda", "portipo") else []))) if v in ("ejemplos", "calibrado", "duda", "portipo") else ""
+        for f, t, n in EJEMPLOS + (CALIBRA if v in ("calibrado",) + CON_DUDA else [])
+        + (DUDAS if v in CON_DUDA else []) + (ORDENES_RAROS if v == "orden" else []))) \
+        if v in ("ejemplos", "calibrado") + CON_DUDA else ""
     reglas = {"libre": REGLA_LIBRE, "atado": REGLA_ATADO}.get(v, REGLA_SALIDA)
-    if v in ("calibrado", "duda", "portipo"):
+    if v in ("calibrado",) + CON_DUDA:
         reglas += "\n" + REGLA_CALIBRADA
-    if v in ("duda", "portipo"):
+    if v in CON_DUDA:
         reglas += "\n" + REGLA_DUDA
     return CONSIGNA.format(reglas=reglas, lista=lista, ejemplos=ej, forma=forma)
 
@@ -180,7 +192,7 @@ def formato(v: str) -> dict:
         return {"type": "json_object"}
     n = nombres()
     todos = sorted({x for vs in n.values() for x in vs}) + ([OTRO] if v != "atado" else []) \
-        + ([DUDA] if v in ("duda", "portipo") else [])
+        + ([DUDA] if v in CON_DUDA else [])
     if v == "portipo":
         tipos = {"clase de producto": n["clases de producto"], "regla de la tienda": n["reglas de la tienda"],
                  "caracteristica": n["caracteristicas"], "orden": n["ordenes"]}
