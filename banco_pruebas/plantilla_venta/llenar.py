@@ -118,13 +118,18 @@ class Fuente:
 
     # ── el catalogo ──────────────────────────────────────────────────────────
 
-    def _corto(self, fam: list) -> str:
-        """El nombre mas corto que la identidad certifica como ese modelo: "G305", no el nombre del catalogo."""
+    def _corto(self, fam: list, nombres: list) -> str:
+        """El nombre mas corto que la identidad certifica como ese modelo: "G305", no el nombre del catalogo. La
+        identidad recorre el catalogo entero en cada llamada: solo se le pregunta por el texto que, palabra por
+        palabra, esta en el nombre de un solo modelo, porque si esta en dos la identidad dice que es ambiguo."""
         p = fam[0]
         palabras = str(p.get("modelo") or "").split()
         for texto in [" ".join(palabras[:i]) for i in range(1, len(palabras) + 1)] + \
                 [f"{p['marca']} " + " ".join(palabras[:i]) for i in range(1, len(palabras) + 1)]:
             if len(texto) < 3 or texto.isdigit():
+                continue
+            pedidas = set(self.K.n(texto).split())
+            if sum(pedidas <= w for w in nombres) != 1:
                 continue
             idt = self.K.identificar(texto, "", self.tid)
             if idt["veredicto"] == "exists" and idt["producto"].get("modelo") == p.get("modelo"):
@@ -136,19 +141,26 @@ class Fuente:
         for p in self.todos:
             if p.get("modelo"):
                 grupos[(p["marca"], p["modelo"], p["categoria"])].append(p)
+        # Las palabras de los nombres de cada modelo, todos sus colores juntos.
+        nombres = [set().union(*(set(self.K.n(p.get("nombre")).split()) for p in ps)) for ps in grupos.values()]
         out = []
         for (marca, modelo, rubro), ps in sorted(grupos.items()):
             con = [p for p in ps if self.K.con_stock(p)]
             if not con:
                 continue
-            corto = self._corto(ps)
+            corto = self._corto(ps, nombres)
             if corto:
                 colores = list(dict.fromkeys(p["color"] for p in con if p.get("color")))
                 out.append({"marca": marca, "modelo": modelo, "rubro": rubro, "corto": corto, "productos": ps,
-                            "colores": colores, "claros": [c for c in colores if self._claro(corto, c)],
-                            "precio": min(int(p.get("precio_ars") or 0) for p in con)})
+                            "colores": colores, "precio": min(int(p.get("precio_ars") or 0) for p in con)})
         # Lo corto primero: el cliente dice "el G305", no el nombre entero del catalogo.
         return sorted(out, key=lambda f: (len(f["corto"].split()), f["rubro"], f["corto"]))
+
+    def claros(self, f: dict) -> list:
+        """Los colores de la familia que, dichos, dejan un solo producto. Se calculan cuando un caso los pide."""
+        if "claros" not in f:
+            f["claros"] = [c for c in f["colores"] if len(f["colores"]) >= 2 and self._claro(f["corto"], c)]
+        return f["claros"]
 
     def _claro(self, corto: str, color: str) -> bool:
         """Un color que, dicho, deja un solo producto: "negro" no lo es si tambien hay "negro y rojo"."""
@@ -215,11 +227,11 @@ class Fuente:
     def valores(self, i: int) -> dict:
         """Los huecos para el caso numero i: rota sobre los rubros que tienen todo lo que un caso pide."""
         aptos = [r for r in self.rubros if len({f["marca"] for f in self.familias if f["rubro"] == r}) >= 2
-                 and any(len(f["claros"]) >= 2 for f in self.familias if f["rubro"] == r)
+                 and any(len(self.claros(f)) >= 2 for f in self.familias if f["rubro"] == r)
                  and self.condiciones(r)]
         rubro = aptos[i % len(aptos)]
         fams = [f for f in self.familias if f["rubro"] == rubro]
-        fam = next(f for f in fams if len(f["claros"]) >= 2)
+        fam = next(f for f in fams if len(self.claros(f)) >= 2)
         fam2 = next(f for f in fams if f["modelo"] != fam["modelo"])
         # El de otro rubro, de un solo color: sumarlo no abre otra pregunta.
         otros = [f for f in self.familias if f["rubro"] != rubro and len(f["colores"]) == 1]
