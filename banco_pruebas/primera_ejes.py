@@ -412,7 +412,20 @@ def un_lugar_por_parte(partes: list) -> bool:
     return hizo
 
 
-REGLAS = (una_cosa_por_parte, reparto_de_lugares, un_lugar_por_parte, ver_con_destino)
+def sin_repetir(partes: list) -> bool:
+    """UNA PARTE IGUAL A OTRA del mismo mensaje es la misma cosa dicha dos veces: se cuenta una."""
+    vistas, hizo = set(), False
+    for p in list(partes):
+        clave = json.dumps({k: p.get(k) for k in ("hace", "sobre", "que", "cantidad", "destino", "variante", "por")},
+                           sort_keys=True, ensure_ascii=False)
+        if clave in vistas:
+            partes.remove(p)
+            hizo = True
+        vistas.add(clave)
+    return hizo
+
+
+REGLAS = (sin_repetir, una_cosa_por_parte, reparto_de_lugares, un_lugar_por_parte, ver_con_destino)
 
 
 def normalizar(salida: dict) -> tuple:
@@ -439,6 +452,11 @@ def _definir(p: dict) -> dict:
     if p.get("si_cumple"):
         p["si_cumple"] = re.sub(r"^(que )?(es|sea|sean|son) ", "", K.n(p["si_cumple"]))
     return p
+
+
+def _sin_envio(q) -> str:
+    """Lo que pregunta del producto sin el envio, que va aparte con su destino: "precio con envio" es el precio."""
+    return re.sub(r"\s*(con|y|mas)\s+(el\s+)?envio\b", "", K.n(q)).strip()
 
 
 def _monto_de(texto) -> int:
@@ -481,6 +499,9 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
         accion = V.cruce(hace, sobre, con=bool(p.get("con")))
         if hace == "pregunta" and sobre == "mostrado" and F._refs(que, nums):
             accion = "producto"  # preguntar por lo que senala de lo mostrado es preguntar por ese producto
+        if accion == "explicar" and p.get("con") and F._rubro(que, TID, str(p.get("rubro") or "")):
+            # QUE LE SIRVE DE UN RUBRO DE LA TIENDA A LO SUYO es compatibilidad, no saber general.
+            accion, que = "compatibilidad", F._rubro(que, TID, str(p.get("rubro") or ""))
         si = si_de(p)
         if accion == "buscar":
             rub = F._rubro(que, TID, str(p.get("rubro") or "")) or "toda la tienda"
@@ -493,11 +514,18 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
             prods = [refs] if len(refs) > 1 else refs or [x.strip() for x in re.split(r"\by\b|,", que) if x.strip()]
             for x in prods or [que]:
                 if accion == "compatibilidad":
-                    pregunta("compatibilidad", cita, i, producto=x, con=p.get("con"),
-                             falta_modelo=bool(re.search(r"\bmi\b", K.n(p.get("con")))), si=si)
+                    # Un equipo dicho sin su modelo —"mi notebook"— pide el modelo; el ejecutor no lo pregunta si el
+                    # equipo esta en su vocabulario, como "Mac".
+                    con = str(p.get("con") or "")
+                    pregunta("compatibilidad", cita, i, producto=x, con=con,
+                             falta_modelo=K.identificar(con, "", TID)["veredicto"] != "exists", si=si)
                 else:
-                    pregunta("producto", cita, i, producto=x, quiere_saber=p.get("quiere_saber") or "precio",
+                    pregunta("producto", cita, i, producto=x, quiere_saber=_sin_envio(p.get("quiere_saber")) or "precio",
                              color=p.get("variante"), afirma=p.get("afirma"), si=si)
+            # EL PRECIO DE UN PRODUCTO CON A DONDE VA es tambien el envio: la forma normal suma la cuenta.
+            from app.core.flujo.normal import lugares
+            for d in [x[0] for x in lugares(str(p.get("destino") or ""))] if accion == "producto" else []:
+                pregunta("envio", cita, i, destino=d)
         elif accion == "envio":
             from app.core.flujo.normal import lugares
             # El destino es un lugar: el de su casilla o el que nombra; sin lugar, la regla del costo del envio.
@@ -525,6 +553,11 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
                 pregunta("cuenta", cita, i, tope=tope_si, si_pasa=que)
             elif hace == "saca":
                 pregunta("comprar", cita, i, saca=[r for r in F._refs(que, nums) if r[0] == "L"] or [que], si=si)
+            elif hace == "cambia" and not b["renglones"] and B._destino(p.get("destino")):
+                # CAMBIAR EL DESTINO SIN PEDIDO es cambiar el de lo que pregunto: se cotiza el envio al lugar nuevo.
+                from app.core.flujo.normal import lugares
+                for d in [x[0] for x in lugares(str(p["destino"]))] or [p["destino"]]:
+                    pregunta("envio", cita, i, destino=d)
             elif hace == "cambia":
                 Ls = [r for r in F._refs(que, nums) if r[0] == "L"]
                 rub = F._rubro(que, TID, str(p.get("rubro") or "")) if not Ls else ""
@@ -569,6 +602,13 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
                                        for c in cosas]
                 else:
                     c = cosas[0]
+                    ya = next((x["L"] for x in resuelto for a in x.get("articulos") or []
+                               if c.get("ref") and str(a["id"]) == str(nums.get(c["ref"]))
+                               and K.n(a.get("destino")) == K.n(art["destino"])), "") if not si else ""
+                    if ya:
+                        # ELEGIR LO QUE YA ESTA EN EL PEDIDO, al mismo destino, es decir cuantos: cambia ese renglon.
+                        pregunta("comprar", cita, i, cambia=[{"es": ya, "cantidad": art["cantidad"]}])
+                        continue
                     # Un rubro que ya tiene criterio no se vuelve a buscar si la parte no trae uno nuevo: lo pisaria.
                     nuevo = bool(_conds_de(p)) or orden != NADA or c.get("rubro") not in b["criterios"]
                     if "rubro" in c and c["rubro"] and nuevo:
@@ -627,7 +667,9 @@ async def interpretar(mensaje: str, historial: list, estado: dict, tienda_id: st
         print("  sin respuesta del modelo:", type(e).__name__, str(e)[:120])
         return None
     salida = interprete._json(crudo)
-    GRABADO.append({"mensaje": mensaje, "salida": salida})
+    # LA SEGUNDA VUELTA: lo que la cobertura marca vuelve al modelo con su lectura.
+    salida, releyo = await releer(mensaje, historial, estado, salida)
+    GRABADO.append({"mensaje": mensaje, "salida": salida, "releyo": releyo})
     return a_agenda(salida, estado, mensaje)
 
 
