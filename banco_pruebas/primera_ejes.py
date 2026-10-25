@@ -337,12 +337,90 @@ def _conds_de(p: dict) -> list:
         [f"preferentemente {x}" for x in V._lista(p.get("prefiere")) if str(x).strip()]
 
 
+# ══ LA FORMA NORMAL DE LAS PARTES: lo que quiere decir cada forma de la salida, sin leer el mensaje ════════════════
+# Cada regla define una forma, no corrige un caso; se mide sobre lo grabado en las 48, las 58 y las 16 nuevas.
+
+_COSA = ("rubro", "producto", "mostrado")
+
+
+def reparto_de_lugares(partes: list) -> bool:
+    """UNA PARTE QUE SOLO TRAE UN LUGAR, sin preguntar, es el reparto de lo pedido en el mismo mensaje: "dos teclados y
+    dos mouse; un envio a Cordoba y otro a Rio Tercero". Lo que no tiene destino se divide entre esos lugares, si la
+    cantidad se divide justo; si no, queda sin destino y el borrador lo pregunta."""
+    lugares = [p for p in partes if p.get("sobre") == "lugar" and p.get("hace") != "pregunta"]
+    cosas = [p for p in partes if p.get("sobre") in _COSA and p.get("hace") in ("elige", "pide_ver")
+             and _vacio(p.get("destino"))]
+    if not lugares or not cosas:
+        return False
+    destinos = [str(p.get("destino") or p.get("que") or "") for p in lugares]
+    for c in cosas:
+        cant, k = K.entero(c.get("cantidad")) or 1, len(destinos)
+        if cant % k:
+            continue
+        i = partes.index(c)
+        partes[i:i + 1] = [{**c, "cantidad": cant // k, "destino": d} for d in destinos]
+    for p in lugares:
+        partes.remove(p)
+    return True
+
+
+def ver_con_destino(partes: list) -> bool:
+    """PEDIR VER ALGO QUE YA TIENE A DONDE VA es armar el pedido: lo elige, y el codigo busca con su criterio."""
+    hizo = False
+    for p in partes:
+        if p.get("hace") == "pide_ver" and p.get("sobre") in ("rubro", "producto") and not _vacio(p.get("destino")):
+            p["hace"] = "elige"
+            hizo = True
+    return hizo
+
+
+def una_cosa_por_parte(partes: list) -> bool:
+    """UNA PARTE QUE NOMBRA DOS RUBROS —"un mouse y un teclado van a Rosario"— es una parte por rubro, con lo mismo."""
+    hizo = False
+    for p in list(partes):
+        if p.get("sobre") != "rubro" or p.get("hace") not in ("elige", "pide_ver"):
+            continue
+        trozos = [x.strip() for x in re.split(r"\by\b|,", str(p.get("que") or "")) if x.strip()]
+        rubros = [K.solo_rubro(x, TID) for x in trozos]
+        if len(trozos) > 1 and all(rubros) and len(set(rubros)) == len(rubros):
+            i = partes.index(p)
+            partes[i:i + 1] = [{**p, "que": r, "rubro": r} for r in rubros]
+            hizo = True
+    return hizo
+
+
+def un_lugar_por_parte(partes: list) -> bool:
+    """UN DESTINO QUE NOMBRA VARIOS LUGARES —"a Ushuaia y a Salta", dos parlantes— reparte la cantidad entre ellos."""
+    from app.core.flujo.normal import lugares
+    hizo = False
+    for p in list(partes):
+        ls = [x[0] for x in lugares(str(p.get("destino") or ""))] if p.get("hace") in ("elige", "pide_ver") else []
+        cant = K.entero(p.get("cantidad")) or len(ls)
+        if len(ls) > 1 and cant % len(ls) == 0:
+            i = partes.index(p)
+            partes[i:i + 1] = [{**p, "destino": d, "cantidad": cant // len(ls)} for d in ls]
+            hizo = True
+    return hizo
+
+
+REGLAS = (una_cosa_por_parte, reparto_de_lugares, un_lugar_por_parte, ver_con_destino)
+
+
+def normalizar(salida: dict) -> tuple:
+    """(la salida en forma normal, las reglas que aplico)."""
+    s = copy.deepcopy(salida if isinstance(salida, dict) else {})
+    partes = [p for p in V._lista(s.get("partes")) if isinstance(p, dict)]
+    aplicadas = [r.__name__ for r in REGLAS if "--crudo" not in ARGS and r(partes)]
+    s["partes"] = partes
+    return s, aplicadas
+
+
 def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
     """La agenda que cumple el ejecutor: cada parte por el cruce de sus dos ejes. El codigo controla que un modelo que
     nombra la parte lo haya nombrado el cliente o lo haya leido, como en la ficha nativa."""
     from app.core.flujo import borrador as B
     from app.core.flujo import ficha as F
-    salida = salida if isinstance(salida, dict) else {}
+    salida, _ = normalizar(salida)
     partes = [p for p in V._lista(salida.get("partes")) if isinstance(p, dict)]
     todo = salida.get("todo") if isinstance(salida.get("todo"), dict) else {}
     nums = interprete.numeros(estado)
@@ -408,6 +486,10 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
             elif hace == "cambia":
                 Ls = [r for r in F._refs(que, nums) if r[0] == "L"]
                 rub = F._rubro(que, TID, str(p.get("rubro") or "")) if not Ls else ""
+                if Ls and (_conds_de(p) or orden != NADA):
+                    # Un renglon con condiciones nuevas cambia el criterio de su rubro, como en la ficha nativa: si dos
+                    # renglones del mismo rubro piden distinto, queda el primero. A MEDIAS.
+                    rub = K.solo_rubro(str(renglones[Ls[0]]["que"]), TID) if Ls[0] in renglones else ""
                 if rub and (_conds_de(p) or orden != NADA):
                     # CAMBIAR EL CRITERIO DE UN RUBRO es buscarlo de nuevo con el criterio nuevo: el borrador re-resuelve
                     # cada renglon de ese rubro con su ultima busqueda.
@@ -474,8 +556,12 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
                 q["condiciones"] = list(q.get("condiciones") or []) + [f"hasta ${tope:,}".replace(",", ".")]
         tope = None
     son = K.entero(todo.get("son")) or None
-    if agrega or (son and son != b["total"]) or todo.get("rehace"):
-        pregunta("comprar", "el pedido", 0, agrega=agrega, total=son, reemplaza=bool(todo.get("rehace")))
+    if agrega or (son and son != b["total"]):
+        # Rehacer es que lo que elige este mensaje es el pedido entero: sin nada elegido, no hay con que rehacerlo.
+        pregunta("comprar", "el pedido", 0, agrega=agrega, total=son, reemplaza=bool(todo.get("rehace") and agrega))
+    if orden_todo != NADA and b["renglones"] and not agrega and not any(q["accion"] == "buscar" for q in ps):
+        # OTRO ORDEN PARA TODO, con el pedido armado: el ejecutor lo reparte a cada rubro del pedido.
+        pregunta("buscar", "el pedido", 0, rubro="el pedido", orden=orden_todo)
     reparto = [{"medio": str(m.get("medio") or "sin decir"), "porcentaje": K.entero(m.get("porcentaje"))}
                for m in V._lista(todo.get("pago")) if isinstance(m, dict) and K.entero(m.get("porcentaje"))]
     if reparto == [{"medio": "sin decir", "porcentaje": 100}]:
@@ -513,6 +599,7 @@ _ACTO = {"buscar": "opciones", "producto": "dato", "compatibilidad": "compat", "
 
 
 def como_cosas(salida: dict, nums: dict) -> dict:
+    salida, _ = normalizar(salida)
     cosas = []
     todo = (salida or {}).get("todo") or {}
     for p in V._lista((salida or {}).get("partes")):
