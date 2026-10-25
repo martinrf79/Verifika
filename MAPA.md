@@ -76,7 +76,8 @@ permiso.
 | La respuesta de la tienda que pide cada parte: las tres listas, la información A, las pistas y las dos llamadas, FICHA 78 | `banco_pruebas/respuestas.py` |
 | La traducción sola, la atadura y la salida, con las cien difíciles y el examen, FICHA 78 | `banco_pruebas/traduccion_sola.py`, `traduccion_dificil.py`, `traduccion_tercera.py` |
 | El laboratorio del informe: lo que el codigo sabe de cada parte antes de la segunda llamada —la tienda, el renglon del pedido con sus razones, los casos y las premisas—, sobre la traduccion grabada, FICHA 78 | `banco_pruebas/lab_informe.py` |
-| El motor de casos resueltos: la plantilla igual para toda tienda, llenada y validada con la fuente, y los cinco más parecidos, FICHA 78 | `banco_pruebas/casos_plantilla.py`, `banco_pruebas/motor_casos.py` |
+| La plantilla de venta: las clases de pregunta de una tienda, un caso resuelto por clase, el llenado con la fuente validado por el ejecutor y el motor de respuestas, FICHA 80 | `banco_pruebas/plantilla_venta/` |
+| El motor de casos de la FICHA 78, hasta que la búsqueda se rehaga sobre la plantilla de venta | `banco_pruebas/casos_plantilla.py`, `banco_pruebas/motor_casos.py` |
 | Las entrevistas al modelo sobre cómo traduce y por qué falla, FICHA 78 | `banco_pruebas/entrevista_traduccion.py` |
 | El acto armado por el código y la segunda vuelta con candidatos, descartados, FICHA 78 | `banco_pruebas/modos.py`, `banco_pruebas/etiqueta.py` |
 | Lo que ya contestó el modelo, sin volver a pagarlo | `banco_pruebas/libro_paga.py`, `respuestas_modelo.jsonl` |
