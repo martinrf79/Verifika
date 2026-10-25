@@ -347,18 +347,27 @@ def reparto_de_lugares(partes: list) -> bool:
     """UNA PARTE QUE SOLO TRAE UN LUGAR, sin preguntar, es el reparto de lo pedido en el mismo mensaje: "dos teclados y
     dos mouse; un envio a Cordoba y otro a Rio Tercero". Lo que no tiene destino se divide entre esos lugares, si la
     cantidad se divide justo; si no, queda sin destino y el borrador lo pregunta."""
-    lugares = [p for p in partes if p.get("sobre") == "lugar" and p.get("hace") != "pregunta"]
+    # Un lugar es una parte con destino que no nombra nada de la tienda ni de la libreta: "un puesto va a Cordoba",
+    # "dos van a Rosario". Su cantidad, si la dice, es cuantas unidades del reparto van ahi.
+    lugares = [p for p in partes if p.get("hace") != "pregunta" and (p.get("sobre") == "lugar" or (
+        p.get("sobre") == "pedido" and not _vacio(p.get("destino")) and not re.search(r"\b[LM]-\d", str(p.get("que") or ""))
+        and not K.solo_rubro(str(p.get("que") or ""), TID)))]
     cosas = [p for p in partes if p.get("sobre") in _COSA and p.get("hace") in ("elige", "pide_ver")
              and _vacio(p.get("destino"))]
     if not lugares or not cosas:
         return False
-    destinos = [str(p.get("destino") or p.get("que") or "") for p in lugares]
+    destinos = [(str(p.get("destino") or p.get("que") or ""), K.entero(p.get("cantidad")) or 1) for p in lugares]
+    unidades = sum(k for _, k in destinos)
     for c in cosas:
-        cant, k = K.entero(c.get("cantidad")) or 1, len(destinos)
-        if cant % k:
+        cant = K.entero(c.get("cantidad")) or 1
+        if cant == unidades:
+            reparto = [(d, k) for d, k in destinos]
+        elif cant % len(destinos) == 0:
+            reparto = [(d, cant // len(destinos)) for d, _ in destinos]
+        else:
             continue
         i = partes.index(c)
-        partes[i:i + 1] = [{**c, "cantidad": cant // k, "destino": d} for d in destinos]
+        partes[i:i + 1] = [{**c, "cantidad": k, "destino": d} for d, k in reparto]
     for p in lugares:
         partes.remove(p)
     return True
@@ -415,6 +424,29 @@ def normalizar(salida: dict) -> tuple:
     return s, aplicadas
 
 
+_COLORES = {}
+
+
+def _definir(p: dict) -> dict:
+    """Lo que quiere decir cada casilla, en los nombres de la tienda: "negros" es el color negro; "es inalambrico" pide
+    que sea inalambrico."""
+    from app.core.flujo.marcador import _mismo
+    if not _COLORES:
+        _COLORES["todos"] = sorted({K.n(x.get("color")) for x in K.productos(TID) if x.get("color")})
+    if p.get("variante"):
+        v = K.n(p["variante"])
+        p["variante"] = next((c for c in _COLORES["todos"] if _mismo(v, c)), p["variante"])
+    if p.get("si_cumple"):
+        p["si_cumple"] = re.sub(r"^(que )?(es|sea|sean|son) ", "", K.n(p["si_cumple"]))
+    return p
+
+
+def _monto_de(texto) -> int:
+    from app.core.flujo import marcador as MK
+    m = next((m for m in MK._MONTO.finditer(K.n(texto)) if m.group(2) or m.group(3)), None)
+    return K._monto(m.group(1) or m.group(3), m.group(2) or "") if m else 0
+
+
 def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
     """La agenda que cumple el ejecutor: cada parte por el cruce de sus dos ejes. El codigo controla que un modelo que
     nombra la parte lo haya nombrado el cliente o lo haya leido, como en la ficha nativa."""
@@ -442,11 +474,13 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
         return {"de": de_parte[d], "da": p.get("vale_si") or "si"} if d and d in de_parte else None
 
     for i, p in enumerate(partes, 1):
-        p = _parte_limpia(p)
+        p = _definir(_parte_limpia(p))
         hace, sobre = p.get("hace") or NADA, p.get("sobre") or NADA
         cita, que = str(p.get("cliente") or ""), str(p.get("que") or "")
         orden = F._orden(p.get("orden"), orden_todo)
         accion = V.cruce(hace, sobre, con=bool(p.get("con")))
+        if hace == "pregunta" and sobre == "mostrado" and F._refs(que, nums):
+            accion = "producto"  # preguntar por lo que senala de lo mostrado es preguntar por ese producto
         si = si_de(p)
         if accion == "buscar":
             rub = F._rubro(que, TID, str(p.get("rubro") or "")) or "toda la tienda"
@@ -466,8 +500,12 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
                              color=p.get("variante"), afirma=p.get("afirma"), si=si)
         elif accion == "envio":
             from app.core.flujo.normal import lugares
-            for d in [x[0] for x in lugares(que)] or [que]:
+            # El destino es un lugar: el de su casilla o el que nombra; sin lugar, la regla del costo del envio.
+            ds = [x[0] for x in lugares(str(p.get("destino") or ""))] or [x[0] for x in lugares(que)]
+            for d in ds:
                 pregunta("envio", cita, i, destino=d)
+            if not ds:
+                pregunta("politica", cita, i, tema="costo_envio" if "costo_envio" in F._temas_de(TID) else "envios")
         elif accion == "politica":
             tema = str(p.get("tema") or "")
             pregunta("politica", cita, i, tema=tema if tema in F._temas_de(TID) else "ninguno", afirma=p.get("afirma"))
@@ -481,7 +519,11 @@ def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
                       ("pide", "persona"): "humano", ("de_si", "cliente"): "dato"}.get((hace, sobre), "saludo")
             pregunta("otro", cita, i, que=que_es)
         elif accion == "comprar":
-            if hace == "saca":
+            tope_si = _monto_de(p.get("si_cumple"))
+            if hace == "saca" and tope_si:
+                # "SI PASA DE 300 MIL, SACA EL MX": es el tope del total y lo que sale si lo pasa, que cuenta el codigo.
+                pregunta("cuenta", cita, i, tope=tope_si, si_pasa=que)
+            elif hace == "saca":
                 pregunta("comprar", cita, i, saca=[r for r in F._refs(que, nums) if r[0] == "L"] or [que], si=si)
             elif hace == "cambia":
                 Ls = [r for r in F._refs(que, nums) if r[0] == "L"]
@@ -788,7 +830,8 @@ def medir() -> None:
     import medir_ficha as MF
     from fichas import CHARLAS
     from app.core.flujo import ficha as F
-    sal = {(r["fuente"], r["id"]): r.get("salida") for r in map(json.loads, open(_archivo("sueltos"), encoding="utf-8"))}
+    grabado = _archivo("sueltos_cob" if "--cob" in ARGS else "sueltos")
+    sal = {(r["fuente"], r["id"]): r.get("salida") for r in map(json.loads, open(grabado, encoding="utf-8"))}
     ver = "--ver" in ARGS
     # 1. LOS DATOS: la vara por dato, la lectura nueva y la ficha nativa.
     for nombre in ("ficha nativa", "los dos ejes"):
@@ -889,7 +932,143 @@ def _informe_datos(nombre: str, ver: bool) -> None:
                 print(f"      {cid:8} {dato:14} {que[:100]}")
 
 
+# ══ LA COBERTURA, 25-oct: ninguna frase del mensaje se pierde ═══════════════════════════════════════════════════════
+# El modelo no sabe que se olvido algo. El codigo si: cada frase del mensaje tiene que estar en las palabras literales que
+# el modelo copio en "cliente" de alguna parte. No interpreta: compara palabras.
+
+_SALUDO = set("hola buenas buen dia tardes noches gracias saludos che bueno dale ok genial perfecto".split())
+
+
+def frases(mensaje: str) -> list:
+    """El mensaje cortado en frases: por los signos y por las uniones que abren otra cosa."""
+    trozos = re.split(r"[.;!?¿¡\n]+|,\s*(?=y\s)|\s(?=y\s+(?:sumame|mandame|anotame|pago|el resto|lo demas|los otros))",
+                      str(mensaje or ""))
+    return [t.strip(" ,") for t in trozos if t and t.strip(" ,")]
+
+
+def _llenas(texto: str) -> list:
+    from app.core.flujo.agenda import _VACIAS, palabras
+    return [w for w in palabras(texto) if w not in _VACIAS and w not in _SALUDO and len(w) > 2]
+
+
+def _todas(x) -> set:
+    """Las palabras de cualquier valor de la salida; un monto, tambien en miles y en porcentaje dicho."""
+    from app.core.flujo.agenda import palabras
+    if isinstance(x, dict):
+        return set().union(*[_todas(v) for v in x.values()]) if x else set()
+    if isinstance(x, list):
+        return set().union(*[_todas(v) for v in x]) if x else set()
+    if isinstance(x, bool) or x is None:
+        return set()
+    if isinstance(x, int):
+        return {str(x), str(x // 1000)} | ({"mitad"} if x == 50 else set())
+    return set(palabras(x))
+
+
+_ANCLAS = {}
+
+
+def anclas(frase: str) -> list:
+    """Lo que la frase nombra de la fuente o del mundo y no puede perderse, cada una como las palabras que la dicen: los
+    lugares del padron, los montos, los porcentajes, los rubros, los modelos, las marcas y los colores de la tienda."""
+    from app.core.flujo import marcador as MK
+    from app.core.flujo.agenda import palabras
+    from app.core.flujo.normal import lugares
+    if not _ANCLAS:
+        ps = K.productos(TID)
+        _ANCLAS["marcas"] = {K.n(p.get("marca")) for p in ps if p.get("marca")}
+        _ANCLAS["colores"] = {K.n(p.get("color")) for p in ps if p.get("color")}
+    n = K.n(frase)
+    ws = re.findall(r"[a-z0-9]+", n)
+    out = [palabras(l) for l, _ in lugares(frase)]
+    for m in MK._MONTO.finditer(n):
+        if m.group(2) or m.group(3):
+            v = K._monto(m.group(1) or m.group(3), m.group(2) or "")
+            out.append([str(v), str(v // 1000)])
+    for m in MK._PAR.finditer(n):
+        a, b = MK._numero(m.group(1)), MK._numero(m.group(2))
+        if a + b == 100:
+            out += [[str(a), m.group(1)], [str(b), m.group(2)]]
+    out += [palabras(w) + palabras(r) for w, r in MK._rubros(ws, TID)]  # "camara" vale dicha como webcam
+    out += [palabras(t) for t, _ in MK._productos([w for w in ws if w not in K._RELLENO], TID)]
+    out += [[w] for w in ws if w in _ANCLAS["marcas"] | _ANCLAS["colores"]]
+    return [a for a in out if a]
+
+
+def sin_cubrir(mensaje: str, salida: dict) -> list:
+    """Las frases del mensaje que la salida no recoge: alguna de sus anclas no esta en ningun valor de la salida, ni en
+    lo que el modelo copio ni en las casillas. Una palabra vale tambien por sus cinco primeras letras: "memorias" y
+    "memoria ram"."""
+    copiado = _todas(salida or {})
+    copiado |= {w[:5] for w in copiado if len(w) > 5}
+    out = []
+    for f in frases(mensaje):
+        if any(not any(w in copiado or w[:5] in copiado for w in a) for a in anclas(f)):
+            out.append(f)
+    return out
+
+
+FALTO = """En tu lectura quedo sin recoger esto que dijo el cliente: {frases}. Volve a leer el ULTIMO MENSAJE y devolve la
+lectura COMPLETA, con todo lo de antes y lo que faltaba dentro de las partes que correspondan: un destino o un reparto va
+en las partes de lo que reparte. Si eso no pide ni decide nada, devolve la misma lectura."""
+
+
+async def releer(mensaje: str, historial: list, estado: dict, salida: dict) -> tuple:
+    """(la salida, si releyo): con lo que quedo sin cubrir, una segunda vuelta con la lectura y las frases que faltan."""
+    falta = sin_cubrir(mensaje, salida)
+    if not falta:
+        return salida, False
+    msgs = mensajes(mensaje, historial, estado) + [
+        {"role": "assistant", "content": json.dumps(salida, ensure_ascii=False)},
+        {"role": "user", "content": FALTO.format(frases="; ".join(f'"{f}"' for f in falta))}]
+    try:
+        return interprete._json(await interprete._pedir(msgs, "primera_ejes_releer", formato())), True
+    except Exception as e:  # noqa: BLE001 — sin segunda vuelta queda la primera
+        print("  sin segunda vuelta:", type(e).__name__, str(e)[:100])
+        return salida, False
+
+
+async def sueltos_releidos() -> None:
+    """Los sueltos grabados con la segunda vuelta donde la cobertura marca algo: solo esos llaman al modelo."""
+    estados = {(f, c): (e, h) for f, c, m, e, h in _turnos_sueltos()}
+    out, releidos = [], 0
+    for r in map(json.loads, open(_archivo("sueltos"), encoding="utf-8")):
+        if r.get("salida"):
+            e, h = estados[(r["fuente"], r["id"])]
+            r["salida"], hizo = await releer(r["mensaje"], h, e, r["salida"])
+            releidos += hizo
+        out.append(r)
+    with open(_archivo("sueltos_cob"), "w", encoding="utf-8") as fh:
+        for r in out:
+            fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print(f"releidos {releidos} de {len(out)}; queda sin cubrir en "
+          f"{sum(bool(sin_cubrir(r['mensaje'], r.get('salida') or {})) for r in out)}")
+
+
+def cobertura() -> None:
+    """Lo que el control marca en todo lo grabado: los sueltos y cada turno de la cadena."""
+    marcados, total = [], 0
+    for r in map(json.loads, open(_archivo("sueltos"), encoding="utf-8")):
+        total += 1
+        for f in sin_cubrir(r["mensaje"], r.get("salida") or {}):
+            marcados.append((r["fuente"], r["id"], f))
+    if os.path.exists(_archivo("cadena")):
+        for r in map(json.loads, open(_archivo("cadena"), encoding="utf-8")):
+            for i, t in enumerate(r["turnos"]):
+                for s in t["salida"]:
+                    total += 1
+                    for f in sin_cubrir(s["mensaje"], s["salida"]):
+                        marcados.append(("cadena " + r["fuente"], f"{r['id']} t{i}", f))
+    print(f"\nLA COBERTURA: {len(marcados)} frases sin cubrir en {total} lecturas")
+    for m in marcados:
+        print(f"  {m[0]:12} {m[1]:8} {m[2][:110]}")
+
+
 def main() -> None:
+    if "--cobertura" in ARGS:
+        return cobertura()
+    if "--releer" in ARGS:
+        return asyncio.run(sueltos_releidos())
     if "--ejemplos" in ARGS:
         return armar_ejemplos()
     if "--sueltos" in ARGS:
