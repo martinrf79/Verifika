@@ -1,7 +1,7 @@
 # FICHA 79 — La plantilla de venta: casos resueltos y el motor, con nuestra fuente
 
 25-oct-2026, sesión con Martín. **Es el plan para la sesión nueva: nada de esto está hecho.** Sigue a la FICHA 78.
-Reemplaza la plantilla de `banco_pruebas/casos_plantilla.py` y los 491 casos de `banco_pruebas/casos_llenados/`.
+Reemplaza la plantilla de `banco_pruebas/casos_plantilla.py` y los 491 casos de la sesión anterior, que se borraron el 25-oct y quedan en git, 684b2a1.
 
 ## El objetivo
 
@@ -98,8 +98,8 @@ destinos distintos, y cada tipo de pregunta abierta.
 
 Sin modelo y sin paga. Sin instrumentos nuevos de medición.
 1. El cruce de las 106 situaciones contra las etapas: qué etapa cubre cada una y qué falta.
-2. El esquema del caso en código, en `banco_pruebas/`, reemplazando `casos_plantilla.py` y `motor_casos.py`; los 491
-   casos de `casos_llenados/` se borran.
+2. El esquema del caso en código, en `banco_pruebas/`, reemplazando `casos_plantilla.py` y `motor_casos.py`, en el mismo
+   commit.
 3. **Veinte escenas de muestra**, de las ocho etapas, con mostrador, frases, agenda y vendedor, validadas por el
    ejecutor.
 4. **Martín las revisa** antes de llenar el resto. Si no le parecen como las resolvería un vendedor, se corrigen ahí.
