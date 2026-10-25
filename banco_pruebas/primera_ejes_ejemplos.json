@@ -1,0 +1,508 @@
+[
+ {
+  "clase": "MO01a",
+  "frase": "que parlante tenes?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pide_ver",
+     "sobre": "rubro",
+     "que": "parlante",
+     "rubro": "parlante",
+     "cliente": "que parlante tenes?"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "MO04a",
+  "frase": "auricular pero Razer no",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pide_ver",
+     "sobre": "rubro",
+     "que": "auriculares",
+     "rubro": "auriculares",
+     "no_quiere": [
+      "Razer"
+     ],
+     "cliente": "auricular pero Razer no"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "MO03a",
+  "frase": "teclado, si puede ser Razer",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pide_ver",
+     "sobre": "rubro",
+     "que": "teclado",
+     "rubro": "teclado",
+     "prefiere": [
+      "Razer"
+     ],
+     "cliente": "teclado, si puede ser Razer"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DE03a",
+  "frase": "tengo 110 mil para mouse, que hay?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pide_ver",
+     "sobre": "rubro",
+     "que": "mouse",
+     "rubro": "mouse",
+     "condiciones": [
+      "hasta 110 mil"
+     ],
+     "cliente": "tengo 110 mil para mouse, que hay?"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DU01a",
+  "frase": "tenes el Clip?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "producto",
+     "que": "Clip",
+     "cliente": "tenes el Clip?",
+     "quiere_saber": "stock"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DU06a",
+  "frase": "te quedan dos G15 Ryzen?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "producto",
+     "que": "G15 Ryzen",
+     "cliente": "te quedan dos G15 Ryzen?",
+     "quiere_saber": "si hay dos",
+     "cantidad": 2
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DU09a",
+  "frase": "el Tune 510BT anda con mi Mac?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "producto",
+     "que": "Tune 510BT",
+     "con": "Mac",
+     "cliente": "el Tune 510BT anda con mi Mac?"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DU14a",
+  "frase": "tiene garantia?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "tema",
+     "que": "garantia",
+     "tema": "garantia",
+     "cliente": "tiene garantia?"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DU29a",
+  "frase": "cuanto sale el envio a Mendoza?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "lugar",
+     "que": "Mendoza",
+     "cliente": "cuanto sale el envio a Mendoza?"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DE09a",
+  "frase": "en mouse, que diferencia hay entre lo caro y lo barato?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "tecnologia",
+     "que": "que mirar al elegir mouse",
+     "cliente": "en mouse, que diferencia hay entre lo caro y lo barato?"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "AP04a",
+  "frase": "hola, soy de Mendoza",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "de_si",
+     "sobre": "cliente",
+     "que": "",
+     "cliente": "hola, soy de Mendoza"
+    }
+   ],
+   "todo": {
+    "cliente": {
+     "localidad": "Mendoza"
+    }
+   }
+  }
+ },
+ {
+  "clase": "DU21a",
+  "frase": "soy estudiante, tengo descuento?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "cliente": "soy estudiante",
+     "hace": "de_si",
+     "sobre": "cliente",
+     "que": "estudiante"
+    },
+    {
+     "cliente": "tengo descuento?",
+     "hace": "pregunta",
+     "sobre": "tema",
+     "que": "promociones",
+     "tema": "promociones"
+    }
+   ],
+   "todo": {
+    "cliente": {
+     "es": "estudiante"
+    }
+   }
+  }
+ },
+ {
+  "clase": "DC02a",
+  "frase": "quiero dos BlackShark negro",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "elige",
+     "sobre": "producto",
+     "que": "BlackShark",
+     "cantidad": 2,
+     "variante": "Negro",
+     "cliente": "quiero dos BlackShark negro"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DC05a",
+  "frase": "el segundo",
+  "libreta": "LIBRETA:\n- MOSTRADO, del mas viejo al mas nuevo:\n  M-1 Parlante Genius SP-HF180 Negro $29.000, stock 4; colores con stock: Negro, Azul, Rojo; garantia: 12 meses; conexion: con cable USB y jack 3.5; potencia: 6W RMS; peso: 659 g\n  M-2 Parlante Genius SW-2.1 375 Negro $40.500, stock 7; colores con stock: Negro; garantia: 12 meses; conexion: con cable, jack 3.5; potencia: 15W RMS; peso: 881 g\n- BUSCO: parlante, mas barato",
+  "salida": {
+   "partes": [
+    {
+     "hace": "elige",
+     "sobre": "mostrado",
+     "que": "M-2",
+     "cliente": "el segundo"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "DC13a",
+  "frase": "si el BlackWidow sale menos de 340 mil me lo llevo",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "elige",
+     "sobre": "producto",
+     "que": "BlackWidow",
+     "si_cumple": "menos de 340 mil",
+     "cliente": "si el BlackWidow sale menos de 340 mil me lo llevo"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "AR05a",
+  "frase": "uno a Rosario y otro a Cordoba",
+  "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Redmi Gris a sin destino: 1 Tablet Xiaomi Redmi Pad SE Gris",
+  "salida": {
+   "partes": [
+    {
+     "hace": "elige",
+     "sobre": "producto",
+     "que": "Redmi",
+     "variante": "Gris",
+     "destino": "Rosario",
+     "cliente": "uno a Rosario"
+    },
+    {
+     "hace": "elige",
+     "sobre": "producto",
+     "que": "Redmi",
+     "variante": "Gris",
+     "destino": "Cordoba",
+     "cliente": "y otro a Cordoba"
+    }
+   ],
+   "todo": {
+    "rehace": true
+   }
+  }
+ },
+ {
+  "clase": "AR06a",
+  "frase": "sumame dos teclado, los mas baratos",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "cliente": "sumame dos teclado, los mas baratos",
+     "hace": "elige",
+     "sobre": "rubro",
+     "que": "teclado",
+     "rubro": "teclado",
+     "cantidad": 2,
+     "orden": "mas barato"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "AR09a",
+  "frase": "me equivoque, va a Cordoba",
+  "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 G15 Ryzen Gris a Rosario: 1 Notebook Dell G15 Ryzen 7 16GB 512GB SSD Gris",
+  "salida": {
+   "partes": [
+    {
+     "hace": "cambia",
+     "sobre": "pedido",
+     "que": "L-1",
+     "por": "Cordoba",
+     "cliente": "me equivoque, va a Cordoba"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "AR10a",
+  "frase": "saca el NM620 2TB",
+  "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Clip Negro a sin destino: 1 Parlante JBL Clip 4 Negro\n  L-2 1 NM620 2TB a sin destino: 1 Ssd Lexar NM620 2TB",
+  "salida": {
+   "partes": [
+    {
+     "hace": "saca",
+     "sobre": "pedido",
+     "que": "L-2",
+     "cliente": "saca el NM620 2TB"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "CE02a",
+  "frase": "la mitad con transferencia y la mitad con Mercado Pago",
+  "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 BlackWidow Negro a sin destino: 1 Teclado Razer BlackWidow V4 Negro",
+  "salida": {
+   "partes": [],
+   "todo": {
+    "pago": [
+     {
+      "medio": "transferencia",
+      "porcentaje": 50
+     },
+     {
+      "medio": "Mercado Pago",
+      "porcentaje": 50
+     }
+    ]
+   }
+  }
+ },
+ {
+  "clase": "UN02a",
+  "frase": "si no hay Clip en negro, pasame el Flip",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "producto",
+     "que": "Clip",
+     "variante": "Negro",
+     "cliente": "si no hay Clip en negro"
+    },
+    {
+     "hace": "pregunta",
+     "sobre": "producto",
+     "que": "Flip",
+     "depende_de": 1,
+     "vale_si": "no",
+     "cliente": "pasame el Flip"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "UN03a",
+  "frase": "si el Go 3 anda con mi Mac me lo llevo",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "producto",
+     "que": "Go 3",
+     "con": "Mac",
+     "cliente": "si el Go 3 anda con mi Mac"
+    },
+    {
+     "hace": "elige",
+     "sobre": "producto",
+     "que": "Go 3",
+     "depende_de": 1,
+     "vale_si": "si",
+     "cliente": "me lo llevo"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "UN05a",
+  "frase": "quiero auricular Razer, ah no, mejor Logitech",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pide_ver",
+     "sobre": "rubro",
+     "que": "auriculares",
+     "rubro": "auriculares",
+     "condiciones": [
+      "Logitech"
+     ],
+     "cliente": "quiero auricular Razer, ah no, mejor Logitech",
+     "corrige": true
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "FU01a",
+  "frase": "quien gano el partido ayer?",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pregunta",
+     "sobre": "fuera",
+     "que": "",
+     "cliente": "quien gano el partido ayer?"
+    }
+   ],
+   "todo": {}
+  }
+ },
+ {
+  "clase": "AR04a",
+  "frase": "parlante y placa, todo lo mas barato",
+  "libreta": "LIBRETA: vacia, es el primer mensaje.",
+  "salida": {
+   "partes": [
+    {
+     "hace": "pide_ver",
+     "sobre": "rubro",
+     "que": "parlante",
+     "rubro": "parlante",
+     "cliente": "parlante"
+    },
+    {
+     "hace": "pide_ver",
+     "sobre": "rubro",
+     "que": "placa de video",
+     "rubro": "placa de video",
+     "cliente": "y placa"
+    }
+   ],
+   "todo": {
+    "orden": "mas barato"
+   }
+  }
+ },
+ {
+  "clase": "DC06a",
+  "frase": "de esos, el tft",
+  "libreta": "LIBRETA:\n- MOSTRADO, del mas viejo al mas nuevo:\n  M-1 Tablet Samsung Galaxy Tab A9 Gris $211.500, stock 7; colores con stock: Gris, Plata, Azul; almacenamiento: 128GB; garantia: 12 meses; puertos: 1 USB-C, lector microSD y jack; hz: 60Hz; lector tarjetas: si, lector microSD; resolucion: WXGA+ 1340x800; panel: TFT; ram: 4GB; procesador: MediaTek Helio G99; bateria: si, bateria recargable integra; camara: si, camara integrada; wifi: si, wifi integrado; bluetooth: si, bluetooth integrado; tactil: si, pantalla tactil; peso: 362 g\n  M-2 Tablet Lenovo Tab M10 Plata $223.000, stock 18; colores con stock: Plata; almacenamiento: 128GB; garantia: 12 meses; puertos: 1 USB-C, lector microSD y jack; hz: 60Hz; lector tarjetas: si, lector microSD; resolucion: Full HD 1920x1200; panel: IPS; ram: 4GB; procesador: Unisoc T610; bateria: si, bateria recargable integra; camara: si, camara integrada; wifi: si, wifi integrado; bluetooth: si, bluetooth integrado; tactil: si, pantalla tactil; peso: 469 g\n- BUSCO: tablet, mas barato",
+  "salida": {
+   "partes": [
+    {
+     "hace": "elige",
+     "sobre": "mostrado",
+     "que": "M-1 y M-2",
+     "cliente": "de esos, el tft",
+     "si_cumple": "es tft"
+    }
+   ],
+   "todo": {}
+  }
+ }
+]
