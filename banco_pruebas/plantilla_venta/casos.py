@@ -6,9 +6,17 @@ Un caso es UNA parte del mensaje, salvo las uniones, que son la forma de juntar 
            tercera posicion True marca la frase dificil, sintetica, para subir la vara.
   antes    los turnos de antes, como agendas: el codigo los corre por el ejecutor y asi arma el mostrador. El caso no
            lleva charla: lleva el estado que la charla dejo, como lo ve el modelo en la libreta.
-  agenda   lo que el modelo tiene que pedir, en el menu de `app/core/flujo/agenda.py`. Es la etiqueta del caso.
+  agenda   lo que el codigo cumple, en el menu de `app/core/flujo/agenda.py`: la vara del ejecutor.
   espera   lo que tiene que volver del ejecutor: los tipos de hecho, los que no, y si el codigo repregunta.
-  gancho   lo que agrega el vendedor despues del dato, por veredicto, sin un solo numero. Ver `motor.py`.
+
+De la agenda salen, sin modelo, lo que cada motor del modelo tiene que devolver, `etiquetas` y `traducciones`:
+
+  traduccion  el motor de interpretacion, la primera llamada: por cada parte, lo que pide en los nombres de la tienda
+              —rubro, producto, lo que quiere saber, condiciones, orden, tema, destino, con que tiene que andar—.
+  etiqueta    el motor de etiquetado, la segunda llamada: por cada parte, la respuesta de la tienda que pide, de la
+              lista de `respuestas.CORTA`, y lo que senala de la libreta, M-n, L-n o R-n. Es lo que el codigo
+              necesita para armar la agenda. Una clase sin herramienta lleva "falta:" y su nombre: la lista no tiene
+              con que etiquetarla, y se ve.
   confirma la repregunta si la lectura puede ser otra.
 
 LOS HUECOS los llena `llenar.py` con la fuente de cada tienda. En las frases van dichos como los dice un cliente: el
@@ -36,16 +44,18 @@ rubro con las palabras de la tienda, el producto con el nombre corto. En la agen
 Las frases no copian las 58, las 48, las cien dificiles ni el examen: `tests/test_plantilla_venta.py` lo controla
 por palabras.
 """
+import re
 
 
-def caso(id_, frases, agenda, espera, antes=(), gancho=None, confirma="", responde="", cliente=None):
+def caso(id_, frases, agenda, espera, antes=(), confirma="", responde="", cliente=None, etiqueta=None):
     """`responde` es la pregunta abierta, R-n, que la frase contesta corta: el codigo lee la respuesta contra lo que
     esa pregunta espera, `ejecutor.atar_esperas`, y la frase va como "respuesta" de la agenda. `cliente` es lo que el
-    mensaje dice de el, como lo pone la agenda: {"nombre", "localidad", "es"}."""
+    mensaje dice de el, como lo pone la agenda: {"nombre", "localidad", "es"}. `etiqueta` va solo cuando la agenda no
+    la dice: la respuesta corta, que el codigo ata a lo que la pregunta dejo dicho."""
     return {"id": id_, "clase": id_[:4], "frases": [f if len(f) == 3 else (*f, False) for f in frases],
             "antes": [a if isinstance(a, list) else [a] for a in antes], "agenda": agenda,
-            "espera": espera, "gancho": gancho or {}, "confirma": confirma, "responde": responde,
-            "cliente": cliente or {}}
+            "espera": espera, "confirma": confirma, "responde": responde, "cliente": cliente or {},
+            "etiqueta": etiqueta}
 
 
 def bu(rubro, **k):
@@ -91,19 +101,17 @@ CASOS = [
     # ── APERTURA ─────────────────────────────────────────────────────────────
     caso("AP01a", [("hola buenas", "B"), ("buen dia, como andan?", "PI"), ("holaa", "QZ"), ("buenas tardes!!", "P"),
                    ("hola, una consulta", "B")],
-         [otro("saludo")], ok(sin=["lista", "producto"]),
-         gancho={"nada": "¡Hola! ¿Qué estás buscando?"}),
+         [otro("saludo")], ok(sin=["lista", "producto"])),
     caso("AP02a", [("hola, tenes el {producto}?", "IQ"), ("buenas! hay {producto}?", "IP"),
                    ("hola q tal, el {producto} lo tienen?", "EZ"), ("buen dia, queria saber si tienen el {producto}", "PD"),
                    ("hola hola jaja, {producto} hay?", "RQ", True)],
-         [otro("saludo"), pr("{producto}", "stock")], ok("producto"),
-         gancho={"ok": "¿Te lo reservo?", "no_hay": "Si querés, te muestro otro parecido que sí tengo."}),
+         [otro("saludo"), pr("{producto}", "stock")], ok("producto")),
     caso("AP03a", [("que venden?", "I"), ("tenes catalogo?", "IQ"), ("q cosas tienen", "EZ"),
                    ("pasame todo lo que vendan", "B"), ("ustedes que rubros manejan?", "IP")],
-         [otro("catalogo")], ok("catalogo"), gancho={"ok": "¿Qué te interesa mirar?"}),
+         [otro("catalogo")], ok("catalogo")),
     caso("AP04a", [("hola, soy de {lugar}", "B"), ("buenas, te escribo desde {lugar}", "P"),
                    ("hola! soy {nombre}, de {lugar}", "B"), ("holaa soy de {lugar} jaja", "RZ", True)],
-         [otro("dato")], ok(sin=["lista"]), gancho={"nada": "¡Hola! ¿Qué estás buscando?"}),
+         [otro("dato")], ok(sin=["lista"])),
     caso("AP05a", [("como compro?", "I"), ("como es para comprar por aca?", "IQ"), ("q hay que hacer para comprar",
                    "EZ"), ("es la primera vez que compro online, como funciona?", "C"),
                    ("se compra por aca o por la web?", "I")],
@@ -112,37 +120,31 @@ CASOS = [
     # ── DESCUBRIR ────────────────────────────────────────────────────────────
     caso("DE01a", [("necesito algo para {uso}", "B"), ("busco algo para {uso}, que me recomendas?", "BI"),
                    ("tenes algo q sirva para {uso}?", "IE"), ("mi vieja quiere algo para {uso}", "D", True)],
-         [bu("{rubro}", condiciones=["{uso}"])], ok("lista"),
-         gancho={"ok": "Si me decís cuánto querés gastar, te digo cuál conviene."}),
+         [bu("{rubro}", condiciones=["{uso}"])], ok("lista")),
     caso("DE02a", [("quiero hacer un regalo, que me recomendas?", "BI"), ("es para regalar, no se que llevar",
                    "CN"), ("busco un regalo para mi sobrino de 15", "B"), ("algo para regalar que no sea caro", "N", True)],
-         [otro("dato")], ok(sin=["lista"]),
-         gancho={"nada": "¡Buenísimo! ¿Para quién es y qué le gusta hacer? Con eso te recomiendo uno."}),
+         [otro("dato")], ok(sin=["lista"])),
     caso("DE03a", [("tengo {plata} para {rubro}, que hay?", "CI"), ("{rubro} hasta {plata}", "K"),
                    ("busco {rubro} que no pase de {plata}", "N"), ("q {rubro} me alcanza con {plata}", "EZ"),
                    ("no quiero gastar mas de {plata} en {rubro}", "N")],
-         [bu("{rubro}", condiciones=["hasta {plata}"])], ok("lista"),
-         gancho={"ok": "¿Para qué lo vas a usar? Así te digo cuál de estos te rinde más."}),
+         [bu("{rubro}", condiciones=["hasta {plata}"])], ok("lista")),
     caso("DE04a", [("con {plata_total} me alcanza para el {producto} {color} y el {producto_otro}?", "I"),
                    ("tengo {plata_total}, llego a llevar el {producto} {color} y el {producto_otro}?", "CI"),
                    ("me alcanza {plata_total} para el {producto} {color} mas el {producto_otro}", "Z")],
          [pr("{producto}", color="{color}"), pr("{producto_otro}"), cu(tope="{plata_total}")],
-         ok("cuenta"), gancho={"ok": "¿Te lo dejo armado así?"}),
+         ok("cuenta")),
     caso("DE05a", [("busco {descripto}", "B"), ("tenes {descripto}?", "IQ"), ("necesito {descripto} urgente", "B"),
                    ("che algo tipo {descripto}", "QZ", True)],
          [bu("{rubro_descripto}")], ok("lista")),
     caso("DE06a", [("tenes {no_vendido}?", "I"), ("venden {no_vendido}?", "I"), ("busco {no_vendido}", "B"),
                    ("hay {no_vendido} o solo compu?", "IC", True)],
-         [bu("{no_vendido}")], ok("no_vende"),
-         gancho={"no_vende": "Eso no lo vendemos. Si me contás para qué lo querés, te busco algo que sí tengamos."}),
+         [bu("{no_vendido}")], ok("no_vende")),
     caso("DE07a", [("tenes el {ajeno}?", "I"), ("cuanto sale el {ajeno}", "Z"), ("busco el {ajeno}", "B"),
                    ("me pasas precio del {ajeno}?", "IP")],
-         [pr("{ajeno}")], ok("no_existe"),
-         gancho={"no_existe": "Ese modelo no lo tenemos. ¿Querés que te muestre lo que hay de esa línea?"}),
+         [pr("{ajeno}")], ok("no_existe")),
     caso("DE08a", [("necesito algo para la casa", "B"), ("busco algo copado", "Q"), ("que me recomendas?", "I"),
                    ("quiero comprar algo pero no se que", "CN", True)],
-         [otro("dato")], ok(sin=["lista"]),
-         gancho={"nada": "¡Dale! ¿Para qué lo necesitás? Con eso te muestro opciones."}),
+         [otro("dato")], ok(sin=["lista"])),
     caso("DE09a", [("en {rubro}, que diferencia hay entre lo caro y lo barato?", "I"),
                    ("que cambia en {rubro} cuando pagas mas?", "I"), ("por que en {rubro} hay precios tan distintos?", "I"),
                    ("no entiendo nada de {rubro}, que tengo que mirar?", "CN", True)],
@@ -154,7 +156,7 @@ CASOS = [
     # ── MOSTRAR ──────────────────────────────────────────────────────────────
     caso("MO01a", [("que {rubro} tenes?", "IQ"), ("mostrame {rubro}", "B"), ("{rubro}", "K"), ("q {rubro} hay", "EZ"),
                    ("me pasas lo que tengan de {rubro}?", "IP")],
-         [bu("{rubro}")], ok("lista"), gancho={"ok": "¿Para qué lo vas a usar?"}),
+         [bu("{rubro}")], ok("lista")),
     caso("MO02a", [("busco {rubro} {condicion}", "B"), ("{rubro}, tiene que ser {condicion} si o si", "BQ"),
                    ("{rubro} {condicion}, que hay?", "KI"), ("necesito algo de {rubro} que sea {condicion}", "B")],
          [bu("{rubro}", condiciones=["{condicion}"])], ok("lista")),
@@ -170,7 +172,7 @@ CASOS = [
          [bu("{rubro}", condiciones=["lo menos chino posible"])], ok("lista")),
     caso("MO06a", [("lo mas barato en {rubro}", "K"), ("en {rubro}, cual es lo mas economico?", "I"),
                    ("dame lo mas barato que tengas de {rubro}", "B"), ("lo mas berreta en {rubro}, es para salir del paso", "Q", True)],
-         [bu("{rubro}", orden="mas barato", cantidad=1)], ok("lista"), gancho={"ok": "¿Te lo reservo?"}),
+         [bu("{rubro}", orden="mas barato", cantidad=1)], ok("lista")),
     caso("MO07a", [("de {rubro}, cual es el mas liviano?", "I"), ("en {rubro} cual pesa menos?", "I"),
                    ("quiero lo mas livianito en {rubro}", "Q"), ("de {rubro} el que menos pese", "B")],
          [bu("{rubro}", orden="mas liviano", cantidad=1)], ok("lista")),
@@ -196,32 +198,28 @@ CASOS = [
          [bu("{rubro}")], ok("lista"), antes=[[bu("{rubro}", condiciones=["{marca}"])]]),
     caso("MO15a", [("{rubro} {condicion} por menos de mil pesos", "B"), ("tenes {rubro} {condicion} a mil mangos?", "IQ"),
                    ("{rubro} {condicion} que no pase de mil", "N"), ("algo de {rubro} {condicion}, tengo mil pesos nomas", "C", True)],
-         [bu("{rubro}", condiciones=["{condicion}", "hasta 1000"])], ok("lista"),
-         gancho={"ok": "Con todo eso junto no hay; ¿qué es lo que más te importa?"}),
+         [bu("{rubro}", condiciones=["{condicion}", "hasta 1000"])], ok("lista")),
     caso("MO16a", [("cual me recomendas?", "I"), ("de esos cual llevarias vos?", "I"), ("cual es mejor?", "I"),
                    ("vos que sabes, cual?", "Q")],
-         [otro("dato")], ok(sin=["lista"]), antes=[VIO],
-         gancho={"nada": "¿Para qué lo vas a usar? Con eso te digo cuál de los dos."}),
+         [otro("dato")], ok(sin=["lista"]), antes=[VIO]),
     caso("MO17a", [("tenes fotos?", "I"), ("pasame una foto del {producto}", "B"), ("como es? mandame foto", "I")],
-         [otro("dato")], ok(sin=["lista"]), gancho={"nada": "Fotos no te puedo mandar por acá; te cuento lo que dice la ficha."}),
+         [otro("dato")], ok(sin=["lista"])),
     caso("MO18a", [("lo tenes en talle {n}?", "I"), ("viene en otra medida?", "I"), ("hay mas grande?", "I")],
          [pr("{producto}", "medida")], ok("producto")),
 
     # ── DUDAS ────────────────────────────────────────────────────────────────
     caso("DU01a", [("tenes el {producto}?", "I"), ("hay stock del {producto}?", "I"), ("{producto} disponible?", "K"),
                    ("te queda algun {producto}?", "IQ"), ("el {producto} lo tenes o esta agotado?", "I")],
-         [pr("{producto}", "stock")], ok("producto"),
-         gancho={"ok": "¿Te lo reservo?", "no_hay": "Si querés, te muestro otro parecido que sí tengo."}),
+         [pr("{producto}", "stock")], ok("producto")),
     caso("DU02a", [("cuanto sale el {producto}?", "I"), ("precio {producto}", "K"), ("q precio tiene el {producto}",
                    "EZ"), ("me pasas el precio del {producto}?", "IP"), ("a cuanto lo tenes al {producto}?", "IQ")],
-         [pr("{producto}")], ok("producto"), gancho={"ok": "¿Te lo reservo?"}),
+         [pr("{producto}")], ok("producto")),
     caso("DU03a", [("cuanto pesa el {producto}?", "I"), ("peso del {producto}?", "K"),
                    ("el {producto} es pesado?", "I"), ("el {producto} cuanto pesa mas o menos", "Z")],
          [pr("{producto}", "peso")], ok("producto")),
     caso("DU04a", [("cuantos watts consume el {producto}?", "I"), ("el {producto} gasta mucha luz?", "IQ"),
                    ("el {producto} cuanto consume?", "Z"), ("consumo en watts del {producto}", "K")],
-         [pr("{producto}", "cuanto consume en watts")], ok("producto"),
-         gancho={"ok": "Si me decís para qué lo necesitás, te digo si te sirve."}),
+         [pr("{producto}", "cuanto consume en watts")], ok("producto")),
     caso("DU05a", [("el {producto} viene en {color}?", "I"), ("hay {producto} {color}?", "IK"),
                    ("lo tenes en {color} al {producto}?", "IQ"), ("{producto} color {color}", "K")],
          [pr("{producto}", "stock", color="{color}")], ok("producto")),
@@ -235,8 +233,7 @@ CASOS = [
     caso("DU08a", [("que diferencia hay entre el {producto} y el {producto2}?", "I"),
                    ("{producto} o {producto2}, cual conviene?", "IK"), ("estoy entre el {producto} y el {producto2}", "B"),
                    ("el {producto} es mejor que el {producto2}?", "I")],
-         [pr("{producto}", "todo"), pr("{producto2}", "todo")], ok("producto"),
-         gancho={"ok": "¿Para qué lo vas a usar? Así te digo cuál de los dos te conviene."}),
+         [pr("{producto}", "todo"), pr("{producto2}", "todo")], ok("producto")),
     caso("DU09a", [("el {producto_compat} anda con {equipo}?", "I"), ("me sirve el {producto_compat} para {equipo}?",
                    "I"), ("{producto_compat} es compatible con {equipo}?", "I"),
                    ("tengo {equipo}, le va el {producto_compat}?", "CI")],
@@ -267,8 +264,7 @@ CASOS = [
          [pr("{producto}", "origen")], ok("producto", no_dice=["No tengo el dato"])),
     caso("DU17a", [("el {producto} es bueno?", "I"), ("dura el {producto}?", "I"), ("que tal es el {producto}?", "I"),
                    ("vale la pena el {producto}?", "I")],
-         [pr("{producto}", "todo")], ok("producto"),
-         gancho={"ok": "Si me contás para qué lo vas a usar, te digo si te rinde."}),
+         [pr("{producto}", "todo")], ok("producto")),
     caso("DU18a", [("cuando les entra?", "I"), ("van a reponer?", "I"), ("cuando vuelve a haber stock?", "I")],
          [po("{tema:reposicion}")], ok("politica")),
     caso("DU19a", [("hacen factura?", "I"), ("me dan factura?", "I"), ("me podes facturar a la empresa?", "IP"),
@@ -288,8 +284,7 @@ CASOS = [
          [po("{tema:confianza}")], ok("politica")),
     caso("DU24a", [("esta caro", "B"), ("uh es mucho", "Q"), ("se me va de presupuesto", "B"),
                    ("muy caro para lo que es", "B"), ("na, carisimo", "QW")],
-         [bu("{rubro}", orden="mas barato", cantidad=2)], ok("lista"), antes=[[pr("{producto}")]],
-         gancho={"ok": "Estas te cumplen y salen menos. ¿Alguna te sirve?"}),
+         [bu("{rubro}", orden="mas barato", cantidad=2)], ok("lista"), antes=[[pr("{producto}")]]),
     caso("DU25a", [("me haces un descuento?", "IQ"), ("no me lo dejas mas barato?", "NI"),
                    ("si pago en efectivo me haces precio?", "C"), ("dale, haceme una rebajita", "Q")],
          [po("{tema:descuento_transferencia}")], ok("politica"), antes=[[pr("{producto}")]]),
@@ -336,8 +331,7 @@ CASOS = [
     caso("DU41a", [("donde estan?", "I"), ("tienen local?", "I"), ("donde queda la tienda?", "I")],
          [po("{tema:ubicacion}")], ok("politica")),
     caso("DU42a", [("me lo instalan?", "I"), ("hacen service?", "I"), ("me lo arman en casa?", "I")],
-         [po("instalacion a domicilio")], ok("sin_politica"),
-         gancho={"sin_politica": "Eso no lo tengo escrito; si querés, te paso con alguien del equipo."}),
+         [po("instalacion a domicilio")], ok("sin_politica")),
     caso("DU43a", [("aceptan dolares?", "I"), ("puedo pagar en usd?", "IE"), ("toman cripto?", "I")],
          [po("{tema:monedas}")], ok("politica")),
     caso("DU44a", [("como lo mandan, viene bien embalado?", "I"), ("no se rompe en el envio?", "I")],
@@ -365,14 +359,15 @@ CASOS = [
          [com(art("M-1"))], ok(alguno=["pedido", "pregunta"]),
          antes=[[pr("{producto}"), pr("{producto2}")], [com(art(["M-1", "M-2"]))]]),
     caso("DC08a", [("si", "K"), ("dale", "Q"), ("si, sumalo", "B"), ("de una", "Q")],
-         [otro("dato")], ok("pedido"), antes=[[pr("{producto_otro}", ofrece=True)]], responde="R-1"),
+         [otro("dato")], ok("pedido"), antes=[[pr("{producto_otro}", ofrece=True)]], responde="R-1",
+         etiqueta=[{"respuestas": ["anotar"], "senala": ["R-1"]}]),
     caso("DC09a", [("{color}", "K"), ("en {color}", "K"), ("el {color} porfa", "P")],
-         [otro("dato")], ok("pedido"), antes=[[com(art("{producto}"))]], responde="R-1"),
+         [otro("dato")], ok("pedido"), antes=[[com(art("{producto}"))]], responde="R-1",
+         etiqueta=[{"respuestas": ["cambiar"], "senala": ["L-1", "R-1"]}]),
     caso("DC10a", [("{color} no, el otro color", "N"), ("ese color no me gusta, cambialo", "N")],
          [com(cambia=[{"es": "L-1", "color": "{color2}"}])], ok("pedido"), antes=[PIDIO]),
     caso("DC11a", [("elegi vos", "Q"), ("el que vos digas", "Q"), ("no se, decidi vos", "NQ")],
-         [otro("dato")], ok(sin=["lista"]), antes=[VIO],
-         gancho={"nada": "¿Para qué lo vas a usar? Con eso te elijo uno."}),
+         [otro("dato")], ok(sin=["lista"]), antes=[VIO]),
     caso("DC12a", [("me lo guardas?", "I"), ("reservamelo que paso mañana", "C"), ("se puede reservar?", "I")],
          [po("{tema:reservas}")], ok("politica"), antes=[[pr("{producto}")]]),
     caso("DC13a", [("si el {producto} sale menos de {plata} me lo llevo", "C"),
@@ -446,8 +441,7 @@ CASOS = [
     caso("CE03a", [("pago con cripto", "B"), ("te lo pago en bitcoin", "B")],
          [cu(reparto=[{"medio": "cripto", "porcentaje": 100}])], ok(no_dice=["cripto (100%)"]), antes=[PIDIO]),
     caso("CE04a", [("{nombre}", "K"), ("a nombre de {nombre}", "B"), ("soy {nombre}", "B")],
-         [otro("dato")], ok(), antes=[PIDIO], cliente={"nombre": "{nombre}"},
-         gancho={"nada": "¡Gracias! Lo dejo a tu nombre y te paso cómo pagarlo."}),
+         [otro("dato")], ok(), antes=[PIDIO], cliente={"nombre": "{nombre}"}),
     caso("CE05a", [("{nombre}, y pago con {medio}", "K"), ("soy {nombre}, te pago por {medio}", "B")],
          [otro("dato"), cu(reparto=[{"medio": "{medio}", "porcentaje": 100}])], ok("cuenta"), antes=[PIDIO],
          cliente={"nombre": "{nombre}"}),
@@ -460,19 +454,17 @@ CASOS = [
 
     # ── NO COMPRA ────────────────────────────────────────────────────────────
     caso("NC01a", [("lo pienso y te aviso", "B"), ("dejame pensarlo", "B"), ("lo veo y despues vuelvo", "B")],
-         [otro("saludo")], ok(sin=["lista"]),
-         gancho={"nada": "Dale, tomate tu tiempo. Te lo dejo anotado por si volvés."}),
+         [otro("saludo")], ok(sin=["lista"])),
     caso("NC02a", [("gracias!", "K"), ("listo, muchas gracias", "P"), ("genial, gracias crack", "Q")],
-         [otro("saludo")], ok(sin=["lista"]), gancho={"nada": "¡De nada! Cualquier cosa, escribime."}),
+         [otro("saludo")], ok(sin=["lista"])),
     caso("NC02b", [("gracias!", "K"), ("buenisimo, gracias", "P"), ("joya, despues te confirmo", "Q")],
-         [otro("saludo")], ok(sin=["lista", "cuenta"]), antes=[PIDIO],
-         gancho={"nada": "¡De nada! Te lo dejo anotado; cuando quieras, lo cerramos."}),
+         [otro("saludo")], ok(sin=["lista", "cuenta"]), antes=[PIDIO]),
     caso("NC03a", [("quiero hablar con una persona", "B"), ("me pasas con alguien?", "I"), ("sos un bot? quiero un humano", "IW")],
          [otro("humano")], ok("humano")),
     caso("NC04a", [("que mal servicio", "W"), ("me tienen re podrido", "WQ"), ("nunca me contestan bien", "NW")],
          [otro("humano")], ok("humano")),
     caso("NC05a", [("no me interesa", "N"), ("no, gracias", "N"), ("al final no voy a comprar", "N")],
-         [otro("saludo")], ok(sin=["lista"]), gancho={"nada": "Dale, sin problema. Cualquier cosa, acá estoy."}),
+         [otro("saludo")], ok(sin=["lista"])),
 
     # ── POSTVENTA ────────────────────────────────────────────────────────────
     caso("PV01a", [("donde esta mi pedido?", "I"), ("no me llego todavia", "N"), ("me pasas el seguimiento?", "I")],
@@ -577,3 +569,62 @@ MAS = {
 }
 for _c in CASOS:
     _c["frases"] += [f if len(f) == 3 else (*f, False) for f in MAS.get(_c["id"], [])]
+
+
+# ══ LO QUE DEVUELVE CADA MOTOR DEL MODELO, desde la agenda ═══════════════════
+
+# La lista de respuestas de la tienda, la misma de `banco_pruebas/respuestas.CORTA`: lo controla el test.
+RESPUESTAS = ("opciones", "dato", "comparar", "compatibilidad", "envio", "cuenta", "regla", "anotar", "cambiar",
+              "sacar", "dato_cliente", "saber_general", "nada")
+_REF = re.compile(r"^[MLR]-\d+$")
+# Lo que no es traduccion: la accion la pone la etiqueta, el numero y la cita el codigo.
+NO_TRADUCE = ("accion", "n", "cita")
+# La accion del menu que cumple cada respuesta: el codigo la elige por la etiqueta.
+ACCION = {"opciones": "buscar", "dato": "producto", "comparar": "producto", "compatibilidad": "compatibilidad",
+          "envio": "envio", "cuenta": "cuenta", "regla": "politica", "saber_general": "explicar",
+          "anotar": "comprar", "cambiar": "comprar", "sacar": "comprar", "dato_cliente": "otro", "nada": "otro"}
+
+
+def _refs(x) -> list:
+    if isinstance(x, dict):
+        return [r for v in x.values() for r in _refs(v)]
+    if isinstance(x, list):
+        return [r for v in x for r in _refs(v)]
+    return [x] if isinstance(x, str) and _REF.match(x) else []
+
+
+def _respuestas(p: dict, clase: str) -> list:
+    """Las respuestas de la tienda que pide una pregunta de la agenda, como las lleva `respuestas.oro_58`."""
+    acc = p.get("accion")
+    if acc == "comprar":
+        out = (["cambiar"] if p.get("reemplaza") or p.get("cambia") else ["anotar"] if p.get("agrega")
+               or p.get("confirma") or p.get("acepta") or p.get("total") else []) + (["sacar"] if p.get("saca") else [])
+        return out or ["anotar"]
+    if acc == "producto" and clase == "DU08":
+        return ["comparar"]
+    return [{"buscar": "opciones", "producto": "dato", "compatibilidad": "compatibilidad", "envio": "envio",
+             "cuenta": "cuenta", "politica": "regla", "explicar": "saber_general"}.get(acc)
+            or ("dato_cliente" if acc == "otro" and p.get("que") == "dato" else "nada")]
+
+
+def etiquetas(caso: dict, agenda: list, herramienta: str) -> list:
+    """Por cada pregunta, lo que el motor de etiquetado tiene que devolver: las respuestas y lo que senala."""
+    if caso.get("etiqueta"):
+        return caso["etiqueta"]
+    if herramienta.startswith("falta:"):
+        return [{"respuestas": [herramienta], "senala": []}]
+    return [{"respuestas": _respuestas(p, caso["clase"]),
+             "senala": list(dict.fromkeys(_refs(p) + (["lo mostrado"] if p.get("entre_lo_mostrado") else [])))}
+            for p in agenda]
+
+
+def traducciones(agenda: list) -> list:
+    """Por cada pregunta, lo que el motor de interpretacion tiene que devolver: lo que pide, en los nombres de la
+    tienda. Sin la accion: esa la elige el codigo por la etiqueta."""
+    return [{k: v for k, v in p.items() if k not in NO_TRADUCE} for p in agenda]
+
+
+def a_agenda(traducciones_: list, etiquetas_: list) -> list:
+    """La agenda que arma el codigo con lo que devuelven los dos motores, sin mirar nada mas. Si sale igual a la del
+    caso, la etiqueta y la traduccion alcanzan para que el codigo responda."""
+    return [{"accion": ACCION[e["respuestas"][0]], **t} for t, e in zip(traducciones_, etiquetas_)]

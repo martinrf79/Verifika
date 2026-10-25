@@ -8,7 +8,8 @@ Sin modelo y sin credenciales: la fuente sale de `data/clientes/<tienda>/` por e
   2. Los turnos de `antes` se corren por el ejecutor: el estado que dejan es el mostrador, y la libreta es lo que el
      modelo veria en ese turno.
   3. La agenda del caso se corre por el ejecutor con ese estado, y se compara con lo que el caso espera.
-  4. La respuesta: el dato de la redaccion viva y el gancho del caso, por `motor.py`.
+  4. Lo que tiene que devolver cada motor del modelo, la traduccion y la etiqueta, desde la agenda ya llenada; y
+     la respuesta que leeria el cliente, de la redaccion viva.
 
 Un caso no entra si falta su hueco en la fuente, si su clase no aplica a la tienda o si la validacion falla. El
 informe dice cuantos y por que.
@@ -359,8 +360,6 @@ def _cumple(espera: dict, t, texto: str) -> str:
     dice = [x for x in espera.get("no_dice") or [] if x in texto]
     if dice:
         return f"la respuesta dice \"{dice[0]}\""
-    if not texto.strip():
-        return "la respuesta salio vacia"
     falta = [x for x in espera["tipos"] if x not in tipos]
     sobra = [x for x in espera["sin"] if x in tipos]
     perdidas = [n for n, e in t.estados.items() if e == "sin_estado"]
@@ -381,9 +380,9 @@ def llenar(tid: str = TID) -> dict:
     """Cada caso llenado y validado. Devuelve {"casos": [...], "hallazgos": {...}}."""
     from app.core.flujo import estado as E
     from app.core.flujo import interprete
+    from app.core.flujo import redaccion
     from . import casos as C
     from . import mapa as M
-    from . import motor
     fuente = Fuente(tid)
     out = []
     for i, caso in enumerate(C.CASOS):
@@ -411,12 +410,15 @@ def llenar(tid: str = TID) -> dict:
                                               if caso["responde"] else {}),
                       **({"cliente": _en_agenda(caso["cliente"], v, fuente, faltan)} if caso["cliente"] else {})}
         t = _correr([agenda], estado, tid)
-        resp = motor.responder(caso, clase["herramienta"], t)
-        motivo = _cumple(caso["espera"], t, resp["texto"])
+        texto = redaccion.texto(t.hechos, t.preguntas, False)
+        motivo = _cumple(caso["espera"], t, texto)
+        preguntas = agenda["preguntas"] if isinstance(agenda, dict) else agenda
         out.append({**r, "entra": not motivo, "motivo": motivo, "frases": frases,
                     "libreta": libreta, "antes": antes, "agenda": agenda,
                     "hechos": [h["tipo"] for h in t.hechos], "estados": {str(k): e for k, e in t.estados.items()},
-                    "respuesta": resp, "confirma": _en_frase(caso["confirma"], v, fuente.dichos, 0)})
+                    "traduccion": C.traducciones(preguntas),
+                    "etiqueta": C.etiquetas(caso, preguntas, clase["herramienta"]),
+                    "respuesta": texto, "confirma": _en_frase(caso["confirma"], v, fuente.dichos, 0)})
     return {"casos": out, "hallazgos": dict(fuente.hallazgos)}
 
 
@@ -449,8 +451,12 @@ def ver(c: dict) -> str:
     for f in c.get("frases") or []:
         r.append(f"  [{f['variacion']}{' dificil' if f['dificil'] else ''}] {f['texto']}")
     if c.get("libreta"):
-        r += [c["libreta"], "AGENDA: " + json.dumps(c["agenda"], ensure_ascii=False),
-              "HECHOS: " + ", ".join(c["hechos"]), "RESPUESTA:", c["respuesta"]["texto"]]
+        r += [c["libreta"],
+              "TRADUCCION: " + json.dumps(c["traduccion"], ensure_ascii=False),
+              "ETIQUETA: " + ", ".join("+".join(e["respuestas"]) + (" " + " ".join(e["senala"]) if e["senala"] else "")
+                                       for e in c["etiqueta"]),
+              "AGENDA: " + json.dumps(c["agenda"], ensure_ascii=False),
+              "HECHOS: " + ", ".join(c["hechos"]), "RESPUESTA:", c["respuesta"]]
     return "\n".join(r)
 
 

@@ -1,8 +1,10 @@
 """LA PLANTILLA DE VENTA — el esquema, el mapa y cada caso por el ejecutor, sin modelo (25-oct-2026, FICHA 80).
 
   1. el mapa: cada clase con su caso, y las 58, las J y las K clasificadas en alguna.
-  2. los casos: frases, variaciones, acciones del menu, ganchos sin numeros, y ninguna frase copiada de la vara.
-  3. el llenado con la fuente de verifika_prod: cada caso validado por el ejecutor. Los que fallan por un defecto del
+  2. los casos: frases, variaciones, acciones del menu, y ninguna frase copiada de la vara.
+  3. lo que devuelve cada motor del modelo: la etiqueta, de la lista de respuestas, y la traduccion alcanzan para que
+     el codigo arme la agenda del caso sin mirar nada mas.
+  4. el llenado con la fuente de verifika_prod: cada caso validado por el ejecutor. Los que fallan por un defecto del
      codigo van como xfail estricto, uno por defecto.
 """
 import json
@@ -17,8 +19,8 @@ REPO = os.path.dirname(AQUI)
 
 @pytest.fixture(scope="module")
 def P():
-    from banco_pruebas.plantilla_venta import casos, mapa, motor
-    return {"casos": casos, "mapa": mapa, "motor": motor}
+    from banco_pruebas.plantilla_venta import casos, mapa
+    return {"casos": casos, "mapa": mapa}
 
 
 @pytest.fixture(scope="module")
@@ -97,13 +99,34 @@ def test_la_herramienta_de_la_clase_esta_en_su_agenda(P):
     assert not malas, malas
 
 
-def test_los_ganchos_no_llevan_numeros_ni_piden_datos(P):
-    motor = P["motor"]
-    ganchos = [g for c in P["casos"].CASOS for g in c["gancho"].values()] \
-        + [g for v in motor.GANCHOS.values() for g in v.values()] + list(motor.CON_PEDIDO.values())
-    malos = [g for g in ganchos if not motor.gancho_valido(g)]
-    assert not malos, malos
-    assert all(v in motor.VEREDICTOS for c in P["casos"].CASOS for v in c["gancho"])
+# ══ 3. LO QUE DEVUELVE CADA MOTOR DEL MODELO ═════════════════════════════════
+
+def test_la_lista_de_respuestas_es_la_de_respuestas_py(P):
+    """La etiqueta usa la misma lista que mide `banco_pruebas/respuestas.py`: se lee de su fuente, sin importarlo."""
+    import ast
+    arbol = ast.parse(open(os.path.join(REPO, "banco_pruebas", "respuestas.py"), encoding="utf-8").read())
+    corta = next(n.value for n in arbol.body if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "CORTA")
+    assert tuple(k.value for k in corta.keys) == P["casos"].RESPUESTAS
+
+
+def test_la_etiqueta_y_la_traduccion_alcanzan_para_armar_la_agenda(P):
+    """Lo que el codigo necesita: con la etiqueta de cada parte y su traduccion, la agenda del caso sale igual. Las
+    clases sin herramienta y las respuestas cortas, que ata el codigo, quedan aparte y se cuentan."""
+    C, M = P["casos"], P["mapa"]
+    validas = set(C.RESPUESTAS)
+    malas, armadas, aparte = [], 0, 0
+    for c in C.CASOS:
+        h = M.POR_ID[c["clase"]]["herramienta"]
+        e = C.etiquetas(c, c["agenda"], h)
+        assert all(r in validas or r.startswith("falta:") for x in e for r in x["respuestas"]), c["id"]
+        if h.startswith("falta:") or c["etiqueta"]:
+            aparte += 1
+            continue
+        armadas += 1
+        if C.a_agenda(C.traducciones(c["agenda"]), e) != c["agenda"]:
+            malas.append(c["id"])
+    assert not malas, f"de {armadas} agendas no salen {malas}"
+    assert armadas >= 130, f"{armadas} agendas armadas, {aparte} aparte"
 
 
 def _palabras(t: str) -> set:
@@ -127,7 +150,7 @@ def test_ninguna_frase_copia_la_vara(llenado):
     assert not copias, f"{len(copias)} de {len(frases)} frases copian la vara: {copias[:5]}"
 
 
-# ══ 3. EL LLENADO CON LA FUENTE, POR EL EJECUTOR ═════════════════════════════
+# ══ 4. EL LLENADO CON LA FUENTE, POR EL EJECUTOR ═════════════════════════════
 
 # Cada caso que falla por un defecto del codigo, con el defecto. Se arregla en el codigo, no en el caso.
 DEFECTOS = {
@@ -155,8 +178,8 @@ def test_los_defectos_del_codigo(llenado, cid):
     assert llenado[cid]["entra"], llenado[cid]["motivo"]
 
 
-def test_ninguna_respuesta_sale_vacia_ni_con_dos_preguntas_del_vendedor(llenado):
-    """El gancho no se suma a una pregunta: una sola por mensaje."""
-    dobles = [c["id"] for c in llenado.values() if c.get("respuesta") and c["respuesta"]["gancho"]
-              and c["respuesta"]["dato"].rstrip().endswith("?")]
-    assert not dobles, dobles
+def test_cada_caso_llenado_trae_lo_de_los_dos_motores(llenado):
+    """El indice de los motores: cada caso que entra, con sus frases llenadas, la libreta, la traduccion y la etiqueta."""
+    faltan = [c["id"] for c in llenado.values() if c["entra"]
+              and not (c["frases"] and c["libreta"] and c["traduccion"] and c["etiqueta"])]
+    assert not faltan, faltan
