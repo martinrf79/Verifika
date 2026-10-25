@@ -511,7 +511,98 @@ async def ficha58() -> None:
     print(f"fichas: {sum(bool(s.get('salida')) for s in salidas)} de {len(salidas)}, en {FICHA58}")
 
 
+# ══ LOS DOS EJES, 25-oct: lo que dice el modelo de cada parte, y el cruce del codigo ═══════════════════════════════
+# En lugar de elegir la respuesta de la tienda entre trece, el modelo dice dos cosas de lenguaje por cada parte:
+#   hace   pregunta, pide_ver, elige, cambia, saca, de_si, pide o nada
+#   sobre  producto, rubro, mostrado, tema, lugar, pedido, pago, tecnologia, tienda, persona, cliente, fuera o nada
+# Y el codigo cruza los dos, con las senales que trae la parte —con que tiene que andar—, y elige la herramienta.
+
+HACE = ("pregunta", "pide_ver", "elige", "cambia", "saca", "de_si", "pide", "nada")
+SOBRE = ("producto", "rubro", "mostrado", "tema", "lugar", "pedido", "pago", "tecnologia", "tienda", "persona",
+         "cliente", "fuera", "nada")
+_OTRO = {"catalogo": ("pregunta", "tienda"), "humano": ("pide", "persona"), "fuera_de_tema": ("pregunta", "fuera"),
+         "dato": ("de_si", "cliente"), "saludo": ("nada", "nada"), "corrige": ("nada", "nada")}
+
+
+def ejes(p: dict) -> list:
+    """Los ejes de una pregunta de la agenda a mano: [(hace, sobre)], uno por cada cosa que hace."""
+    acc = p.get("accion")
+    if acc == "buscar":
+        return [("pide_ver", "mostrado" if p.get("entre_lo_mostrado") else "rubro")]
+    if acc == "producto":
+        return [("pregunta", "producto")]
+    if acc == "compatibilidad":
+        return [("pregunta", "producto")]
+    if acc == "envio":
+        return [("pregunta", "lugar")]
+    if acc == "politica":
+        return [("pregunta", "tema")]
+    if acc == "explicar":
+        return [("pregunta", "tecnologia")]
+    if acc == "cuenta":
+        out = [("elige", "pago")] if p.get("reparto") or p.get("tope") else []
+        return out or [("pregunta", "pedido")]
+    if acc == "otro":
+        return [_OTRO.get(p.get("que"), ("nada", "nada"))]
+    if acc == "comprar":
+        out = []
+        for a in _lista(p.get("agrega")):
+            v = " ".join(map(str, _lista(a.get("producto") if isinstance(a, dict) else a)))
+            out.append(("cambia" if p.get("reemplaza") else "elige",
+                        "mostrado" if re.search(r"\bM-\d", v) else "producto"))
+        out += [("cambia", "pedido")] * len(_lista(p.get("cambia"))) + [("saca", "pedido")] * len(_lista(p.get("saca")))
+        out += [("elige", "pedido")] if p.get("confirma") or p.get("acepta") or p.get("total") else []
+        out += [("elige", "pago")] if p.get("reparto") else []
+        return out or [("elige", "pedido")]
+    return [("nada", "nada")]
+
+
+def cruce(hace: str, sobre: str, con: bool = False) -> str:
+    """La herramienta del menu que cumple una parte, desde los dos ejes. Sin modelo."""
+    if hace == "pide_ver":
+        return "producto" if sobre == "producto" else "buscar"
+    if hace == "pregunta":
+        return {"producto": "compatibilidad" if con else "producto", "rubro": "buscar", "mostrado": "buscar",
+                "lugar": "envio", "tema": "politica", "tecnologia": "explicar", "pedido": "cuenta",
+                "tienda": "otro", "fuera": "otro"}.get(sobre, "otro")
+    if hace == "elige":
+        return "cuenta" if sobre == "pago" else "comprar"
+    if hace in ("cambia", "saca"):
+        return "comprar"
+    return "otro"
+
+
+def controlar_ejes() -> None:
+    """Que los dos ejes alcanzan: cada pregunta de las agendas a mano —la plantilla de venta y las 58— vuelve a su
+    herramienta por el cruce. Lo que no vuelve dice que senal le falta a la parte."""
+    from banco_pruebas.agendas58 import AGENDAS
+    from banco_pruebas.plantilla_venta.casos import CASOS
+    fuentes = [("plantilla", c["id"], ag) for c in CASOS for ag in [{"preguntas": c["agenda"]}]] + \
+        [("58", cid, ag) for cid, ags in AGENDAS.items() for ag in ags]
+    cuenta, malos, pares = collections.Counter(), [], collections.Counter()
+    for fuente, cid, ag in fuentes:
+        for p in ag.get("preguntas") or []:
+            acc = p.get("accion")
+            for hace, sobre in ejes(p):
+                pares[(hace, sobre)] += 1
+                vuelve = cruce(hace, sobre, con=bool(p.get("con")))
+                # Pagar y anotar son la misma cuenta en el ejecutor: el reparto entra por las dos.
+                ok = vuelve == acc or {vuelve, acc} <= {"cuenta", "comprar"} and sobre == "pago"
+                cuenta[(fuente, ok)] += 1
+                if not ok:
+                    malos.append((fuente, cid, acc, hace, sobre, vuelve))
+    print("\nLOS DOS EJES Y EL CRUCE, sobre las agendas a mano")
+    for fuente in ("plantilla", "58"):
+        print(f"  {fuente}: {cuenta[(fuente, True)]} de {cuenta[(fuente, True)] + cuenta[(fuente, False)]} partes "
+              "vuelven a su herramienta")
+    print("  los pares que aparecen: " + ", ".join(f"{h}+{s} {k}" for (h, s), k in pares.most_common()))
+    for m in malos:
+        print("  no vuelve:", m)
+
+
 def main() -> None:
+    if "--ejes" in ARGS:
+        return controlar_ejes()
     if "--juntar" in ARGS:
         return juntar()
     if "--ficha58" in ARGS:
