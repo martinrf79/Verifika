@@ -150,18 +150,21 @@ async def _pedir(msgs: list, trace_id: str, formato: dict = None) -> str:
 
 
 async def interpretar(mensaje: str, historial: list, estado: dict, tienda_id: str, trace_id: str = ""):
-    """La agenda desde la ficha nativa, o None si el modelo no contesto: el turno cae al mensaje de demanda."""
-    from . import ficha
+    """La agenda desde la lectura de los dos ejes, FICHA 81, o None si el modelo no contesto: el turno cae al mensaje
+    de demanda. Si la cobertura marca una frase sin recoger, una segunda vuelta con la lectura."""
+    from . import lectura
     try:
-        crudo = await _pedir(ficha.mensajes(mensaje, historial, estado, tienda_id), trace_id, ficha.formato(tienda_id))
+        crudo = await _pedir(lectura.mensajes(mensaje, historial, estado, tienda_id), trace_id,
+                             lectura.formato(tienda_id))
     except Exception as e:  # noqa: BLE001 — sin traduccion no se inventa una respuesta
         log.warning("interprete_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:160]}")
         return None
-    salida = _json(crudo)
-    agenda = ficha.a_agenda(salida, estado, tienda_id, mensaje)
-    # LA FICHA Y LA AGENDA, ENTERAS: con la ficha grabada, una falla en vivo se repite en el banco sin modelo.
+    salida, releyo = await lectura.releer(mensaje, historial, estado, _json(crudo), tienda_id, _pedir, trace_id)
+    agenda = lectura.a_agenda(salida, estado, tienda_id, mensaje)
+    # LA LECTURA Y LA AGENDA, ENTERAS: con la lectura grabada, una falla en vivo se repite en el banco sin modelo.
     log.info("interprete_ok", trace_id=trace_id, acciones=[p.get("accion") for p in A.preguntas(agenda)],
-             ficha=json.dumps(salida, ensure_ascii=False)[:4000], agenda=json.dumps(agenda, ensure_ascii=False)[:4000])
+             releyo=releyo, ficha=json.dumps(salida, ensure_ascii=False)[:4000],
+             agenda=json.dumps(agenda, ensure_ascii=False)[:4000])
     return agenda
 
 

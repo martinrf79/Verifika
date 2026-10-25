@@ -517,9 +517,7 @@ async def ficha58() -> None:
 #   sobre  producto, rubro, mostrado, tema, lugar, pedido, pago, tecnologia, tienda, persona, cliente, fuera o nada
 # Y el codigo cruza los dos, con las senales que trae la parte —con que tiene que andar—, y elige la herramienta.
 
-HACE = ("pregunta", "pide_ver", "elige", "cambia", "saca", "de_si", "pide", "nada")
-SOBRE = ("producto", "rubro", "mostrado", "tema", "lugar", "pedido", "pago", "tecnologia", "tienda", "persona",
-         "cliente", "fuera", "nada")
+from app.core.flujo.lectura import HACE, SOBRE, cruce  # noqa: E402  — el cruce es el del app
 _OTRO = {"catalogo": ("pregunta", "tienda"), "humano": ("pide", "persona"), "fuera_de_tema": ("pregunta", "fuera"),
          "dato": ("de_si", "cliente"), "saludo": ("nada", "nada"), "corrige": ("nada", "nada")}
 
@@ -557,19 +555,6 @@ def ejes(p: dict) -> list:
     return [("nada", "nada")]
 
 
-def cruce(hace: str, sobre: str, con: bool = False) -> str:
-    """La herramienta del menu que cumple una parte, desde los dos ejes. Sin modelo."""
-    if hace == "pide_ver":
-        return "producto" if sobre == "producto" else "buscar"
-    if hace == "pregunta":
-        return {"producto": "compatibilidad" if con else "producto", "rubro": "buscar", "mostrado": "buscar",
-                "lugar": "envio", "tema": "politica", "tecnologia": "explicar", "pedido": "cuenta",
-                "tienda": "otro", "fuera": "otro"}.get(sobre, "otro")
-    if hace == "elige":
-        return "cuenta" if sobre == "pago" else "comprar"
-    if hace in ("cambia", "saca"):
-        return "comprar"
-    return "otro"
 
 
 def controlar_ejes() -> None:

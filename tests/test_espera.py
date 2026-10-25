@@ -219,35 +219,27 @@ def test_lo_que_va_adentro_lo_define_cada_tienda(firestore_doble):
 # LA CHARLA DE PRODUCCION DEL 23-OCT, 01:17, con las fichas que devolvio el modelo, por el paso a la agenda y el
 # webhook entero. "Sumame un Redragon Cobra" buscaba un mouse cualquiera, anotaba el G203 y mandaba al cliente la nota
 # "nombre del cliente". Con el Cobra sin elegir, el reemplazo ademas proponia sacar los mouses del pedido.
-SD = "sin decir"
+def _lec(*partes, responde=""):
+    return {"partes": [{"cliente": "", **p} for p in partes], "todo": {"responde": responde}}
 
 
-def _it(producto, color=SD, renglon="nuevo"):
-    return {"producto": producto, "rubro": "mouse", "cantidad": 1, "color": color, "condiciones": [], "orden": "nada",
-            "renglon": renglon}
-
-
-def _fi(items, responde="nada", dudas=()):
-    return {"pedido": [{"destino": SD, "items": items}], "preferencias": {"condiciones": [], "orden": "nada"},
-            "pago": {"medios": [{"medio": SD, "porcentaje": 100}], "tope_total": None}, "consultas": [], "son": None,
-            "responde": responde, "cliente": {"nombre": SD, "localidad": SD}, "dudas": list(dudas)}
-
-
-COBRA_VIVO = [("Quiero un Logitech M170", _fi([_it("Logitech M170", renglon="L-1")])),
-              ("blanco", _fi([_it("Logitech M170", "blanco", "L-1")], "R-1")),
-              ("sumame también un Redragon Cobra", _fi([_it("Mouse Logitech M170 Blanco", "blanco", "L-1"),
-                                                        _it("Redragon Cobra")], "R-1", ["nombre del cliente"]))]
+# Las lecturas de la charla real, en la forma de los dos ejes, FICHA 81: lo que llega al ejecutor es lo mismo.
+COBRA_VIVO = [("Quiero un Logitech M170", _lec({"hace": "elige", "sobre": "producto", "que": "Logitech M170"})),
+              ("blanco", _lec({"hace": "elige", "sobre": "producto", "que": "L-1", "variante": "blanco"},
+                              responde="R-1")),
+              ("sumame también un Redragon Cobra", _lec({"hace": "elige", "sobre": "producto",
+                                                         "que": "Redragon Cobra"}))]
 
 
 def test_la_charla_del_cobra_en_produccion():
     from app.core import llm_reintento
-    from app.core.flujo import ficha
+    from app.core.flujo import lectura
     puerta = llm_reintento._cliente
     interprete = CB.instalar()
     cola = list(COBRA_VIVO)
 
     async def _interpretar(msg, historial, estado, tienda_id, trace_id=""):
-        return ficha.a_agenda(cola.pop(0)[1], estado, tienda_id, msg)
+        return lectura.a_agenda(cola.pop(0)[1], estado, tienda_id, msg)
 
     async def _explicar(*a, **k):
         return ""

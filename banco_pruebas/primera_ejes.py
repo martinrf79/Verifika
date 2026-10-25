@@ -68,120 +68,58 @@ _ENTERO = {"type": ["integer", "null"]}
 
 # ══ LA CONSIGNA ══════════════════════════════════════════════════════════════
 
-CONSIGNA = """Sos parte del sistema de una tienda online de tecnologia de Argentina que vende por WhatsApp. No le contestas
-al cliente: otro programa busca, calcula y contesta. Tu trabajo es pasarle a ese programa, completo, lo que el cliente
-pregunta, pide o decide en su ULTIMO MENSAJE. La LIBRETA es la memoria de la charla, escrita por el programa: M-1 lo
-mostrado, L-1 un renglon del pedido, R-1 lo que pregunto el vendedor. El programa no vuelve a leer el mensaje: lo que no
-pongas no existe.
-
-Separa el mensaje en PARTES, una por cada cosa que pide, pregunta o decide, en su orden. Una parte habla de una sola
-cosa: "dos teclados y dos mouse" son dos partes. Si la misma cosa va a dos destinos, una parte por destino. El destino,
-la cantidad, el color y las condiciones van DENTRO de su parte, nunca como parte aparte. Lo que vale para todo el
-mensaje —"todo lo mas barato", el tope del total, como paga, cuantos son— va en "todo".
-
-Por cada parte, en este orden:
-- "cliente": las palabras del cliente de esa parte, tal cual.
-- "hace", uno de estos:
-    pregunta   quiere saber algo: precio, stock, un dato, si anda con algo, el envio, una regla, el total
-    pide_ver   quiere ver opciones de algo que todavia no eligio: "mostrame", "busco", "tenes", "necesito algo para"
-    elige      decide llevar algo: "me llevo", "anotame", "sumame", "quiero dos de esos", o arma el pedido con cantidad
-               y destino. Elegir no es comprar: el programa pide el nombre y cobra despues.
-    cambia     cambia algo que ya esta en el pedido: el producto, la cantidad, el color o el destino
-    saca       saca algo del pedido
-    de_si      cuenta algo de si: quien es, de donde es, el equipo que tiene
-    pide       pide hablar con una persona
-    nada       saluda, agradece, o confirma sin pedir nada
-- "sobre", uno de estos: producto (un modelo, o lo que senala de lo mostrado), rubro (una clase de producto sin
-  modelo), mostrado (elige o filtra solo entre lo que ya le mostraron), tema (una regla de la tienda), lugar (a donde
-  se manda, cuando pregunta el envio), pedido (lo que ya pidio, o el total), pago, tecnologia (saber general), tienda
-  (que vende), persona, cliente, fuera (otro tema) o nada.
-- "que": lo que nombra, como lo dijo o con su numero de la libreta: "G305", "M-2", "L-1", "los otros". Si es una clase
-  de producto, en "rubro" la de la lista; si es una regla, en "tema" la de la lista; si es un lugar, el lugar.
-- las casillas, solo con lo que dijo; si no lo dijo, vacia o null:
-    cantidad      cuantos de esa cosa
-    variante      el color o la version
-    destino       a donde va lo que elige o cambia
-    condiciones   lo que exige que tenga, corto: "inalambrico", "hasta $80.000" si es el tope de cada uno
-    no_quiere     lo que no quiere: "Genius", "fabricado en China"
-    prefiere      lo que prefiere sin exigirlo: "preferentemente Logitech" va aca, no en condiciones
-    orden         como elegir entre varios, de la lista
-    con           con que tiene que andar: "Mac", "mi notebook"
-    quiere_saber  el dato que pregunta: "stock", "si sirve para jugar"
-    afirma        lo que da por cierto del producto o de la tienda: "es inalambrico", "tienen 50 off"
-    por           en un cambio de producto, el producto nuevo. La cantidad, el color o el destino nuevos van en su
-                  casilla
-    depende_de    el numero de la parte de la que depende, si lo dice con un "si": "si hay, me lo llevo" depende de la
-                  pregunta "¿hay?"; null si no depende
-    vale_si       "si" si vale cuando la otra da que si, "no" si vale cuando da que no: "si no hay, el otro"
-    si_cumple     lo que el producto tiene que cumplir para llevarlo, que controla el programa: "anda con Mac", "sale
-                  menos de 10 mil", "es inalambrico"; vacio si no pone condicion
-    corrige       true si en este mensaje retira algo que dijo: "ah no, mejor". Lo retirado no va en ninguna casilla.
-
-En "todo": orden para todo, tope_total del total en pesos, pago [{{medio, porcentaje}}] —sin medio dicho, "sin decir"—,
-son si dice cuantos son en total, rehace true si rehace el pedido entero, responde "R-1" si contesta lo que pregunto el
-vendedor, y cliente: nombre, localidad, es —jubilado, revendedor, empresa— y equipo.
-
-REGLAS DE CLASE:
-- Ninguna parte elige un producto que el cliente no nombro: si lo decide un orden o una condicion, va en su casilla y el
-  programa elige. "Entre el G305 y el G203, el inalambrico" es elegir los dos con si_cumple "es inalambrico".
-- Lo que se decide con un "si" no se elige suelto: lleva depende_de o si_cumple.
-- Una pregunta no cambia el pedido: "¿hay tres?" es pregunta con cantidad 3, no elige tres.
-- "Los otros", "lo demas", "el resto" van como "que": "los otros", con la cantidad si la dice. Si primero dice cuantos
-  quiere de cada cosa y despues los reparte, va una parte pide_ver con el total de cada cosa, y una que elige por cada
-  destino.
-- El tope de lo que busca va en condiciones; el tope del total, en "todo".
-
-"rubro": uno de estos, tal cual, o "ninguno": {rubros}.
-"tema": uno de estos, tal cual, o "ninguno": {temas}.
-"orden": uno de estos, tal cual: {ordenes}.
-
-EJEMPLOS RESUELTOS, de otros clientes; las casillas vacias no se muestran:
-{ejemplos}"""
-
-HACE, SOBRE = list(V.HACE), list(V.SOBRE)
 
 
-def _ordenes() -> list:
-    return list(K.ORDEN) + [NADA]
+
+
+
+
+
+
+
+
+
+# ══ LA LECTURA ES LA DEL APP: el banco la mide, no la copia ══════════════════
+from app.core.flujo import lectura as L  # noqa: E402
+
+CONSIGNA, FALTO = L.CONSIGNA, L.FALTO
+_conds_de, _vacio = L._conds_de, L._vacio
 
 
 def esquema() -> dict:
-    from app.core.flujo.ficha import _rubros, _temas_de
-    rubro = {"type": "string", "enum": _rubros(TID) + ["ninguno"]}
-    tema = {"type": "string", "enum": _temas_de(TID) + ["ninguno"]}
-    parte = {"type": "object", "properties": {
-        "cliente": _TXT, "hace": {"type": "string", "enum": HACE}, "sobre": {"type": "string", "enum": SOBRE},
-        "que": _TXT, "rubro": rubro, "tema": tema, "cantidad": _ENTERO, "variante": _TXT, "destino": _TXT,
-        "condiciones": _LISTA, "no_quiere": _LISTA, "prefiere": _LISTA,
-        "orden": {"type": "string", "enum": _ordenes()}, "con": _TXT, "quiere_saber": _TXT, "afirma": _TXT, "por": _TXT,
-        "depende_de": _ENTERO, "vale_si": {"type": "string", "enum": ["si", "no", ""]}, "si_cumple": _TXT,
-        "corrige": {"type": "boolean"}},
-        "required": ["cliente", "hace", "sobre", "que", "rubro", "tema", "cantidad", "variante", "destino",
-                     "condiciones", "no_quiere", "prefiere", "orden", "con", "quiere_saber", "afirma", "por", "depende_de",
-                     "vale_si", "si_cumple", "corrige"]}
-    todo = {"type": "object", "properties": {
-        "orden": {"type": "string", "enum": _ordenes()}, "tope_total": _ENTERO,
-        "pago": {"type": "array", "items": {"type": "object", "properties": {"medio": _TXT, "porcentaje": {
-            "type": "integer"}}, "required": ["medio", "porcentaje"]}},
-        "son": _ENTERO, "rehace": {"type": "boolean"}, "responde": _TXT,
-        "cliente": {"type": "object", "properties": {"nombre": _TXT, "localidad": _TXT, "es": _TXT, "equipo": _TXT},
-                    "required": ["nombre", "localidad", "es", "equipo"]}},
-        "required": ["orden", "tope_total", "pago", "son", "rehace", "responde", "cliente"]}
-    return {"type": "object", "properties": {"partes": {"type": "array", "items": parte}, "todo": todo},
-            "required": ["partes", "todo"]}
+    return L.esquema(TID)
 
 
 def formato() -> dict:
-    return {"type": "json_schema", "json_schema": {"name": "partes", "schema": esquema()}}
+    return L.formato(TID)
 
 
 def consigna() -> str:
-    from app.core.flujo.ficha import _rubros, _temas_de
-    ej = json.load(open(EJEMPLOS, encoding="utf-8"))
-    texto = "\n\n".join(f"{e['libreta']}\nULTIMO MENSAJE: {e['frase']}\n-> {json.dumps(e['salida'], ensure_ascii=False)}"
-                        for e in ej)
-    return CONSIGNA.format(rubros=", ".join(_rubros(TID)), temas=", ".join(_temas_de(TID)),
-                           ordenes=" | ".join(_ordenes()), ejemplos=texto)
+    return L.consigna(TID)
+
+
+def normalizar(salida: dict) -> tuple:
+    return (dict(salida or {}), []) if "--crudo" in ARGS else L.normalizar(salida, TID)
+
+
+def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
+    return L.a_agenda(salida, estado, TID, mensaje)
+
+
+def frases(mensaje: str) -> list:
+    return L.frases(mensaje)
+
+
+def anclas(frase: str) -> list:
+    return L.anclas(frase, TID)
+
+
+def sin_cubrir(mensaje: str, salida: dict) -> list:
+    return L.sin_cubrir(mensaje, salida, TID)
+
+
+async def releer(mensaje: str, historial: list, estado: dict, salida: dict) -> tuple:
+    return await L.releer(mensaje, historial, estado, salida, TID, interprete._pedir, "primera_ejes_releer")
 
 
 def mensajes(mensaje: str, historial: list, estado: dict) -> list:
@@ -327,336 +265,37 @@ def armar_ejemplos() -> None:
 
 # ══ DE LAS PARTES A LA AGENDA, sin modelo ════════════════════════════════════
 
-def _parte_limpia(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not _vacio(v)}
 
 
-def _conds_de(p: dict) -> list:
-    return [str(c) for c in V._lista(p.get("condiciones")) if str(c).strip()] + \
-        [f"que no sea {x}" for x in V._lista(p.get("no_quiere")) if str(x).strip()] + \
-        [f"preferentemente {x}" for x in V._lista(p.get("prefiere")) if str(x).strip()]
 
 
 # ══ LA FORMA NORMAL DE LAS PARTES: lo que quiere decir cada forma de la salida, sin leer el mensaje ════════════════
 # Cada regla define una forma, no corrige un caso; se mide sobre lo grabado en las 48, las 58 y las 16 nuevas.
 
-_COSA = ("rubro", "producto", "mostrado")
 
 
-def reparto_de_lugares(partes: list) -> bool:
-    """UNA PARTE QUE SOLO TRAE UN LUGAR, sin preguntar, es el reparto de lo pedido en el mismo mensaje: "dos teclados y
-    dos mouse; un envio a Cordoba y otro a Rio Tercero". Lo que no tiene destino se divide entre esos lugares, si la
-    cantidad se divide justo; si no, queda sin destino y el borrador lo pregunta."""
-    # Un lugar es una parte con destino que no nombra nada de la tienda ni de la libreta: "un puesto va a Cordoba",
-    # "dos van a Rosario". Su cantidad, si la dice, es cuantas unidades del reparto van ahi.
-    lugares = [p for p in partes if p.get("hace") != "pregunta" and (p.get("sobre") == "lugar" or (
-        p.get("sobre") == "pedido" and not _vacio(p.get("destino")) and not re.search(r"\b[LM]-\d", str(p.get("que") or ""))
-        and not K.solo_rubro(str(p.get("que") or ""), TID)))]
-    cosas = [p for p in partes if p.get("sobre") in _COSA and p.get("hace") in ("elige", "pide_ver")
-             and _vacio(p.get("destino"))]
-    if not lugares or not cosas:
-        return False
-    destinos = [(str(p.get("destino") or p.get("que") or ""), K.entero(p.get("cantidad")) or 1) for p in lugares]
-    unidades = sum(k for _, k in destinos)
-    for c in cosas:
-        cant = K.entero(c.get("cantidad")) or 1
-        if cant == unidades:
-            reparto = [(d, k) for d, k in destinos]
-        elif cant % len(destinos) == 0:
-            reparto = [(d, cant // len(destinos)) for d, _ in destinos]
-        else:
-            continue
-        i = partes.index(c)
-        partes[i:i + 1] = [{**c, "cantidad": k, "destino": d} for d, k in reparto]
-    for p in lugares:
-        partes.remove(p)
-    return True
 
 
-def ver_con_destino(partes: list) -> bool:
-    """PEDIR VER ALGO QUE YA TIENE A DONDE VA es armar el pedido: lo elige, y el codigo busca con su criterio."""
-    hizo = False
-    for p in partes:
-        if p.get("hace") == "pide_ver" and p.get("sobre") in ("rubro", "producto") and not _vacio(p.get("destino")):
-            p["hace"] = "elige"
-            hizo = True
-    return hizo
 
 
-def una_cosa_por_parte(partes: list) -> bool:
-    """UNA PARTE QUE NOMBRA DOS RUBROS —"un mouse y un teclado van a Rosario"— es una parte por rubro, con lo mismo."""
-    hizo = False
-    for p in list(partes):
-        if p.get("sobre") != "rubro" or p.get("hace") not in ("elige", "pide_ver"):
-            continue
-        trozos = [x.strip() for x in re.split(r"\by\b|,", str(p.get("que") or "")) if x.strip()]
-        rubros = [K.solo_rubro(x, TID) for x in trozos]
-        if len(trozos) > 1 and all(rubros) and len(set(rubros)) == len(rubros):
-            i = partes.index(p)
-            partes[i:i + 1] = [{**p, "que": r, "rubro": r} for r in rubros]
-            hizo = True
-    return hizo
 
 
-def un_lugar_por_parte(partes: list) -> bool:
-    """UN DESTINO QUE NOMBRA VARIOS LUGARES —"a Ushuaia y a Salta", dos parlantes— reparte la cantidad entre ellos."""
-    from app.core.flujo.normal import lugares
-    hizo = False
-    for p in list(partes):
-        ls = [x[0] for x in lugares(str(p.get("destino") or ""))] if p.get("hace") in ("elige", "pide_ver") else []
-        cant = K.entero(p.get("cantidad")) or len(ls)
-        if len(ls) > 1 and cant % len(ls) == 0:
-            i = partes.index(p)
-            partes[i:i + 1] = [{**p, "destino": d, "cantidad": cant // len(ls)} for d in ls]
-            hizo = True
-    return hizo
 
 
-def sin_repetir(partes: list) -> bool:
-    """UNA PARTE IGUAL A OTRA del mismo mensaje es la misma cosa dicha dos veces: se cuenta una."""
-    vistas, hizo = set(), False
-    for p in list(partes):
-        clave = json.dumps({k: p.get(k) for k in ("hace", "sobre", "que", "cantidad", "destino", "variante", "por")},
-                           sort_keys=True, ensure_ascii=False)
-        if clave in vistas:
-            partes.remove(p)
-            hizo = True
-        vistas.add(clave)
-    return hizo
 
 
-REGLAS = (sin_repetir, una_cosa_por_parte, reparto_de_lugares, un_lugar_por_parte, ver_con_destino)
 
 
-def normalizar(salida: dict) -> tuple:
-    """(la salida en forma normal, las reglas que aplico)."""
-    s = copy.deepcopy(salida if isinstance(salida, dict) else {})
-    partes = [p for p in V._lista(s.get("partes")) if isinstance(p, dict)]
-    aplicadas = [r.__name__ for r in REGLAS if "--crudo" not in ARGS and r(partes)]
-    s["partes"] = partes
-    return s, aplicadas
 
 
-_COLORES = {}
 
 
-def _definir(p: dict) -> dict:
-    """Lo que quiere decir cada casilla, en los nombres de la tienda: "negros" es el color negro; "es inalambrico" pide
-    que sea inalambrico."""
-    from app.core.flujo.marcador import _mismo
-    if not _COLORES:
-        _COLORES["todos"] = sorted({K.n(x.get("color")) for x in K.productos(TID) if x.get("color")})
-    if p.get("variante"):
-        v = K.n(p["variante"])
-        p["variante"] = next((c for c in _COLORES["todos"] if _mismo(v, c)), p["variante"])
-    if p.get("si_cumple"):
-        p["si_cumple"] = re.sub(r"^(que )?(es|sea|sean|son) ", "", K.n(p["si_cumple"]))
-    return p
 
 
-def _sin_envio(q) -> str:
-    """Lo que pregunta del producto sin el envio, que va aparte con su destino: "precio con envio" es el precio."""
-    return re.sub(r"\s*(con|y|mas)\s+(el\s+)?envio\b", "", K.n(q)).strip()
 
 
-def _monto_de(texto) -> int:
-    from app.core.flujo import marcador as MK
-    m = next((m for m in MK._MONTO.finditer(K.n(texto)) if m.group(2) or m.group(3)), None)
-    return K._monto(m.group(1) or m.group(3), m.group(2) or "") if m else 0
 
 
-def a_agenda(salida: dict, estado: dict, mensaje: str = "") -> dict:
-    """La agenda que cumple el ejecutor: cada parte por el cruce de sus dos ejes. El codigo controla que un modelo que
-    nombra la parte lo haya nombrado el cliente o lo haya leido, como en la ficha nativa."""
-    from app.core.flujo import borrador as B
-    from app.core.flujo import ficha as F
-    salida, _ = normalizar(salida)
-    partes = [p for p in V._lista(salida.get("partes")) if isinstance(p, dict)]
-    todo = salida.get("todo") if isinstance(salida.get("todo"), dict) else {}
-    nums = interprete.numeros(estado)
-    b = B.leer(estado.get("borrador"))
-    renglones = {r["L"]: r for r in b["renglones"]}
-    resuelto = B.resolver(b, TID) if b["renglones"] else []
-    vistos = F._vistos(estado, resuelto, mensaje, TID)
-    orden_todo = F._orden(todo.get("orden"))
-    ps, de_parte, busquedas, agrega = [], {}, {}, []
-
-    def pregunta(accion, cita, i, **datos):
-        q = {"n": max([x["n"] for x in ps] + [0]) + 1, "cita": cita, "accion": accion, **{k: v for k, v in datos.items() if v not in (None, "", [])}}
-        ps.append(q)
-        de_parte.setdefault(i, q["n"])
-        return q
-
-    def si_de(p):
-        d = K.entero(p.get("depende_de"))
-        return {"de": de_parte[d], "da": p.get("vale_si") or "si"} if d and d in de_parte else None
-
-    for i, p in enumerate(partes, 1):
-        p = _definir(_parte_limpia(p))
-        hace, sobre = p.get("hace") or NADA, p.get("sobre") or NADA
-        cita, que = str(p.get("cliente") or ""), str(p.get("que") or "")
-        orden = F._orden(p.get("orden"), orden_todo)
-        accion = V.cruce(hace, sobre, con=bool(p.get("con")))
-        if hace == "pregunta" and sobre == "mostrado" and F._refs(que, nums):
-            accion = "producto"  # preguntar por lo que senala de lo mostrado es preguntar por ese producto
-        if accion == "explicar" and p.get("con") and F._rubro(que, TID, str(p.get("rubro") or "")):
-            # QUE LE SIRVE DE UN RUBRO DE LA TIENDA A LO SUYO es compatibilidad, no saber general.
-            accion, que = "compatibilidad", F._rubro(que, TID, str(p.get("rubro") or ""))
-        si = si_de(p)
-        if accion == "buscar":
-            rub = F._rubro(que, TID, str(p.get("rubro") or "")) or "toda la tienda"
-            pregunta("buscar", cita, i, rubro=rub, cantidad=K.entero(p.get("cantidad")) or None,
-                     condiciones=_conds_de(p), orden=orden, entre_lo_mostrado=sobre == "mostrado", si=si)
-        elif accion in ("producto", "compatibilidad"):
-            refs = [r for r in F._refs(que, nums) if r[0] in "ML"]
-            # Lo que senala de la libreta va junto, y si puede ser varios el codigo pregunta cual; lo que nombra, uno
-            # por uno.
-            prods = [refs] if len(refs) > 1 else refs or [x.strip() for x in re.split(r"\by\b|,", que) if x.strip()]
-            for x in prods or [que]:
-                if accion == "compatibilidad":
-                    # Un equipo dicho sin su modelo —"mi notebook"— pide el modelo; el ejecutor no lo pregunta si el
-                    # equipo esta en su vocabulario, como "Mac".
-                    con = str(p.get("con") or "")
-                    pregunta("compatibilidad", cita, i, producto=x, con=con,
-                             falta_modelo=K.identificar(con, "", TID)["veredicto"] != "exists", si=si)
-                else:
-                    pregunta("producto", cita, i, producto=x, quiere_saber=_sin_envio(p.get("quiere_saber")) or "precio",
-                             color=p.get("variante"), afirma=p.get("afirma"), si=si)
-            # EL PRECIO DE UN PRODUCTO CON A DONDE VA es tambien el envio: la forma normal suma la cuenta.
-            from app.core.flujo.normal import lugares
-            for d in [x[0] for x in lugares(str(p.get("destino") or ""))] if accion == "producto" else []:
-                pregunta("envio", cita, i, destino=d)
-        elif accion == "envio":
-            from app.core.flujo.normal import lugares
-            # El destino es un lugar: el de su casilla o el que nombra; sin lugar, la regla del costo del envio.
-            ds = [x[0] for x in lugares(str(p.get("destino") or ""))] or [x[0] for x in lugares(que)]
-            for d in ds:
-                pregunta("envio", cita, i, destino=d)
-            if not ds:
-                pregunta("politica", cita, i, tema="costo_envio" if "costo_envio" in F._temas_de(TID) else "envios")
-        elif accion == "politica":
-            tema = str(p.get("tema") or "")
-            pregunta("politica", cita, i, tema=tema if tema in F._temas_de(TID) else "ninguno", afirma=p.get("afirma"))
-        elif accion == "explicar":
-            pregunta("explicar", cita, i, pregunta=cita or que)
-        elif accion == "cuenta":
-            if hace == "pregunta":
-                pregunta("cuenta", cita, i)
-        elif accion == "otro":
-            que_es = {("pregunta", "tienda"): "catalogo", ("pregunta", "fuera"): "fuera_de_tema",
-                      ("pide", "persona"): "humano", ("de_si", "cliente"): "dato"}.get((hace, sobre), "saludo")
-            pregunta("otro", cita, i, que=que_es)
-        elif accion == "comprar":
-            tope_si = _monto_de(p.get("si_cumple"))
-            if hace == "saca" and tope_si:
-                # "SI PASA DE 300 MIL, SACA EL MX": es el tope del total y lo que sale si lo pasa, que cuenta el codigo.
-                pregunta("cuenta", cita, i, tope=tope_si, si_pasa=que)
-            elif hace == "saca":
-                pregunta("comprar", cita, i, saca=[r for r in F._refs(que, nums) if r[0] == "L"] or [que], si=si)
-            elif hace == "cambia" and not b["renglones"] and B._destino(p.get("destino")):
-                # CAMBIAR EL DESTINO SIN PEDIDO es cambiar el de lo que pregunto: se cotiza el envio al lugar nuevo.
-                from app.core.flujo.normal import lugares
-                for d in [x[0] for x in lugares(str(p["destino"]))] or [p["destino"]]:
-                    pregunta("envio", cita, i, destino=d)
-            elif hace == "cambia":
-                Ls = [r for r in F._refs(que, nums) if r[0] == "L"]
-                rub = F._rubro(que, TID, str(p.get("rubro") or "")) if not Ls else ""
-                if Ls and (_conds_de(p) or orden != NADA):
-                    # Un renglon con condiciones nuevas cambia el criterio de su rubro, como en la ficha nativa: si dos
-                    # renglones del mismo rubro piden distinto, queda el primero. A MEDIAS.
-                    rub = K.solo_rubro(str(renglones[Ls[0]]["que"]), TID) if Ls[0] in renglones else ""
-                if rub and (_conds_de(p) or orden != NADA):
-                    # CAMBIAR EL CRITERIO DE UN RUBRO es buscarlo de nuevo con el criterio nuevo: el borrador re-resuelve
-                    # cada renglon de ese rubro con su ultima busqueda.
-                    pregunta("buscar", cita, i, rubro=rub, condiciones=_conds_de(p), orden=orden, si=si)
-                    continue
-                # "por" es el producto nuevo solo si nombra un producto o un rubro, no el destino ni la cantidad dichos.
-                por = str(p.get("por") or "")
-                es_producto = por and K.n(por) not in {K.n(p.get("destino")), K.n(p.get("variante")),
-                                                       K.n(p.get("cantidad"))} \
-                    and (K.identificar(por, "", TID)["veredicto"] != "not_found" or K.solo_rubro(por, TID))
-                datos = {k: v for k, v in (("producto", por if es_producto else ""), ("cantidad", K.entero(
-                    p.get("cantidad")) or None), ("color", p.get("variante")), ("destino", p.get("destino"))) if v}
-                pregunta("comprar", cita, i, cambia=[{"es": L, **datos} for L in Ls] or [{"es": que, **datos}], si=si)
-            elif sobre == "pedido":
-                pregunta("comprar", cita, i, confirma=[r for r in F._refs(que, nums) if r[0] == "L"], si=si)
-            else:
-                # Lo que elige: un renglon, lo mostrado, un modelo que el cliente nombro o leyo, o un rubro, que se busca
-                # con su criterio y lo elige el codigo.
-                varios = [x.strip() for x in re.split(r"\by\b|,", que) if x.strip()] if p.get("si_cumple") else [que]
-                cosas = []
-                for x in varios:
-                    if K.n(x) in B.OTROS:
-                        cosas.append({"libre": "los otros"})  # lo cuenta el borrador con la lista
-                        continue
-                    q = F._que({"producto": x, "renglon": "", "color": p.get("variante") or ""}, nums, renglones, TID,
-                               F._aceptado(vistos, orden))
-                    cosas.append(q)
-                art = {"cantidad": K.entero(p.get("cantidad")) or (None if cosas[0].get("libre") == "los otros" else 1),
-                       "color": p.get("variante") or "",
-                       "destino": B._destino(p.get("destino"))}
-                if p.get("si_cumple"):
-                    art["si_cumple"] = p["si_cumple"]
-                if len(cosas) > 1:
-                    art["producto"] = [c.get("ref") or c.get("modelo") or c.get("L") or c.get("rubro") or c.get("libre")
-                                       for c in cosas]
-                else:
-                    c = cosas[0]
-                    ya = next((x["L"] for x in resuelto for a in x.get("articulos") or []
-                               if c.get("ref") and str(a["id"]) == str(nums.get(c["ref"]))
-                               and K.n(a.get("destino")) == K.n(art["destino"])), "") if not si else ""
-                    if ya:
-                        # ELEGIR LO QUE YA ESTA EN EL PEDIDO, al mismo destino, es decir cuantos: cambia ese renglon.
-                        pregunta("comprar", cita, i, cambia=[{"es": ya, "cantidad": art["cantidad"]}])
-                        continue
-                    # Un rubro que ya tiene criterio no se vuelve a buscar si la parte no trae uno nuevo: lo pisaria.
-                    nuevo = bool(_conds_de(p)) or orden != NADA or c.get("rubro") not in b["criterios"]
-                    if "rubro" in c and c["rubro"] and nuevo:
-                        bq = busquedas.setdefault(c["rubro"], {"cantidad": 0, "condiciones": _conds_de(p),
-                                                              "orden": orden, "cita": cita, "i": i})
-                        bq["cantidad"] += art["cantidad"] or 1
-                    art["producto"] = c.get("L") or c.get("ref") or c.get("modelo") or c.get("rubro") or c.get("libre")
-                if si:
-                    pregunta("comprar", cita, i, agrega=[art], si=si)
-                else:
-                    agrega.append(art)
-                    de_parte.setdefault(i, -1)
-    for q in [q for q in ps if q["accion"] == "buscar" and q.get("rubro") in busquedas and not q.get("si")]:
-        bq = busquedas[q["rubro"]]
-        bq["cantidad"] = max(bq["cantidad"], K.entero(q.get("cantidad")))  # lo que pidio del rubro, aunque reparta menos
-        bq["condiciones"] = list(dict.fromkeys(list(q.get("condiciones") or []) + bq["condiciones"]))
-        bq["orden"] = bq["orden"] if bq["orden"] != NADA else q.get("orden") or NADA
-        ps.remove(q)
-    for rub, bq in busquedas.items():
-        pregunta("buscar", bq["cita"], bq["i"], rubro=rub, cantidad=bq["cantidad"] or None,
-                 condiciones=bq["condiciones"], orden=bq["orden"])
-    tope = K.entero(todo.get("tope_total")) or None
-    hay_pedido = bool(agrega or b["renglones"] or any(q["accion"] == "comprar" for q in ps))
-    if tope and not hay_pedido:
-        for q in ps:
-            if q["accion"] == "buscar":
-                q["condiciones"] = list(q.get("condiciones") or []) + [f"hasta ${tope:,}".replace(",", ".")]
-        tope = None
-    son = K.entero(todo.get("son")) or None
-    if agrega or (son and son != b["total"]):
-        # Rehacer es que lo que elige este mensaje es el pedido entero: sin nada elegido, no hay con que rehacerlo.
-        pregunta("comprar", "el pedido", 0, agrega=agrega, total=son, reemplaza=bool(todo.get("rehace") and agrega))
-    if orden_todo != NADA and b["renglones"] and not agrega and not any(q["accion"] == "buscar" for q in ps):
-        # OTRO ORDEN PARA TODO, con el pedido armado: el ejecutor lo reparte a cada rubro del pedido.
-        pregunta("buscar", "el pedido", 0, rubro="el pedido", orden=orden_todo)
-    reparto = [{"medio": str(m.get("medio") or "sin decir"), "porcentaje": K.entero(m.get("porcentaje"))}
-               for m in V._lista(todo.get("pago")) if isinstance(m, dict) and K.entero(m.get("porcentaje"))]
-    if reparto == [{"medio": "sin decir", "porcentaje": 100}]:
-        reparto = []
-    if reparto or tope:
-        pregunta("cuenta", "el pago", 0, reparto=reparto or None, tope=tope)
-    cli = todo.get("cliente") if isinstance(todo.get("cliente"), dict) else {}
-    cliente = {k: str(v) for k, v in cli.items() if not _vacio(v) and K.n(v) not in ("sin decir", "null")}
-    if not ps:
-        pregunta("otro", "el mensaje", 0, que="dato" if cliente else "saludo")
-    responde = next(iter(F._refs(todo.get("responde"), nums)), "")
-    return {"preguntas": ps, "cliente": cliente, "responde": responde, "respuesta": mensaje if responde else "",
-            "dudas": []}
 
 
 async def interpretar(mensaje: str, historial: list, estado: dict, tienda_id: str = TID, trace_id: str = ""):
@@ -904,9 +543,10 @@ def medir() -> None:
             V.calificar(fuente, cid, vara, leido)
         _informe_datos(nombre, ver)
     # 2. EL PEDIDO de las 48, lo que queda en el bot.
-    for nombre, agenda_de in (("ficha nativa", lambda cid, msg, estado: F.a_agenda(
-            interprete._json(_fichas().get(("48", cid)) or "{}"), estado, TID, msg)),
-            ("los dos ejes", lambda cid, msg, estado: a_agenda(sal.get(("48", cid)) or {}, estado, msg))):
+    # La ficha nativa salio del codigo el 25-oct, FICHA 81: su medida queda la de ese dia, 36 BIEN, 3 DUDO y 9 MAL en las
+    # 48, y 62 de 74 en las 58 sueltas.
+    for nombre, agenda_de in (("los dos ejes", lambda cid, msg, estado: a_agenda(sal.get(("48", cid)) or {}, estado,
+                                                                                  msg)),):
         cuenta = collections.Counter()
         for ch in CHARLAS:
             for i, tu in enumerate(ch["turnos"]):
@@ -927,10 +567,8 @@ def medir() -> None:
     # 3. LA RESPUESTA de las 58 sueltas.
     turnos58 = {f"{r['charla']} t{r['turno']}": r for r in map(json.loads, open(V.TURNOS58, encoding="utf-8"))}
     for nombre, agenda_de in (
-            ("ficha nativa", lambda cid: F.a_agenda(interprete._json(_fichas().get(("58", cid)) or "{}"),
-                                                    turnos58[cid]["estado"], TID, turnos58[cid]["msg"])),
             ("los dos ejes", lambda cid: a_agenda(sal.get(("58", cid)) or {}, turnos58[cid]["estado"],
-                                                  turnos58[cid]["msg"]) if sal.get(("58", cid)) else None)):
+                                                  turnos58[cid]["msg"]) if sal.get(("58", cid)) else None),):
         bien, total, malos = _sueltos_58_respuesta(agenda_de)
         print(f"\nLA RESPUESTA EN LAS 58 SUELTAS · {nombre}: {bien} de {total} turnos con sus casillas"
               + (f"\n    mal: {' '.join(malos)}" if ver else ""))
@@ -981,93 +619,20 @@ def _informe_datos(nombre: str, ver: bool) -> None:
 _SALUDO = set("hola buenas buen dia tardes noches gracias saludos che bueno dale ok genial perfecto".split())
 
 
-def frases(mensaje: str) -> list:
-    """El mensaje cortado en frases: por los signos y por las uniones que abren otra cosa."""
-    trozos = re.split(r"[.;!?¿¡\n]+|,\s*(?=y\s)|\s(?=y\s+(?:sumame|mandame|anotame|pago|el resto|lo demas|los otros))",
-                      str(mensaje or ""))
-    return [t.strip(" ,") for t in trozos if t and t.strip(" ,")]
 
 
-def _llenas(texto: str) -> list:
-    from app.core.flujo.agenda import _VACIAS, palabras
-    return [w for w in palabras(texto) if w not in _VACIAS and w not in _SALUDO and len(w) > 2]
 
 
-def _todas(x) -> set:
-    """Las palabras de cualquier valor de la salida; un monto, tambien en miles y en porcentaje dicho."""
-    from app.core.flujo.agenda import palabras
-    if isinstance(x, dict):
-        return set().union(*[_todas(v) for v in x.values()]) if x else set()
-    if isinstance(x, list):
-        return set().union(*[_todas(v) for v in x]) if x else set()
-    if isinstance(x, bool) or x is None:
-        return set()
-    if isinstance(x, int):
-        return {str(x), str(x // 1000)} | ({"mitad"} if x == 50 else set())
-    return set(palabras(x))
 
 
-_ANCLAS = {}
 
 
-def anclas(frase: str) -> list:
-    """Lo que la frase nombra de la fuente o del mundo y no puede perderse, cada una como las palabras que la dicen: los
-    lugares del padron, los montos, los porcentajes, los rubros, los modelos, las marcas y los colores de la tienda."""
-    from app.core.flujo import marcador as MK
-    from app.core.flujo.agenda import palabras
-    from app.core.flujo.normal import lugares
-    if not _ANCLAS:
-        ps = K.productos(TID)
-        _ANCLAS["marcas"] = {K.n(p.get("marca")) for p in ps if p.get("marca")}
-        _ANCLAS["colores"] = {K.n(p.get("color")) for p in ps if p.get("color")}
-    n = K.n(frase)
-    ws = re.findall(r"[a-z0-9]+", n)
-    out = [palabras(l) for l, _ in lugares(frase)]
-    for m in MK._MONTO.finditer(n):
-        if m.group(2) or m.group(3):
-            v = K._monto(m.group(1) or m.group(3), m.group(2) or "")
-            out.append([str(v), str(v // 1000)])
-    for m in MK._PAR.finditer(n):
-        a, b = MK._numero(m.group(1)), MK._numero(m.group(2))
-        if a + b == 100:
-            out += [[str(a), m.group(1)], [str(b), m.group(2)]]
-    out += [palabras(w) + palabras(r) for w, r in MK._rubros(ws, TID)]  # "camara" vale dicha como webcam
-    out += [palabras(t) for t, _ in MK._productos([w for w in ws if w not in K._RELLENO], TID)]
-    out += [[w] for w in ws if w in _ANCLAS["marcas"] | _ANCLAS["colores"]]
-    return [a for a in out if a]
 
 
-def sin_cubrir(mensaje: str, salida: dict) -> list:
-    """Las frases del mensaje que la salida no recoge: alguna de sus anclas no esta en ningun valor de la salida, ni en
-    lo que el modelo copio ni en las casillas. Una palabra vale tambien por sus cinco primeras letras: "memorias" y
-    "memoria ram"."""
-    copiado = _todas(salida or {})
-    copiado |= {w[:5] for w in copiado if len(w) > 5}
-    out = []
-    for f in frases(mensaje):
-        if any(not any(w in copiado or w[:5] in copiado for w in a) for a in anclas(f)):
-            out.append(f)
-    return out
 
 
-FALTO = """En tu lectura quedo sin recoger esto que dijo el cliente: {frases}. Volve a leer el ULTIMO MENSAJE y devolve la
-lectura COMPLETA, con todo lo de antes y lo que faltaba dentro de las partes que correspondan: un destino o un reparto va
-en las partes de lo que reparte. Si eso no pide ni decide nada, devolve la misma lectura."""
 
 
-async def releer(mensaje: str, historial: list, estado: dict, salida: dict) -> tuple:
-    """(la salida, si releyo): con lo que quedo sin cubrir, una segunda vuelta con la lectura y las frases que faltan."""
-    falta = sin_cubrir(mensaje, salida)
-    if not falta:
-        return salida, False
-    msgs = mensajes(mensaje, historial, estado) + [
-        {"role": "assistant", "content": json.dumps(salida, ensure_ascii=False)},
-        {"role": "user", "content": FALTO.format(frases="; ".join(f'"{f}"' for f in falta))}]
-    try:
-        return interprete._json(await interprete._pedir(msgs, "primera_ejes_releer", formato())), True
-    except Exception as e:  # noqa: BLE001 — sin segunda vuelta queda la primera
-        print("  sin segunda vuelta:", type(e).__name__, str(e)[:100])
-        return salida, False
 
 
 async def sueltos_releidos() -> None:

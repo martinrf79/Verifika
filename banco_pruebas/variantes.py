@@ -27,6 +27,8 @@ import sys
 import time
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
+if os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
+    os.environ["BANCO_CLAVE_PAGA"] = "true"  # la paga, solo con la marca de Martin
 CORRIDAS = os.path.join(AQUI, "variantes_corridas.jsonl")
 PREVIA = "19d2fdb852"  # la charla de las 19:29: siete articulos a Rosario y Neuquen, tope y pago partido
 LECTURA = {"texto": "a Rosario, 2 mouse, 1 teclado y 1 webcam; a Neuquén, 1 mouse, 1 teclado y 1 auriculares; "
@@ -107,10 +109,11 @@ FAMILIAS = {
 
 
 def _huella() -> str:
-    """La consigna y el esquema de la ficha, desde el 22-oct: un cambio en cualquiera de los dos se mide de nuevo."""
-    from app.core.flujo import ficha
-    return hashlib.sha1((ficha.consigna("verifika_prod") + json.dumps(ficha.formato("verifika_prod"), sort_keys=True))
-                        .encode()).hexdigest()[:10]
+    """La consigna y el esquema de la lectura, desde el 25-oct, FICHA 81: un cambio en cualquiera de los dos se mide de
+    nuevo."""
+    from app.core.flujo import lectura
+    return hashlib.sha1((lectura.consigna("verifika_prod") + json.dumps(lectura.formato("verifika_prod"),
+                                                                        sort_keys=True)).encode()).hexdigest()[:10]
 
 
 def _leidas() -> dict:
@@ -126,6 +129,9 @@ def correr(familias: list) -> None:
     from banco_pruebas import cableado58 as R
     from banco_pruebas import clon_produccion as C
     from app.core import llm_reintento
+    # LA PUERTA SE TOMA CON EL CLON INSTALADO: es la que anota cada llamada en el libro de la paga y guarda lo preguntado.
+    C.preparar_entorno()
+    C.instalar()
     puerta = llm_reintento._cliente
     it = R.instalar()
     real = it.interpretar
