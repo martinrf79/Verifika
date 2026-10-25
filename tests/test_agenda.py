@@ -76,11 +76,14 @@ def test_una_agenda_a_mano_por_turno_y_dentro_del_menu():
     print(f"\nAGENDAS: {len(charlas)} charlas, {sum(len(c['turnos']) for c in charlas)} turnos, {preguntas} preguntas")
 
 
-def test_lo_que_recibe_el_modelo_entra_en_tres_mil_tokens(vistas):
-    from app.core.flujo import ficha as F
-    pesos = [(sum(len(m["content"].encode()) for m in F.mensajes(msj, h, e, TIENDA)) // 4, cid, t + 1)
+def test_lo_que_recibe_el_modelo_entra_en_cuatro_mil_quinientos_tokens(vistas):
+    """El umbral sube de 3.000 a 4.500 el 25-oct, FICHA 81, con el ok de Martin: la lectura de los dos ejes lleva 26
+    casos resueltos de la plantilla de venta y las casillas de los datos. Medido sobre los 105 turnos de las 58: el mayor
+    4.332, en K21 T3, y el promedio 3.839, contra unos 3.000 de la ficha nativa."""
+    from app.core.flujo import lectura as L
+    pesos = [(sum(len(m["content"].encode()) for m in L.mensajes(msj, h, e, TIENDA)) // 4, cid, t + 1)
              for cid, t, msj, e, h in vistas]
     mayor = max(pesos)
-    assert mayor[0] <= 3000, f"{mayor[1]} T{mayor[2]}: {mayor[0]} tokens"
+    assert mayor[0] <= 4500, f"{mayor[1]} T{mayor[2]}: {mayor[0]} tokens"
     print(f"\nPESO: {len(pesos)} turnos, el mayor {mayor[0]} tokens en {mayor[1]} T{mayor[2]}, "
           f"el promedio {sum(p[0] for p in pesos) // len(pesos)}")
