@@ -83,7 +83,32 @@ El examen se miro una vez. Pasar el techo de 4.500 para llegar a 87 es un umbral
 La clave gratis agoto la cuota del dia en la corrida de comparacion. Las respuestas que alcanzaron quedaron en
 `respuestas_modelo.jsonl`: al repetir no se vuelven a pedir.
 
+## La tercera vuelta, 26-oct a la noche: la mejor config sin modelo, y el modelo dijo que no
+
+1. **Doce clases nuevas en la plantilla**, UN08 a UN19: las casillas de la base juntas como en una compra real. El techo
+   del examen sube de 87 a 98 de 105.
+2. **El ejemplo compacto**: sin la libreta si es el primer mensaje y sin el cliente de la parte que es el mensaje entero,
+   de 68 a 52 tokens. Con 2.250 tokens entran 47 fijos: el examen sin modelo da 90 de 105 contra 52.
+3. **Con Gemini y la paga, una corrida**, contra la grabada de la FICHA 81:
+
+| | FICHA 81, 26 fijos | 47 fijos compactos |
+|---|---|---|
+| las 58, turnos con todos sus datos | 76 de 105 | 75 |
+| las 48, turnos con todos sus datos | 28 de 48 | 25 |
+| las 48, el pedido BIEN y MAL SIN AVISAR | 35 y 4 | 29 y 7 |
+| las 58 sueltas, lo que lee el cliente | 70 de 74 | 71 |
+| variantes: siete, mejor y vendido | 9, 7 y 5 | 8, 6 y 5 |
+
+No entra: empeora las 48 mas que el ruido de unos cuatro turnos y baja de los pisos de variantes. En las 48 el modelo
+pone mas destinos y acierta menos, 28 de 45 contra 32: los reparte mal; el acto baja de 92 a 83.
+
+**Lo que se aprende**: que el ejemplo este a la vista no mejora al modelo; con mas ejemplos rinde peor. La vara sin modelo
+mide una condicion necesaria y no predice el resultado. La corrida cambio tres cosas a la vez —cuantos ejemplos, el
+formato compacto y las clases nuevas— y no aisla cual empeora. Los 47 quedan en `candidatos82_fijos.json`; la
+consigna sigue con los 26.
+
 ## El gasto
 
-Los embeddings con la paga por orden de Martin, menos de un centavo. El endpoint no informa el uso: el libro los anota en
+Los embeddings con la paga por orden de Martin, menos de un centavo. La tercera vuelta, con la paga y el ok de Martin:
+0,40 dolares, los sueltos y las variantes. El endpoint no informa el uso: el libro los anota en
 cero.

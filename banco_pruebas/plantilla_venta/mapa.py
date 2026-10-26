@@ -280,6 +280,20 @@ CLASES = [
     _c("UN05", "union", "ah no, mejor otra cosa", "buscar", ["cambio_de_producto"], ["58:C33"]),
     _c("UN06", "union", "uno de lo pedido a otra pieza del mismo mensaje", "producto", [], ["58:C51"]),
     _c("UN07", "union", "dato falso y compra con condicion", "politica", [], ["58:C56"]),
+    # LAS CASILLAS JUNTAS, 26-oct, FICHA 82: la grilla de la base. Cada casilla estaba sola en algun caso; una compra
+    # real las junta, y el modelo no tenia un ejemplo resuelto con la parte entera.
+    _c("UN08", "union", "varios de un rubro, con orden, a un destino", "comprar", [], ["nuevo"]),
+    _c("UN09", "union", "uno de un rubro con condicion, a un destino", "comprar", [], ["nuevo"]),
+    _c("UN10", "union", "varias unidades de un modelo a un destino", "comprar", [], ["nuevo"]),
+    _c("UN11", "union", "un modelo a dos destinos, sin pedido antes", "comprar", [], ["nuevo"]),
+    _c("UN12", "union", "busca con condicion y sin una marca", "buscar", [], ["nuevo"]),
+    _c("UN13", "union", "busca con condicion y una marca preferida", "buscar", [], ["nuevo"]),
+    _c("UN14", "union", "busca con condicion y orden", "buscar", [], ["nuevo"]),
+    _c("UN15", "union", "de lo mostrado, alguno con condicion", "buscar", [], ["nuevo"]),
+    _c("UN16", "union", "cambia cantidad y destino de lo pedido", "comprar", [], ["nuevo"]),
+    _c("UN17", "union", "cambia lo pedido por otro modelo", "comprar", [], ["nuevo"]),
+    _c("UN18", "union", "afirma un dato y pregunta otro del mismo modelo", "producto", [], ["nuevo"]),
+    _c("UN19", "union", "uno de un rubro, con orden, a un destino", "comprar", [], ["nuevo"]),
 ]
 
 # Las 58, las J y las K: todas estan en alguna clase. Lo controla `tests/test_plantilla_venta.py`.

@@ -338,7 +338,7 @@ def como_cosas(salida: dict, nums: dict) -> dict:
             acto = "lleva"
         texto = V._con_nombres(" ".join(str(p.get(k) or "") for k in ("que", "rubro", "tema", "cliente", "por")), nums)
         ref = next((f"L{m}" for m in re.findall(r"\bL-?(\d+)\b", str(p.get("que") or "")) if f"L-{m}" in nums), "")
-        conds = _conds_de(p) + ([str(p["si_cumple"])] if p.get("si_cumple") else [])
+        conds = _conds_de(p, TID) + ([str(p["si_cumple"])] if p.get("si_cumple") else [])
         cosas.append({"acto": acto, "texto": V.n(texto), "ref": ref, "datos": {
             "cantidad": K.entero(p.get("cantidad"), 1), "color": V.n(p.get("variante")),
             "destino": V.n(p.get("destino") or (p.get("por") if hace == "cambia" else "")),

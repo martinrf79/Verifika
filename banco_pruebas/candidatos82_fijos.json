@@ -1,0 +1,818 @@
+{
+ "verifika_prod": [
+  {
+   "clase": "AP03a",
+   "frase": "que venden?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "tienda",
+      "que": ""
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DE06a",
+   "frase": "tenes celular?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "celular",
+      "rubro": "celular"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DE09a",
+   "frase": "en mouse, que diferencia hay entre lo caro y lo barato?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "tecnologia",
+      "que": "que mirar al elegir mouse"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "MO02a",
+   "frase": "busco tablet tft",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "tablet",
+      "rubro": "tablet",
+      "condiciones": [
+       "tft"
+      ]
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "MO03a",
+   "frase": "teclado, si puede ser Razer",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "teclado",
+      "rubro": "teclado",
+      "prefiere": [
+       "Razer"
+      ]
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "MO04a",
+   "frase": "auricular pero Razer no",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "auriculares",
+      "rubro": "auriculares",
+      "no_quiere": [
+       "Razer"
+      ]
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "MO06a",
+   "frase": "lo mas barato en notebook",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "notebook",
+      "rubro": "notebook",
+      "orden": "mas barato"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "MO08a",
+   "frase": "pasame las tres opciones mas baratas de tablet",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "tablet",
+      "rubro": "tablet",
+      "cantidad": 3,
+      "orden": "mas barato"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "MO17a",
+   "frase": "tenes fotos?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "de_si",
+      "sobre": "cliente",
+      "que": ""
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DU01a",
+   "frase": "tenes el Clip?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Clip",
+      "quiere_saber": "stock"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DU02a",
+   "frase": "cuanto sale el Redmi?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Redmi"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DU05a",
+   "frase": "el Basilisk viene en negro?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Basilisk",
+      "quiere_saber": "stock",
+      "variante": "Negro"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DU07a",
+   "frase": "el Clip que es con cable, cuanto sale?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Clip",
+      "afirma": "con cable"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DU09a",
+   "frase": "el Tune 510BT anda con mi Mac?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Tune 510BT",
+      "con": "Mac"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DU20a",
+   "frase": "tienen descuento en todo, no?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "tema",
+      "que": "promociones",
+      "tema": "promociones",
+      "afirma": "descuento en todo"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DU29a",
+   "frase": "cuanto sale el envio a Mendoza?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "lugar",
+      "que": "Mendoza"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DC01a",
+   "frase": "me llevo el BlackWidow negro",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "producto",
+      "que": "BlackWidow",
+      "variante": "Negro"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DC02a",
+   "frase": "quiero dos BlackShark negro",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "producto",
+      "que": "BlackShark",
+      "cantidad": 2,
+      "variante": "Negro"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DC03a",
+   "frase": "quiero el Basilisk, ah no, mejor el Classic",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "producto",
+      "que": "Classic"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DC05a",
+   "frase": "el segundo",
+   "libreta": "LIBRETA:\n- MOSTRADO, del mas viejo al mas nuevo:\n  M-1 Parlante Genius SP-HF180 Negro $29.000, stock 4\n  M-2 Parlante Genius SW-2.1 375 Negro $40.500, stock 7\n- BUSCO: parlante, mas barato\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "mostrado",
+      "que": "M-2"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DC09a",
+   "frase": "negro",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Basilisk a sin destino: FALTA el color\n- ABIERTO, lo que el vendedor pregunto:\n  R-1 \"Para reservarte el Basilisk V3, ¿en qué color: Negro o Blanco?\", para: lo que dijo, espera: un color\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "de_si",
+      "sobre": "cliente",
+      "que": ""
+     }
+    ],
+    "todo": {
+     "responde": "R-1"
+    }
+   }
+  },
+  {
+   "clase": "DC10a",
+   "frase": "gris no, el otro color",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 G15 Ryzen Gris a sin destino: 1 Notebook Dell G15 Ryzen 7 16GB 512GB SSD Gris\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "cambia",
+      "sobre": "pedido",
+      "que": "L-1",
+      "variante": "Negro"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "DC13a",
+   "frase": "si el BlackWidow sale menos de 340 mil me lo llevo",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "producto",
+      "que": "BlackWidow",
+      "si_cumple": "menos de 340 mil"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "AR06a",
+   "frase": "sumame dos teclado, los mas baratos",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "rubro",
+      "que": "teclado",
+      "rubro": "teclado",
+      "cantidad": 2,
+      "orden": "mas barato"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "AR08a",
+   "frase": "del Basilisk poneme dos",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Basilisk Negro a sin destino: 1 Mouse Razer Basilisk V3 Negro\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "cambia",
+      "sobre": "pedido",
+      "que": "L-1",
+      "cantidad": 2
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "AR10a",
+   "frase": "saca el NM620 2TB",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Clip Negro a sin destino: 1 Parlante JBL Clip 4 Negro\n  L-2 1 NM620 2TB a sin destino: 1 Ssd Lexar NM620 2TB\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "saca",
+      "sobre": "pedido",
+      "que": "L-2"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "AR11a",
+   "frase": "arranquemos de cero: un NM620 2TB y nada mas",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Redmi Gris a sin destino: 1 Tablet Xiaomi Redmi Pad SE Gris\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "producto",
+      "que": "NM620 2TB"
+     }
+    ],
+    "todo": {
+     "rehace": true
+    }
+   }
+  },
+  {
+   "clase": "AR14a",
+   "frase": "cuanto es todo con envio a Mendoza?",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Basilisk Negro a sin destino: 1 Mouse Razer Basilisk V3 Negro\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "cambia",
+      "sobre": "pedido",
+      "que": "L-1",
+      "destino": "Mendoza"
+     },
+     {
+      "hace": "pregunta",
+      "sobre": "pedido",
+      "que": "el total"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "AR16a",
+   "frase": "no me quiero pasar de 90 mil",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Clip Negro a sin destino: 1 Parlante JBL Clip 4 Negro\n",
+   "salida": {
+    "partes": [],
+    "todo": {
+     "tope_total": 90000
+    }
+   }
+  },
+  {
+   "clase": "CE05a",
+   "frase": "Sofia Benitez, y pago con transferencia",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 G15 Ryzen Gris a sin destino: 1 Notebook Dell G15 Ryzen 7 16GB 512GB SSD Gris\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "de_si",
+      "sobre": "cliente",
+      "que": ""
+     }
+    ],
+    "todo": {
+     "pago": [
+      {
+       "medio": "transferencia",
+       "porcentaje": 100
+      }
+     ],
+     "cliente": {
+      "nombre": "Sofia Benitez"
+     }
+    }
+   }
+  },
+  {
+   "clase": "CE06a",
+   "frase": "dale, cerralo",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 Clip Negro a sin destino: 1 Parlante JBL Clip 4 Negro\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "pedido",
+      "que": "L-1"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "NC02a",
+   "frase": "gracias!",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "nada",
+      "sobre": "nada",
+      "que": ""
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "NC04a",
+   "frase": "que mal servicio",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide",
+      "sobre": "persona",
+      "que": ""
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "FU05a",
+   "frase": "olvide mi contraseña",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "fuera",
+      "que": ""
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "FU06a",
+   "frase": "tienen instagram?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "tema",
+      "que": "redes",
+      "tema": "redes"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN02a",
+   "frase": "si no hay Clip en negro, pasame el Flip",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Clip",
+      "variante": "Negro",
+      "cliente": "si no hay Clip en negro"
+     },
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Flip",
+      "depende_de": 1,
+      "vale_si": "no",
+      "cliente": "pasame el Flip"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN03a",
+   "frase": "si el Go 3 anda con mi Mac me lo llevo",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Go 3",
+      "con": "Mac",
+      "cliente": "si el Go 3 anda con mi Mac"
+     },
+     {
+      "hace": "elige",
+      "sobre": "producto",
+      "que": "Go 3",
+      "depende_de": 1,
+      "vale_si": "si",
+      "cliente": "me lo llevo"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN08a",
+   "frase": "anotame dos parlante, los mas economicos, que van para Mendoza",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "rubro",
+      "que": "parlante",
+      "rubro": "parlante",
+      "cantidad": 2,
+      "destino": "Mendoza",
+      "orden": "mas barato"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN09a",
+   "frase": "anotame un tablet tft para mandar a Rosario",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "rubro",
+      "que": "tablet",
+      "rubro": "tablet",
+      "destino": "Rosario",
+      "condiciones": [
+       "tft"
+      ]
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN10a",
+   "frase": "dos BlackWidow con envio a Mendoza",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "producto",
+      "que": "BlackWidow",
+      "cantidad": 2,
+      "destino": "Mendoza"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN12a",
+   "frase": "mouse con cable pero Razer no",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "mouse",
+      "rubro": "mouse",
+      "condiciones": [
+       "con cable"
+      ],
+      "no_quiere": [
+       "Razer"
+      ]
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN13a",
+   "frase": "notebook ips, si puede ser Dell",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "notebook",
+      "rubro": "notebook",
+      "condiciones": [
+       "ips"
+      ],
+      "prefiere": [
+       "Dell"
+      ]
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN14a",
+   "frase": "el parlante con cable mas barato",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pide_ver",
+      "sobre": "rubro",
+      "que": "parlante",
+      "rubro": "parlante",
+      "orden": "mas barato",
+      "condiciones": [
+       "con cable"
+      ]
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN16a",
+   "frase": "que sean dos y mandalos a Mendoza",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 BlackWidow Negro a sin destino: 1 Teclado Razer BlackWidow V4 Negro\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "cambia",
+      "sobre": "pedido",
+      "que": "L-1",
+      "cantidad": 2,
+      "destino": "Mendoza"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN17a",
+   "frase": "en vez del BlackShark poneme el P3 Plus 2TB",
+   "libreta": "LIBRETA:\n- BORRADOR:\n  L-1 1 BlackShark Negro a sin destino: 1 Auriculares Razer BlackShark V2 Negro\n",
+   "salida": {
+    "partes": [
+     {
+      "hace": "cambia",
+      "sobre": "pedido",
+      "que": "L-1",
+      "por": "P3 Plus 2TB"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN18a",
+   "frase": "el Basilisk es inalambrico, no? hay stock?",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "pregunta",
+      "sobre": "producto",
+      "que": "Basilisk",
+      "quiere_saber": "stock",
+      "afirma": "inalambrico"
+     }
+    ],
+    "todo": {}
+   }
+  },
+  {
+   "clase": "UN19a",
+   "frase": "el notebook mas barato que tengas, para Rosario",
+   "libreta": "",
+   "salida": {
+    "partes": [
+     {
+      "hace": "elige",
+      "sobre": "rubro",
+      "que": "notebook",
+      "rubro": "notebook",
+      "destino": "Rosario",
+      "orden": "mas barato"
+     }
+    ],
+    "todo": {}
+   }
+  }
+ ]
+}

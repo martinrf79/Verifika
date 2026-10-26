@@ -310,12 +310,12 @@ def calibrar() -> None:
 # 26-oct, con Martin. Los fijos se eligen por parte entera, con un presupuesto de tokens para que el peor turno de las 58
 # no pase el techo de 4.500 de `tests/test_agenda.py`: de a uno, el caso que mas partes comunes de la base suma por
 # token. Las partes se pesan por cuantas frases de la base las tienen.
-PRESUPUESTO = 2100
+PRESUPUESTO = 2250
 # Las palabras del cliente de cada parte, en los casos nuevos de dos partes: donde empieza la segunda. None, las dos con
 # la frase entera. Los curados conservan las suyas, corregidas a mano.
 CORTE = {"AP02a": "tenes", "UN01a": "que ", "AR03a": "y un", "AR14a": None, "UN07a": "entonces", "UN04a": "que otro",
          "DE04a": "y el", "DC04a": None, "FU02a": "che", "AR20a": "si no", "DU08a": "y el", "AR01a": "y un",
-         "AR02a": "y uno", "FU04a": "poneme", "UN06a": "y mandame"}
+         "AR02a": "y uno", "FU04a": "poneme", "UN06a": "y mandame", "UN11a": "y el otro"}
 
 
 def recortar(e: dict) -> str:
@@ -330,6 +330,16 @@ def recortar(e: dict) -> str:
                                          if pal & set(re.findall(r"[a-z0-9]{3,}", n(x))))
         out.append(linea)
     return "\n".join(out)
+
+
+def compacto(e: dict) -> dict:
+    """El ejemplo como lo escribe `lectura.un_ejemplo`: la libreta recortada y con su salto, vacia si es el primer
+    mensaje, y sin el cliente de la parte que es el mensaje entero. Un cuarto menos de tokens con los mismos datos."""
+    if e["libreta"] and not e["libreta"].endswith("\n"):
+        e["libreta"] = "" if "vacia, es el primer mensaje" in e["libreta"] else recortar(e) + "\n"
+    e["salida"] = {**e["salida"], "partes": [{k: v for k, v in p.items() if (k, v) != ("cliente", e["frase"])}
+                                             for p in e["salida"]["partes"]]}
+    return e
 
 
 def _ejemplo(c: dict) -> dict:
@@ -347,10 +357,8 @@ def _ejemplo(c: dict) -> dict:
 
 
 def un_ejemplo(e: dict) -> str:
-    """Un caso resuelto con la salida sin espacios, los mismos datos con menos tokens. PLAN: pasa a `lectura.consigna`
-    junto con los fijos de `--armar`, cuando las variantes corran con el modelo; hasta entonces la consigna los escribe
-    con espacios."""
-    return f"{e['libreta']}\nULTIMO MENSAJE: {e['frase']}\n-> " + json.dumps(e["salida"], ensure_ascii=False, separators=",:")
+    """El ejemplo compacto como lo leeria el modelo. Medido con Gemini el 26-oct no entro: ver la FICHA 82."""
+    return f"{e['libreta']}ULTIMO MENSAJE: {e['frase']}\n-> " + json.dumps(e["salida"], ensure_ascii=False, separators=",:")
 
 
 def tokens_ejemplo(e: dict) -> int:
@@ -365,15 +373,17 @@ def armar() -> None:
     B = base()
     ruta = os.path.join(os.path.dirname(AQUI), "app", "core", "flujo", "lectura_ejemplos.json")
     todo = json.load(open(ruta, encoding="utf-8"))
-    curados = {e["clase"]: e for e in todo[TID]}
+    # Los 26 curados a mano hasta el 26-oct, con las palabras del cliente de cada parte: se conservan aunque no salgan.
+    curados = {e["clase"]: e for e in json.load(open(os.path.join(AQUI, "candidatos82_curados.json"),
+                                                     encoding="utf-8"))[TID]}
     res = {c["id"]: c for c in LL.llenar()["casos"] if c.get("entra")}
     ejs = {}
     for cid, c in res.items():
         try:
-            ejs[cid] = dict(curados[cid]) if cid in curados else _ejemplo(c)
+            ejs[cid] = json.loads(json.dumps(curados[cid])) if cid in curados else _ejemplo(c)
         except SystemExit:
             continue  # sin las palabras del cliente de cada parte no puede ser ejemplo
-        ejs[cid]["libreta"] = recortar(ejs[cid])
+        ejs[cid] = compacto(ejs[cid])
     por = {cid: (firmas(partes_de_agenda(res[cid]["agenda"])), tokens_ejemplo(e)) for cid, e in ejs.items()}
     frec = collections.Counter(f for b in B for f in b["firmas"])
     falta, sel, gasto = set(frec), [], 0
@@ -392,6 +402,8 @@ def armar() -> None:
         print(f"el examen: {sum(e['firmas'] <= fs for e in E)}/{len(E)}")
     todo[TID] = [ejs[c] for c in sorted(sel, key=lambda c: list(res).index(c))]
     if "--escribir" in ARGS:
+        # No a la consigna: el 26-oct con Gemini empeoro las 48 y las variantes. Queda en el banco para medir.
+        ruta = os.path.join(AQUI, "candidatos82_fijos.json")
         json.dump(todo, open(ruta, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(f"escrito {ruta}")
 
