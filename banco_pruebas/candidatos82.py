@@ -64,7 +64,12 @@ def formas(salida: dict) -> set:
     return out
 
 
+_BASE = []
+
+
 def base() -> list:
+    if _BASE:
+        return _BASE
     from banco_pruebas.plantilla_venta import llenar as LL
     from banco_pruebas.primera_ejes import partes_de_agenda
     LL.entorno()
@@ -75,6 +80,7 @@ def base() -> list:
             sal = partes_de_agenda(c["agenda"])
             out += [{"clase": c["id"], "texto": x["texto"], "formas": f, "tokens": (len(x["texto"]) + len(
                 json.dumps(sal, ensure_ascii=False))) // 4} for x in c["frases"]]
+    _BASE.extend(out)
     return out
 
 
@@ -96,10 +102,27 @@ def examen() -> list:
     return out
 
 
+_FIJOS = {}
+
+
 def fijos(sin_clase: str = None) -> set:
-    ej = json.load(open(os.path.join(os.path.dirname(AQUI), "app", "core", "flujo", "lectura_ejemplos.json"),
-                        encoding="utf-8"))[TID]
-    return set().union(*(formas(e["salida"]) for e in ej if e["clase"] != sin_clase))
+    """Las formas de los ejemplos fijos de la consigna. Con --cubrir, los 26 curados mas las clases de la base que hacen
+    falta para que cada acto, alcance y orden de la base este al menos una vez, de a una, la que mas cubre."""
+    if not _FIJOS:
+        ej = json.load(open(os.path.join(os.path.dirname(AQUI), "app", "core", "flujo", "lectura_ejemplos.json"),
+                            encoding="utf-8"))[TID]
+        _FIJOS.update({e["clase"]: formas(e["salida"]) for e in ej})
+        if "--cubrir" in ARGS:
+            por_clase = {}
+            for b in base():
+                por_clase.setdefault(b["clase"], (b["formas"], b["tokens"]))
+            falta = set().union(*(f for f, _ in por_clase.values())) - set().union(*_FIJOS.values())
+            while falta:
+                c = max(por_clase, key=lambda c: (len(por_clase[c][0] & falta), -por_clase[c][1]))
+                _FIJOS[c], falta = por_clase[c][0], falta - por_clase[c][0]
+            print(f"fijos para cubrir la base: {len(_FIJOS)} clases, {len(_FIJOS) - len(ej)} sumadas, unos "
+                  f"{sum(por_clase[c][1] for c in _FIJOS if c in por_clase)} tokens")
+    return set().union(*(f for c, f in _FIJOS.items() if c != sin_clase))
 
 
 def _clases_fijas() -> set:
@@ -239,7 +262,7 @@ def calibrar() -> None:
             print(f"  {'fijos + ' if extra else ''}por {unidad:8} {k:2}: enteros {sum(x[0] for x in r)}/{len(r)} · ruido "
                   f"{sum(x[2] for x in r) / len(r):.1f} · tokens {sum(x[3] for x in r) // len(r)}")
         print()
-    print(f"  los 26 fijos solos: enteros {sum(formas(g['salida']) <= fijos() for g in t48)}/{len(t48)} · "
+    print(f"  los fijos solos: enteros {sum(formas(g['salida']) <= fijos() for g in t48)}/{len(t48)} · "
           f"{len(fij_clases)} clases")
 
 
