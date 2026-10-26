@@ -1,0 +1,61 @@
+# FICHA 82 — Que el modelo tenga de donde elegir: los ejemplos que cubren la base y los parecidos
+
+26-oct-2026, sesion con Martin. Sigue a la FICHA 81. La mide `banco_pruebas/candidatos82.py`, sin el modelo.
+
+## La idea, de Martin
+
+Si el modelo no marca una casilla es porque no tiene de donde sacar el criterio. El modelo parte la multipregunta y
+traduce; el codigo y los embeddings le traen los candidatos precisos, y el modelo elige entre ellos. Primero se arregla
+lo que recibe el modelo, medido sin el modelo; recien despues se prueba con el modelo.
+
+## Lo hecho en la sesion
+
+1. **El vocabulario de ordenes**, aprobado el 26-oct, en `marcador.RESPUESTAS` bajo "ordenes", que cada tienda cambia
+   en su `alias.json`: "lo mejor", "gama alta", "la mejor calidad" son mas caro; "gama baja", mas barato. Solo si el
+   modelo dejo el orden vacio. Sobre lo grabado, lo mejor para todo de 4 a 7 de 10; siete articulos sigue 9 de 10.
+2. **La causa de las tres que quedan**: el alcance. El cliente pide un orden para todo el pedido y los 26 ejemplos fijos
+   de la consigna no tienen ningun caso asi. El modelo no tenia de donde elegir.
+3. **El medidor de candidatos**, `candidatos82.py`: por turno, si las formas que tiene que dar el modelo —hace y sobre
+   de cada parte, el alcance del pedido entero y el orden— estan entre los ejemplos que recibe.
+4. **La calibracion sin mirar el examen**, `--calibrar`: la plantilla contra si misma, cada frase buscando en las otras
+   clases; y las 48 con las partes en que las corto Gemini, que es el flujo en dos pasos.
+5. **Los fijos que cubren la base**, `--cubrir`: el codigo suma a los 26 curados, de a una, la clase de la plantilla que
+   mas cubre, hasta que cada acto, alcance y orden este una vez. Quedan 35 clases.
+
+## Lo medido
+
+| lo que recibe el modelo                     | examen, 113 turnos | plantilla, 479 | las 48 por partes |
+|---------------------------------------------|--------------------|----------------|-------------------|
+| los 26 fijos de hoy                         | 86                 | —              | 30                |
+| los 26 fijos mas 5 parecidos                | 98                 | 423            | 37 con 3          |
+| los 35 que cubren la base, mas 5 parecidos  | 112                | 442            | 40                |
+| el techo de la base                         | 112                | —              | —                 |
+
+El examen son las 58 con su agenda a mano y las diez formas de lo mejor para todo; se miro una sola vez. Lo unico que
+falta es "la mas potente", C54, un orden que no esta en la base.
+
+Lo que dice: el arreglo grande es estructural y barato, que los fijos cubran todo lo que la base sabe resolver. Los
+parecidos por embeddings suman poco despues de eso, 3 a 5 por parte, y sirven para mostrar el caso mas cercano.
+
+Lo descartado: cambiar lo propio de la tienda por su tipo antes del embedding empeora, porque el parecido pierde lo que
+distingue. Por mensaje entero rinde menos que por partes. Mas de 5 parecidos no paga sus tokens.
+
+Que el ejemplo este es necesario, no suficiente: si el modelo lo elige lo dice la prueba con el modelo.
+
+## Lo que sigue, en orden
+
+1. **Llevarlo al camino vivo**: los 35 a `lectura_ejemplos.json` y los parecidos por parte a `lectura.mensajes`, sin
+   pasar el techo de 4.500 tokens; con los 9 nuevos y 5 parecidos el peor turno daria unos 4.800, asi que 3 parecidos o
+   ejemplos mas cortos.
+2. **El orden por cualquier campo numerico del indice**, no solo precio y peso: "la mas potente" como clase.
+3. **Unificar los rotulos** de la plantilla con los que da el modelo: una pregunta de pago como tema o como pago.
+4. **La megafuente**, idea de Martin: clases de pedido neutras de tienda, frases curadas por clase desde fuentes
+   abiertas y charlas reales, cada clase cruzada con el indice de cada tienda. Cada clase nueva entra si sube la
+   cobertura sin subir el ruido.
+5. Con eso, el modelo gratis con OpenRouter, y la corrida con Gemini contra el criterio de la FICHA 81, con el ok de
+   Martin.
+
+## El gasto
+
+Los embeddings con la paga por orden de Martin, menos de un centavo. El endpoint no informa el uso: el libro los anota en
+cero.
