@@ -196,3 +196,18 @@ def test_la_compra_con_condicion_la_juzga_el_codigo(tienda, cid, n, texto, agend
 def test_el_menu_ofrece_la_compra_con_condicion():
     from app.core.flujo import agenda as A
     assert '"si_cumple"' in A.ACCIONES["comprar"]
+
+
+def test_un_lugar_junto_a_un_modelo_con_numeros_no_se_pierde():
+    """FICHA 82, 26-oct: un pedazo con numeros se tomaba por direccion y "un G203 a Rosario" perdia Rosario. La
+    direccion es una palabra con su altura; un lugar sin ciudad es la provincia como la escribio el cliente."""
+    from app.core.flujo.normal import lugares
+    casos = {
+        "mandame un G203 a Rosario y otro a Mendoza": ["Rosario", "Mendoza"],
+        "cuanto sale mandar un G203 a Rosario?": ["Rosario"],
+        "dos G305 negros a Salta y un K120 a Tucuman": ["Salta", "Tucuman"],
+        "Belgrano 1234, Rosario": ["Rosario"],
+        "Posadas, Misiones": ["Posadas"],
+    }
+    malos = {t: [n for n, _ in lugares(t)] for t, esperado in casos.items() if [n for n, _ in lugares(t)] != esperado}
+    assert not malos, f"{len(malos)} de {len(casos)} textos con el lugar mal: {malos}"

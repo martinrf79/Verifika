@@ -36,20 +36,22 @@ def _es(ref, letra: str) -> bool:
 def lugares(texto: str) -> list:
     """Los lugares a los que se envia que nombra un texto, segun el padron de localidades: [(como lo nombra el padron,
     provincia)]. Se corta en las comas y en "y": cada pedazo es un lugar si el padron lo ubica. Un pedazo con numeros es
-    la direccion del lugar anterior, y una ciudad seguida de su provincia es un solo lugar: "Posadas, Misiones"."""
+    la direccion del lugar anterior, y una ciudad seguida de su provincia es un solo lugar: "Posadas, Misiones". Desde
+    el 26-oct, FICHA 82, la direccion es una palabra con su altura, "Belgrano 1234": antes cualquier numero tapaba el
+    lugar, y "un G203 a Rosario" perdia Rosario por el modelo."""
     from app.core import geo_cp
     from app.core.envio import clasificar_provincia
     out = []
     for parte in re.split(r"[,;]|\by\b|\be\b", str(texto or "")):
         parte = parte.strip()
-        if not parte or re.search(r"\d", parte):
+        if not parte or re.search(r"[^\W\d]\s+\d{2,5}\b", parte):
             continue
         prov = clasificar_provincia(parte)
         if not prov:
             continue
         palabras, hits = geo_cp._localidades_en_texto(geo_cp._norm(parte))
         hits = sorted(h for h in [(i, f, loc) for loc, i, f in hits] if prov in geo_cp._LOC.get(h[2], {}))
-        nombre = " ".join(palabras[hits[0][0]:hits[0][1]]) if hits else K.n(parte).strip()
+        nombre = " ".join(palabras[hits[0][0]:hits[0][1]]) if hits else prov if prov in K.n(parte) else K.n(parte).strip()
         plano, i = K.n(parte), K.n(parte).find(K.n(nombre))
         if i >= 0 and len(plano) == len(parte):
             nombre = parte[i:i + len(nombre)]  # como lo escribio el cliente: "Posadas", no "posadas"
