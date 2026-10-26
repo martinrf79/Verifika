@@ -28,7 +28,8 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
 | El turno entero: leer, interpretar, ejecutar, redactar, cerrar, guardar | `app/core/flujo/turno.py` |
 | Las llamadas al modelo: traducir, elegir la lectura, explicar y vender; la libreta | `app/core/flujo/interprete.py` |
-| La ficha nativa: la consigna, el esquema con las listas cerradas y su paso a la agenda, FICHA 76 | `app/core/flujo/ficha.py` |
+| La lectura del mensaje: los dos ejes y las casillas, la cobertura con su segunda vuelta, la forma normal y el paso a la agenda, FICHA 81 | `app/core/flujo/lectura.py` |
+| Lo que es en la tienda un articulo que nombra la lectura: renglon, mostrado, modelo o rubro | `app/core/flujo/ficha.py` |
 | Lo que dijo el cliente, las lecturas que cierran y lo supuesto hasta que acepta | `app/core/flujo/borrador.py` |
 | La agenda: el menu de acciones que cumple el ejecutor | `app/core/flujo/agenda.py` |
 | Lo que el codigo reconoce en un texto: modelos, rubros, temas, montos; la respuesta corta contra lo que espera la pregunta | `app/core/flujo/marcador.py` |
@@ -76,6 +77,8 @@ permiso.
 | La respuesta de la tienda que pide cada parte: las tres listas, la información A, las pistas y las dos llamadas, FICHA 78 | `banco_pruebas/respuestas.py` |
 | La traducción sola, la atadura y la salida, con las cien difíciles y el examen, FICHA 78 | `banco_pruebas/traduccion_sola.py`, `traduccion_dificil.py`, `traduccion_tercera.py` |
 | El laboratorio del informe: lo que el codigo sabe de cada parte antes de la segunda llamada —la tienda, el renglon del pedido con sus razones, los casos y las premisas—, sobre la traduccion grabada, FICHA 78 | `banco_pruebas/lab_informe.py` |
+| La lectura de los dos ejes contra la ficha nativa: sueltos, cadena, repeticiones y la segunda vuelta, FICHA 81 | `banco_pruebas/primera_ejes.py` |
+| La vara por dato y las entrevistas de los datos del pedido, FICHA 81 | `banco_pruebas/vara_dato.py`, `banco_pruebas/entrevista_datos.py` |
 | La plantilla de venta: las clases de pregunta de una tienda, un caso resuelto por clase, el llenado con la fuente validado por el ejecutor, y lo que devuelve cada motor del modelo, la traducción y la etiqueta, FICHA 80 | `banco_pruebas/plantilla_venta/` |
 | El motor de casos de la FICHA 78, hasta que la búsqueda se rehaga sobre la plantilla de venta | `banco_pruebas/casos_plantilla.py`, `banco_pruebas/motor_casos.py` |
 | Las entrevistas al modelo sobre cómo traduce y por qué falla, FICHA 78 | `banco_pruebas/entrevista_traduccion.py` |
