@@ -22,6 +22,7 @@ import re
 from . import borrador as B
 from . import catalogo as K
 from . import ficha as F
+from . import marcador as M
 
 NADA = "nada"
 HACE = ("pregunta", "pide_ver", "elige", "cambia", "saca", "de_si", "pide", "nada")
@@ -400,58 +401,26 @@ def _definir(p: dict, tienda_id: str) -> dict:
     return p
 
 
-def _conds_de(p: dict, tienda_id: str = None) -> list:
+def _conds_de(p: dict, tienda_id: str) -> list:
     # "Lo mas top", "gama alta" o "el mas vendido" no es algo que el producto tenga: es el orden, `_mas`.
-    return [str(c) for c in _lista(p.get("condiciones")) if str(c).strip()
-            and not re.fullmatch(r"(?:el|la|lo|los|las)?\s*mas\s+[a-z]+", K.n(c))
-            and not _orden_de(K.n(c), tienda_id, entero=True)] + \
+    return [str(c) for c in _lista(p.get("condiciones")) if str(c).strip() and not _orden_de(K.n(c), tienda_id)] + \
         [f"que no sea {x}" for x in _lista(p.get("no_quiere")) if str(x).strip()] + \
         [f"preferentemente {x}" for x in _lista(p.get("prefiere")) if str(x).strip()]
 
 
-# EL VOCABULARIO DE ORDENES, FICHA 81, aprobado por Martin el 26-oct: las palabras que dicen un orden sin decir "el mas"
-# —"gama alta", "la mejor calidad"—. Se usa solo si el modelo dejo el orden vacio. Defecto aca; cada tienda lo cambia en
-# "ordenes" de su `alias.json`, decision 47: {"mas caro": [...], "mas barato": [...]}.
-ORDENES = {
-    "mas caro": ["lo mejor", "los mejores", "las mejores", "la mejor", "el mejor", "mejor calidad", "gama alta",
-                 "alta gama", "de primera", "premium", "top", "mas top", "mas caro", "mas cara", "mas caros", "mas caras",
-                 "mas alto", "mas premium", "mas bueno", "mas buenos", "mas mejor"],
-    "mas barato": ["gama baja", "gama de entrada", "lo basico", "mas barato", "mas barata", "mas baratos", "mas baratas",
-                   "mas economico", "mas economica", "mas economicos", "mas economicas"],
-}
-_ORDENES = {}
+def _orden_de(texto: str, tienda_id: str) -> str:
+    """El orden que dice el texto normalizado: el comienzo de una frase del vocabulario de ordenes, FICHA 81, en
+    `marcador.RESPUESTAS` con lo que cambie la tienda —"gama alta", "lo mejor"—, o el "mas algo" que dice —"el mas
+    vendido"—. Se usa solo si el modelo dejo el orden vacio."""
+    voc = M.vocabulario_respuestas(tienda_id)["ordenes"]
+    return next((o for o, fs in voc.items() if o in K.ORDEN for f in fs if f" {K.n(f)}" in f" {texto}"),
+                f"mas {m.group(1)}" if (m := re.search(r"\bmas\s+(?!de\b|que\b|del\b)([a-z]+)", texto)) else "")
 
 
-def vocabulario_ordenes(tienda_id: str) -> dict:
-    """{frase normalizada: orden}, la frase mas larga primero: el defecto con lo que la tienda cambie en sus alias."""
-    if tienda_id not in _ORDENES:
-        from app.core import agente
-        propio = (agente._alias(tienda_id) or {}).get("ordenes") or {} if tienda_id else {}
-        v = {K.n(f): o for o, fs in {**ORDENES, **propio}.items() if o in K.ORDEN for f in fs}
-        _ORDENES[tienda_id] = dict(sorted(v.items(), key=lambda x: -len(x[0])))
-    return _ORDENES[tienda_id]
-
-
-def _orden_de(texto: str, tienda_id: str = None, entero: bool = False) -> str:
-    """El orden que dice el texto normalizado con una frase del vocabulario: dicha entera, o en cualquier lugar."""
-    t = f" {texto.strip()} "
-    for f, o in vocabulario_ordenes(tienda_id).items():
-        if (t.strip() == f or re.fullmatch(rf"(?:el|la|lo|los|las|de|en)?\s*{re.escape(f)}", t.strip())) if entero \
-                else f" {f} " in t:
-            return o
-    return ""
-
-
-def _mas(p: dict, tienda_id: str = None) -> str:
-    """El orden que dice la parte, si la casilla del orden quedo vacia: de sus palabras y de sus condiciones, primero por
-    el vocabulario de ordenes —"gama alta", "lo mejor"— y si no, el "mas algo" que dice —"el mas vendido"—."""
-    texto = K.n(" ".join(str(x) for x in [p.get("cliente"), p.get("que"), p.get("quiere_saber")]
-                         + _lista(p.get("condiciones"))))
-    o = _orden_de(texto, tienda_id)
-    if o:
-        return o
-    m = re.search(r"\b(?:el|la|lo|los|las)?\s*mas\s+([a-z]+)", texto)
-    return f"mas {m.group(1)}" if m else ""
+def _mas(p: dict, tienda_id: str) -> str:
+    """El orden que dice la parte, si la casilla del orden quedo vacia: de sus palabras y de sus condiciones."""
+    return _orden_de(K.n(" ".join(str(x) for x in [p.get("cliente"), p.get("que"), p.get("quiere_saber")]
+                                  + _lista(p.get("condiciones")))), tienda_id)
 
 
 def _sin_envio(q) -> str:
@@ -517,8 +486,7 @@ def a_agenda(salida: dict, estado: dict, tienda_id: str, mensaje: str = "") -> d
             # EL MAS ALGO DE UN RUBRO DE LA TIENDA —"cual es el mouse mas vendido"— es una busqueda con ese orden: si la
             # tienda no tiene el dato, la busqueda lo dice.
             accion, orden = "buscar", mas
-        if accion == "buscar" and orden == NADA and mas:
-            orden = mas
+        orden = mas if accion == "buscar" and orden == NADA and mas else orden
         si = si_de(p)
         if accion == "buscar":
             rub = F._rubro(que, tienda_id, str(p.get("rubro") or "")) or "toda la tienda"

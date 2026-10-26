@@ -147,7 +147,8 @@ def marcar(mensaje: str, tienda_id: str) -> list:
 # Orden de Martin del 21 y 23-oct: cada pregunta del bot guarda que espera —un color, si o no, cual de varios, el
 # nombre—, y la respuesta se lee solo contra esa lista cerrada. Las palabras fijas tienen su defecto aca y cada tienda
 # las cambia en "respuestas" de su `alias.json`, decision 47: {"si": [...], "no": [...], "ordinales": {"frase": n},
-# "presentacion": [...]}. La equipo la lee la compatibilidad, con su vocabulario: ver `ejecutor.atar_esperas`.
+# "presentacion": [...], "ordenes": {"mas caro": [...]}}. La equipo la lee la compatibilidad, con su vocabulario: ver
+# `ejecutor.atar_esperas`.
 
 RESPUESTAS = {
     "si": "si sii dale ok oka okey listo perfecto bueno va joya correcto exacto asi esta bien dejalo deja genial "
@@ -156,6 +157,10 @@ RESPUESTAS = {
     "ordinales": {"primero": 0, "primera": 0, "1": 0, "segundo": 1, "segunda": 1, "2": 1, "tercero": 2, "tercera": 2,
                   "3": 2, "cuarto": 3, "cuarta": 3, "4": 3, "ultimo": -1, "ultima": -1},
     "presentacion": ["me llamo", "mi nombre es", "a nombre de", "soy", "es"],
+    # El vocabulario de ordenes, FICHA 81, aprobado por Martin el 26-oct: el comienzo de las frases que dicen un orden.
+    "ordenes": {"mas caro": "lo mejor|los mejores|las mejores|la mejor|el mejor|mejor calidad|gama alta|alta gama|premium|"
+                            "de primera|mas top|mas car|mas alt|mas buen".split("|"),
+                "mas barato": "gama baja|gama de entrada|lo basico|mas barat|mas econom".split("|")},
 }
 _VOCAB = {}
 
