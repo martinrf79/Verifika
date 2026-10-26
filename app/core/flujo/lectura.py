@@ -400,27 +400,58 @@ def _definir(p: dict, tienda_id: str) -> dict:
     return p
 
 
-def _conds_de(p: dict) -> list:
-    # "Lo mas top" o "el mas vendido" no es algo que el producto tenga: es el orden, `_mas`.
+def _conds_de(p: dict, tienda_id: str = None) -> list:
+    # "Lo mas top", "gama alta" o "el mas vendido" no es algo que el producto tenga: es el orden, `_mas`.
     return [str(c) for c in _lista(p.get("condiciones")) if str(c).strip()
-            and not re.fullmatch(r"(?:el|la|lo|los|las)?\s*mas\s+[a-z]+", K.n(c))] + \
+            and not re.fullmatch(r"(?:el|la|lo|los|las)?\s*mas\s+[a-z]+", K.n(c))
+            and not _orden_de(K.n(c), tienda_id, entero=True)] + \
         [f"que no sea {x}" for x in _lista(p.get("no_quiere")) if str(x).strip()] + \
         [f"preferentemente {x}" for x in _lista(p.get("prefiere")) if str(x).strip()]
 
 
-def _mas(p: dict) -> str:
-    """El orden que dice la parte con "el mas" —"el mas vendido", "lo mas top"—, si la casilla del orden quedo vacia: de
-    sus palabras y de sus condiciones. Lo mejor y lo mas caro son "mas caro"; lo mas barato, "mas barato"."""
-    texto = " ".join(str(x) for x in [p.get("cliente"), p.get("que"), p.get("quiere_saber")] + _lista(p.get("condiciones")))
-    m = re.search(r"\b(?:el|la|lo|los|las)?\s*mas\s+([a-z]+)", K.n(texto))
-    if not m:
-        return ""
-    w = m.group(1)
-    if w in ("top", "caro", "caros", "cara", "caras", "alto", "premium", "bueno", "buenos", "mejor"):
-        return "mas caro"
-    if w.startswith(("barat", "econom")):
-        return "mas barato"
-    return f"mas {w}"
+# EL VOCABULARIO DE ORDENES, FICHA 81, aprobado por Martin el 26-oct: las palabras que dicen un orden sin decir "el mas"
+# —"gama alta", "la mejor calidad"—. Se usa solo si el modelo dejo el orden vacio. Defecto aca; cada tienda lo cambia en
+# "ordenes" de su `alias.json`, decision 47: {"mas caro": [...], "mas barato": [...]}.
+ORDENES = {
+    "mas caro": ["lo mejor", "los mejores", "las mejores", "la mejor", "el mejor", "mejor calidad", "gama alta",
+                 "alta gama", "de primera", "premium", "top", "mas top", "mas caro", "mas cara", "mas caros", "mas caras",
+                 "mas alto", "mas premium", "mas bueno", "mas buenos", "mas mejor"],
+    "mas barato": ["gama baja", "gama de entrada", "lo basico", "mas barato", "mas barata", "mas baratos", "mas baratas",
+                   "mas economico", "mas economica", "mas economicos", "mas economicas"],
+}
+_ORDENES = {}
+
+
+def vocabulario_ordenes(tienda_id: str) -> dict:
+    """{frase normalizada: orden}, la frase mas larga primero: el defecto con lo que la tienda cambie en sus alias."""
+    if tienda_id not in _ORDENES:
+        from app.core import agente
+        propio = (agente._alias(tienda_id) or {}).get("ordenes") or {} if tienda_id else {}
+        v = {K.n(f): o for o, fs in {**ORDENES, **propio}.items() if o in K.ORDEN for f in fs}
+        _ORDENES[tienda_id] = dict(sorted(v.items(), key=lambda x: -len(x[0])))
+    return _ORDENES[tienda_id]
+
+
+def _orden_de(texto: str, tienda_id: str = None, entero: bool = False) -> str:
+    """El orden que dice el texto normalizado con una frase del vocabulario: dicha entera, o en cualquier lugar."""
+    t = f" {texto.strip()} "
+    for f, o in vocabulario_ordenes(tienda_id).items():
+        if (t.strip() == f or re.fullmatch(rf"(?:el|la|lo|los|las|de|en)?\s*{re.escape(f)}", t.strip())) if entero \
+                else f" {f} " in t:
+            return o
+    return ""
+
+
+def _mas(p: dict, tienda_id: str = None) -> str:
+    """El orden que dice la parte, si la casilla del orden quedo vacia: de sus palabras y de sus condiciones, primero por
+    el vocabulario de ordenes —"gama alta", "lo mejor"— y si no, el "mas algo" que dice —"el mas vendido"—."""
+    texto = K.n(" ".join(str(x) for x in [p.get("cliente"), p.get("que"), p.get("quiere_saber")]
+                         + _lista(p.get("condiciones"))))
+    o = _orden_de(texto, tienda_id)
+    if o:
+        return o
+    m = re.search(r"\b(?:el|la|lo|los|las)?\s*mas\s+([a-z]+)", texto)
+    return f"mas {m.group(1)}" if m else ""
 
 
 def _sin_envio(q) -> str:
@@ -481,7 +512,7 @@ def a_agenda(salida: dict, estado: dict, tienda_id: str, mensaje: str = "") -> d
         if accion == "explicar" and p.get("con") and F._rubro(que, tienda_id, str(p.get("rubro") or "")):
             # QUE LE SIRVE DE UN RUBRO DE LA TIENDA A LO SUYO es compatibilidad, no saber general.
             accion, que = "compatibilidad", F._rubro(que, tienda_id, str(p.get("rubro") or ""))
-        mas = _mas(p)
+        mas = _mas(p, tienda_id)
         if accion == "explicar" and mas and F._rubro(que, tienda_id, str(p.get("rubro") or "")):
             # EL MAS ALGO DE UN RUBRO DE LA TIENDA —"cual es el mouse mas vendido"— es una busqueda con ese orden: si la
             # tienda no tiene el dato, la busqueda lo dice.
@@ -492,7 +523,7 @@ def a_agenda(salida: dict, estado: dict, tienda_id: str, mensaje: str = "") -> d
         if accion == "buscar":
             rub = F._rubro(que, tienda_id, str(p.get("rubro") or "")) or "toda la tienda"
             pregunta("buscar", cita, i, rubro=rub, cantidad=K.entero(p.get("cantidad")) or None,
-                     condiciones=_conds_de(p), orden=orden, entre_lo_mostrado=sobre == "mostrado", si=si)
+                     condiciones=_conds_de(p, tienda_id), orden=orden, entre_lo_mostrado=sobre == "mostrado", si=si)
         elif accion in ("producto", "compatibilidad"):
             refs = [r for r in F._refs(que, nums) if r[0] in "ML"]
             # Lo que senala de la libreta va junto, y si puede ser varios el codigo pregunta cual; lo que nombra, uno
@@ -562,19 +593,19 @@ def a_agenda(salida: dict, estado: dict, tienda_id: str, mensaje: str = "") -> d
 def _cambiar(p, que, orden, si, cita, i, nums, renglones, tienda_id, pregunta) -> None:
     Ls = [r for r in F._refs(que, nums) if r[0] == "L"]
     if not Ls and p.get("sobre") == "pedido" and renglones and not K.solo_rubro(que, tienda_id) \
-            and (_conds_de(p) or orden != NADA or _mas(p)):
+            and (_conds_de(p, tienda_id) or orden != NADA or _mas(p, tienda_id)):
         # CAMBIAR TODO EL PEDIDO POR UN CRITERIO —"cambia todo por lo mas top"— es otro orden para todo: el ejecutor lo
         # reparte a cada rubro del pedido. El rubro que el modelo haya elegido de la lista no cuenta: no nombro ninguno.
-        pregunta("buscar", cita, i, rubro="el pedido", orden=orden if orden != NADA else _mas(p) or NADA, si=si)
+        pregunta("buscar", cita, i, rubro="el pedido", orden=orden if orden != NADA else _mas(p, tienda_id) or NADA, si=si)
         return
     rub = F._rubro(que, tienda_id, str(p.get("rubro") or "")) if not Ls else ""
-    if Ls and (_conds_de(p) or orden != NADA):
+    if Ls and (_conds_de(p, tienda_id) or orden != NADA):
         # Un renglon con condiciones nuevas cambia el criterio de su rubro, como en la ficha nativa: si dos renglones del
         # mismo rubro piden distinto, queda el primero. A MEDIAS.
         rub = K.solo_rubro(str(renglones[Ls[0]]["que"]), tienda_id) if Ls[0] in renglones else ""
-    if rub and (_conds_de(p) or orden != NADA):
+    if rub and (_conds_de(p, tienda_id) or orden != NADA):
         # CAMBIAR EL CRITERIO DE UN RUBRO es buscarlo con el criterio nuevo: el borrador re-resuelve sus renglones.
-        pregunta("buscar", cita, i, rubro=rub, condiciones=_conds_de(p), orden=orden, si=si)
+        pregunta("buscar", cita, i, rubro=rub, condiciones=_conds_de(p, tienda_id), orden=orden, si=si)
         return
     # "por" es el producto nuevo solo si nombra un producto o un rubro, no el destino ni la cantidad dichos.
     por = str(p.get("por") or "")
@@ -620,9 +651,9 @@ def _elegir(p, que, orden, si, cita, i, nums, renglones, resuelto, vistos, b, bu
             pregunta("comprar", cita, i, cambia=[{"es": ya, "cantidad": art["cantidad"]}])
             return None
         # Un rubro que ya tiene criterio no se vuelve a buscar si la parte no trae uno nuevo: lo pisaria.
-        nuevo = bool(_conds_de(p)) or orden != NADA or c.get("rubro") not in b["criterios"]
+        nuevo = bool(_conds_de(p, tienda_id)) or orden != NADA or c.get("rubro") not in b["criterios"]
         if c.get("rubro") and nuevo:
-            bq = busquedas.setdefault(c["rubro"], {"cantidad": 0, "condiciones": _conds_de(p), "orden": orden,
+            bq = busquedas.setdefault(c["rubro"], {"cantidad": 0, "condiciones": _conds_de(p, tienda_id), "orden": orden,
                                                   "cita": cita, "i": i})
             bq["cantidad"] += art["cantidad"] or 1
         art["producto"] = c.get("ref") or c.get("modelo") or c.get("rubro") or c.get("libre")
