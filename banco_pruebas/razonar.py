@@ -69,7 +69,8 @@ def main() -> None:
     consigna = M.LINEAS.format(contar="", temas=", ".join(M.F._temas_de(P.TID)), ej1=j(M.EJ1), ej2=j(M.EJ2))
     casos = muestra(int(_opt("--n", 30)))
     niveles = _opt("--niveles", "sin,minimal,low,medium,high").split(",")
-    filas, crudo = {}, []
+    filas = {}
+    open(os.path.join(AQUI, "razonar_corrida.jsonl"), "w").close()
     for nivel in niveles:
         filas[nivel] = []
         for fuente, cid, msg, vara in casos:
