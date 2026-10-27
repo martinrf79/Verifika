@@ -66,3 +66,15 @@ def test_el_origen_que_no_hay_no_se_inventa(K):
     """Todos los auriculares se fabrican en China: "no fabricado en China" ata y no deja ninguno. `buscar` lo dice."""
     r = K.buscar("auriculares", ["no fabricado en China"], "mas barato", 1, TID)
     assert r["vacio_por"] == ["no fabricado en China"] and r["filas"], r["vacio_por"]
+
+
+def test_lo_que_prefiere_va_primero_y_no_saca_lo_demas(K):
+    """27-oct, FICHA 82: "preferentemente Razer" filtraba y mostraba solo Razer. Lo preferido va primero, con el orden
+    adentro, y lo demas sigue; lo exigido sigue filtrando. Dos busquedas."""
+    r = K.buscar("mouse", ["inalambrico", "preferentemente Razer"], "mas barato", 8, TID)
+    marcas = [p["marca"] for p in r["filas"]]
+    assert marcas[0] == "Razer" and set(marcas) - {"Razer"} and not r["vacio_por"], marcas
+    k = marcas.index(next(m for m in marcas if m != "Razer"))
+    assert all(m == "Razer" for m in marcas[:k]) and all(m != "Razer" for m in marcas[k:]), marcas
+    solo = K.buscar("mouse", ["Razer"], "mas barato", 8, TID)
+    assert {p["marca"] for p in solo["filas"]} == {"Razer"}

@@ -242,12 +242,13 @@ def buscar(rubro_: str, condiciones: list, orden: str, cuantos: int, tienda_id: 
     Si las condiciones juntas dejan cero, vuelve lo que hay sin la que vacio y `vacio_por` dice cual fue."""
     del_rubro = [p for p in productos(tienda_id) if not rubro_ or p.get("categoria") == rubro_]
     universo = [p for p in del_rubro if entre is None or str(p["id"]) in entre]
-    filtros, sin_campo = [], []
+    filtros, sin_campo, prefiere = [], [], []
     for c in condiciones or []:
         # La condicion se ata en todo el rubro: "que no sea Redragon" es un filtro aunque entre lo mostrado no haya
-        # ninguno Redragon.
+        # ninguno Redragon. LO QUE PREFIERE NO EXCLUYE: va primero, y lo demas sigue.
         f = atar(str(c), del_rubro, tienda_id)
-        (sin_campo.append(f["sin_campo"]) if "sin_campo" in f else filtros.append((str(c), f)))
+        a = prefiere if re.match(r"(preferente|preferible|ideal)mente\b", n(c)) else filtros
+        (sin_campo.append(f["sin_campo"]) if "sin_campo" in f else a.append((str(c), f)))
     quedan = [p for p in universo if con_stock(p) and all(cumple(p, f) for _, f in filtros)]
     vacio_por = []
     if not quedan and filtros:
@@ -255,10 +256,9 @@ def buscar(rubro_: str, condiciones: list, orden: str, cuantos: int, tienda_id: 
                     [c for c, _ in filtros]
         quedan = [p for p in universo if con_stock(p) and all(cumple(p, f) for c, f in filtros if c not in vacio_por)]
     clave = ORDEN.get(n(orden))
-    if not clave:
-        cuantos = max(int(cuantos or 0), 5)
-    else:
-        quedan.sort(key=lambda p: clave[1] * float(p.get(clave[0]) or 0))
+    cuantos = cuantos if clave else max(int(cuantos or 0), 5)
+    quedan.sort(key=lambda p: (not all(cumple(p, f) for _, f in prefiere),
+                               clave[1] * float(p.get(clave[0]) or 0) if clave else 0))
     filas, vistos = [], set()
     for p in quedan:
         m = (p.get("marca"), p.get("modelo") or p["id"])

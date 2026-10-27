@@ -282,28 +282,28 @@ _COSA = ("rubro", "producto", "mostrado")
 
 def sin_repetir(partes: list, tienda_id: str) -> bool:
     """UNA PARTE IGUAL A OTRA del mismo mensaje es la misma cosa dicha dos veces: se cuenta una."""
-    vistas, hizo = set(), False
-    for p in list(partes):
-        clave = json.dumps({k: p.get(k) for k in ("hace", "sobre", "que", "cantidad", "destino", "variante", "por")},
-                           sort_keys=True, ensure_ascii=False)
-        if clave in vistas:
-            partes.remove(p)
-            hizo = True
-        vistas.add(clave)
-    return hizo
+    claves = [json.dumps({k: p.get(k) for k in ("hace", "sobre", "que", "cantidad", "destino", "variante", "por")},
+                         sort_keys=True, ensure_ascii=False) for p in partes]
+    partes[:] = [p for i, p in enumerate(partes) if claves[i] not in claves[:i]]
+    return len(partes) < len(claves)
 
 
 def una_cosa_por_parte(partes: list, tienda_id: str) -> bool:
-    """UNA PARTE QUE NOMBRA DOS RUBROS —"un mouse y un teclado van a Rosario"— es una parte por rubro, con lo mismo."""
+    """UNA PARTE QUE NOMBRA VARIAS COSAS es una parte por cosa, con lo mismo: "un mouse y un teclado van a Rosario", "me
+    llevo el G305 y el G203". Cada cosa es un rubro o un modelo que la tienda identifica. Varios modelos con una condicion,
+    un orden o menos unidades que los nombrados son elegir entre ellos —"entre el G305 y el G203, el inalambrico", "uno
+    de esos dos"— y quedan juntos: elige el codigo. Lo senalado de lo mostrado, "M-1 y M-2", tambien: el codigo pregunta."""
     hizo = False
     for p in list(partes):
-        if p.get("sobre") != "rubro" or p.get("hace") not in ("elige", "pide_ver"):
-            continue
         trozos = [x.strip() for x in re.split(r"\by\b|,", str(p.get("que") or "")) if x.strip()]
-        rubros = [K.solo_rubro(x, tienda_id) for x in trozos]
-        if len(trozos) > 1 and all(rubros) and len(set(rubros)) == len(rubros):
+        cosas = [K.solo_rubro(x, tienda_id) or (x if K.identificar(x, "", tienda_id)["veredicto"] == "exists" else "")
+                 for x in trozos]
+        entre = any(not K.solo_rubro(c, tienda_id) for c in cosas) and (any(not _vacio(p.get(k)) for k in (
+            "si_cumple", "condiciones", "orden")) or 0 < K.entero(p.get("cantidad")) < len(cosas))
+        if p.get("sobre") in _COSA and p.get("hace") in ("elige", "pide_ver") and len(trozos) > 1 and all(cosas) \
+                and len(set(cosas)) == len(cosas) and not entre:
             i = partes.index(p)
-            partes[i:i + 1] = [{**p, "que": r, "rubro": r} for r in rubros]
+            partes[i:i + 1] = [{**p, "que": c, "rubro": K.solo_rubro(c, tienda_id) or p.get("rubro")} for c in cosas]
             hizo = True
     return hizo
 
@@ -352,12 +352,11 @@ def un_lugar_por_parte(partes: list, tienda_id: str) -> bool:
 
 def ver_con_destino(partes: list, tienda_id: str) -> bool:
     """PEDIR VER ALGO QUE YA TIENE A DONDE VA es armar el pedido: lo elige, y el codigo busca con su criterio."""
-    hizo = False
-    for p in partes:
-        if p.get("hace") == "pide_ver" and p.get("sobre") in ("rubro", "producto") and not _vacio(p.get("destino")):
-            p["hace"] = "elige"
-            hizo = True
-    return hizo
+    ps = [p for p in partes if p.get("hace") == "pide_ver" and p.get("sobre") in ("rubro", "producto")
+          and not _vacio(p.get("destino"))]
+    for p in ps:
+        p["hace"] = "elige"
+    return bool(ps)
 
 
 REGLAS = (sin_repetir, una_cosa_por_parte, reparto_de_lugares, un_lugar_por_parte, ver_con_destino)
@@ -476,6 +475,8 @@ def a_agenda(salida: dict, estado: dict, tienda_id: str, mensaje: str = "") -> d
         cita, que = str(p.get("cliente") or ""), str(p.get("que") or "")
         orden = F._orden(p.get("orden"), orden_todo)
         accion = cruce(hace, sobre, con=bool(p.get("con")))
+        if accion == "politica" and p.get("tema") in ("costo_envio", "envios") and _lugares(p.get("destino")):
+            accion = "envio"  # LO QUE SALE MANDAR A UN LUGAR es el envio a ese lugar, no la regla general
         if hace == "pregunta" and sobre == "mostrado" and F._refs(que, nums):
             accion = "producto"  # preguntar por lo que senala de lo mostrado es preguntar por ese producto
         if accion == "explicar" and p.get("con") and F._rubro(que, tienda_id, str(p.get("rubro") or "")):

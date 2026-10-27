@@ -156,6 +156,33 @@ def test_dos_rubros_en_una_parte_son_dos_partes(L):
     assert [(p["que"], p["destino"]) for p in s["partes"]] == [("mouse", "Rosario"), ("teclado", "Rosario")]
 
 
+def test_dos_modelos_que_lleva_son_dos_partes_y_elegir_entre_ellos_queda_junto(L):
+    """27-oct, FICHA 82: "me llevo el G305 y el G203" eran un mouse cualquiera. Con una condicion, un orden o menos
+    unidades que los nombrados es elegir entre ellos; lo senalado de lo mostrado lo pregunta el codigo. 6 casos."""
+    casos = [(_p("elige", "producto", "G305 y G203", destino="Rosario"), ["G305", "G203"]),
+             (_p("elige", "rubro", "mouse y teclado", rubro="mouse"), ["mouse", "teclado"]),
+             (_p("elige", "producto", "G305 y G203", si_cumple="es inalambrico"), ["G305 y G203"]),
+             (_p("elige", "producto", "G305 y G203", orden="mas barato"), ["G305 y G203"]),
+             (_p("elige", "producto", "G305 y G203", cantidad=1), ["G305 y G203"]),
+             (_p("elige", "mostrado", "M-1 y M-2"), ["M-1 y M-2"])]
+    malos = [(p["que"], q) for p, q in casos if [x["que"] for x in L.normalizar(_salida(p), TIENDA)[0]["partes"]] != q]
+    assert not malos, f"{len(malos)} de {len(casos)}: {malos}"
+    ag = L.a_agenda(_salida(casos[0][0]), _estado(), TIENDA, "mandame el G305 y el G203 a Rosario")
+    compra = next(p for p in ag["preguntas"] if p["accion"] == "comprar")
+    assert [(a["producto"], a["destino"]) for a in compra["agrega"]] == [("G305", "Rosario"), ("G203", "Rosario")]
+
+
+def test_lo_que_sale_mandar_a_un_lugar_es_el_envio_y_sin_lugar_la_regla(L):
+    """27-oct, FICHA 82: el costo del envio leido como tema perdia el lugar y daba la regla general."""
+    for tema in ("costo_envio", "envios"):
+        ag = L.a_agenda(_salida(_p("pregunta", "tema", tema, tema=tema, destino="Rosario")), _estado(), TIENDA,
+                        "cuanto sale mandarlo a Rosario?")
+        assert _acciones(ag) == [("envio", "Rosario")], tema
+    ag = L.a_agenda(_salida(_p("pregunta", "tema", "costo_envio", tema="costo_envio")), _estado(), TIENDA,
+                    "cuanto sale el envio?")
+    assert [p["accion"] for p in ag["preguntas"]] == ["politica"]
+
+
 def test_un_destino_con_dos_lugares_reparte_la_cantidad(L):
     s, _ = L.normalizar(_salida(_p("pide_ver", "rubro", "parlante", rubro="parlante", cantidad=2,
                                    destino="Ushuaia y Salta")), TIENDA)
