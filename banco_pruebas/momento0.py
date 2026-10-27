@@ -424,8 +424,94 @@ def informacion() -> None:
         print("\n".join(malos))
 
 
+def _tabla(lineas: dict) -> str:
+    filas = ["texto | cosa | cantidad | destino | si"] + [
+        " | ".join(str(x.get(k) if x.get(k) is not None else "") for k in ("texto", "cosa", "cantidad", "destino", "si"))
+        for x in lineas["lineas"]]
+    return "\n" + "\n".join(filas) + f"\nTODO | {lineas.get('todo') or ''}"
+
+
+def _leer_tabla(texto: str) -> dict:
+    """La tabla libre, leida por el codigo: cada fila con barras es una linea; la fila TODO, lo que vale para todo."""
+    out, todo = [], ""
+    for r in str(texto or "").splitlines():
+        cs = [c.strip() for c in r.strip().strip("|").split("|")]
+        if len(cs) < 2 or set("".join(cs)) <= set("-: ") or V.n(cs[0]) == "texto":
+            continue
+        if V.n(cs[0]) == "todo":
+            todo = " ".join(cs[1:])
+            continue
+        cs += [""] * (5 - len(cs))
+        out.append({"texto": cs[0], "cosa": cs[1], "cantidad": cs[2], "destino": cs[3], "si": cs[4]})
+    return {"lineas": out, "todo": todo}
+
+
+SALIDA_JSON = """
+
+Devolve solo un JSON, sin nada antes ni despues: {"lineas": [{"texto", "cosa", "cantidad", "destino", "si"}], "todo": ""}"""
+SALIDA_TABLA = """
+
+Devolve una tabla, una fila por cada linea: texto | cosa | cantidad | destino | si. Al final, una fila TODO con lo que
+vale para todo el pedido. Nada mas."""
+
+
+async def salida() -> None:
+    """La salida atada o libre, 27-oct, pedido de Martin: la misma consigna de las lineas con tres salidas, el JSON atado
+    por la API, el JSON pedido en el texto y una tabla libre que lee el codigo. Sobre los dos examenes de primer mensaje,
+    con la vara de la informacion completa y la de las partes del desmenuzado."""
+    sys.path.insert(0, os.path.join(AQUI, "nexos"))
+    import desmenuzado as D
+    temas = ", ".join(F._temas_de(P.TID))
+    j = lambda e: json.dumps(e, ensure_ascii=False)  # noqa: E731
+    base_json = LINEAS.format(contar="", temas=temas, ej1=j(EJ1), ej2=j(EJ2))
+    variantes = {
+        "atado": (base_json, _formato_lineas(False)),
+        "json libre": (base_json + SALIDA_JSON, {"type": "json_object"}),
+        "tabla": (LINEAS.format(contar="", temas=temas, ej1=_tabla(EJ1), ej2=_tabla(EJ2)) + SALIDA_TABLA, None)}
+    t91 = [(f, cid, msg, est) for f, cid, msg, est, h in P._turnos_sueltos()
+           if "vacia" in interprete.libreta(est, h, P.TID)]
+    t138 = [c for c in D.CASOS if c[1] is None]
+    sem = asyncio.Semaphore(4)
+
+    async def uno(nombre, msg):
+        consigna, formato = variantes[nombre]
+        async with sem:
+            try:
+                r = await interprete._pedir([{"role": "system", "content": consigna},
+                                             {"role": "user", "content": f"MENSAJE DEL CLIENTE: {msg}"}], "momento0", formato)
+            except Exception as e:  # noqa: BLE001
+                return {"error": f"{type(e).__name__}: {str(e)[:120]}", "lineas": []}
+        return _leer_tabla(r) if nombre == "tabla" else interprete._json(r)
+
+    print(f"\nLA SALIDA ATADA O LIBRE · la misma consigna de las lineas, sin contar primero")
+    grabar = []
+    for nombre in variantes:
+        s91 = await asyncio.gather(*[uno(nombre, m) for _, _, m, _ in t91])
+        s138 = await asyncio.gather(*[uno(nombre, c[2]) for c in t138])
+        a = sum(not completo(EP._vara_de(f, cid, est)[0], s.get("lineas") or []) for (f, cid, _, est), s in zip(t91, s91))
+        b, partes, bien, rotas = 0, 0, 0, 0
+        for c, s in zip(t138, s138):
+            ls = s.get("lineas") or []
+            rotas += not ls
+            ts = [V.n(f"{x.get('texto')} {x.get('destino') or ''} {x.get('cosa') or ''} "
+                      f"{'si: ' + str(x['si']) if x.get('si') else ''} {_nombres(x.get('texto'))}") for x in ls]
+            todo = " ".join(ts) + " " + V.n(json.dumps(s.get("todo"), ensure_ascii=False)) + (
+                " SI:" if any(x.get("si") for x in ls) else "")
+            fa = [x for x in c[3]["partes"] if not _cumple(x, ts, todo)]
+            b, partes, bien = b + (not fa), partes + len(c[3]["partes"]), bien + len(c[3]["partes"]) - len(fa)
+        rotas += sum(not (s.get("lineas")) for s in s91)
+        print(f"  {nombre:10} primeros 91: completo {a} · desmenuzado 138: todo separado {b}, partes {bien} de {partes}"
+              f" · respuestas sin lineas {rotas}")
+        grabar.append({"variante": nombre, "s91": s91, "s138": s138})
+    with open(os.path.join(AQUI, "momento0_salida.jsonl"), "w", encoding="utf-8") as fh:
+        for g in grabar:
+            fh.write(json.dumps(g, ensure_ascii=False) + "\n")
+
+
 if __name__ == "__main__":
-    if "--informacion" in ARGS:
+    if "--salida" in ARGS:
+        asyncio.run(salida())
+    elif "--informacion" in ARGS:
         informacion()
     else:
         asyncio.run(nuevo() if "--nuevo" in ARGS else lineas() if "--lineas" in ARGS else solo() if "--solo" in ARGS else main())
