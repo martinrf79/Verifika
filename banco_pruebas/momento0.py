@@ -23,6 +23,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 ARGS = sys.argv[1:]
 sys.path.insert(0, AQUI)
 import embeddings_primera as EP  # noqa: E402  — prepara el clon, la vara y la paga
+from app.core.flujo import ficha as F  # noqa: E402
 from app.core.flujo import interprete  # noqa: E402
 
 P, V = EP.P, EP.V
@@ -31,7 +32,8 @@ BASE = """Separas el mensaje de un cliente de una tienda de tecnologia que vende
 Escribi una pregunta por cada cosa que pide y por cada destino, con sus palabras. Cada pregunta lleva su cantidad, su
 color, su destino y sus condiciones. En "cosa", lo que pide en una o dos palabras: "mouse", "auriculares", "G305",
 "envio", "garantia". Lo que vale para todo el pedido va una sola vez en "todo", no como pregunta.
-A cada pregunta le pones una accion: preguntar, ver o llevar.{convenciones}"""
+A cada pregunta le pones una accion: preguntar, ver o llevar.
+Si pregunta por una regla de la tienda, en "cosa" va el tema de esta lista que corresponde: {temas}.{convenciones}"""
 
 CONVENCIONES = """
 
@@ -45,7 +47,11 @@ LAS CONVENCIONES DE LA TIENDA:
 7. Lo que vale para todo va en "todo": lo mas barato para todo, el tope del total, como paga.
 8. El mismo producto a dos destinos es una pregunta por destino.
 9. "Preferentemente X" no exige: va como preferencia en la pregunta.
-10. "Ah no, mejor..." retira lo anterior: lo retirado no va."""
+10. "Ah no, mejor..." retira lo anterior: lo retirado no va.
+11. El precio, el stock o un dato de un modelo nombrado es preguntar: "¿cuanto sale el K120?".
+12. Lo que sale el envio a un lugar es una pregunta aparte de preguntar, con "cosa" envio y el lugar.
+13. "¿Que me sirve?", "¿que me conviene?" sin modelo es ver.
+14. El destino va dentro de la pregunta de lo que se manda, nunca como pregunta aparte."""
 
 FORMATO = {"type": "json_schema", "json_schema": {"name": "separar", "schema": {
     "type": "object", "properties": {
@@ -113,7 +119,7 @@ async def main() -> None:
     sem = asyncio.Semaphore(int(os.environ.get("A_LA_VEZ", "4")))
 
     async def uno(con, msg):
-        msgs = [{"role": "system", "content": BASE.format(convenciones=CONVENCIONES if con else "")},
+        msgs = [{"role": "system", "content": BASE.format(temas=", ".join(F._temas_de(P.TID)), convenciones=CONVENCIONES if con else "")},
                 {"role": "user", "content": f"MENSAJE DEL CLIENTE: {msg}"}]
         async with sem:
             try:
@@ -134,7 +140,7 @@ async def main() -> None:
                 ps = None if "error" in s else s.get("preguntas") or []
             n = len([c for c in vara["cosas"] if c["acto"] not in FUERA])
             filas[nombre].append((cid, msg, n, None if ps is None else calificar(vara, ps), ps))
-    with open(os.path.join(AQUI, "momento0_corrida.jsonl"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(AQUI, "momento0_corrida2.jsonl"), "w", encoding="utf-8") as fh:
         for k, (f, cid, msg, est) in enumerate(turnos):
             fh.write(json.dumps({"id": cid, "mensaje": msg, "sin": salidas[False][k], "con": salidas[True][k]},
                                 ensure_ascii=False) + "\n")
