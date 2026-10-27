@@ -364,7 +364,12 @@ def _cumple(x: dict, ts: list, todo: str) -> bool:
     if t == "cuenta":
         return bool(re.search(r"total|cuanto|precio|presupuesto|suma|sale", todo))
     if t == "pago":
-        return all(rx(m[:5], todo) for m in x.get("medios") or {})
+        # "*" es cualquier medio: vale el porcentaje, en numero o en palabras, "setenta treinta".
+        decenas = {10: "diez", 20: "veinte", 30: "treinta", 40: "cuarenta", 50: "cincuenta", 60: "sesenta",
+                   70: "setenta", 80: "ochenta", 90: "noventa"}
+        return all((m == "*" or m[:5] in todo) and (str(p) in todo or decenas.get(p, "#") in todo or
+                                                     (p == 50 and "mitad" in todo))
+                   for m, p in (x.get("medios") or {}).items())
     return True  # novende, preguntar, humano: no los mide la separacion
 
 
