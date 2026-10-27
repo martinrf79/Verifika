@@ -194,5 +194,58 @@ def main() -> None:
             print(f"  {t['corte']:.3f} {t['id']:9} {t['msg'][:100]}")
 
 
+def candidatos() -> None:
+    """LO PRIMERO, pedido de Martin del 27-oct: con las partes en que Gemini ya separo cada turno, dos cosas. Si la
+    separacion es buena: cada cosa de la vara en su propia parte. Y si los embeddings traen, para cada parte bien
+    separada, un ejemplo resuelto con su accion entre los k mas parecidos, uno por clase de la plantilla."""
+    grabado = {(r["fuente"], r["id"]): r.get("salida") for r in
+               map(json.loads, open(os.path.join(AQUI, "primera_ejes", "sueltos_rep0.jsonl"), encoding="utf-8"))}
+    pool = _pool()
+    turnos, sep, tot, partes = 0, 0, 0, []
+    por_n = collections.defaultdict(lambda: [0, 0])
+    for fuente, cid, msg, estado, historial in P._turnos_sueltos():
+        salida = grabado.get((fuente, cid))
+        if not salida:
+            continue
+        vara, nums = _vara_de(fuente, cid, estado)
+        leido = P.como_cosas(salida, nums)
+        ps = [p for p in salida.get("partes") or [] if isinstance(p, dict)]
+        oro = _alinear(vara, leido)
+        n = len(vara["cosas"])
+        ok = len(oro) == n
+        turnos += 1
+        sep += ok
+        k = "1" if n <= 1 else ("2" if n == 2 else "3+")
+        por_n[k][0] += ok
+        por_n[k][1] += 1
+        partes += [(cid, ps[i].get("cliente") or ps[i].get("que") or "-", a) for i, a in oro.items() if i < len(ps)]
+    print(f"\n1. LA SEPARACION GRABADA DE GEMINI: cada cosa de la vara en su propia parte en {sep} de {turnos} turnos")
+    print("   " + " · ".join(f"{k} cosas {a} de {b}" for k, (a, b) in sorted(por_n.items())))
+    textos = [t for t, *_ in pool] + [t for _, t, _ in partes]
+    E = dict(zip(dict.fromkeys(textos), C82.embeddings(list(dict.fromkeys(textos)))))
+    mp = np.stack([E[t] for t, *_ in pool])
+    actos = [_acto(h, s) for _, h, s, _ in pool]
+    print(f"\n2. LOS CANDIDATOS POR EMBEDDINGS, sobre {len(partes)} partes alineadas a una cosa de la vara")
+    fallas = collections.Counter()
+    for k in (1, 3, 5, 8):
+        bien = 0
+        for cid, t, oro in partes:
+            sim = mp @ E[t]
+            traidos, clases = [], set()
+            for j in np.argsort(-sim):
+                if pool[j][3] not in clases:
+                    clases.add(pool[j][3])
+                    traidos.append(j)
+                if len(traidos) == k:
+                    break
+            hay = oro in {actos[j] for j in traidos}
+            bien += hay
+            if k == 5 and not hay:
+                fallas[oro] += 1
+        print(f"   la accion correcta entre los {k} primeros: {bien} de {len(partes)} ({100 * bien // len(partes)}%)")
+    print("   las que no trae con 5, por accion: " + " · ".join(f"{a} {n}" for a, n in fallas.most_common()))
+    print("   la base, por accion: " + " · ".join(f"{a} {n}" for a, n in collections.Counter(actos).most_common()))
+
+
 if __name__ == "__main__":
-    main()
+    candidatos() if "--candidatos" in ARGS else main()
