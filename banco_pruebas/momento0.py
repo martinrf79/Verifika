@@ -335,6 +335,81 @@ def completo(vara: dict, lineas: list) -> list:
     return faltan
 
 
+def _cumple(x: dict, ts: list, todo: str) -> bool:
+    """Una parte esperada del desmenuzado, FICHA 67, en las lineas: cada una con lo suyo en la misma linea."""
+    t = x.get("t")
+    if t == "alt":
+        return any(_cumple(y, ts, todo) for y in x["de"])
+    def rx(r, txt):
+        try:
+            return bool(re.search(str(r), txt))
+        except re.error:
+            return str(r) in txt
+    if t == "buscar":
+        rub = V.n(x.get("rubro"))
+        ok = [l for l in ts if rub in ("*", "?") or rub[:5] in l or any(w[:5] in l for w in rub.split() if len(w) > 3)]
+        return any((not x.get("cond") or rx(x["cond"], l + " " + todo)) and
+                   (not x.get("excluye") or rx(x["excluye"], l + " " + todo)) for l in ok)
+    if t == "prod":
+        return any(rx(x["prod"], l) for l in ts)
+    if t == "compat":
+        return any(rx(x["prod"], l) and rx(x.get("con") or "", l) for l in ts)
+    if t == "politica":
+        return any(any(V.n(m).replace("_", " ") in l or all(w[:5] in l for w in V.n(m).split("_") if len(w) > 3)
+                       for m in x["tema"]) for l in ts)
+    if t in ("envio", "destino"):
+        return rx(x.get("destino") or ".", todo)
+    if t == "condicion":
+        return any(" si " in f" {l} " or "si:" in l for l in ts) or "SI:" in todo
+    if t == "cuenta":
+        return bool(re.search(r"total|cuanto|precio|presupuesto|suma|sale", todo))
+    if t == "pago":
+        return all(rx(m[:5], todo) for m in x.get("medios") or {})
+    return True  # novende, preguntar, humano: no los mide la separacion
+
+
+async def nuevo() -> None:
+    """El examen que no se uso para escribir la consigna, 27-oct: los primeros mensajes del desmenuzado de la FICHA 67,
+    con sus partes escritas a mano antes. La consigna de las lineas, sin contar primero; la vara, que cada parte este en
+    las lineas con lo suyo."""
+    sys.path.insert(0, os.path.join(AQUI, "nexos"))
+    import desmenuzado as D
+    casos = [c for c in D.CASOS if c[1] is None]
+    temas = ", ".join(F._temas_de(P.TID))
+    j = lambda e: json.dumps(e, ensure_ascii=False)  # noqa: E731
+    consigna = LINEAS.format(contar="", temas=temas, ej1=j(EJ1), ej2=j(EJ2))
+    sem = asyncio.Semaphore(4)
+
+    async def uno(msg):
+        async with sem:
+            try:
+                return interprete._json(await interprete._pedir([{"role": "system", "content": consigna}, {
+                    "role": "user", "content": f"MENSAJE DEL CLIENTE: {msg}"}], "momento0", _formato_lineas(False)))
+            except Exception as e:  # noqa: BLE001
+                return {"error": f"{type(e).__name__}: {str(e)[:120]}"}
+
+    salidas = await asyncio.gather(*[uno(c[2]) for c in casos])
+    ok, partes, bien, por = 0, 0, 0, collections.Counter()
+    with open(os.path.join(AQUI, "momento0_nuevo.jsonl"), "w", encoding="utf-8") as fh:
+        for c, s in zip(casos, salidas):
+            fh.write(json.dumps({"id": c[0], "mensaje": c[2], "salida": s}, ensure_ascii=False) + "\n")
+            ls = s.get("lineas") or []
+            ts = [V.n(f"{x.get('texto')} {x.get('destino') or ''} {x.get('cosa') or ''} {'si: ' + x['si'] if x.get('si') else ''}"
+                      f" {_nombres(x.get('texto'))}") for x in ls]
+            todo = " ".join(ts) + " " + V.n(s.get("todo")) + (" SI:" if any(x.get("si") for x in ls) else "")
+            faltan = [x for x in c[3]["partes"] if not _cumple(x, ts, todo)]
+            partes += len(c[3]["partes"])
+            bien += len(c[3]["partes"]) - len(faltan)
+            ok += not faltan
+            for x in faltan:
+                por[x.get("t") if x.get("t") != "alt" else x["de"][0].get("t")] += 1
+            if faltan and "--ver" in ARGS:
+                print(f"  {c[0]:5} {c[2][:100]}\n        falta {json.dumps(faltan, ensure_ascii=False)[:160]}"
+                      f"\n        lineas {[x.get('texto') for x in ls]}")
+    print(f"\nEL EXAMEN NUEVO · {len(casos)} primeros mensajes del desmenuzado: todo separado en {ok} · partes {bien} de "
+          f"{partes} · lo que falta, por tipo: {dict(por)}")
+
+
 def informacion() -> None:
     """Las lineas grabadas por la vara de la informacion: que no falte nada del mensaje, en cualquier forma."""
     grab = {r["id"]: r for r in map(json.loads, open(os.path.join(AQUI, "momento0_lineas.jsonl"), encoding="utf-8"))}
@@ -353,4 +428,4 @@ if __name__ == "__main__":
     if "--informacion" in ARGS:
         informacion()
     else:
-        asyncio.run(lineas() if "--lineas" in ARGS else solo() if "--solo" in ARGS else main())
+        asyncio.run(nuevo() if "--nuevo" in ARGS else lineas() if "--lineas" in ARGS else solo() if "--solo" in ARGS else main())
