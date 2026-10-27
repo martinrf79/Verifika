@@ -17,6 +17,7 @@ import asyncio
 import collections
 import json
 import os
+import re
 import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -311,5 +312,45 @@ async def lineas() -> None:
               + " · ".join(f"{g} cosas {a}/{b}" for g, (a, b) in sorted(por[c].items())))
 
 
+def completo(vara: dict, lineas: list) -> list:
+    """La vara de la informacion, 27-oct: lo que falta de la vara en el conjunto de las lineas, sin pedir una linea por
+    cosa. El envio a un lugar vale si alguna linea habla del envio y el lugar esta; "los otros" a un destino, si alguna
+    linea va a ese destino. Lo que esta en otra forma lo lleva el codigo a su forma normal."""
+    ts = [V.n(f"{x.get('texto')} {x.get('destino') or ''} {x.get('cosa') or ''} {x.get('si') or ''} "
+              f"{_nombres(x.get('texto'))}") for x in lineas]
+    todo, faltan = " ".join(ts), []
+    for c in vara["cosas"]:
+        if c["acto"] in FUERA:
+            continue
+        que = c["que"] or ["*"]
+        d = V.n(c["datos"].get("destino") or "").replace(" capital", "").split()[:1]
+        if c["acto"] == "envio":
+            ok = bool(re.search(r"\benvi|\bmand", todo)) and V.tiene(todo, que)
+        elif "los otros" in que:
+            ok = bool(d) and d[0] in todo
+        else:
+            ok = any(("*" in que or V.tiene(t, que)) and (not d or d[0] in t) for t in ts)
+        if not ok:
+            faltan.append(f"{c['acto']} {que[0]}{' a ' + d[0] if d else ''}")
+    return faltan
+
+
+def informacion() -> None:
+    """Las lineas grabadas por la vara de la informacion: que no falte nada del mensaje, en cualquier forma."""
+    grab = {r["id"]: r for r in map(json.loads, open(os.path.join(AQUI, "momento0_lineas.jsonl"), encoding="utf-8"))}
+    for clave, titulo in (("sin_contar", "sin contar"), ("contando", "contando primero")):
+        ok, n, malos = 0, 0, []
+        for f, cid, msg, est, h in P._turnos_sueltos():
+            if cid in grab:
+                fa = completo(EP._vara_de(f, cid, est)[0], grab[cid][clave].get("lineas") or [])
+                n, ok = n + 1, ok + (not fa)
+                malos += [f"    {cid:9} {' · '.join(fa)} · {msg[:70]}"] if fa else []
+        print(f"\nLA INFORMACION COMPLETA EN LAS LINEAS, {titulo}: {ok} de {n}")
+        print("\n".join(malos))
+
+
 if __name__ == "__main__":
-    asyncio.run(lineas() if "--lineas" in ARGS else solo() if "--solo" in ARGS else main())
+    if "--informacion" in ARGS:
+        informacion()
+    else:
+        asyncio.run(lineas() if "--lineas" in ARGS else solo() if "--solo" in ARGS else main())
