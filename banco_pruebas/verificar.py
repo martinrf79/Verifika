@@ -32,15 +32,27 @@ CONSIGNA = """Sos el control de calidad de una tienda online que vende por Whats
 sistema anoto lo que entendio. Tu unico trabajo es decir si lo entendido es exactamente lo que pidio el cliente en su
 ULTIMO MENSAJE, leido con la LIBRETA, que es lo que ya paso en la charla.
 
-Fijate en cuatro cosas:
-1. Que no falte nada de lo que pidio o pregunto.
-2. Que no haya nada que no pidio.
-3. Que preguntar o pedir ver opciones no se haya tomado como llevar, ni al reves; y que un cambio de lo ya pedido no se
-   haya tomado como algo nuevo.
-4. Que las cantidades, los colores, los destinos, las condiciones y el orden sean los que dijo, y vayan con lo que dijo.
+LAS DEFINICIONES DE LA TIENDA, que valen aunque vos lo dirias distinto:
+- Preguntar es querer saber algo: precio, stock, un dato, si anda con algo, el envio, una regla, el total.
+- Pedir ver opciones es "mostrame", "busco", "tenes", "quiero un mouse inalambrico", "necesito algo para": todavia no
+  eligio. Un pedido sin cantidad ni destino es pedir ver opciones, aunque diga "quiero".
+- Llevar es "me llevo", "anotame", "sumame", "dame", "quiero dos de esos", o armar el pedido con cantidades y destinos.
+  Pedir precio de varias cosas con cantidades y destinos es llevar: el programa arma el presupuesto.
+- Cuando el cliente deja elegir al programa —"el mas barato", "uno inalambrico", "el que sea"—, el programa elige: no es
+  un error que lo entendido no nombre el modelo.
+- Lo que el sistema completa sin cambiar nada no es un error: la cantidad uno cuando no dijo cantidad, el unico color o
+  la unica opcion, el pedido que ya estaba en la LIBRETA y sigue igual, un saludo o un dato de si.
 
-No juzgues si la tienda tiene el producto, ni los precios, ni como se va a responder: solo si lo entendido es lo pedido.
-Lo que el sistema dice con otras palabras pero quiere decir lo mismo, coincide."""
+ES UN ERROR solo lo que haria que la tienda haga otra cosa que lo que pidio:
+1. Falta algo que pidio o pregunto, o hay algo que no pidio.
+2. Se busca o se lleva otra clase de producto que la que dijo.
+3. Una pregunta o pedir ver se tomo como llevar, o al reves; o un cambio de lo que ya esta en el pedido se tomo como
+   algo nuevo.
+4. La cantidad, el color, el destino, una condicion, el orden o el tope son otros que los que dijo, o van con otra cosa.
+5. La regla de la tienda que pregunta es otra.
+
+No juzgues si la tienda tiene el producto, ni los precios, ni como se va a responder. Lo que el sistema dice con otras
+palabras pero hace lo mismo, coincide. Ante la duda entre dos lecturas razonables, coincide."""
 FORMATO = {"type": "json_schema", "json_schema": {"name": "verificacion", "schema": {
     "type": "object", "properties": {"coincide": {"type": "boolean"}, "diferencia": {"type": "string"}},
     "required": ["coincide", "diferencia"]}}}
@@ -160,7 +172,11 @@ async def main() -> None:
     rs = [r for r in await asyncio.gather(*[uno(*t) for t in P._turnos_sueltos()]) if r]
     malos = [r for r in rs if "error" in r]
     rs = [r for r in rs if "error" not in r]
-    with open(os.path.join(AQUI, "verificar_rep0.jsonl"), "w", encoding="utf-8") as fh:
+    # Cada consigna graba aparte, por su huella: la medida de una no pisa la de otra.
+    import hashlib
+    nombre = "verificar_" + hashlib.sha1(CONSIGNA.encode()).hexdigest()[:8] + ".jsonl"
+    print(f"grabado en {nombre}")
+    with open(os.path.join(AQUI, nombre), "w", encoding="utf-8") as fh:
         for r in rs:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
     bien = [r for r in rs if r["bien"]]
