@@ -178,10 +178,14 @@ def _resolver(b: dict, tienda_id: str, renglones: list, filas: dict) -> list:
         if (rub, color) not in filas:
             c = b["criterios"].get(rub) or {}
             conds = (c.get("condiciones") or []) + ([color] if color else [])
-            got = K.buscar(rub, conds, c.get("orden") or "nada", 1, tienda_id, c.get("entre"))
+            got = K.buscar(rub, conds, c.get("orden") or "nada", 10, tienda_id, c.get("entre"))
             # Un color que ningun producto del rubro tiene no se cambia por otro en silencio.
             sin = color and (color in got["vacio_por"] or color in got["sin_campo"])
-            filas[(rub, color)] = None if sin else (got["filas"] or [None])[0]
+            # EL ELEGIDO POR CRITERIO ALCANZA PARA TODO LO PEDIDO DEL RUBRO, 27-oct, K09: el primero del orden con stock
+            # para todos los renglones; si ninguno alcanza, el primero, y se pregunta por la cantidad.
+            top = (got["filas"] or [None])[0]
+            p = next((p for p in got["filas"] if K.entero(p.get("stock")) >= pide.get((rub, color), 1)), top)
+            filas[(rub, color)] = None if sin else p if p is top else {**p, "salteado": top["nombre"]}
         return filas[(rub, color)]
 
     res, de_rubro, otros = [], [], []
@@ -255,6 +259,8 @@ def _resolver(b: dict, tienda_id: str, renglones: list, filas: dict) -> list:
                     de_rubro.append({"L": x["L"], "renglon": {**x["renglon"], "cantidad": 1}, "rubro": pendientes.pop(0),
                                      "de_otros": x})
     # EL RUBRO SE CUMPLE CON SU CRITERIO: la primera fila de su busqueda.
+    ks = [((x["rubro"], K.n(x["renglon"].get("color"))), x["renglon"]["cantidad"] or 1) for x in de_rubro if not x.get("falta")]
+    pide = {k: sum(c for k2, c in ks if k2 == k) for k, _ in ks}
     for x in de_rubro:
         if x.get("falta"):
             continue
@@ -265,7 +271,8 @@ def _resolver(b: dict, tienda_id: str, renglones: list, filas: dict) -> list:
                 f" en {x['renglon']['color']}" if x["renglon"].get("color") else ""))
             continue
         dueño.setdefault("articulos", []).append(_art(p, x["renglon"]["cantidad"] or 1, x["renglon"]["destino"]))
-        dueño.setdefault("elegidos", {})[x["rubro"]] = p["nombre"]
+        dueño.setdefault("elegidos", {})[x["rubro"]] = p["nombre"] + (
+            f", porque del {p['salteado']} no hay stock para todos" if p.get("salteado") else "")
     return res
 
 
@@ -518,12 +525,7 @@ def _que(x: dict) -> str:
 
 
 def preguntas(b: dict, falta: list) -> list:
-    out = []
-    for x in falta:
-        q = _pregunta(b, x)
-        if q and q not in out:
-            out.append(q)
-    return out
+    return list(dict.fromkeys(q for q in (_pregunta(b, x) for x in falta) if q))  # una por faltante, sin repetir
 
 
 def _pregunta(b: dict, x: dict) -> str:

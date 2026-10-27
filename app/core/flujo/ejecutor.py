@@ -203,7 +203,9 @@ class Turno:
         for destino, items in grupos.items():
             r = self.herramienta("cuenta", items=items, destinos=[destino] if destino else [],
                                  reparto_pago=None if varios else (reparto or None))
-            if (r.get("cuenta") or {}).get("total_ars") is not None:
+            # Un envio que no se pudo cotizar no se calla: el total sin el no es el total, 27-oct, K09.
+            sin_envio = any(f.get("sin_dato") for f in (r.get("envio") or {}).get("filas") or [])
+            if (r.get("cuenta") or {}).get("total_ars") is not None and not sin_envio:
                 bloques.append({"destino": destino, **r["cuenta"]})
             else:
                 # Una cuenta a medias no se muestra como entera: se pregunta lo que falta.
@@ -229,7 +231,8 @@ class Turno:
         if tope and total > tope:
             # Sin decir que saca, un total que pasa el tope no se da por bueno: se le pregunta.
             self.preguntar(f"El total pasa tu tope de {_plata(tope)}. ¿Saco algo o cambio algún producto?")
-        self.hechos.append({"tipo": "cuenta", "bloques": bloques, "general": general})
+        self.hechos.append({"tipo": "cuenta", "bloques": bloques, "general": general,
+                            **({"tope": tope, "total": total} if tope and total <= tope else {})})
 
     def general(self, bloques: list, reparto: list) -> dict:
         """El total general de varios destinos y, si reparte el pago, el reparto sobre ese total: lo calcula

@@ -135,6 +135,11 @@ y K12, redaccion contra una vara estricta.
 **El defecto que aparecio**: `normal.lugares` perdia el lugar junto a un modelo con numeros, "un G203 a Rosario". Esta
 arreglado y con test; no mueve ningun numero grabado.
 
+**El paso 1, hecho el 27-oct**: `--dificiles` da 20 de 21. K15 contesta "Te alcanza: con $30.000 te sobran $2.500"
+dentro de la cuenta. K09: el elegido por criterio es el primero del orden con stock para todo lo pedido del rubro, y el
+texto dice por que salteo al primero; y un envio que no se pudo cotizar pregunta en vez de dar un total sin envio, que
+era un error sin avisar. Sin subir el techo de lineas; las respuestas grabadas de Gemini iguales, 70 de 74 y 35 BIEN.
+
 **El plan, en orden, con su numero**: cada paso se cierra antes del siguiente.
 1. Codigo, sin modelo: K09 y K15. Meta, 20 de 21 en `--dificiles`.
 2. La traduccion real: una corrida del bot de hoy sobre las 21 K, unos 0,15 dolares con la paga y el ok de Martin.

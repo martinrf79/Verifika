@@ -67,11 +67,9 @@ def _lista(h: dict, filas: int = 5) -> list:
 
 
 def _cuenta(h: dict) -> list:
-    out = []
-    for b in h["bloques"]:
-        out.append(b["detalle"])
-    if h.get("general"):
-        out.append(h["general"]["detalle"])
+    out = [b["detalle"] for b in h["bloques"]] + ([h["general"]["detalle"]] if h.get("general") else [])
+    if h.get("tope"):  # "me alcanza?": el total entra en el tope del cliente, K15
+        out.append(f"Te alcanza: con {_plata(h['tope'])} te sobran {_plata(h['tope'] - h['total'])}.")
     return out
 
 

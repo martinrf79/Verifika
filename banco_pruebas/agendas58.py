@@ -180,7 +180,7 @@ AGENDAS = {
                bu("auriculares", orden="mas caro", cantidad=2),
                com(a("notebook", destino="Palpala"), a("auriculares", destino="Palpala"),
                    a("auriculares", destino="San Francisco"), a("teclado", destino="San Francisco"),
-                   a("los otros", 2, destino="Correa")), cu())],
+                   a("los otros", 2, destino="Correa Santa Fe")), cu())],
     "K12": [ag(bu("celular")), ag(bu("tablet"))],
     "K13": [ag(bu("notebook", orden="mas barato")), ag(po("promociones", afirma="iguala el precio de otra tienda")),
             ag(po("mayoristas"))],
