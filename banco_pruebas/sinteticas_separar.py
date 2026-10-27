@@ -208,3 +208,132 @@ CASOS = [
           "pie no viene en negro, no la quiero.",
       [L("lampara|mesa", 2, "olivos"), L("lampara|pie", 1, "vicente", si=True)]),
 ]
+
+
+# ══ LA CORRIDA ═══════════════════════════════════════════════════════════════
+
+MEJORAS = """
+- Una pregunta siempre es su propia linea, aunque hable del pago, del envio o de una regla. En "todo" van solo
+  decisiones que valen para todo el pedido, nunca preguntas.
+- Antes de terminar, comproba: las cantidades de cada producto suman lo que dijo; cada lugar que nombro esta en alguna
+  linea; cada "si" quedo en el "si" de una linea."""
+
+EJ_ABSTRACTOS = {
+    "c1": "Necesito dos PRODUCTO_A y dos PRODUCTO_B, uno de cada uno a LUGAR_1 y el resto a LUGAR_2. Cuanto sale todo?",
+    "c2": "Tenes el MODELO_X en COLOR? Si hay, anotame dos, y si no el MODELO_Y."}
+
+
+def consigna(tienda: str, mejorada: bool) -> str:
+    import json
+    import momento0 as M
+    t = TIENDAS[tienda]
+    if mejorada:
+        e1 = {"lineas": [M._L(f"quiero 1 {p} a {lu}", p, 1, lu) for lu in ("LUGAR_1", "LUGAR_2")
+                         for p in ("PRODUCTO_A", "PRODUCTO_B")] + [M._L("cuanto sale todo?", "total")], "todo": ""}
+        e2 = {"lineas": [M._L("hay MODELO_X en COLOR?", "MODELO_X"), M._L("quiero 2 MODELO_X COLOR", "MODELO_X", 2,
+                                                                       si="hay MODELO_X en COLOR"),
+                         M._L("quiero 2 MODELO_Y", "MODELO_Y", 2, si="no hay MODELO_X en COLOR")], "todo": ""}
+    else:
+        e1, e2 = M.EJ1, M.EJ2
+    texto = M.LINEAS.format(contar="", temas=", ".join(t["temas"]), ej1=json.dumps(e1, ensure_ascii=False),
+                            ej2=json.dumps(e2, ensure_ascii=False))
+    texto = texto.replace("tienda de tecnologia", f"tienda de {t['rubro']}")
+    if mejorada:
+        texto = texto.replace('- "cantidad" y "destino": solo si los dijo.',
+                              '- "cantidad" y "destino": solo si los dijo.' + MEJORAS)
+        texto = texto.replace("Necesito dos mouse y dos teclados, uno de cada uno a Rosario y el resto a Salta. Cuanto "
+                              "sale todo?", EJ_ABSTRACTOS["c1"])
+        texto = texto.replace("Tenes el G502 en negro? Si hay, anotame dos, y si no el G305.", EJ_ABSTRACTOS["c2"])
+    return texto
+
+
+def calificar(caso: dict, salida: dict) -> dict:
+    """Lo que salio bien del caso: lineas, preguntas, pago y tope, contra lo escrito a mano."""
+    import json
+    import re
+    from vara_dato import n
+    ls = salida.get("lineas") or []
+    textos = [n(f"{x.get('texto')} {x.get('cosa') or ''}") for x in ls]
+    todo = " ".join(textos + [n(f"{x.get('destino') or ''} {x.get('si') or ''}") for x in ls]) + " " + n(
+        json.dumps(salida.get("todo"), ensure_ascii=False))
+    usadas, bien = set(), 0
+    for e in caso["lineas"]:
+        for i, x in enumerate(ls):
+            if i in usadas or not re.search(e["cosa"], textos[i]):
+                continue
+            cant = x.get("cantidad")
+            try:
+                cant = int(cant) if cant not in (None, "") else None
+            except (TypeError, ValueError):
+                cant = None
+            if e["cant"] is not None and cant != e["cant"] and not re.search(rf"\b{e['cant']}\b", textos[i]):
+                continue
+            if e["dest"] and not re.search(e["dest"], n(f"{x.get('destino') or ''} {x.get('texto')}")):
+                continue
+            if e["si"] and not str(x.get("si") or "").strip():
+                continue
+            usadas.add(i)
+            bien += 1
+            break
+    preg = sum(any(re.search(p, t) for t in textos) for p in caso["preguntas"])
+    dec = {10: "diez", 20: "veinte", 30: "treinta", 40: "cuarenta", 50: "cincuenta", 60: "sesenta", 70: "setenta"}
+    pago = all(str(p) in todo or dec.get(p, "#") in todo or (p == 50 and "mitad" in todo) for p in caso["pago"])
+    tope = caso["tope"] is None or str(caso["tope"]) in todo.replace(".", "") or str(caso["tope"] // 1000) in todo
+    entero = bien == len(caso["lineas"]) and preg == len(caso["preguntas"]) and pago and tope
+    return {"entero": entero, "lineas": bien, "preguntas": preg, "pago": pago, "tope": tope}
+
+
+async def correr() -> None:
+    import asyncio
+    import collections
+    import json
+    import os
+    import sys
+    aqui = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, aqui)
+    import momento0 as M
+    sem = asyncio.Semaphore(int(os.environ.get("A_LA_VEZ", "2")))
+
+    async def uno(caso, mejorada):
+        async with sem:
+            for intento in range(6):
+                try:
+                    r = await M.interprete._pedir([
+                        {"role": "system", "content": consigna(caso["tienda"], mejorada)},
+                        {"role": "user", "content": f"MENSAJE DEL CLIENTE: {caso['mensaje']}"}],
+                        "sinteticas", M._formato_lineas(False))
+                    return M.interprete._json(r)
+                except Exception as e:  # noqa: BLE001 — la gratis se traba: se espera y se reintenta
+                    if intento == 5:
+                        return {"error": f"{type(e).__name__}: {str(e)[:100]}"}
+                    await asyncio.sleep(20 * (intento + 1))
+
+    print(f"\nLAS SINTETICAS · {len(CASOS)} mensajes complejos de {len(TIENDAS)} tiendas, "
+          f"{sum(len(c['lineas']) for c in CASOS)} lineas y {sum(len(c['preguntas']) for c in CASOS)} preguntas esperadas")
+    grabar = []
+    for mejorada in (False, True):
+        salidas = await asyncio.gather(*[uno(c, mejorada) for c in CASOS])
+        rs = [calificar(c, s) for c, s in zip(CASOS, salidas)]
+        por = collections.defaultdict(lambda: [0, 0])
+        for c, r in zip(CASOS, rs):
+            por[c["tienda"]][0] += r["entero"]
+            por[c["tienda"]][1] += 1
+        print(f"  {'mejorada' if mejorada else 'la de hoy':10} enteros {sum(r['entero'] for r in rs)} de {len(rs)} · lineas "
+              f"{sum(r['lineas'] for r in rs)} · preguntas {sum(r['preguntas'] for r in rs)} · pago "
+              f"{sum(r['pago'] for c, r in zip(CASOS, rs) if c['pago'])}/{sum(bool(c['pago']) for c in CASOS)} · tope "
+              f"{sum(r['tope'] for c, r in zip(CASOS, rs) if c['tope'])}/{sum(bool(c['tope']) for c in CASOS)} · sin "
+              f"respuesta {sum('error' in s for s in salidas)}")
+        print("     " + " · ".join(f"{t} {a}/{b}" for t, (a, b) in por.items()))
+        if "--ver" in sys.argv:
+            for c, r, s in zip(CASOS, rs, salidas):
+                if not r["entero"]:
+                    print(f"     {c['id']} {r} · {[x.get('texto') for x in s.get('lineas') or []]} · todo {s.get('todo')}")
+        grabar += [{"mejorada": mejorada, "id": c["id"], "salida": s, "nota": r} for c, s, r in zip(CASOS, salidas, rs)]
+    with open(os.path.join(aqui, "sinteticas_corrida.jsonl"), "w", encoding="utf-8") as fh:
+        for g in grabar:
+            fh.write(json.dumps(g, ensure_ascii=False) + "\n")
+
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(correr())
