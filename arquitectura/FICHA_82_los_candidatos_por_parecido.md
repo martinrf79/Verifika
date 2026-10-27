@@ -107,6 +107,40 @@ mide una condicion necesaria y no predice el resultado. La corrida cambio tres c
 formato compacto y las clases nuevas— y no aisla cual empeora. Los 47 quedan en `candidatos82_fijos.json`; la
 consigna sigue con los 26.
 
+## El cierre, 27-oct: lo que dijo lo grabado y el plan
+
+**Lo grabado, turno por turno**, sin modelo: entre los 26 y los 47 ejemplos solo cambian 10 de 169 turnos. 54 fallan en
+las dos: los ejemplos no mueven al modelo. Esas 54, por clase: cambiar lo pedido, unas 12; pedir comprar leido como ver
+opciones, 9; elegir entre dos o lo ambiguo, 6; tope, pago o exclusion para todo, 5; el envio de un producto a un lugar,
+4; politica con otro rotulo, 4; compatibilidad como pregunta tecnica, 3; "si" a una pregunta del bot, 2. Una regla que
+pasa "ver con cantidad" a comprar arregla el acto en las 48 y lo rompe en las 58: no entro.
+
+**Las entrevistas ya lo decian**: el modelo pide entidades resueltas por el codigo, el estado ordenado, unos cinco
+ejemplos de borde y separar consulta de compra por el verbo; con varios destinos, uno por destino.
+
+**Afuera**: no hay una skill que lo resuelva. La referencia de Anthropic, github.com/anthropics/commerce-agents, es un
+agente con herramientas y candados en el codigo: el carrito solo acepta ids que devolvio una herramienta en la sesion.
+En tau-bench, el banco de agentes de venta minorista, los mejores resuelven del 70 al 90 por ciento y repetir la misma
+tarea baja mucho: ningun sistema llega a cien, los que andan hacen que lo que falla falle seguro.
+
+**El agente de la FICHA 62, recalificado con la vara de hoy** sobre las 58 que comparte: 55, 54 y 55 de 58 contra 53, 52
+y 53 del flujo de hoy. Su codigo ya no esta en el repo; las J y las K no se pueden comparar.
+
+**La vara de las dificiles**, `cableado58 --dificiles`: las 21 K con su traduccion a mano. Con la traduccion perfecta el
+codigo resuelve 18 de 21: el multienvio, las cantidades repartidas y el pago dividido andan; lo que falla ahi es la
+traduccion. Quedan K09, un renglon sin stock frena el presupuesto entero; K15, no contesta si le alcanza el tope, con su
+arreglo en `banco_pruebas/forma_normal/k15_me_alcanza.patch`, que pasa K15 y excede en 3 el techo de lineas de `app/`;
+y K12, redaccion contra una vara estricta.
+
+**El defecto que aparecio**: `normal.lugares` perdia el lugar junto a un modelo con numeros, "un G203 a Rosario". Esta
+arreglado y con test; no mueve ningun numero grabado.
+
+**El plan, en orden, con su numero**: cada paso se cierra antes del siguiente.
+1. Codigo, sin modelo: K09 y K15. Meta, 20 de 21 en `--dificiles`.
+2. La traduccion real: una corrida del bot de hoy sobre las 21 K, unos 0,15 dolares con la paga y el ok de Martin.
+3. Candados: donde la traduccion falla, el codigo repregunta. Meta, cero errores sin avisar.
+4. Recien ahi, comparar arquitecturas con la misma vara.
+
 ## El gasto
 
 Los embeddings con la paga por orden de Martin, menos de un centavo. La tercera vuelta, con la paga y el ok de Martin:

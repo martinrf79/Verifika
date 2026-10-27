@@ -1,0 +1,25 @@
+diff --git a/app/core/flujo/ejecutor.py b/app/core/flujo/ejecutor.py
+index 39d1b77..5b52e95 100644
+--- a/app/core/flujo/ejecutor.py
++++ b/app/core/flujo/ejecutor.py
+@@ -229,6 +229,8 @@ class Turno:
+         if tope and total > tope:
+             # Sin decir que saca, un total que pasa el tope no se da por bueno: se le pregunta.
+             self.preguntar(f"El total pasa tu tope de {_plata(tope)}. ¿Saco algo o cambio algún producto?")
++        elif tope:  # "me alcanza?": el total que entra en el tope se contesta, K15
++            self.hechos.append({"tipo": "entra_tope", "tope": tope, "sobra": tope - total})
+         self.hechos.append({"tipo": "cuenta", "bloques": bloques, "general": general})
+ 
+     def general(self, bloques: list, reparto: list) -> dict:
+diff --git a/app/core/flujo/redaccion.py b/app/core/flujo/redaccion.py
+index 63223b7..71985df 100644
+--- a/app/core/flujo/redaccion.py
++++ b/app/core/flujo/redaccion.py
+@@ -105,6 +105,7 @@ RENGLONES = {
+     "no_cumple": lambda h: [("Ninguno cumple" if h.get("varios") else "No cumple") + f" con \"{h['que']}\", así que no "
+                             "lo sumé al pedido."],
+     "pasa_tope": lambda h: [f"El total pasaba de {_plata(h['tope'])}, así que saqué el {h['saca']}."],
++    "entra_tope": lambda h: [f"Te alcanza: con {_plata(h['tope'])} te sobran {_plata(h['sobra'])}."],
+     "cuenta": _cuenta,
+     "envio": _envio,
+     "explicar": lambda h: [h["texto"]] if h["texto"] else [],
