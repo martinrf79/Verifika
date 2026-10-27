@@ -219,5 +219,97 @@ async def solo() -> None:
           f"{sum(v[1] for v in por.values())} · " + " · ".join(f"{k} cosas {a}/{c} contra {b}" for k, (a, b, c) in sorted(por.items())))
 
 
+LINEAS = """Separas el mensaje de un cliente de una tienda de tecnologia que vende por WhatsApp. No contestas ni le
+preguntas nada al cliente. Escribis lo que pide el cliente, en primera persona y con sus palabras, una linea por cada
+cosa que pide o pregunta.{contar}
+
+REGLAS:
+- Una linea por cada producto y cada destino. Si reparte, cada producto en cada destino con su cantidad, y las
+  cantidades de un producto suman lo que pidio en total. No cruces cada producto con cada destino: solo lo que el
+  cliente manda a cada lugar.
+- Una pregunta es su propia linea: el precio, si hay stock, si anda con algo, una regla de la tienda, el envio.
+- Una condicion va en su propia linea, y la linea que depende de ella lleva en "si" lo que tiene que pasar.
+- Lo que vale para todo el pedido va una sola vez en "todo": lo mas barato para todo, el tope del total, como paga.
+- "cosa": lo que pide en una o dos palabras; si es una regla de la tienda, el tema de esta lista: {temas}.
+- "cantidad" y "destino": solo si los dijo.
+
+EJEMPLOS, en la forma exacta:
+Cliente: Necesito dos mouse y dos teclados, uno de cada uno a Rosario y el resto a Salta. Cuanto sale todo?
+-> {ej1}
+Cliente: Tenes el G502 en negro? Si hay, anotame dos, y si no el G305.
+-> {ej2}"""
+
+CONTAR = """
+Antes de las lineas, en "inventario", anota cada producto con la cantidad total que pide y cada destino que nombra."""
+
+_L = lambda t, c, n=None, d="", si="": {"texto": t, "cosa": c, "cantidad": n, "destino": d, "si": si}  # noqa: E731
+EJ1 = {"lineas": [_L("quiero 1 mouse a Rosario", "mouse", 1, "Rosario"), _L("quiero 1 teclado a Rosario", "teclado", 1,
+       "Rosario"), _L("quiero 1 mouse a Salta", "mouse", 1, "Salta"), _L("quiero 1 teclado a Salta", "teclado", 1, "Salta"),
+       _L("cuanto sale todo?", "total")], "todo": ""}
+EJ2 = {"lineas": [_L("hay G502 en negro?", "G502"), _L("quiero 2 G502 negros", "G502", 2, si="hay G502 negro"),
+       _L("quiero 2 G305", "G305", 2, si="no hay G502 negro")], "todo": ""}
+INV1 = {"productos": [{"cosa": "mouse", "cantidad": 2}, {"cosa": "teclado", "cantidad": 2}], "destinos": ["Rosario", "Salta"]}
+INV2 = {"productos": [{"cosa": "G502", "cantidad": 2}, {"cosa": "G305", "cantidad": 2}], "destinos": []}
+
+
+def _formato_lineas(contar: bool) -> dict:
+    linea = {"type": "object", "properties": {"texto": {"type": "string"}, "cosa": {"type": "string"},
+             "cantidad": {"type": ["integer", "null"]}, "destino": {"type": "string"}, "si": {"type": "string"}},
+             "required": ["texto", "cosa", "cantidad", "destino", "si"]}
+    props = {"lineas": {"type": "array", "items": linea}, "todo": {"type": "string"}}
+    if contar:
+        props = {"inventario": {"type": "object", "properties": {
+            "productos": {"type": "array", "items": {"type": "object", "properties": {
+                "cosa": {"type": "string"}, "cantidad": {"type": ["integer", "null"]}}, "required": ["cosa", "cantidad"]}},
+            "destinos": {"type": "array", "items": {"type": "string"}}}, "required": ["productos", "destinos"]}, **props}
+    return {"type": "json_schema", "json_schema": {"name": "lineas", "schema": {
+        "type": "object", "properties": props, "required": list(props)}}}
+
+
+async def lineas() -> None:
+    """La tercera prueba de separar, 27-oct: en primera persona, una linea por producto y destino con campos fijos, la
+    condicion aparte y dos ejemplos de la forma exacta. Sin y con contar primero. Se mide solo la separacion."""
+    turnos = [(f, cid, msg, est) for f, cid, msg, est, h in P._turnos_sueltos()
+              if "vacia" in interprete.libreta(est, h, P.TID)]
+    temas = ", ".join(F._temas_de(P.TID))
+    sem = asyncio.Semaphore(4)
+
+    def consigna(contar):
+        j = lambda e, i: json.dumps({**({"inventario": i} if contar else {}), **e}, ensure_ascii=False)  # noqa: E731
+        return LINEAS.format(contar=CONTAR if contar else "", temas=temas, ej1=j(EJ1, INV1), ej2=j(EJ2, INV2))
+
+    async def uno(contar, msg):
+        async with sem:
+            try:
+                return interprete._json(await interprete._pedir([{"role": "system", "content": consigna(contar)}, {
+                    "role": "user", "content": f"MENSAJE DEL CLIENTE: {msg}"}], "momento0", _formato_lineas(contar)))
+            except Exception as e:  # noqa: BLE001
+                return {"error": f"{type(e).__name__}: {str(e)[:120]}"}
+
+    salidas = {c: await asyncio.gather(*[uno(c, m) for _, _, m, _ in turnos]) for c in (False, True)}
+    por = {c: collections.defaultdict(lambda: [0, 0]) for c in (False, True)}
+    with open(os.path.join(AQUI, "momento0_lineas.jsonl"), "w", encoding="utf-8") as fh:
+        for k, (f, cid, msg, est) in enumerate(turnos):
+            fh.write(json.dumps({"id": cid, "mensaje": msg, "sin_contar": salidas[False][k],
+                                 "contando": salidas[True][k]}, ensure_ascii=False) + "\n")
+            vara, _ = EP._vara_de(f, cid, est)
+            n = len([c for c in vara["cosas"] if c["acto"] not in FUERA])
+            g = "1" if n <= 1 else ("2" if n == 2 else "3+")
+            for c in (False, True):
+                s = salidas[c][k]
+                ps = [{"texto": f"{x.get('texto')} {x.get('destino') or ''}", "cosa": x.get("cosa")}
+                      for x in s.get("lineas") or []] if "error" not in s else []
+                r = calificar(vara, ps)
+                por[c][g][0] += r[1]
+                por[c][g][1] += 1
+                if "--ver" in ARGS and not r[1] and c:
+                    print(f"  {cid:9} {msg[:90]}\n            {' · '.join(x for x in r[4] if x.startswith('falta'))}"
+                          f"\n            lineas: {[x.get('texto') for x in s.get('lineas') or []]}")
+    print(f"\nLAS LINEAS · {len(turnos)} primeros mensajes, la separacion bien. Antes: solo separar 67, con convenciones 76")
+    for c, t in ((False, "sin contar"), (True, "contando primero")):
+        print(f"  {t:17} {sum(a for a, _ in por[c].values())} · "
+              + " · ".join(f"{g} cosas {a}/{b}" for g, (a, b) in sorted(por[c].items())))
+
+
 if __name__ == "__main__":
-    asyncio.run(solo() if "--solo" in ARGS else main())
+    asyncio.run(lineas() if "--lineas" in ARGS else solo() if "--solo" in ARGS else main())
