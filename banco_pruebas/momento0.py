@@ -312,12 +312,13 @@ async def lineas() -> None:
               + " · ".join(f"{g} cosas {a}/{b}" for g, (a, b) in sorted(por[c].items())))
 
 
-def completo(vara: dict, lineas: list) -> list:
+def completo(vara: dict, lineas: list, nums: dict = None) -> list:
     """La vara de la informacion, 27-oct: lo que falta de la vara en el conjunto de las lineas, sin pedir una linea por
     cosa. El envio a un lugar vale si alguna linea habla del envio y el lugar esta; "los otros" a un destino, si alguna
     linea va a ese destino. Lo que esta en otra forma lo lleva el codigo a su forma normal."""
-    ts = [V.n(f"{x.get('texto')} {x.get('destino') or ''} {x.get('cosa') or ''} {x.get('si') or ''} "
-              f"{_nombres(x.get('texto'))}") for x in lineas]
+    # Con charla, cada numero de la libreta vale tambien por lo que nombra: "L-1" es "L-1 G305 negro".
+    ts = [V.n(V._con_nombres(f"{x.get('texto')} {x.get('destino') or ''} {x.get('cosa') or ''} {x.get('si') or ''} "
+                             f"{_nombres(x.get('texto'))}", nums or {})) for x in lineas]
     todo, faltan = " ".join(ts), []
     for c in vara["cosas"]:
         if c["acto"] in FUERA:
@@ -329,7 +330,9 @@ def completo(vara: dict, lineas: list) -> list:
         elif "los otros" in que:
             ok = bool(d) and d[0] in todo
         else:
-            ok = any(("*" in que or V.tiene(t, que)) and (not d or d[0] in t) for t in ts)
+            ref = V.n(c.get("ref") or "").replace(" ", "")
+            ok = any(("*" in que or V.tiene(t, que) or (ref and re.search(rf"\b{ref[0]}\s?{ref[1:]}\b", t)))
+                     and (not d or d[0] in t) for t in ts)
         if not ok:
             faltan.append(f"{c['acto']} {que[0]}{' a ' + d[0] if d else ''}")
     return faltan
@@ -513,8 +516,78 @@ async def salida() -> None:
             fh.write(json.dumps(g, ensure_ascii=False) + "\n")
 
 
+MEMORIA = """
+
+LA LIBRETA: antes del ultimo mensaje viene lo que ya paso en la charla, escrito por el programa: M-1 lo mostrado, L-1 un
+renglon del pedido, R-1 lo que pregunto el vendedor. El ultimo mensaje se lee con la libreta:
+- Si el cliente senala algo de la libreta —"ese", "el segundo", "el negro", "lo de Rosario", "los otros"—, en "cosa" va
+  su numero: "M-2", "L-1".
+- Cambiar algo del pedido es una linea con el renglon y lo nuevo: "cambio L-1 a negro", "L-2 va a Cordoba", "de L-1
+  quiero uno solo".
+- Sacar es una linea: "saco L-2".
+- Contestar lo que pregunto el vendedor es una linea con lo que el cliente decide.
+- Lo que no cambia no se escribe."""
+
+
+def _de_lectura(salida: dict) -> list:
+    """La lectura grabada de hoy en forma de lineas, para medirla con la misma vara."""
+    return [{"texto": p.get("cliente") or "", "cosa": " ".join(str(p.get(k) or "") for k in ("que", "rubro", "tema")),
+             "destino": p.get("destino") or "", "cantidad": p.get("cantidad"),
+             "si": p.get("si_cumple") or ("si" if p.get("depende_de") else "")}
+            for p in (salida or {}).get("partes") or [] if isinstance(p, dict)]
+
+
+async def memoria() -> None:
+    """La fase 2, 27-oct: la consigna de las lineas con la libreta, sobre los turnos con charla de los 169. Contra la
+    lectura grabada de hoy, medida con la misma vara de la informacion completa."""
+    grabado = {(r["fuente"], r["id"]): r.get("salida") for r in
+               map(json.loads, open(os.path.join(AQUI, "primera_ejes", "sueltos_rep0.jsonl"), encoding="utf-8"))}
+    turnos = [(f, cid, msg, est, h) for f, cid, msg, est, h in P._turnos_sueltos()
+              if "vacia" not in interprete.libreta(est, h, P.TID)]
+    j = lambda e: json.dumps(e, ensure_ascii=False)  # noqa: E731
+    consigna = LINEAS.format(contar="", temas=", ".join(F._temas_de(P.TID)), ej1=j(EJ1), ej2=j(EJ2)) + MEMORIA
+    sem = asyncio.Semaphore(int(os.environ.get("A_LA_VEZ", "2")))
+
+    async def uno(msg, est, h):
+        async with sem:
+            for intento in range(6):
+                try:
+                    return interprete._json(await interprete._pedir(
+                        [{"role": "system", "content": consigna},
+                         {"role": "user", "content": f"{interprete.libreta(est, h, P.TID)}\nULTIMO MENSAJE: {msg}"}],
+                        "momento0", _formato_lineas(False)))
+                except Exception as e:  # noqa: BLE001 — la gratis se traba: se espera y se reintenta
+                    if intento == 5:
+                        return {"error": f"{type(e).__name__}: {str(e)[:100]}"}
+                    await asyncio.sleep(20 * (intento + 1))
+
+    salidas = await asyncio.gather(*[uno(m, e, h) for _, _, m, e, h in turnos])
+    hoy = nuevo = respondidas = 0
+    malos = []
+    with open(os.path.join(AQUI, "momento0_memoria.jsonl"), "w", encoding="utf-8") as fh:
+        for (f, cid, msg, est, h), s in zip(turnos, salidas):
+            fh.write(json.dumps({"id": cid, "mensaje": msg, "salida": s}, ensure_ascii=False) + "\n")
+            vara, nums = EP._vara_de(f, cid, est)
+            hoy += not completo(vara, _de_lectura(grabado.get((f, cid))), nums)
+            if "error" in s:
+                continue
+            respondidas += 1
+            fa = completo(vara, s.get("lineas") or [], nums)
+            nuevo += not fa
+            if fa:
+                malos.append(f"  {cid:9} falta {' · '.join(fa)}\n            {msg[:100]}\n            "
+                             f"{[x.get('texto') for x in s.get('lineas') or []]}")
+    print(f"\nLA SEPARACION CON MEMORIA · {len(turnos)} turnos con charla, {respondidas} con respuesta")
+    print(f"  la lectura grabada de hoy: completos {hoy} de {len(turnos)}")
+    print(f"  las lineas con la libreta: completos {nuevo} de {respondidas}")
+    if "--ver" in ARGS:
+        print("\n".join(malos))
+
+
 if __name__ == "__main__":
-    if "--salida" in ARGS:
+    if "--memoria" in ARGS:
+        asyncio.run(memoria())
+    elif "--salida" in ARGS:
         asyncio.run(salida())
     elif "--informacion" in ARGS:
         informacion()
