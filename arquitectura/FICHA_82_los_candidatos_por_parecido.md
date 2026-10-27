@@ -146,6 +146,28 @@ era un error sin avisar. Sin subir el techo de lineas; las respuestas grabadas d
 3. Candados: donde la traduccion falla, el codigo repregunta. Meta, cero errores sin avisar.
 4. Recien ahi, comparar arquitecturas con la misma vara.
 
+## La verificacion por parafrasis, 27-oct: la primera idea que mueve la falla estable
+
+Idea de la sesion: el modelo traduce, el codigo arma la agenda y la cuenta en castellano llano, sin modelo, y una
+segunda llamada corta solo dice si eso es lo que pidio el cliente. `banco_pruebas/verificar.py`, sobre los 169 turnos
+grabados, con Gemini y la paga: unos 413 tokens por llamada, 4 centavos las dos corridas.
+
+| | marcados |
+|---|---|
+| los turnos MAL segun la vara | 41 de 57 |
+| las 54 fallas estables, las que los ejemplos no movieron | 40 de 54 |
+| los turnos BIEN segun la vara | 37 de 112 |
+
+Auditadas a mano las 37 alarmas sobre turnos BIEN: unas 13 son errores reales que la vara no mide —el cable de red leido
+como auriculares, la silla como gabinete, el efectivo como transferencia, cambios leidos como busquedas nuevas, un tope
+total leido por producto—, y unas 24 son falsas: definiciones de compra distintas de las de la vara, detalles que no
+cambian lo que hace la tienda, o el verificador inventa. Asi, sobre los errores reales marca unas tres de cada cuatro, y
+da falsa alarma en una de cada cuatro buenas: todavia demasiado para repreguntar en vivo.
+
+Lo que sigue: bajar las falsas alarmas sin perder las marcas, con las mismas definiciones de la vara en la consigna del
+verificador y la regla de marcar solo lo que cambia lo que hace la tienda; se mide igual, sobre lo grabado. Despues, en
+vivo, lo marcado se repregunta con la misma parafrasis: "Entendi esto, ¿es asi?".
+
 ## El gasto
 
 Los embeddings con la paga por orden de Martin, menos de un centavo. La tercera vuelta, con la paga y el ok de Martin:
