@@ -38,7 +38,7 @@ RESPUESTAS = Path(__file__).resolve().parent / "respuestas_modelo.jsonl"
 # Un dolar con sesenta por dia entre todas las corridas: 22-oct, Martin da 80 centavos
 # para la ficha nativa con 0,79 ya gastados ese dia. Subirlo es una orden de Martin,
 # en su propio commit, como cualquier umbral.
-TOPE_DIARIO = 1.60
+TOPE_DIARIO = 2.20
 
 
 class TopeDiario(Exception):
