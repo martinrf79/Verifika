@@ -53,6 +53,14 @@ LAS CONVENCIONES DE LA TIENDA:
 13. "¿Que me sirve?", "¿que me conviene?" sin modelo es ver.
 14. El destino va dentro de la pregunta de lo que se manda, nunca como pregunta aparte."""
 
+SOLO = """Separas el mensaje de un cliente de una tienda de tecnologia que vende por WhatsApp. No contestas.
+Escribi una pregunta por cada cosa que pide y por cada destino, con sus palabras. Cada pregunta lleva su cantidad, su
+color, su destino y sus condiciones."""
+
+FORMATO_SOLO = {"type": "json_schema", "json_schema": {"name": "separar", "schema": {
+    "type": "object", "properties": {"preguntas": {"type": "array", "items": {"type": "object", "properties": {
+        "texto": {"type": "string"}}, "required": ["texto"]}}}, "required": ["preguntas"]}}}
+
 FORMATO = {"type": "json_schema", "json_schema": {"name": "separar", "schema": {
     "type": "object", "properties": {
         "preguntas": {"type": "array", "items": {"type": "object", "properties": {
@@ -70,9 +78,17 @@ def _accion_vara(acto: str) -> str:
     return ACCION.get(acto, "preguntar")
 
 
+def _nombres(texto) -> str:
+    """Para la vara de solo separar: los rubros y los modelos que el codigo reconoce en las palabras del cliente."""
+    from app.core.flujo import marcador as MK
+    ws = V.n(texto).split()
+    return " ".join([r for _, r in MK._rubros(ws, P.TID)] + [t for t, _ in MK._productos(ws, P.TID)])
+
+
 def calificar(vara: dict, preguntas: list) -> tuple:
     """(entero, separacion, accion, de_mas, fallas). La separacion vale si cada cosa tiene su pregunta."""
-    qs = [(V.n(f"{q.get('texto') or ''} {q.get('cosa') or ''}"), q.get("accion")) for q in preguntas]
+    qs = [(V.n(f"{q.get('texto') or ''} {q.get('cosa') or ''} {_nombres(q.get('texto'))}"), q.get("accion"))
+          for q in preguntas]
     grupos = collections.OrderedDict()
     for c in vara["cosas"]:
         if c["acto"] in FUERA:
@@ -91,7 +107,7 @@ def calificar(vara: dict, preguntas: list) -> tuple:
         quiere = {_accion_vara(c["acto"]) for c in cs}
         i = next((i for i in cand if qs[i][1] in quiere), cand[0])
         usadas.add(i)
-        if qs[i][1] not in quiere:
+        if qs[i][1] is not None and qs[i][1] not in quiere:
             acc = False
             fallas.append(f"{que0}: {qs[i][1]} y era {'/'.join(sorted(quiere))}")
     de_mas = [qs[i][0][:40] for i in range(len(qs)) if i not in usadas and qs[i][1] == "llevar"]
@@ -165,5 +181,43 @@ async def main() -> None:
                     print(f"  {cid:9} {msg[:90]}\n            {' · '.join(c[4])}")
 
 
+async def solo() -> None:
+    """Pedido de Martin del 27-oct: una sola consigna, separar. Sin accion, sin cosa, sin nada de la tienda. Se mide
+    solo la separacion, contra la de las corridas anteriores."""
+    turnos = [(f, cid, msg, est) for f, cid, msg, est, h in P._turnos_sueltos()
+              if "vacia" in interprete.libreta(est, h, P.TID)]
+    sem = asyncio.Semaphore(4)
+
+    async def uno(msg):
+        async with sem:
+            try:
+                return interprete._json(await interprete._pedir([{"role": "system", "content": SOLO}, {
+                    "role": "user", "content": f"MENSAJE DEL CLIENTE: {msg}"}], "momento0", FORMATO_SOLO))
+            except Exception as e:  # noqa: BLE001
+                return {"error": f"{type(e).__name__}: {str(e)[:120]}"}
+
+    salidas = await asyncio.gather(*[uno(m) for _, _, m, _ in turnos])
+    antes = {r["id"]: r["con"] for r in map(json.loads, open(os.path.join(AQUI, "momento0_corrida2.jsonl"), encoding="utf-8"))}
+    por = collections.defaultdict(lambda: [0, 0, 0])
+    with open(os.path.join(AQUI, "momento0_solo.jsonl"), "w", encoding="utf-8") as fh:
+        for (f, cid, msg, est), s in zip(turnos, salidas):
+            fh.write(json.dumps({"id": cid, "mensaje": msg, "salida": s}, ensure_ascii=False) + "\n")
+            vara, _ = EP._vara_de(f, cid, est)
+            n = len([c for c in vara["cosas"] if c["acto"] not in FUERA])
+            k = "1" if n <= 1 else ("2" if n == 2 else "3+")
+            ps = [{"texto": q.get("texto")} for q in (s.get("preguntas") or [])] if "error" not in s else []
+            a = calificar(vara, ps)
+            b = calificar(vara, [{"texto": q.get("texto"), "cosa": q.get("cosa")} for q in antes[cid].get("preguntas") or []])
+            por[k][0] += a[1]
+            por[k][1] += b[1]
+            por[k][2] += 1
+            if "--ver" in ARGS and not a[1]:
+                print(f"  {cid:9} {msg[:90]}\n            {' · '.join(x for x in a[4] if x.startswith('falta'))}"
+                      f"\n            separo: {[q.get('texto') for q in s.get('preguntas') or []]}")
+    print(f"\nSOLO SEPARAR · {len(turnos)} primeros mensajes, la separacion bien")
+    print(f"  solo separar: {sum(v[0] for v in por.values())} · la corrida anterior con convenciones: "
+          f"{sum(v[1] for v in por.values())} · " + " · ".join(f"{k} cosas {a}/{c} contra {b}" for k, (a, b, c) in sorted(por.items())))
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(solo() if "--solo" in ARGS else main())
