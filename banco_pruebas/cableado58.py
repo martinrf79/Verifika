@@ -9,6 +9,7 @@ El control contra la trampa es la corrida final con el modelo, comparada pregunt
 
   python3 -m banco_pruebas.cableado58                         las 58
   python3 -m banco_pruebas.cableado58 C27 C46 --ver           esas, con lo que recibio el cliente
+  python3 -m banco_pruebas.cableado58 --dificiles             las 21 K, para ver lo que el codigo sabe hacer
 """
 import asyncio
 import json
@@ -25,11 +26,16 @@ ELEGIR = {}
 # Las complejas de la vara que ya entraron: varios rubros a varios destinos, la clase que Martin probo en vivo, y la
 # memoria a varios turnos.
 COMPLEJAS = ("K03", "K06", "K07", "K10", "K11", "K20", "K21")
+# LA VARA DE LAS DIFICILES, 27-oct, FICHA 82: las 21 K con su traduccion a mano. Dice lo que el codigo sabe hacer con la
+# traduccion perfecta, sea cual sea la arquitectura: `cableado58 --dificiles`. No frena el deploy; las de COMPLEJAS si.
+DIFICILES = tuple(f"K{i:02d}" for i in range(1, 22))
 
 
-def charlas() -> list:
+def charlas(con=()) -> list:
+    """Las 58 y las complejas de la bateria. `con` suma otras de la vara por su id, para medirlas sin que frenen el
+    deploy: las K que todavia no estan en la bateria, 27-oct, FICHA 82."""
     doc = json.load(open("banco_pruebas/vara_58.json", encoding="utf-8"))
-    return [c for c in doc["charlas"] if c["id"].startswith("C") or c["id"] in COMPLEJAS]
+    return [c for c in doc["charlas"] if c["id"].startswith("C") or c["id"] in COMPLEJAS or c["id"] in con]
 
 
 def instalar():
@@ -80,12 +86,12 @@ def correr(charla: dict, agendas: list, interprete, explicar: dict) -> list:
 
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    args = [a for a in sys.argv[1:] if not a.startswith("--")] or (list(DIFICILES) if "--dificiles" in sys.argv else [])
     ver = "--ver" in sys.argv
     interprete = instalar()
     from banco_pruebas.agendas58 import AGENDAS, EXPLICAR
     bien, mal = [], []
-    for charla in charlas():
+    for charla in charlas(args):
         if args and charla["id"] not in args:
             continue
         agendas = list(AGENDAS.get(charla["id"]) or [])
