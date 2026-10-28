@@ -584,8 +584,101 @@ async def memoria() -> None:
         print("\n".join(malos))
 
 
+# ══ COSA Y TEMA SEPARADOS, 28-oct, con el ok de Martin ═══════════════════════
+# Medido el 27 y 28-oct: con un solo campo, la regla de poner el tema de la lista se lleva lo que no es una regla:
+# "algo para tipear" sale "asesoramiento", y "¿el negro lo tenes?" sale "stock_disponibilidad" en vez de L-1.
+
+LINEAS_TEMA = LINEAS.replace(
+    '- "cosa": lo que pide en una o dos palabras; si es una regla de la tienda, el tema de esta lista: {temas}.',
+    '- "cosa": el producto o la clase de producto de la que habla, en una o dos palabras: "mouse", "auriculares",\n'
+    '  "G305", o su numero de la libreta. Nunca un tema: si no habla de un producto, vacia.\n'
+    '- "tema": solo si pregunta o dice algo de una regla de la tienda, el tema de esta lista; si no, vacio: {temas}.')
+_LT = lambda t, c, n=None, d="", si="", te="": {"texto": t, "cosa": c, "tema": te, "cantidad": n, "destino": d,  # noqa: E731
+                                                  "si": si}
+EJ1T = {"lineas": [_LT(x["texto"], x["cosa"] if x["cosa"] != "total" else "", x["cantidad"], x["destino"], x["si"])
+                   for x in EJ1["lineas"]], "todo": ""}
+EJ2T = {"lineas": [_LT(x["texto"], x["cosa"], x["cantidad"], x["destino"], x["si"]) for x in EJ2["lineas"]], "todo": ""}
+
+
+def formato_tema() -> dict:
+    linea = {"type": "object", "properties": {
+        "texto": {"type": "string"}, "cosa": {"type": "string"}, "tema": {"type": "string"},
+        "cantidad": {"type": ["integer", "null"]}, "destino": {"type": "string"}, "si": {"type": "string"}},
+        "required": ["texto", "cosa", "tema", "cantidad", "destino", "si"]}
+    return {"type": "json_schema", "json_schema": {"name": "lineas", "schema": {"type": "object", "properties": {
+        "lineas": {"type": "array", "items": linea}, "todo": {"type": "string"}}, "required": ["lineas", "todo"]}}}
+
+
+def consigna_tema(temas: str, rubro: str = "") -> str:
+    j = lambda e: json.dumps(e, ensure_ascii=False)  # noqa: E731
+    t = LINEAS_TEMA.format(contar="", temas=temas, ej1=j(EJ1T), ej2=j(EJ2T))
+    return t.replace("tienda de tecnologia", f"tienda de {rubro}") if rubro else t
+
+
+def _junto(ls: list) -> list:
+    """Para las varas de antes, que leen un solo campo: la cosa con el tema."""
+    return [{**x, "cosa": f"{x.get('cosa') or ''} {x.get('tema') or ''}".strip()} for x in ls]
+
+
+async def cosa_tema() -> None:
+    """Los tres examenes de separar con cosa y tema en campos separados, contra lo medido con un solo campo."""
+    sys.path.insert(0, os.path.join(AQUI, "nexos"))
+    import desmenuzado as D
+    temas = ", ".join(F._temas_de(P.TID))
+    consigna = consigna_tema(temas)
+    sem = asyncio.Semaphore(4)
+
+    async def uno(contenido):
+        async with sem:
+            try:
+                return interprete._json(await interprete._pedir([{"role": "system", "content": consigna},
+                                                                 {"role": "user", "content": contenido}],
+                                                                "momento0", formato_tema()))
+            except Exception as e:  # noqa: BLE001
+                return {"error": f"{type(e).__name__}: {str(e)[:120]}"}
+
+    todos = list(P._turnos_sueltos())
+    primeros = [t for t in todos if "vacia" in interprete.libreta(t[3], t[4], P.TID)]
+    charla = [t for t in todos if "vacia" not in interprete.libreta(t[3], t[4], P.TID)]
+    t138 = [c for c in D.CASOS if c[1] is None]
+    s91 = await asyncio.gather(*[uno(f"MENSAJE DEL CLIENTE: {m}") for _, _, m, _, _ in primeros])
+    s138 = await asyncio.gather(*[uno(f"MENSAJE DEL CLIENTE: {c[2]}") for c in t138])
+    consigna += MEMORIA
+    s78 = await asyncio.gather(*[uno(f"{interprete.libreta(e, h, P.TID)}\nULTIMO MENSAJE: {m}") for _, _, m, e, h in charla])
+    a = sum(not completo(EP._vara_de(f, cid, e)[0], _junto(s.get("lineas") or []))
+            for (f, cid, _, e, _), s in zip(primeros, s91))
+    b = 0
+    for c, s in zip(t138, s138):
+        ls = _junto(s.get("lineas") or [])
+        ts = [V.n(f"{x.get('texto')} {x.get('destino') or ''} {x.get('cosa') or ''} "
+                  f"{'si: ' + str(x['si']) if x.get('si') else ''} {_nombres(x.get('texto'))}") for x in ls]
+        todo = " ".join(ts) + " " + V.n(json.dumps(s.get("todo"), ensure_ascii=False)) + (
+            " SI:" if any(x.get("si") for x in ls) else "")
+        b += all(_cumple(x, ts, todo) for x in c[3]["partes"])
+    m = 0
+    malos = []
+    for (f, cid, msg, e, h), s in zip(charla, s78):
+        vara, nums = EP._vara_de(f, cid, e)
+        fa = completo(vara, _junto(s.get("lineas") or []), nums)
+        m += not fa
+        malos += [f"  {cid:9} falta {' · '.join(fa)} · {[(x.get('texto'), x.get('cosa'), x.get('tema')) for x in s.get('lineas') or []]}"] if fa else []
+    with open(os.path.join(AQUI, "momento0_cosa_tema.jsonl"), "w", encoding="utf-8") as fh:
+        for nombre, ss in (("91", s91), ("138", s138), ("78", s78)):
+            for s in ss:
+                fh.write(json.dumps({"examen": nombre, "salida": s}, ensure_ascii=False) + "\n")
+    rotas = sum("error" in s for s in s91 + s138 + s78)
+    print(f"\nCOSA Y TEMA SEPARADOS · contra un solo campo · {rotas} sin respuesta")
+    print(f"  primeros 91, completos   {a} · antes 89")
+    print(f"  desmenuzado 138, enteros {b} · antes 125")
+    print(f"  con charla 78, completos {m} · antes 68, y la lectura de hoy 70")
+    if "--ver" in ARGS:
+        print("\n".join(malos))
+
+
 if __name__ == "__main__":
-    if "--memoria" in ARGS:
+    if "--cosa-tema" in ARGS:
+        asyncio.run(cosa_tema())
+    elif "--memoria" in ARGS:
         asyncio.run(memoria())
     elif "--salida" in ARGS:
         asyncio.run(salida())

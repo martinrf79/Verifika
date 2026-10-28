@@ -134,6 +134,9 @@ def casos() -> list:
     return out
 
 
+ARGS = __import__("sys").argv[1:]  # se leen al arrancar: lo que importa el banco pisa sys.argv
+
+
 def main() -> None:
     import asyncio
     import collections
@@ -153,7 +156,11 @@ def main() -> None:
     cs = casos()
     # 1. La separacion, con la consigna de las lineas: de cada frase sale una linea con su "cosa".
     j = lambda e: json.dumps(e, ensure_ascii=False)  # noqa: E731
-    consigna = M.LINEAS.format(contar="", temas=", ".join(M.F._temas_de(tid)), ej1=j(M.EJ1), ej2=j(M.EJ2))
+    # --cosa-tema, 28-oct: la consigna con la cosa y el tema en campos separados.
+    tema = "--cosa-tema" in ARGS
+    consigna = M.consigna_tema(", ".join(M.F._temas_de(tid))) if tema else \
+        M.LINEAS.format(contar="", temas=", ".join(M.F._temas_de(tid)), ej1=j(M.EJ1), ej2=j(M.EJ2))
+    formato = M.formato_tema() if tema else M._formato_lineas(False)
     sem = asyncio.Semaphore(4)
 
     async def uno(frase):
@@ -161,7 +168,7 @@ def main() -> None:
             try:
                 return M.interprete._json(await M.interprete._pedir(
                     [{"role": "system", "content": consigna}, {"role": "user", "content": f"MENSAJE DEL CLIENTE: {frase}"}],
-                    "buscar", M._formato_lineas(False)))
+                    "buscar", formato))
             except Exception as e:  # noqa: BLE001
                 return {"error": f"{type(e).__name__}: {str(e)[:100]}"}
 
@@ -170,7 +177,7 @@ def main() -> None:
     salidas = asyncio.run(todas())
     for c, s in zip(cs, salidas):
         ls = s.get("lineas") or []
-        c["cosa"] = " ".join(str(x.get("cosa") or "") for x in ls).strip() or "-"
+        c["cosa"] = " ".join(f"{x.get('cosa') or ''} {x.get('tema') or ''}".strip() for x in ls).strip() or "-"
         c["texto"] = " ".join(str(x.get("texto") or "") for x in ls).strip() or c["frase"]
     # 2. El indice de la tienda, uno solo: rubros con sus alias, temas con sus palabras, productos por marca y modelo.
     alias = agente._alias(tid).get("rubros") or {}
@@ -218,9 +225,10 @@ def main() -> None:
         for nombre in ("cliente", "cosa", "las dos"):
             print(f"    {nombre:8} primero {cuenta[(tipo, nombre, 1)]:3} de {total[tipo]} · entre los tres "
                   f"{cuenta[(tipo, nombre, 3)]:3}")
-    if "--ver" in sys.argv:
+    if "--ver" in ARGS:
         print("\n".join(malos))
-    with open(os.path.join(aqui, "buscar_sinteticas_corrida.jsonl"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(aqui, "buscar_sinteticas_corrida" + ("_tema" if tema else "") + ".jsonl"), "w",
+              encoding="utf-8") as fh:
         for c in cs:
             fh.write(json.dumps(c, ensure_ascii=False) + "\n")
 
