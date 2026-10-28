@@ -22,7 +22,7 @@ import numpy as np
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(AQUI)
-sys.argv = [sys.argv[0]]
+ARGS, sys.argv = sys.argv[1:], [sys.argv[0]]
 PAGA = os.environ.get("GEMINI_API_KEY_PROD") if os.environ.get("MARTIN_AUTORIZO_LA_PAGA") else None
 sys.path.insert(0, AQUI)
 import candidatos82 as C82  # noqa: E402
@@ -128,5 +128,54 @@ def main() -> None:
                       f"{'frase limpia' if limpia else 'frase entera'}", base, vb, vq, casos, limpia)
 
 
+def exacta(c: dict, temas: list) -> list:
+    """Lo que el codigo encuentra por nombre, sin embeddings: el tema que escribio el modelo si esta en la lista, los
+    modelos del catalogo y los rubros por su nombre o sus alias, en las palabras del cliente y en la cosa."""
+    from app.core.flujo import catalogo as K
+    from app.core.flujo import marcador as MK
+    out = [("tema", t) for t in temas if re.search(rf"\b{t}\b", c["cosa"])]
+    for texto in (c["frase"], c["cosa"]):
+        ws = [w for w in n(texto).split() if w not in K._RELLENO]
+        for nombre, _ in MK._productos(ws, TID):
+            idt = K.identificar(nombre, "", TID)
+            if idt["veredicto"] == "exists":
+                p = idt["producto"]
+                out.append(("producto", f"{p.get('marca')} {p.get('modelo')}"))
+        out += [("rubro", r) for _, r in MK._rubros(n(texto).split(), TID)]
+    return list(dict.fromkeys(out))
+
+
+def hibrida() -> None:
+    """Primero lo que el codigo encuentra por nombre; despues, para completar tres, los embeddings con tipo de tarea y
+    las dos busquedas sumadas, que es lo mejor medido."""
+    from app.core.flujo import ficha as F
+    casos = [json.loads(x) for x in open(os.path.join(AQUI, "buscar_sinteticas_corrida_tema.jsonl"), encoding="utf-8")]
+    base = indice(False)
+    temas = F._temas_de(TID)
+    qs = list(dict.fromkeys([c["frase"] for c in casos] + [c["cosa"] for c in casos]))
+    vb, vq = nativo([b for b, _ in base], "RETRIEVAL_DOCUMENT"), dict(zip(qs, nativo(qs, "RETRIEVAL_QUERY")))
+    claves = sorted(set(k for _, k in base))
+    idx = collections.defaultdict(list)
+    for i, (_, k) in enumerate(base):
+        idx[k].append(i)
+    cuenta, tot, sola = collections.Counter(), collections.Counter(c["tipo"] for c in casos), collections.Counter()
+    for c in casos:
+        sa, sb = vb @ vq[c["frase"]], vb @ vq[c["cosa"]]
+        p = {k: max(sa[i] for i in ii) + max(sb[i] for i in ii) for k, ii in idx.items()}
+        emb = sorted(claves, key=lambda k: -p[k])
+        ex = exacta(c, temas)
+        for como, orden in (("embeddings", emb[:3]), ("exacta y despues embeddings", list(dict.fromkeys(ex + emb))[:3])):
+            ok = [k[0] == c["tipo"] and (n(c["oro"]) in n(k[1]) if c["tipo"] == "producto" else k[1] == c["oro"])
+                  for k in orden]
+            cuenta[(c["tipo"], como, 1)] += ok[0]
+            cuenta[(c["tipo"], como, 3)] += any(ok)
+        sola[c["tipo"]] += bool(ex)
+    print(f"\nLA BUSQUEDA HIBRIDA · {len(casos)} frases · primero/entre los tres · la exacta encuentra algo en "
+          + ", ".join(f"{t} {sola[t]} de {tot[t]}" for t in tot))
+    for como in ("embeddings", "exacta y despues embeddings"):
+        print(f"  {como:28}" + " · ".join(f"{t} {cuenta[(t, como, 1)]}/{cuenta[(t, como, 3)]}" for t in ("rubro", "tema", "producto"))
+              + f" · todo primero {sum(cuenta[(t, como, 1)] for t in tot)}, entre tres {sum(cuenta[(t, como, 3)] for t in tot)} de {len(casos)}")
+
+
 if __name__ == "__main__":
-    main()
+    hibrida() if "--hibrida" in ARGS else main()
