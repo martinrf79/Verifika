@@ -75,8 +75,35 @@ otra tienda cambia solo el rubro de la primera línea y la lista de temas, que s
 4. **Con la paga.** Las de tiendas, las 200 y la memoria corrieron con la clave gratis. Es el mismo modelo; conviene una
    corrida de control con la paga antes de llevarlo al bot.
 
+## Cosa y tema en campos separados, 28-oct
+
+Con un solo campo, la regla de poner el tema de la lista se llevaba lo que no es una regla: "algo para tipear" salía
+"asesoramiento". Con "cosa", el producto o su número de la libreta, y "tema", solo si pregunta una regla, la separación
+no empeora —primeros 90 de 91, desmenuzado 124 de 138, con charla 69 de 78— y la búsqueda de rubros por la cosa sube de
+76 a 106 de 132 entre los tres primeros. Está en `momento0.py`, `consigna_tema` y `formato_tema`.
+
+## La búsqueda de cada línea, 28-oct
+
+`banco_pruebas/buscar_sinteticas.py` y `buscar_mejoras.py`: 238 frases escritas a mano —132 de rubro dichas de seis
+formas, 48 de tema, 58 de producto por apodo— separadas por el modelo y buscadas en un solo índice de la tienda: rubros
+con sus alias, temas con sus palabras de la FAQ, y productos.
+
+| Criterio | Lo correcto entre los tres primeros, de 238 |
+|---|---|
+| Las palabras del cliente y la cosa del modelo, sumadas | 216 |
+| Lo mismo, con el tipo de tarea de los embeddings: consulta y documento, por la puerta nativa de Google | **224** |
+| Más datos de la tienda en el índice, o la frase sin relleno | 218 a 222 |
+| Primero lo exacto por nombre y alias, después embeddings | 219 |
+
+El mejor criterio: embeddings con tipo de tarea, las dos búsquedas sumadas, y para los temas el tema que eligió el
+modelo de la lista. Demora: una sola llamada por mensaje con todas sus líneas, unos 0,3 segundos. Las palabras del
+cliente buscan mejor los rubros; la cosa del modelo, los productos y los temas. Donde no coinciden está el error de
+traducción: "algo para escuchar música en la casa" es parlante por las palabras y auricular por la cosa.
+
 ## Lo que sigue
 
-Dos caminos, por orden de Martín: que las líneas del primer mensaje lleguen al código en la forma que el código procesa,
-y medirlo hasta la respuesta; después, la memoria, con "cosa" y "tema" en campos separados para que lo señalado se
-escriba con su número.
+1. La regla de duda, sin modelo y sobre lo grabado: si el primero gana por poco o las dos búsquedas no coinciden, se
+   marca. Cuántos errores caza y cuántos aciertos marca de más. Es lo que dispara después las opciones a y b.
+2. Cómo responde el código: cada línea con sus candidatos, a la agenda que cumple el ejecutor, medido hasta la
+   respuesta sobre los primeros mensajes.
+3. La memoria, con lo señalado escrito con su número.
