@@ -59,7 +59,9 @@ def _productos(ws: list, tienda_id: str) -> list:
                     a += 1
                 while ws[b - 1] not in propias:
                     b -= 1
-                usadas |= set(range(i, i + tam))
+                # Se ocupa solo lo que quedo despues de recortar las puntas: "cloud ii ecotank l3250" encuentra la
+                # EcoTank, y el Cloud II de la punta queda libre para su propio tramo (29-oct).
+                usadas |= set(range(a, b))
                 if una:
                     colores = [v["color"] for v in K._colores_de(ps[0], K.productos(tienda_id)) if v.get("color")]
                     es = f"el producto {_modelo(ps[0])}" + (f", en {' o '.join(colores)}" if len(colores) > 1 else "")
