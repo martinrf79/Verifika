@@ -19,7 +19,7 @@ la agenda que recibe el ejecutor, por cosa pedida:
 
 Se compara con la lectura de hoy, la del bot, sobre los mismos mensajes.
 
-    python3 banco_pruebas/lineas_agenda.py --grabar [--semilla 2710]      separa y lee, con la clave del clon
+    python3 banco_pruebas/lineas_agenda.py --grabar [--semilla 2710] [--sin-hoy]   separa y lee, con la clave del clon
     python3 banco_pruebas/lineas_agenda.py [--semilla 2710] [--ver]      sin modelo de texto
 """
 import collections
@@ -45,6 +45,7 @@ from app.core.flujo import lectura as L  # noqa: E402
 ARGS = RL.ARGS
 TID = RL.TID
 VER = "--ver" in ARGS
+SIN_HOY = "--sin-hoy" in ARGS  # la confirmacion: solo la separacion, sin pagar la lectura de hoy otra vez
 SEMILLA = int(ARGS[ARGS.index("--semilla") + 1]) if "--semilla" in ARGS else 2710
 GRABADO = os.path.join(AQUI, f"lineas_agenda_{SEMILLA}.jsonl")
 
@@ -85,8 +86,8 @@ async def grabar() -> None:
             msg = c["mensaje"]
             lineas = await pedir([{"role": "system", "content": consigna},
                                   {"role": "user", "content": f"MENSAJE DEL CLIENTE: {msg}"}], M0.formato_tema())
-            hoy = await pedir(L.mensajes(msg, [], vacio, TID), L.formato(TID))
-            if "error" not in hoy:
+            hoy = {"sin": "pedir"} if SIN_HOY else await pedir(L.mensajes(msg, [], vacio, TID), L.formato(TID))
+            if "error" not in hoy and not SIN_HOY:
                 hoy, _ = await L.releer(msg, [], vacio, hoy, TID, interprete._pedir, "lineas_agenda")
             fila = {"id": c["id"], "mensaje": msg, "lineas": lineas, "hoy": hoy}
             with open(GRABADO, "a", encoding="utf-8") as fh:
@@ -172,6 +173,9 @@ def main() -> None:
         s, _ = RL.a_salida(g["lineas"].get("lineas") or [], str(g["lineas"].get("todo") or ""), ind)
         fila = {"id": g["id"], "mensaje": g["mensaje"]}
         for nombre, salida in (("lineas", s), ("hoy", g["hoy"])):
+            if salida.get("sin"):
+                fila[nombre] = {"fallas": [], "sobra": [], "agenda": {}, "sin": True}
+                continue
             try:
                 ag = L.a_agenda(salida, E.leer({}), TID, g["mensaje"])
             except Exception as e:  # noqa: BLE001 — una agenda que no se arma es una falla, no corta la corrida
@@ -191,6 +195,8 @@ def main() -> None:
     n = len(filas)
     print(f"\nDE LAS LINEAS A LA AGENDA · semilla {SEMILLA} · {n} mensajes sinteticos · enteros sin falla")
     for nombre, titulo in (("lineas", "el codigo con las lineas"), ("hoy", "la lectura de hoy, la del bot")):
+        if all(f[nombre].get("sin") for f in filas):
+            continue
         print(f"  {titulo:30} {nota[nombre]} de {n} ({100 * nota[nombre] / max(n, 1):.0f}%) · con algo de mas "
               f"{sobra[nombre]} · fallas por clase {dict(cuenta[nombre].most_common())}")
     if VER:
