@@ -214,3 +214,31 @@ también links, números largos y alias. En la corrida siguiente, ningún dato i
 
 Unas 2,3 llamadas al modelo por turno: una pide las búsquedas, todas juntas; otra escribe; una más si arma presupuesto
 o si el candado le devuelve un dato. No hay llamada aparte para separar: el modelo separa solo, una búsqueda por cosa.
+
+### El verificador de afirmaciones, 29-oct a la noche
+
+Objeción de Martín: una arquitectura libre con DeepSeek se sacó porque las alucinaciones no se distinguían de las
+respuestas buenas. `banco_pruebas/verificador.py`, sin modelo, controla cada afirmación de la respuesta contra la fuente
+—lo que devolvieron las herramientas, la charla y el mensaje—, sin lo que el código pegó tal cual: datos —montos,
+medidas, links, CBU, alias—, productos nombrados, atributos de un producto con `catalogo.atar` y `cumple`, superlativos
+contra el orden del rubro y stock. `alucinaciones.py` lo mide sobre 164 respuestas grabadas del buscador, con siete
+clases de alucinación inyectadas.
+
+| | Primera vuelta | Con los arreglos del verificador |
+|---|---|---|
+| Inyectadas cazadas | 838 de 995, 84% | **819 de 827, 99%** |
+| Respuestas buenas marcadas | 47 de 204, 23% | **1 de 164, 0,6%** |
+
+Las falsas alarmas eran del verificador, no del modelo: el "2x" del presupuesto leído como el modelo "Ventus 2X", la
+marca de otro producto en la misma oración, "también" atado a un campo de texto libre, "no tiene latencia" leído como
+sin stock, un superlativo comparado con otro color del mismo modelo. Se escapan: "es RGB" cuando el RGB está en el
+nombre y no en un campo, cinco; un producto en una charla larga; un monto que coincide con otro de la fuente.
+
+Conectado al buscador: el candado es el verificador, y lo que marca vuelve una vez al modelo. Falta medirlo con el modelo.
+El tamaño: 112 líneas el verificador y 117 su banco.
+
+### La atadura por API, medida
+
+Con el modelo de producción, el mismo pedido con un esquema de 0, 10, 200 y los 880 nombres del catálogo cobra igual,
+23 tokens de entrada, y tarda lo mismo. Atada sin "ninguno", "celular samsung" elige la tablet Samsung; con "ninguno",
+contesta ninguno. La atadura asegura que no invente lo que no existe; no asegura que elija bien ni lo que escribe libre.

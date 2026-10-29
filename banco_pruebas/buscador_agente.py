@@ -414,15 +414,17 @@ def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list, memori
         m = r.choices[0].message
         if not m.tool_calls:
             texto = pegar(m.content or "", pasos, estado, memoria)
-            malos = inventados(texto, salidas + [t for _, t in h] + [msg])
+            # EL CANDADO ES EL VERIFICADOR: cada afirmacion contra la fuente —datos, productos, atributos,
+            # superlativos y stock—, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
+            import verificador as V
+            pegados = [p["devuelve"] for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
+            malos = V.verificar(texto, " ".join(salidas + [t for _, t in h] + [msg, contexto]), pegados)
             if malos and not corregido and vuelta < VUELTAS:
-                # EL CANDADO, UNA VUELTA: los montos que no salieron de las herramientas ni de la charla se le devuelven
-                # al modelo, que los corrige con las herramientas.
                 corregido = True
                 msgs.append(m.model_dump(exclude_none=True))
-                msgs.append({"role": "user", "content": "Estos datos no salieron de las herramientas ni de la charla: "
-                             + ", ".join(f"${x:,}".replace(",", ".") if isinstance(x, int) else x for x in malos)
-                             + ". Sacalos, o conseguilos con las herramientas, y escribi la respuesta de nuevo."})
+                msgs.append({"role": "user", "content": "Esto no lo respalda lo que devolvieron las herramientas ni la "
+                             "charla: " + "; ".join(f"{c}: {d}" for c, d in malos) + ". Corregilo con las "
+                             "herramientas o sacalo, y escribi la respuesta de nuevo."})
                 continue
             if memoria is not None and memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
