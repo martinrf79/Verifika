@@ -129,7 +129,9 @@ están en la batería, 24, separados y leídos con la gratis, `responder_lineas.
 | Lo mismo, con las cinco mejoras | `agente_ventas.py --libre` | **60** | **22** | **36** |
 | Lo mismo, con la salida atada a un esquema | `agente_ventas.py --atado` | 54 | 16 | 33 |
 
-Una corrida de cada una. El código solo con las líneas llegó a 64 de 65 escrito mirando esas 65; fuera de muestra cada
+La versión libre se repitió dos veces el 29-oct, `agente_ventas.py --libre --rep 2` y `--rep 3`: las tres corridas dan
+lo mismo caso por caso, 118 bien y 11 mal, ninguno cambia. A temperatura 0 el modelo contesta igual: la diferencia con la
+lectura de hoy no es ruido de la corrida. Las demás, una corrida de cada una. El código solo con las líneas llegó a 64 de 65 escrito mirando esas 65; fuera de muestra cada
 falla nueva pedía otra regla, que es el patrón de la maraña.
 
 **Lo que movió la aguja: pedirle al modelo que responda, no que traduzca.** El agente de ventas con huecos, idea de
@@ -152,9 +154,8 @@ llamadas por mensaje. Entrevista al modelo sobre cómo prefiere hacer este paso:
 
 ## Lo que sigue
 
-1. Repetir el agente libre dos veces más, con la gratis, para ver cuánto varía antes de confiar en dos o tres casos.
-2. Sus fallas: pide precio de una clase en vez de opciones, K09; deja el total cuando pregunta "cuánto sale", K16; y lo
+1. Sus fallas: pide precio de una clase en vez de opciones, K09; deja el total cuando pregunta "cuánto sale", K16; y lo
    que señala de turnos anteriores, C27, C55, K20 y K21.
-3. El limado como parte del código: cada hueco validado, el producto por el catálogo y el destino por el padrón; lo que
+2. El limado como parte del código: cada hueco validado, el producto por el catálogo y el destino por el padrón; lo que
    no pasa, pregunta al cliente. Hoy vive en `agente_ventas.py`.
-4. Los siete casos de producción y las charlas enteras, antes de llevarlo al bot.
+3. Los siete casos de producción y las charlas enteras, antes de llevarlo al bot.

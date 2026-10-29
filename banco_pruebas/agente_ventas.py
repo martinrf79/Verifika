@@ -60,6 +60,10 @@ No escribas ningun numero de precio ni de plata: van en los huecos. No inventes 
 LIBRE, ATADO = "--libre" in HM.ARGS, "--atado" in HM.ARGS
 if LIBRE or ATADO:
     GRABADO = os.path.join(AQUI, "agente_ventas_atado.jsonl" if ATADO else "agente_ventas_libre.jsonl")
+# LA REPETICION, 29-oct, SIGUE 1: --rep 2 pide lo mismo otra vez a su propio archivo, para ver cuanto varia.
+REP = HM.ARGS[HM.ARGS.index("--rep") + 1] if "--rep" in HM.ARGS else ""
+if REP:
+    GRABADO = GRABADO.replace(".jsonl", f"_r{REP}.jsonl")
 
 _REGLAS = """Eres un agente de ventas de una tienda online de tecnologia de Argentina que vende por WhatsApp. Necesito tu
 capacidad para responder el ultimo mensaje del cliente: tenes su mensaje original, el mismo mensaje separado en lineas y
