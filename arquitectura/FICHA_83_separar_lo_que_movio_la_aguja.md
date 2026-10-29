@@ -100,10 +100,61 @@ modelo de la lista. Demora: una sola llamada por mensaje con todas sus líneas, 
 cliente buscan mejor los rubros; la cosa del modelo, los productos y los temas. Donde no coinciden está el error de
 traducción: "algo para escuchar música en la casa" es parlante por las palabras y auricular por la cosa.
 
+## La regla de duda, 28-oct
+
+Sobre las 238 frases grabadas, sin modelo. El primer candidato acierta 201; entre los tres primeros, 224. La mejor señal
+es que la búsqueda con las palabras del cliente y la de la cosa no elijan lo mismo: marca 83 y caza 30 de los 37
+errores; lo que no marca está bien en 148 de 155. Que el primero gane por poco suma casi nada. Los cinco errores que no
+caza ninguna señal piden consejo, no búsqueda: "la notebook va lenta" es memoria, "el procesador llega a 90 grados" es
+cooler.
+
+## La respuesta, 28-oct: quién hace qué después de separar
+
+Pedido de Martín: con las líneas y sus candidatos, ¿responde el código solo, o una segunda llamada al modelo? Todo se
+mide igual, por el webhook entero, con las casillas del turno en `vara_58.json`; los turnos de antes con la agenda a mano.
+Tres exámenes: los primeros mensajes de las 58 y las complejas, 65; fuera de muestra, los primeros de las K y las J que no
+están en la batería, 24, separados y leídos con la gratis, `responder_lineas.py --grabar`; y los turnos con charla, 40.
+
+| Cómo se responde | Instrumento | Primeros, de 65 | Fuera de muestra, de 24 | Con charla, de 40 |
+|---|---|---|---|---|
+| La agenda a mano, el techo del código | | 65 | 13 de 14 | 40 |
+| La lectura de hoy, la del bot | | 64 | 19 | 37 |
+| El código solo, con las líneas y los embeddings | `responder_lineas.py` | 64 | 18 | sin medir |
+| El modelo llama al menú de la agenda como herramientas | `herramientas_modelo.py` | 59 | 18 | 35 |
+| Lo mismo, con tres reglas más en la consigna | `herramientas_modelo.py --v2` | 60 | 18 | 35 |
+| Herramientas de asistente de compras y el estado como carrito | `carrito_modelo.py` | 55 | 17 | 37 |
+| El modelo solo clasifica cada línea y el código pone los datos | `hibrido.py` | 62 | 18 | 32 |
+| Lo mismo, separando y clasificando en una llamada | `hibrido.py --a` | 59 | 16 | 31 |
+| El modelo responde como vendedor y deja huecos que llena el código | `agente_ventas.py` | 58 | 23 | 33 |
+| Lo mismo, con las cinco mejoras | `agente_ventas.py --libre` | **60** | **22** | **36** |
+| Lo mismo, con la salida atada a un esquema | `agente_ventas.py --atado` | 54 | 16 | 33 |
+
+Una corrida de cada una. El código solo con las líneas llegó a 64 de 65 escrito mirando esas 65; fuera de muestra cada
+falla nueva pedía otra regla, que es el patrón de la maraña.
+
+**Lo que movió la aguja: pedirle al modelo que responda, no que traduzca.** El agente de ventas con huecos, idea de
+Martín: el modelo escribe la respuesta como vendedor y, donde va un dato que no sabe —precio, stock, opciones, envío,
+total, regla—, deja un hueco con lo que necesita, `[[OPCIONES clase=mouse orden=mas barato cantidad=2]]`. El código llena
+todos los huecos en una sola agenda, como un turno, con el ejecutor de siempre, y cada hecho va a su hueco. Es lo que el
+modelo ya sabe hacer: contestar. En las herramientas, en cambio, usaba su entrenamiento solo en la forma; los
+significados eran nuestros —lo supuesto, el orden para todo, los números L y M— y fallaba justo ahí.
+
+Las cinco mejoras de la versión libre, sacadas de las fallas de la primera: el producto en el hueco como lo nombró el
+cliente o por su número del estado; los campos del hueco por nombre; no afirmar lo que dice un hueco; contestar solo lo
+que preguntó; lo señalado de la charla por su número. Con charla sube de 33 a 36.
+
+**Lo que no movió la aguja:** atar la salida a un esquema, igual que al separar: con los temas y las clases como listas
+cerradas los usa donde no van. Darle los productos candidatos: los nombra donde el código tiene que elegir por el orden.
+La segunda vuelta de embeddings sobre los candidatos, descartada antes de medir: los candidatos ya son las etiquetas.
+
+Costo: la versión libre, unos 1.030 tokens de entrada y 56 de salida, menos de un segundo; con la separación, dos
+llamadas por mensaje. Entrevista al modelo sobre cómo prefiere hacer este paso: `entrevista_respuesta.py`.
+
 ## Lo que sigue
 
-1. La regla de duda, sin modelo y sobre lo grabado: si el primero gana por poco o las dos búsquedas no coinciden, se
-   marca. Cuántos errores caza y cuántos aciertos marca de más. Es lo que dispara después las opciones a y b.
-2. Cómo responde el código: cada línea con sus candidatos, a la agenda que cumple el ejecutor, medido hasta la
-   respuesta sobre los primeros mensajes.
-3. La memoria, con lo señalado escrito con su número.
+1. Repetir el agente libre dos veces más, con la gratis, para ver cuánto varía antes de confiar en dos o tres casos.
+2. Sus fallas: pide precio de una clase en vez de opciones, K09; deja el total cuando pregunta "cuánto sale", K16; y lo
+   que señala de turnos anteriores, C27, C55, K20 y K21.
+3. El limado como parte del código: cada hueco validado, el producto por el catálogo y el destino por el padrón; lo que
+   no pasa, pregunta al cliente. Hoy vive en `agente_ventas.py`.
+4. Los siete casos de producción y las charlas enteras, antes de llevarlo al bot.
