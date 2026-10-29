@@ -1,0 +1,125 @@
+[
+ {
+  "conjunto": "primeros",
+  "id": "C30",
+  "turno": 0,
+  "mensaje": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?",
+  "respuesta": "1.\nCompatibilidad memorias DDR5 vs DDR4 -> Confirmación de que no son compatibles físicamente.\nStock memorias RAM DDR5 16GB -> Lista de modelos DDR5 disponibles en el catálogo.\nFicha técnica Kingston Fury Beast DDR5 -> Especificaciones para comparar con la DDR4 que menciona el cliente.\n\n2.\nNecesito saber si el cliente tiene algún presupuesto máximo o si busca una frecuencia (MHz) específica para su placa madre."
+ },
+ {
+  "conjunto": "primeros",
+  "id": "C40",
+  "turno": 0,
+  "mensaje": "me dijeron que el envio es gratis a todo el pais, no?",
+  "respuesta": "1.\n\"política envíos gratis alcance\" -> Condiciones y zonas de cobertura para envíos sin costo.\n\"promociones vigentes envíos\" -> Listado de beneficios activos o cupones de envío gratis.\n\n2.\nSi el cliente tiene algún beneficio personalizado o si el sistema de la tienda tiene alguna restricción específica para su código postal que no esté en las reglas generales."
+ },
+ {
+  "conjunto": "primeros",
+  "id": "C58",
+  "turno": 0,
+  "mensaje": "jaja buenisimo gracias crack, che y el G305 tiene garantia?",
+  "respuesta": "1. **Búsquedas:**\n* \"Garantía Logitech G305\" -> Política de garantía específica para ese modelo o marca.\n* \"Términos y condiciones garantía\" -> Reglas generales de la tienda sobre cambios y devoluciones.\n\n2. **Qué no me puede dar el buscador:**\nSi el cliente compró el producto en nuestra tienda o en otro lado (para saber si debo gestionar la garantía yo o derivarlo)."
+ },
+ {
+  "conjunto": "fuera de muestra",
+  "id": "K01",
+  "turno": 0,
+  "mensaje": "Okay dame el precio de los dos artículos más baratos que tengas en la tienda y de los dos más caros en total serían cuatro artículos de los cuales luego te diré a dónde sería el envío Dime qué medios de pago reciben Y si tienen descuentos por cantidad",
+  "respuesta": "1.\n- \"productos ordenados por precio ascendente\" -> Los dos artículos de menor valor.\n- \"productos ordenados por precio descendente\" -> Los dos artículos de mayor valor.\n- \"medios de pago aceptados\" -> Lista de métodos (transferencia, tarjetas, etc.).\n- \"política de descuentos por cantidad\" -> Reglas o porcentajes de descuento aplicables.\n\n2. Necesitaría saber si el cliente busca algún tipo de producto en particular (ej. accesorios, notebooks) para filtrar la búsqueda, ya que \"toda la tienda\" puede ser muy amplio."
+ },
+ {
+  "conjunto": "fuera de muestra",
+  "id": "K02",
+  "turno": 0,
+  "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Una memoria y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.",
+  "respuesta": "Aquí tienes las búsquedas necesarias y la información faltante:\n\n**1. Búsquedas en el buscador:**\n* \"Auriculares con menor porcentaje de componentes chinos\" -> Lista de modelos con origen de fabricación (ej. marcas premium o ensamblaje local/europeo).\n* \"Mouse con menor porcentaje de componentes chinos\" -> Lista de modelos con origen de fabricación.\n* \"Memorias con menor porcentaje de componentes chinos\" -> Lista de modelos con origen de fabricación.\n* \"Costo de envío a Córdoba Capital\" -> Tarifa o política de envíos a Córdoba.\n* \"Costo de envío a Concordia\" -> Tarifa o política de envíos a Concordia.\n* \"Costo de envío a Posadas\" -> Tarifa o política de envíos a Posadas.\n\n**2. Información que el buscador no puede dar:**\n* La confirmación de qué modelos específicos prefiere el cliente tras filtrar por origen, para poder armar el presupuesto final."
+ },
+ {
+  "conjunto": "fuera de muestra",
+  "id": "K08",
+  "turno": 0,
+  "mensaje": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame de acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
+  "respuesta": "1.\n\"notebooks disponibles y precios\" -> Lista de modelos, precios y stock actual.\n\"micrófonos disponibles y precios\" -> Lista de modelos, precios y stock actual.\n\"memorias RAM disponibles y precios\" -> Lista de modelos, precios y stock actual.\n\"costo de envío a La Plata\" -> Tarifa o método de cálculo para La Plata.\n\"costo de envío a Villa María\" -> Tarifa o método de cálculo para Villa María.\n\"costo de envío a Toledo\" -> Tarifa o método de cálculo para Toledo.\n\n2.\nQué modelos específicos de notebooks, micrófonos y memorias prefiere el cliente para poder armar un presupuesto real."
+ },
+ {
+  "conjunto": "fuera de muestra",
+  "id": "K09",
+  "turno": 0,
+  "mensaje": "Hola Quiero precio de dos Notebook 2 teclados y dos auriculares los cuales van a ser enviados a tres destinos unos irán a palpalá Jujuy el otro irá a Correa Santa Fe y el otro irá a San Francisco Córdoba el envío de Jujuy es una Notebook y un auricular el envío a San Francisco es un auricular y un teclado y los dos productos que faltan van a la otra dirección Dime O dame precio de los de buena calidad Confío en tu elección",
+  "respuesta": "1.\n\"Notebooks buena calidad stock\" -> Lista de modelos disponibles con sus precios y especificaciones.\n\"Teclados buena calidad stock\" -> Lista de modelos disponibles con sus precios y especificaciones.\n\"Auriculares buena calidad stock\" -> Lista de modelos disponibles con sus precios y especificaciones.\n\"Costos y tiempos de envío Palpalá Jujuy, Correa Santa Fe, San Francisco Córdoba\" -> Tarifas y plazos estimados para cada localidad.\n\n2.\nNecesito que el cliente me confirme qué modelos específicos prefiere de las opciones que le voy a presentar para poder cerrar el presupuesto final."
+ },
+ {
+  "conjunto": "fuera de muestra",
+  "id": "K12",
+  "turno": 0,
+  "mensaje": "tenes celulares samsung o iphone?",
+  "respuesta": "1.\nStock actual de celulares Samsung: Lista de modelos, precios y disponibilidad.\nStock actual de celulares iPhone: Lista de modelos, precios y disponibilidad.\nPolíticas de financiación y cuotas: Información sobre métodos de pago y cuotas vigentes.\n\n2.\nSi el cliente busca un modelo específico, gama de precio o si tiene preferencia por sistema operativo (Android/iOS) para poder asesorarlo mejor."
+ },
+ {
+  "conjunto": "fuera de muestra",
+  "id": "K13",
+  "turno": 0,
+  "mensaje": "cuanto sale la notebook mas barata que tengas?",
+  "respuesta": "1.\n\"notebooks precio ascendente\" -> Lista de notebooks ordenadas de menor a mayor precio.\n\"stock notebooks\" -> Disponibilidad actual de los modelos económicos.\n\n2.\nSi el cliente busca un uso específico (estudio, trabajo, gaming) para recomendarle la mejor opción dentro de su presupuesto."
+ },
+ {
+  "conjunto": "fuera de muestra",
+  "id": "K16",
+  "turno": 0,
+  "mensaje": "quiero 2 mouse genius dx-110 negro y 1 teclado logitech k120 negro, cuanto sale?",
+  "respuesta": "1.\n- \"stock mouse genius dx-110 negro\" -> Disponibilidad y precio unitario.\n- \"stock teclado logitech k120 negro\" -> Disponibilidad y precio unitario.\n- \"costo de envío\" -> Tabla de precios o zonas de entrega.\n\n2. La dirección exacta del cliente para calcular el costo de envío específico."
+ },
+ {
+  "conjunto": "con charla",
+  "id": "C27",
+  "turno": 1,
+  "mensaje": "de esos, cual es el mas barato?",
+  "respuesta": "1. Busquedas:\n- \"precio mouse Logitech G203\" -> $37.500\n- \"precio mouse Logitech G502\" -> $70.000\n- \"precio mouse Logitech G Pro X\" -> $163.000\n- \"precio mouse Logitech MX Master 3S\" -> $203.000\n- \"precio mouse Logitech M170\" -> $12.000\n\n2. Necesitaría saber si el cliente tiene alguna preferencia de uso (gaming vs oficina) para validar si el más barato realmente le sirve."
+ },
+ {
+  "conjunto": "con charla",
+  "id": "C46",
+  "turno": 1,
+  "mensaje": "y alguno mecanico?",
+  "respuesta": "1.\n\"teclados mecánicos disponibles\" -> Lista de teclados filtrada por tipo de switch \"mecánico\".\n\"diferencias técnicas entre Logitech G915, G413, Razer BlackWidow y Huntsman Mini\" -> Resumen comparativo de especificaciones clave.\n\n2.\nNecesitaría saber si el cliente busca un uso específico (gaming competitivo, oficina, escritura) para recomendarle el modelo ideal."
+ },
+ {
+  "conjunto": "con charla",
+  "id": "C55",
+  "turno": 2,
+  "mensaje": "ah no, el otro, y ese me lo llevo",
+  "respuesta": "1.\n\"Mouse Logitech G203 Lightsync Negro\" -> Ficha técnica completa, precio y stock.\n\"Medios de pago y cuotas\" -> Información sobre promociones bancarias o recargos.\n\"Costos y tiempos de envío\" -> Tabla de envíos según zona o métodos disponibles.\n\n2.\nNecesito saber la ubicación del cliente para calcular el costo y tiempo de envío exacto."
+ },
+ {
+  "conjunto": "con charla",
+  "id": "K20",
+  "turno": 1,
+  "mensaje": "si, el teclado era una memoria",
+  "respuesta": "1. **Búsquedas:**\n- \"teclados\" -> Lista de teclados disponibles (para confirmar si el cliente se confundió o si debo buscar una alternativa).\n- \"política de origen de productos\" o \"país de fabricación\" -> Información sobre el origen de los componentes de las marcas que vendemos.\n- \"costos de envío a Córdoba, Concordia y Posadas\" -> Tarifas o condiciones de envío según destino.\n\n2. **Necesidad:**\n- Necesito que el cliente me aclare qué dos artículos específicos (de los que pidió originalmente) son los que van a Posadas, ya que solo mencionó \"los otros dos\"."
+ },
+ {
+  "conjunto": "con charla",
+  "id": "K21",
+  "turno": 1,
+  "mensaje": "En realidad son 7 articulos el teclado va a concordia, lo demas esta bien",
+  "respuesta": "1.\n\"Teclados disponibles\" -> Lista de modelos de teclados con sus precios y stock.\n\"Costo de envío a Córdoba, Concordia y Posadas\" -> Tarifas o política de envíos según destino.\n\"País de origen o fabricación de los productos\" -> Información sobre el origen de los componentes de los artículos seleccionados.\n\n2.\nNecesitaría que el cliente me confirme qué modelo de teclado quiere y cuáles son los dos artículos restantes para Posadas, ya que solo mencionó \"lo demás está bien\" pero no especificó los productos."
+ },
+ {
+  "conjunto": "con charla",
+  "id": "K21",
+  "turno": 2,
+  "mensaje": "Como son chinos seria todo igual salvo el precio, quiero los mas economicos de cada clase.",
+  "respuesta": "1. Búsquedas al buscador:\n- \"Auriculares más económicos\" -> Lista de auriculares ordenados por precio ascendente.\n- \"Mouse más económicos\" -> Lista de mouse ordenados por precio ascendente.\n- \"Teclado más económicos\" -> Lista de teclados ordenados por precio ascendente.\n- \"Memoria ram DDR4 8GB más económica\" -> Lista de memorias RAM de esa especificación ordenadas por precio ascendente.\n\n2. Necesitaría saber si el cliente está dispuesto a cambiar los modelos ya presupuestados por otros de menor calidad/gama para reducir el costo total, ya que el cambio de productos altera el presupuesto y los envíos calculados."
+ },
+ {
+  "conjunto": "con charla",
+  "id": "K21",
+  "turno": 6,
+  "mensaje": "Color indistinto 70 por ciento transferencia",
+  "respuesta": "1.\n`buscar stock de todos los productos del carrito` -> `lista de productos con stock actual`\n`calcular total del pedido con los precios actuales` -> `monto total actualizado`\n`calcular 70% del total y aplicar 10% de descuento` -> `monto final para transferencia`\n`calcular 30% del total` -> `monto final para Mercado Pago`\n\n2.\nSi el cliente ya realizó efectivamente la transferencia o el pago por Mercado Pago."
+ },
+ {
+  "general": "Esto es una entrevista de diseño. Sos el vendedor de una tienda online de tecnologia de Argentina que vende\npor WhatsApp, con un buscador de la tienda que vamos a armar para vos, sobre el catalogo, las reglas y los envios, y una\ncalculadora. Contestame con sinceridad, corto, una respuesta por punto:\n1. ¿Como te sirve que te devuelva los resultados: en que forma, cuantos, con que datos de cada producto?\n2. Si buscas \"auriculares\" y la tienda tiene 30, ¿preferis los 30 resumidos, los mas baratos, o que te pregunte?\n3. Cuando el cliente señala algo de antes —\"ese\", \"el otro\", \"lo de Rosario\"—, ¿como preferis encontrarlo?\n4. Para armar un presupuesto con varios destinos y un pago dividido, ¿que herramienta te serviria mas que una\n   calculadora?\n5. ¿Que te haria equivocarte con este buscador, y como lo evitarias?",
+  "respuesta": "¡Hola! Entendido. Como vendedor que vive al ritmo de WhatsApp, acá van mis respuestas para que el buscador sea una herramienta real y no un estorbo:\n\n1. **Forma:** Una lista compacta con foto miniatura, nombre, precio final y stock. **Cantidad:** Máximo 5 resultados por mensaje para no saturar el chat. **Datos:** Nombre, precio, stock y un botón de \"Ver detalle\" o \"Agregar al carrito\".\n2. **Preferencias:** Prefiero los **3 más vendidos o destacados** primero, y al final un botón que diga \"Ver los 30 resultados\" o \"Filtrar por precio\". No quiero abrumar al cliente con una lista infinita de entrada.\n3. **Contexto:** Necesito que el buscador tenga **memoria de sesión**. Si el cliente dijo \"el otro\", el sistema debería mostrarme los últimos 3 productos que le envié en esa misma conversación para que yo pueda elegir rápido.\n4. **Herramienta:** Un **\"Generador de Presupuesto Dinámico\"**. Necesito poder tildar varios productos, asignarles un destino de envío distinto a cada uno (o grupo) y que me permita ingresar manualmente el monto de cada pago parcial para que el sistema me calcule el saldo restante automáticamente.\n5. **Error:** Me equivocaría si el buscador no entiende el lenguaje coloquial argentino (ej: \"celu\", \"note\", \"auris\") o si me muestra productos sin stock. **Cómo evitarlo:** Que el buscador tenga un diccionario de sinónimos local y que el filtro de \"ocultar sin stock\" esté siempre activado por defecto."
+ }
+]
