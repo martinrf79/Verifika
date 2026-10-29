@@ -335,7 +335,7 @@ def _medidas(texto: str) -> set:
 
 def _pagos(texto: str) -> set:
     """Los datos de pago de un texto: links, numeros largos como un CBU y alias."""
-    return set(re.findall(r"https?://\S+?(?=[\s)\]]|$)|\b\d{10,}\b", texto)) | \
+    return {x.rstrip(".,;:!?") for x in re.findall(r"https?://\S+?(?=[\s)\]]|$)|\b\d{10,}\b", texto)} | \
         {m.lower() for m in re.findall(r"(?i)\balias:?\s*\**\s*([a-z0-9][a-z0-9._-]{3,})", texto)}
 
 
@@ -422,9 +422,13 @@ def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list, memori
             if malos and not corregido and vuelta < VUELTAS:
                 corregido = True
                 msgs.append(m.model_dump(exclude_none=True))
-                msgs.append({"role": "user", "content": "Esto no lo respalda lo que devolvieron las herramientas ni la "
-                             "charla: " + "; ".join(f"{c}: {d}" for c, d in malos) + ". Corregilo con las "
-                             "herramientas o sacalo, y escribi la respuesta de nuevo."})
+                # LA REVISION ES INTERNA: el cliente no la ve ni la dijo. Sin esto el modelo le pedia disculpas al
+                # cliente por algo que el cliente nunca reclamo.
+                msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: tu "
+                             "borrador dice cosas que no respaldan las herramientas ni la charla: "
+                             + "; ".join(f"{c}: {d}" for c, d in malos) + ". Corregilas con las herramientas o "
+                             "sacalas, y escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta "
+                             "revision ni pedir disculpas."})
                 continue
             if memoria is not None and memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))

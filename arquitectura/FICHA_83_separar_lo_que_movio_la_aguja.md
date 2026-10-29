@@ -242,3 +242,24 @@ El tamaño: 112 líneas el verificador y 117 su banco.
 Con el modelo de producción, el mismo pedido con un esquema de 0, 10, 200 y los 880 nombres del catálogo cobra igual,
 23 tokens de entrada, y tarda lo mismo. Atada sin "ninguno", "celular samsung" elige la tablet Samsung; con "ninguno",
 contesta ninguno. La atadura asegura que no invente lo que no existe; no asegura que elija bien ni lo que escribe libre.
+
+### El verificador con el modelo, 29-oct a la noche, con la paga y la orden de Martín
+
+El tope del día subió a 1,90 en su propio commit. Los 129 sueltos y las 26 charlas con el verificador como candado:
+
+| | Sin el verificador | Con el verificador |
+|---|---|---|
+| Sueltos, primeros, fuera de muestra y con charla | 63, 23 y 37, 123 de 129 | 61, 20 y 36, 117 de 129 |
+| Charlas enteras, 75 turnos | 69 a 71 | 69 |
+
+El verificador actuó en 7 de los 129 turnos. De los turnos que cambiaron, 7 son de turnos donde no actuó: el modelo varía
+de una corrida a otra en unos 7 de 129, así que una corrida sola no separa una mejora de una baja menor que eso. Lo que sí
+fue del verificador:
+- **La corrección le llegaba al modelo como un mensaje del cliente**, y el modelo le pedía disculpas al cliente: "¡Tenés
+  razón, disculpame! Me confundí". Ahora es una revisión interna, que el cliente no ve, con la orden de no mencionarla.
+- **Falsas alarmas sobre respuestas reales**, todas por clase: el punto final pegado al link de demo; una pregunta,
+  "¿querés uno inalámbrico o el G203?", leída como que el G203 lo es —las preguntas y los "si buscás" no afirman—;
+  "25W" de la potencia de un parlante leído como el cargador de 25W —una medida sola no nombra un producto—.
+
+Con eso, sobre lo grabado, el verificador sigue en 99,0% cazadas y 0,6% de falsas alarmas. Falta medirlo con el modelo
+otra vez, y con tres corridas para ver la variación.

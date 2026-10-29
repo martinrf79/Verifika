@@ -31,6 +31,9 @@ def _productos(texto: str) -> list:
     ws = [w for w in re.findall(r"[a-z0-9]+", K.n(texto)) if w not in K._RELLENO]
     out = []
     for tramo, _ in MK._productos(ws, TID):
+        # Una medida sola no nombra un producto: "25w" de la potencia de un parlante no es el cargador de 25W.
+        if all(re.fullmatch(r"\d+[a-z]{0,3}", w) for w in tramo.split()):
+            continue
         idt = K.identificar(tramo, "", TID)
         if idt["veredicto"] == "exists":
             out.append((tramo, idt["producto"]))
@@ -77,7 +80,9 @@ def verificar(respuesta: str, fuente: str, pegados: list = ()) -> list:
         for tramo, p in nombrados:
             if not _en_fuente(p, f):
                 hallazgos.append(("producto", p["nombre"]))
-        if len({q["id"] for _, q in nombrados}) != 1:
+        # UNA PREGUNTA O UN "SI BUSCAS..." NO AFIRMAN: "¿queres uno inalambrico o el G203?" no dice que el G203 lo sea.
+        # Ahi se controlan los datos y los productos, no los atributos, los superlativos ni el stock.
+        if len({q["id"] for _, q in nombrados}) != 1 or "?" in oracion or re.match(r"\W*si\b", o):
             continue
         p = nombrados[0][1]
         rubro = [x for x in todos if x.get("categoria") == p.get("categoria")]
@@ -90,7 +95,7 @@ def verificar(respuesta: str, fuente: str, pegados: list = ()) -> list:
             filtro = K.atar(w, rubro, TID)
             if "campo" not in filtro or not (filtro["campo"] in _ATRIBUTOS or filtro.get("si_no")):
                 continue
-            niega = any(x in _NIEGA for x in ws[max(0, i - 2):i])
+            niega = any(x in _NIEGA for x in ws[max(0, i - 3):i])
             # Un color vale si el modelo lo tiene en alguna variante, no solo la que se nombro.
             variantes = K._colores_de(p, todos) or [p] if filtro["campo"] == "color" else [p]
             cumple = any(K.cumple(v, filtro) for v in variantes)
