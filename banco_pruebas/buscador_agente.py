@@ -21,6 +21,7 @@ La vara es la de siempre: las casillas del turno en `vara_58.json` sobre lo que 
 
     MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/buscador_agente.py --llamar [--hasta 10] [C27 K20 ...]
     python3 banco_pruebas/buscador_agente.py [--ver] [--dificiles]         sin modelo, lo grabado
+    ... --charlas [--llamar] [--largas] [K20 K21 ...] [--ver]              la charla entera con su propia memoria
 """
 import collections
 import copy
@@ -57,8 +58,9 @@ Tenes tres herramientas:
   productos con el criterio del cliente, una regla de la tienda, el envio a un lugar. Devuelve lo que la tienda tiene
   de verdad: productos con precio, stock, colores y ficha; reglas; envios.
 - presupuesto: armas el pedido entero, renglon por renglon, con producto, cantidad y destino, y el pago dividido y el
-  tope si los dijo. Devuelve los precios, los envios, el total y el reparto. El pedido actual te llega en el mismo
-  formato: para cambiarlo, mandalo entero corregido; sin renglones, usa el pedido actual tal cual.
+  tope si los dijo. Devuelve los precios, los envios, el total y el reparto. Con anotar en true queda como el pedido
+  del cliente; en false es solo una cotizacion. El pedido actual te llega en el mismo formato: para cambiarlo, mandalo
+  entero corregido con anotar en true; sin renglones, usa el pedido actual tal cual.
 - calcular: una calculadora, para otra cuenta.
 
 Todo producto, precio, stock, dato de ficha, envio o regla que digas tiene que salir de las herramientas o de lo que
@@ -72,7 +74,8 @@ stock, y decile cual elegiste. Si el cliente da un criterio para elegir —el ma
 busca con ese criterio aunque ya le hayas mostrado opciones: lo mostrado era una parte. Si el cliente dijo cuantos
 quiere de cada cosa, revisa que el presupuesto lo respete: la herramienta te devuelve la cuenta por clase.
 
-Las reglas de la tienda: para reservar una compra se le pide al cliente solo el nombre. Si la tienda no tiene algo,
+Las reglas de la tienda: para reservar una compra se le pide al cliente solo el nombre. Los datos para pagar —CBU,
+alias, links— salen solo de la herramienta cobrar: nunca los escribas por tu cuenta. Si la tienda no tiene algo,
 decilo claro: "no vendemos eso", y ofrece lo que si hay."""
 
 HERRAMIENTAS = [
@@ -89,7 +92,13 @@ HERRAMIENTAS = [
                 "producto": {"type": "string"}, "cantidad": {"type": "integer"}, "destino": {"type": "string"},
                 "color": {"type": "string"}}, "required": ["producto"]}},
             "pago": {"type": "string", "description": "como \"70 transferencia, 30 mercado pago\""},
-            "tope": {"type": "integer"}}}}},
+            "tope": {"type": "integer"},
+            "anotar": {"type": "boolean", "description": "true si el cliente compra, confirma o cambia su pedido; "
+                                                         "false si solo pide precios para ver"}}}}},
+    {"type": "function", "function": {
+        "name": "cobrar", "description": "Cuando el cliente confirma el pedido y da su nombre: devuelve como pagar, "
+                                         "los datos de transferencia o el link, para cada medio del pago dividido.",
+        "parameters": {"type": "object", "properties": {"nombre": {"type": "string"}}, "required": ["nombre"]}}},
     {"type": "function", "function": {
         "name": "calcular", "description": "Una calculadora para otra cuenta: numeros, + - * / y parentesis.",
         "parameters": {"type": "object", "properties": {"cuenta": {"type": "string"}}, "required": ["cuenta"]}}}]
@@ -216,13 +225,36 @@ def _visto(nombre: str, texto: str) -> bool:
     return any(K.n(x) in texto for x in nombres) or idt["veredicto"] != "exists"
 
 
-def presupuesto(a: dict, estado: dict, visto: str = None) -> str:
+def cobrar(a: dict, estado: dict, memoria: dict = None) -> str:
+    """Como pagar, del codigo de cobro del bot: CBU para la parte de transferencia, link para Mercado Pago. Lo que
+    cobra es el presupuesto del pedido anotado."""
+    import asyncio
+    from app.core.pago import instruccion_cobro
+    pedido = (memoria or {}).get("pedido") or pedido_actual(estado)
+    if not pedido:
+        return "No hay pedido anotado todavia: arma el presupuesto con anotar en true."
+    pago = (memoria or {}).get("pago") or ""
+    texto = presupuesto({"renglones": pedido, "pago": pago}, estado)
+    medios = [m.group(1).strip() for m in re.finditer(r"\d{1,3}\s*%?\s*(?:en|por|con)?\s*([a-z ]+?)(?=,|\by\b|$|\d)",
+                                                      K.n(pago))] or [""]
+    out = []
+    for m in medios:
+        lead = {"nombre": str(a.get("nombre") or ""), "forma_pago": m, "orden": texto}
+        out.append(asyncio.run(instruccion_cobro(texto, lead, TID, "banco")) or "")
+    return "\n".join(x for x in out if x) or "El pago lo coordina una persona de la tienda."
+
+
+def presupuesto(a: dict, estado: dict, visto: str = None, memoria: dict = None) -> str:
     """El generador de presupuesto que pidio el modelo: los renglones del pedido entero, cada uno con producto,
     cantidad y destino, y si lo dijo, el pago dividido y el tope. Lo cumple el ejecutor de siempre, que pone los montos,
     los envios, el envio gratis y el reparto."""
     from app.core.flujo import redaccion
     from app.core.flujo.ejecutor import ejecutar
-    rs = [x for x in a.get("renglones") or [] if isinstance(x, dict) and x.get("producto")] or pedido_actual(estado)
+    rs = [x for x in a.get("renglones") or [] if isinstance(x, dict) and x.get("producto")] or \
+        (list(memoria["pedido"] or memoria.get("mostrado") or []) if memoria is not None else pedido_actual(estado))
+    if memoria is not None:
+        # LA MEMORIA DE LA CHARLA: el pago y el tope dichos antes valen hasta que diga otros.
+        a = {**a, "pago": a.get("pago") or memoria.get("pago") or "", "tope": a.get("tope") or memoria.get("tope") or 0}
     if not rs:
         return "El pedido esta vacio: faltan los renglones, producto, cantidad y destino de cada uno."
     # EL CANDADO DE PRODUCTOS: un producto que no salio del buscador, de la charla ni del pedido no se elige de memoria.
@@ -249,6 +281,11 @@ def presupuesto(a: dict, estado: dict, visto: str = None) -> str:
     cuenta = "En el pedido, por clase: " + ", ".join(f"{v} {k}" for k, v in clases.items()) + "."
     if any(not x.get("destino") for x in rs):
         cuenta += " Hay renglones sin destino: su envio no esta sumado. Si el cliente dijo a donde va, ponelo en cada renglon."
+    if memoria is not None:
+        # LA MEMORIA GUARDA LAS DOS COSAS: el ultimo presupuesto que vio el cliente, siempre, y el pedido, solo si
+        # compra, confirma o cambia. Mas datos y no menos: el modelo elige cual le sirve.
+        memoria["_ultimo"] = {"mostrado": rs, "pago": a.get("pago") or "", "tope": K.entero(a.get("tope")) or 0,
+                              **({"pedido": rs} if a.get("anotar") else {})}
     return (redaccion.texto(t.hechos, t.preguntas, False) or "No se pudo armar.") + "\n" + cuenta
 
 
@@ -270,12 +307,12 @@ def _montos(texto: str) -> set:
     return {int(re.sub(r"\D", "", m)) for m in re.findall(r"\$\s?\d[\d.]*", texto) if re.sub(r"\D", "", m)}
 
 
-def pegar(texto: str, pasos: list, estado: dict) -> str:
+def pegar(texto: str, pasos: list, estado: dict, memoria: dict = None) -> str:
     """[[PRESUPUESTO]] se cambia por el ultimo presupuesto que armo el modelo, tal cual lo dio el ejecutor. Si no armo
     ninguno en este turno, el del pedido actual."""
     ultimo = next((p["devuelve"] for p in reversed(pasos) if p["herramienta"] == "presupuesto"), "")
     if not ultimo and re.search(r"\[\[\s*PRESUPUESTO\s*\]\]", texto):
-        ultimo = presupuesto({}, estado)
+        ultimo = presupuesto({}, estado, memoria=memoria)
     return re.sub(r"\[\[\s*PRESUPUESTO\s*\]\]", lambda _: ultimo, texto)
 
 
@@ -287,6 +324,12 @@ def _medidas(texto: str) -> set:
                                                                                          K.n(texto))}
 
 
+def _pagos(texto: str) -> set:
+    """Los datos de pago de un texto: links, numeros largos como un CBU y alias."""
+    return set(re.findall(r"https?://\S+?(?=[\s)\]]|$)|\b\d{10,}\b", texto)) | \
+        {m.lower() for m in re.findall(r"(?i)\balias:?\s*\**\s*([a-z0-9][a-z0-9._-]{3,})", texto)}
+
+
 def inventados(respuesta: str, salidas: list) -> list:
     """Los montos y las medidas de la respuesta que no salieron de las herramientas ni de la charla: "25.600 dpi" que
     la ficha no trae es tan inventado como un precio."""
@@ -294,8 +337,10 @@ def inventados(respuesta: str, salidas: list) -> list:
     validos = _montos(fuente) | {int(re.sub(r"\D", "", m)) for m in re.findall(r"= ([\d.]+)", fuente)}
     # Una medida vale si su numero esta en la fuente, aunque sin la unidad: "DDR4 3200" en el nombre es 3200 MHz.
     numeros = set(re.findall(r"\d+", re.sub(r"(?<=\d)[.,](?=\d)", "", K.n(fuente))))
+    pagos = _pagos(fuente)
     return sorted(m for m in _montos(respuesta) if m not in validos) + \
-        sorted(m for m in _medidas(respuesta) if m.split()[0] not in numeros)
+        sorted(m for m in _medidas(respuesta) if m.split()[0] not in numeros) + \
+        sorted(m for m in _pagos(respuesta) if m not in pagos)
 
 
 # ══ EL AGENTE ══
@@ -313,13 +358,30 @@ def charla(h: list) -> str:
     return "LA CHARLA HASTA ACA:\n" + "\n".join(f"{'Cliente' if r == 'user' else 'Vos'}: {t}" for r, t in h)
 
 
-def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list) -> dict:
+def _memoria_texto(memoria: dict) -> str:
+    """Lo que el agente recuerda de la charla, completo: el pedido tal como quedo en su ultimo presupuesto, renglon por
+    renglon, y el pago y el tope dichos."""
+    t = "EL PEDIDO ANOTADO, en el formato del presupuesto: " + json.dumps(memoria["pedido"], ensure_ascii=False)
+    if memoria.get("mostrado") and memoria["mostrado"] != memoria["pedido"]:
+        t += "\nEL ULTIMO PRESUPUESTO QUE LE MOSTRASTE, sin anotar: " + json.dumps(memoria["mostrado"], ensure_ascii=False)
+    if memoria.get("pago"):
+        t += f"\nEL PAGO QUE DIJO: {memoria['pago']}"
+    if memoria.get("tope"):
+        t += f"\nEL TOPE QUE DIJO: {memoria['tope']}"
+    return t
+
+
+def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list, memoria: dict = None) -> dict:
+    """Un turno. Con `memoria`, el agente lleva la charla entera con su propio pedido; sin ella, el estado que dejo el
+    flujo de antes, como en los turnos sueltos."""
     from banco_pruebas import libro_paga
+    contexto = _memoria_texto(memoria) if memoria is not None else \
+        (f"ESTADO DEL PEDIDO:\n{CM.carrito(estado)}\n\nEL PEDIDO ACTUAL, en el formato del presupuesto: "
+         f"{json.dumps(pedido_actual(estado), ensure_ascii=False)}")
     msgs = [{"role": "system", "content": CONSIGNA},
-            {"role": "user", "content": f"{charla(h)}\n\nESTADO DEL PEDIDO:\n{CM.carrito(estado)}\n\nEL PEDIDO "
-                                        f"ACTUAL, en el formato del presupuesto: "
-                                        f"{json.dumps(pedido_actual(estado), ensure_ascii=False)}\n\n"
-                                        f"ULTIMO MENSAJE DEL CLIENTE: {msg}"}]
+            {"role": "user", "content": f"{charla(h)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {msg}"}]
+    if memoria is not None:
+        memoria.pop("_ultimo", None)
     pasos, salidas, entrada, salida, corregido = [], [], 0, 0, False
     t0 = time.time()
     for vuelta in range(VUELTAS + 1):
@@ -342,7 +404,7 @@ def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list) -> dic
             libro_paga.anotar(modelo, u.prompt_tokens, u.completion_tokens)
         m = r.choices[0].message
         if not m.tool_calls:
-            texto = pegar(m.content or "", pasos, estado)
+            texto = pegar(m.content or "", pasos, estado, memoria)
             malos = inventados(texto, salidas + [t for _, t in h] + [msg])
             if malos and not corregido and vuelta < VUELTAS:
                 # EL CANDADO, UNA VUELTA: los montos que no salieron de las herramientas ni de la charla se le devuelven
@@ -353,6 +415,8 @@ def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list) -> dic
                              + ", ".join(f"${x:,}".replace(",", ".") if isinstance(x, int) else x for x in malos)
                              + ". Sacalos, o conseguilos con las herramientas, y escribi la respuesta de nuevo."})
                 continue
+            if memoria is not None and memoria.get("_ultimo"):
+                memoria.update(memoria.pop("_ultimo"))
             return {"respuesta": texto, "pasos": pasos, "inventados": malos, "corregido": corregido,
                     "entrada": entrada, "salida": salida, "seg": round(time.time() - t0, 1), "vueltas": vuelta}
         # El mensaje del modelo vuelve entero, con lo que agrega el proveedor a cada llamada: sin eso, la segunda vuelta
@@ -360,10 +424,10 @@ def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list) -> dic
         msgs.append(m.model_dump(exclude_none=True))
         for c in m.tool_calls:
             a = json.loads(c.function.arguments or "{}")
-            visto = K.n(" ".join(salidas + [t for _, t in h] + [json.dumps(pedido_actual(estado), ensure_ascii=False),
-                                                              CM.carrito(estado)]))
+            visto = K.n(" ".join(salidas + [t for _, t in h] + [contexto]))
             res = buscar(a.get("consulta", ""), estado) if c.function.name == "buscar" else \
-                presupuesto(a, estado, visto) if c.function.name == "presupuesto" else calcular(a.get("cuenta", ""))
+                presupuesto(a, estado, visto, memoria) if c.function.name == "presupuesto" else \
+                cobrar(a, estado, memoria) if c.function.name == "cobrar" else calcular(a.get("cuenta", ""))
             pasos.append({"herramienta": c.function.name, "pide": a, "devuelve": res})
             salidas.append(res)
             msgs.append({"role": "tool", "tool_call_id": c.id, "content": res})
@@ -436,5 +500,54 @@ def main() -> None:
             print("  " + f["respuesta"][:900].replace("\n", "\n  "))
 
 
+# ══ LA CHARLA ENTERA: el agente con su propia memoria, turno tras turno ══
+
+CHARLAS = os.path.join(AQUI, "buscador_charlas.jsonl")
+
+
+def charlas() -> None:
+    """Cada charla de punta a punta con el agente: la charla completa, sin resumir, y su propio pedido. Se califica cada
+    turno con sus casillas, contra las respuestas del agente mismo."""
+    from banco_pruebas.sonda_charlas import nota_casilla
+    from app.core.flujo import estado as E
+    ids = [a for a in ARGS if re.match(r"^[CKJ]\d\d$", a)]
+    vara = {c["id"]: c for c in json.load(open(os.path.join(AQUI, "vara_58.json"), encoding="utf-8"))["charlas"]}
+    if "--largas" in ARGS:
+        ids = ids or [c for c, v in vara.items() if len(v["turnos"]) >= 3]
+    grab = {(r["id"], r["turno"]): r for r in map(json.loads, open(CHARLAS, encoding="utf-8"))} \
+        if os.path.exists(CHARLAS) else {}
+    llamar = "--llamar" in ARGS
+    if llamar:
+        cli, paga, modelo = _cliente()
+        print(f"{'PAGA' if paga else 'gratis'} · {modelo} · {len(ids)} charlas", flush=True)
+    bien = mal = charlas_bien = 0
+    for ch in ids:
+        memoria, h, respuestas, todas = {"pedido": [], "mostrado": [], "pago": "", "tope": 0}, [], [], True
+        for t, turno in enumerate(vara[ch]["turnos"]):
+            g = grab.get((ch, t))
+            if not g:
+                if not llamar:
+                    break
+                g = {"id": ch, "turno": t, "mensaje": turno["texto"],
+                     **agente(cli, modelo, paga, turno["texto"], E.leer({}), h, memoria), "memoria": dict(memoria)}
+                with open(CHARLAS, "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(g, ensure_ascii=False) + "\n")
+            else:
+                memoria = dict(g.get("memoria") or memoria)
+            final = g.get("respuesta") or ""
+            respuestas.append(final)
+            malas = [k["n"] for k in turno["casillas"] if nota_casilla(k, [], final, respuestas) is not True]
+            bien, mal = bien + (not malas), mal + bool(malas)
+            todas = todas and not malas
+            print(f"  {ch} t{t + 1}: {'bien' if not malas else 'MAL: ' + '; '.join(malas)}"
+                  + (f" · inventados {g.get('inventados')}" if g.get("inventados") else ""), flush=True)
+            if malas and HM.VER:
+                print("    cliente: " + turno["texto"][:200] + "\n    " + final[:700].replace("\n", "\n    "))
+            h += [("user", turno["texto"]), ("assistant", final)]
+        charlas_bien += todas
+    print(f"\nLAS CHARLAS ENTERAS CON EL BUSCADOR · turnos bien {bien} de {bien + mal} · charlas enteras bien "
+          f"{charlas_bien} de {len(ids)}")
+
+
 if __name__ == "__main__":
-    main()
+    charlas() if "--charlas" in ARGS else main()

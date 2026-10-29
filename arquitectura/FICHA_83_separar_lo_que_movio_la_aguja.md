@@ -196,3 +196,21 @@ de entrada y dos segundos y medio por turno; la corrida de los 129, unos 14 cent
 Lo que queda: los cambios del pedido en varios turnos, K20 y K21, donde ningún camino con modelo acierta; la fuente, que
 trae "core i5" en los tags de la HP 245 G9 Ryzen 7 y hace ambiguo al modelo Core i5 también en el bot vivo, a corregir con
 el permiso de Martín; y casillas de redacción estrictas, "no estamos trabajando con celulares".
+
+### La memoria del buscador en la charla entera, 29-oct a la noche
+
+Pregunta de Martín: si el primer turno salió bien, ¿el error del turno siguiente es de memoria? Sí. En los turnos con
+charla, la prueba arrancaba del pedido y las respuestas que dejó el flujo viejo con la agenda a mano, donde "los otros
+dos" a Posadas quedaron sin resolver; el buscador sí los había resuelto en su propio primer turno. Con su propia memoria,
+la charla completa sin resumir y su pedido tal como quedó, K20 y K21 dieron 9 de 9 turnos.
+
+`buscador_agente.py --charlas`: las 26 charlas de dos turnos o más de punta a punta. La memoria guarda las dos cosas, el
+último presupuesto que vio el cliente y el pedido anotado, que solo cambia si el cliente compra, confirma o cambia; el
+presupuesto lo marca con `anotar`. Tres corridas: 70, 71 y 69 de 75 turnos; 21 o 22 de 26 charlas enteras.
+
+Lo que apareció: con el pedido cerrado, el modelo inventó un CBU, un alias, un banco y un link. Ahora el cobro es una
+herramienta, `cobrar`, que da los datos del código de cobro del bot —la cuenta demo y el link demo—, y el candado mira
+también links, números largos y alias. En la corrida siguiente, ningún dato inventado.
+
+Unas 2,3 llamadas al modelo por turno: una pide las búsquedas, todas juntas; otra escribe; una más si arma presupuesto
+o si el candado le devuelve un dato. No hay llamada aparte para separar: el modelo separa solo, una búsqueda por cosa.
