@@ -83,6 +83,8 @@ permiso.
 | El motor de casos de la FICHA 78, hasta que la búsqueda se rehaga sobre la plantilla de venta | `banco_pruebas/casos_plantilla.py`, `banco_pruebas/motor_casos.py` |
 | Las entrevistas al modelo sobre cómo traduce y por qué falla, FICHA 78 | `banco_pruebas/entrevista_traduccion.py` |
 | El acto armado por el código y la segunda vuelta con candidatos, descartados, FICHA 78 | `banco_pruebas/modos.py`, `banco_pruebas/etiqueta.py` |
+| El puente del código desde las líneas, medido en las 200 sintéticas por agenda y por respuesta, FICHA 83 | `banco_pruebas/lineas_agenda.py`, `banco_pruebas/responder_lineas.py` |
+| El buscador de la tienda: el modelo vende con buscar, presupuesto y un candado de datos, y su entrevista, FICHA 83 | `banco_pruebas/buscador_agente.py`, `banco_pruebas/entrevista_buscador.py` |
 | Lo que ya contestó el modelo, sin volver a pagarlo | `banco_pruebas/libro_paga.py`, `respuestas_modelo.jsonl` |
 | Una mejora contra la base, charla por charla: el instrumento oficial | `banco_pruebas/puerta.py` |
 | El cableado sin modelo: las charlas grabadas, el codigo de antes contra el de ahora | `banco_pruebas/grabadas.py` |

@@ -159,3 +159,40 @@ llamadas por mensaje. Entrevista al modelo sobre cómo prefiere hacer este paso:
 2. El limado como parte del código: cada hueco validado, el producto por el catálogo y el destino por el padrón; lo que
    no pasa, pregunta al cliente. Hoy vive en `agente_ventas.py`.
 3. Los siete casos de producción y las charlas enteras, antes de llevarlo al bot.
+
+## El 29-oct: la etiqueta, el puente en grande y el buscador de la tienda
+
+Todo es banco. Cada número tiene su commit.
+
+**La etiqueta de cada línea**, `etiquetar.py`, sobre las 238 frases: la regla de que las dos búsquedas, su suma y lo
+exacto elijan lo mismo da 121 seguras con 3 mal, el 1,3%. Las dudosas al modelo con cinco candidatos no pasan la vara:
+9,2% mal. Cuando el cliente describe una necesidad, el modelo elige el equipo que nombra o asesoramiento.
+
+**El puente del código en grande**, `lineas_agenda.py`: las 200 sintéticas traen lo correcto del generador, y se califica
+la agenda por cosa pedida. Seis arreglos de clase en `responder_lineas.py` —el modelo como lo dijo el cliente, el pago
+que suma cien, el tope del total y el de una cosa, la frase de la FAQ dicha tal cual, el no en el medio de la condición,
+el color sin el destino—, y uno en el bot vivo, `marcador.py`: con dos modelos seguidos se perdía el primero. Semilla
+2710: el código con las líneas 190 de 200, la lectura de hoy 156; semilla 3110, nunca mirada, 193. Lo que falla es la
+traducción. La respuesta entera por el webhook, `--respuesta`, muestra que lo que frena a los dos caminos es la conducta
+del ejecutor: pregunta el color o a dónde va antes de dar el total de lo que ya está claro.
+
+**El buscador de la tienda**, `buscador_agente.py`, orden de Martín: adaptar las herramientas a lo que el modelo sabe por
+entrenamiento. Antes, la entrevista, `entrevista_buscador.py`, sobre los 17 más difíciles: busca una cosa por búsqueda,
+con su criterio, quiere pocos resultados con stock y en el orden pedido, y para el presupuesto pide un generador, no una
+calculadora. Las herramientas: buscar en castellano libre sobre `catalogo.buscar`, las reglas y el envío; presupuesto,
+que cumple el ejecutor y el código pega tal cual; y un candado que le devuelve al modelo una vez los montos y medidas que
+no salieron de las herramientas ni de la charla, y que no deja elegir un producto que no buscó.
+
+| Cómo se responde | Primeros, de 65 | Fuera de muestra, de 24 | Con charla, de 40 | Con datos inventados |
+|---|---|---|---|---|
+| La lectura de hoy, la del bot | 64 | 19 | 37 | sin medir |
+| El agente con huecos, libre | 60 | 22 | 36 | sin medir |
+| El buscador de la tienda | **63** | **23** | **37** | 0, con el candado |
+
+Sobre los 17 difíciles: 8 en la primera vuelta, 14 con los arreglos de la herramienta. Lo que no movió nada: reglas en
+la consigna para que busque con el criterio del cliente y para que controle las cantidades por clase. Unos 3.300 tokens
+de entrada y dos segundos y medio por turno; la corrida de los 129, unos 14 centavos de la paga.
+
+Lo que queda: los cambios del pedido en varios turnos, K20 y K21, donde ningún camino con modelo acierta; la fuente, que
+trae "core i5" en los tags de la HP 245 G9 Ryzen 7 y hace ambiguo al modelo Core i5 también en el bot vivo, a corregir con
+el permiso de Martín; y casillas de redacción estrictas, "no estamos trabajando con celulares".
