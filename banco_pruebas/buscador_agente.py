@@ -161,12 +161,12 @@ def buscar(consulta: str, estado: dict) -> str:
         # Lo que queda de la consulta, sin el rubro ni el orden, es la condicion si el catalogo la ata a un campo.
         fuera = set(K.n(r).split()) | {w for w, _ in por_nombre} | set(K.n(orden).split()) | K._RELLENO
         resto = " ".join(w for w in q.split() if w not in fuera and not L._lugares(w))
-        # Cada palabra filtra por su lado —"ddr5 16gb" no exige que vayan juntas en el nombre—; una negacion va
-        # entera, "que no sea redragon", para no volverse lo contrario.
-        if re.search(r"\b(no|sin|excepto|menos)\b", resto):
-            conds = [resto] if RL._atable(resto, r) else []
-        else:
-            conds = [w for w in resto.split() if RL._atable(w, r)]
+        # Cada palabra filtra por su lado —"ddr5 16gb" no exige que vayan juntas en el nombre—; la negacion va con lo
+        # que niega, "no sea redragon", para no volverse lo contrario, y lo de antes sigue filtrando: "mecanico".
+        ws_r = resto.split()
+        i_neg = next((i for i, w in enumerate(ws_r) if w in ("no", "sin", "excepto", "menos")), len(ws_r))
+        negada = " ".join(ws_r[i_neg:i_neg + 4])
+        conds = [w for w in ws_r[:i_neg] if RL._atable(w, r)] + ([negada] if negada and RL._atable(negada, r) else [])
         res = K.buscar(r, conds, orden if orden != "nada" else "mas barato", 5, TID)
         total = len({F._familia(p) for p in todos if (not r or p.get("categoria") == r) and K.con_stock(p)})
         titulo = (r.upper() or "TODA LA TIENDA") + f", {total} modelos con stock" + \
@@ -189,11 +189,20 @@ def buscar(consulta: str, estado: dict) -> str:
         t = ejecutar({"preguntas": [{"n": 1, "accion": "envio", "destino": d}], "cliente": {}, "responde": "",
                       "respuesta": "", "dudas": []}, copy.deepcopy(estado), TID)
         out.append("ENVIO: " + redaccion.texto(t.hechos, t.preguntas, False).replace("\n", " "))
+    # LO QUE LA TIENDA NO VENDE lo dice su fuente, `no_vendidas.json`, con su alternativa real si la hay.
+    from app.core.guia_compra import _no_vendidas
+    no_vende = [(c, alt) for c, alt in _no_vendidas(TID).items() if re.search(rf"\b{re.escape(K.n(c))}", q)]
+    for c, alt in no_vende[:1]:
+        out.insert(0, f"NO VENDEMOS {c.upper()}." + (f" Lo que si vendemos parecido: {alt}." if alt else ""))
+        if alt and alt not in rubros:
+            res = K.buscar(alt, [], "mas barato", 5, TID)
+            out.append(f"{alt.upper()}, los primeros por precio de menor a mayor:\n  "
+                       + "\n  ".join("; ".join(interprete.datos(p, todos).split("; ")[:6]) for p in res["filas"]))
     if not out and cands:
-        # NADA PASO EL CORTE: como un buscador, lo mas parecido que hay, dicho como tal.
+        # NADA PASO EL CORTE: como un buscador, lo mas parecido que hay, dicho como tal, y que puede no servir.
         r = cands[0][0][1]
         res = K.buscar(r, [], "mas barato", 5, TID)
-        out.append(f"No hay una coincidencia exacta. Lo mas parecido que vende la tienda es {r.upper()}:\n  "
+        out.append(f"No encontre eso en la tienda. Lo mas parecido es {r.upper()}, que puede no ser lo que busca:\n  "
                    + "\n  ".join("; ".join(interprete.datos(p, todos).split("; ")[:6]) for p in res["filas"])
                    + "\nLa tienda vende: " + ", ".join(F._rubros(TID)) + ".")
     if not out:
