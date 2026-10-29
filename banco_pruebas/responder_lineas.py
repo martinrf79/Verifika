@@ -148,14 +148,32 @@ def _color(t: str) -> str:
     return next((c for c in L._COLORES[TID] if c and re.search(rf"\b{re.escape(c)}s?\b", t)), "")
 
 
+def _modelo_en_linea(cosa: str, texto: str) -> str:
+    """EL MODELO COMO LO DIJO EL CLIENTE, 29-oct: la cosa acorta el nombre —"Fury Beast" por "Fury Beast 16GB"— y el
+    catalogo no lo certifica. Se estira la cosa con las palabras que le siguen en la linea, hasta dos, y vale la mas
+    corta que el catalogo certifica, o la que deja menos opciones. Sin listas de palabras: decide la identidad."""
+    ws, cw = K.n(texto).split(), K.n(cosa).split()
+    if not cw or cw[0] not in ws:
+        return ""
+    i = ws.index(cw[0])
+    largos = [" ".join(ws[i:f]) for f in range(i + len(cw) + 1, min(len(ws), i + len(cw) + 2) + 1)]
+    for t in largos:
+        if F._es_modelo(t, "", TID):
+            return t
+    varios = [(len(K.identificar(t, "", TID).get("opciones") or []), j, t) for j, t in enumerate(largos)
+              if F._nombra_varios(t, TID)]
+    return min(varios)[2] if varios else ""
+
+
 def _cosa_del_catalogo(x: dict, ind: Indice) -> tuple:
     """(sobre, que, rubro, candidatos, duda): un modelo que la tienda certifica por lo que dijo el cliente, o el rubro del
     primer candidato. El modelo de lenguaje no elige productos: un producto de los candidatos que el cliente no nombro
     vale por su rubro."""
     cosa, texto = str(x.get("cosa") or ""), str(x.get("texto") or "")
-    for t in (cosa, texto):
-        if t and (F._es_modelo(t, "", TID) or F._nombra_varios(t, TID)):
-            return "producto", t, "", [], False
+    # Primero el nombre que el catalogo certifica; despues el que nombra varios: "G502" son dos, "G502 Hero" es uno.
+    nombres = [t for t in (cosa, _modelo_en_linea(cosa, texto), texto) if t]
+    for t in [t for t in nombres if F._es_modelo(t, "", TID)] + [t for t in nombres if F._nombra_varios(t, TID)]:
+        return "producto", t, "", [], False
     cands, duda = ind.candidatos(texto, cosa)
     if not cands:
         return "rubro", cosa, "", cands, duda
@@ -259,6 +277,7 @@ def a_salida(lineas: list, todo: str, ind: Indice, clases: list = None) -> tuple
             # es una condicion de todo lo que pide, si el catalogo la ata a un campo.
             p.update(hace="nada", sobre="nada", que="", para_todo=texto)
         elif not cosa and tema in temas and not L._orden_de(t, TID):
+            tema = _tema_por_clave(t, tema)
             p.update(hace="pregunta", sobre="tema", que=tema, tema=tema)
         elif not cosa and L._orden_de(t, TID):
             # "EL ARTICULO MAS CARO QUE VENDES": sin cosa y con un orden, es una busqueda en toda la tienda.
@@ -303,7 +322,8 @@ def a_salida(lineas: list, todo: str, ind: Indice, clases: list = None) -> tuple
                 dep = len(partes)
             dep = dep or (antes[0] if antes else 0)
             if dep:
-                p.update(depende_de=dep, vale_si="no" if re.match(r"(si )?no\b", K.n(si)) else "si")
+                # "K380 NO VIENE EN NEGRO": el no puede ir en el medio de la condicion, no solo al principio.
+                p.update(depende_de=dep, vale_si="no" if re.search(r"\bno\b", K.n(si)) else "si")
                 con_si.add(len(partes) + 1)
         partes.append(p)
         vistas.append({"texto": texto, "cosa": cosa, "tema": tema, "hace": p["hace"], "sobre": p["sobre"],
@@ -324,16 +344,46 @@ def a_salida(lineas: list, todo: str, ind: Indice, clases: list = None) -> tuple
         pago = [{"medio": md, "porcentaje": 50} for md in ms[:2]] or [{"medio": "sin decir", "porcentaje": 50}] * 2
     if not pago and len(ms := [md for md in _MEDIOS if re.search(rf"\b{md}\b", tn)]) == 1:
         pago = [{"medio": ms[0], "porcentaje": 100}]
-    if not pago and (m := re.search(r"\b(\d{1,3})\s*(?:y|/|-)?\s*(\d{1,3})\b", tn)) and int(m.group(1)) + int(m.group(2)) == 100:
+    # "DIVIDIMOS EL PAGO 80 Y 20": el par que suma cien, no el primer numero del texto, que puede ser un monto.
+    if not pago and (m := next((m for m in re.finditer(r"\b(\d{1,3})\s*(?:y|/|-)?\s*(\d{1,3})\b", tn)
+                                if int(m.group(1)) + int(m.group(2)) == 100), None)):
         pago = [{"medio": "sin decir", "porcentaje": int(m.group(1))}, {"medio": "sin decir", "porcentaje": int(m.group(2))}]
     # "SI PASA DE 300 MIL SACA EL MX": lo que sale si el total pasa el tope, como lo lee la lectura viva.
     if (m := re.search(r"\bsac(?:a|as|ame|alo)\s+(?:el|la|los|las)?\s*([a-z0-9][a-z0-9 ]*)", tn)) and L._monto_de(todo):
         partes.append({"cliente": todo, "hace": "saca", "sobre": "producto", "que": m.group(1).strip(),
                        "si_cumple": todo})
     todo_ = {"orden": L._orden_de(tn, TID) or "nada",
-             "tope_total": L._monto_de(todo) if _TOPE.search(tn) else tope_de_si,
+             "tope_total": _tope_del_total(todo, [str(x.get("cosa") or "") for x in lineas]) if _TOPE.search(tn) else tope_de_si,
              "pago": pago, "son": None, "rehace": False, "responde": responde, "cliente": {}}
     return {"partes": partes, "todo": todo_}, vistas
+
+
+def _tema_por_clave(t: str, tema: str) -> str:
+    """LA PALABRA DE LA FAQ QUE EL CLIENTE DICE TAL CUAL, 29-oct: "hacen precio por cantidad?" trae "por cantidad", que la
+    tienda puso en mayoristas, y el modelo eligio promociones. Si ninguna frase del tema elegido esta en la linea y la de
+    otro tema si, gana la de la tienda, la mas larga. Las frases son de la FAQ de cada tienda, no del codigo."""
+    from app.core import agente
+    ts = agente.indice(TID)["temas"]
+    def dice(tm):
+        return [f for f in ts.get(tm, {}).get("frases") or [] if re.search(rf"\b{re.escape(f)}\b", t)]
+    if dice(tema):
+        return tema
+    otros = sorted(((len(f), tm) for tm in ts for f in dice(tm)), reverse=True)
+    return otros[0][1] if otros else tema
+
+
+def _tope_del_total(todo: str, cosas: list) -> int:
+    """EL TOPE DEL TOTAL, 29-oct: con dos montos —"el cargador no pasa de 80 mil y el total no pasa de 800"—, el del
+    total es el de la parte que dice total, pedido o todo. Sin esa parte, un monto junto a una cosa que pidio —"la
+    pantalla no debe pasar de 50 mil"— es de esa cosa, no del pedido. Si no, el monto que haya."""
+    partes = [x for x in re.split(r",|;|\by\b", K.n(todo)) if L._monto_de(x)]
+    total = next((L._monto_de(x) for x in partes if re.search(r"\b(total|pedido|todo)\b", x)), 0)
+    if total:
+        return total
+    palabras = {w for c in cosas for w in K.n(c).split() if len(w) > 3}
+    if partes and all(set(x.split()) & palabras for x in partes):
+        return 0
+    return L._monto_de(todo)
 
 
 # ══ FUERA DE MUESTRA ══════════════════════════════════════════════════════════
