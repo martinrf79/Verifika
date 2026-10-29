@@ -259,7 +259,8 @@ def a_salida(lineas: list, todo: str, ind: Indice, clases: list = None) -> tuple
         texto, cosa, tema = str(x.get("texto") or ""), str(x.get("cosa") or ""), str(x.get("tema") or "")
         t = K.n(texto)
         cant, dest, si = K.entero(x.get("cantidad")) or None, str(x.get("destino") or ""), str(x.get("si") or "")
-        p = {"cliente": texto, "cantidad": cant, "destino": dest, "variante": _color(t),
+        # EL COLOR SIN EL DESTINO, 29-oct: "a La Plata" no es el color plata.
+        p = {"cliente": texto, "cantidad": cant, "destino": dest, "variante": _color(_sin_lugar(t, dest)),
              "orden": L._orden_de(t, TID) or L._orden_de(tn, TID) or "nada",
              "no_quiere": [m.group(1) for m in _NO_SEA.finditer(t)], "condiciones": [], "prefiere": []}
         cands, duda = [], False
@@ -331,9 +332,14 @@ def a_salida(lineas: list, todo: str, ind: Indice, clases: list = None) -> tuple
     partes = _sin_totales(partes)
     para_todo = [p.pop("para_todo") for p in partes if p.get("para_todo")]
     partes = [p for p in partes if p["hace"] != "nada" or not p.get("cliente") in para_todo]
+    topes = _topes_de_cosa(todo, [str(x.get("cosa") or "") for x in lineas])
     for p in partes:
         if p["hace"] in ("elige", "pide_ver") and p["sobre"] in ("producto", "rubro"):
             p["condiciones"] = list(p.get("condiciones") or []) + para_todo
+        if p["hace"] == "pide_ver" and p["sobre"] == "rubro":
+            # EL TOPE DE UNA COSA, 29-oct: "la pantalla no debe pasar de 50 mil" va a la busqueda de esa cosa.
+            dice = set(K.n(f"{p.get('que')} {p.get('rubro')} {p.get('cliente')}").split())
+            p["condiciones"] = list(p.get("condiciones") or []) + [c for ws, c in topes if ws & dice]
     for palabra, num in _DECENAS.items():
         tn = re.sub(rf"\b{palabra}\b", str(num), tn)
     pago = []
@@ -370,6 +376,22 @@ def _tema_por_clave(t: str, tema: str) -> str:
         return tema
     otros = sorted(((len(f), tm) for tm in ts for f in dice(tm)), reverse=True)
     return otros[0][1] if otros else tema
+
+
+def _sin_lugar(t: str, dest: str) -> str:
+    return re.sub(rf"\b{re.escape(K.n(dest))}\b", " ", t) if dest else t
+
+
+def _topes_de_cosa(todo: str, cosas: list) -> list:
+    """[(palabras, "hasta N")]: cada parte de "todo" con un monto que nombra una cosa pedida y no dice total, pedido ni
+    todo. Es el tope de esa busqueda, dicho como lo ata el catalogo."""
+    palabras = {w for c in cosas for w in K.n(c).split() if len(w) > 3}
+    out = []
+    for x in re.split(r",|;|\by\b", K.n(todo)):
+        m = L._monto_de(x)
+        if m and not re.search(r"\b(total|pedido|todo)\b", x) and set(x.split()) & palabras:
+            out.append((set(x.split()) & palabras, f"hasta {m // 1000} mil" if m % 1000 == 0 else f"hasta {m}"))
+    return out
 
 
 def _tope_del_total(todo: str, cosas: list) -> int:

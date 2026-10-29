@@ -21,6 +21,7 @@ Se compara con la lectura de hoy, la del bot, sobre los mismos mensajes.
 
     python3 banco_pruebas/lineas_agenda.py --grabar [--semilla 2710] [--sin-hoy]   separa y lee, con la clave del clon
     python3 banco_pruebas/lineas_agenda.py [--semilla 2710] [--ver]      sin modelo de texto
+    python3 banco_pruebas/lineas_agenda.py --respuesta [--semilla 2710]   la respuesta entera por el webhook, sin modelo
 """
 import collections
 import json
@@ -211,9 +212,83 @@ def main() -> None:
                 print(f"   agenda: {json.dumps(f['lineas']['agenda'].get('preguntas'), ensure_ascii=False)[:700]}")
 
 
+# ══ LA RESPUESTA ENTERA: cada agenda por el webhook, y lo que lee el cliente contra lo que trae el generador ══
+
+def _faq() -> dict:
+    """Lo que lee el cliente de cada tema: lo que da el ejecutor de siempre, una vez por tema, las primeras 40 letras.
+    Asi la vara mira el texto que sale de verdad, no el de la FAQ en crudo."""
+    from app.core.flujo.ejecutor import ejecutar
+    out = {}
+    for tm in F._temas_de(TID):
+        t = ejecutar({"preguntas": [{"n": 1, "accion": "politica", "tema": tm}], "cliente": {}, "responde": "",
+                      "respuesta": "", "dudas": []}, E.leer({}), TID)
+        # La politica tiene dos formas, la larga y la base, que la redaccion usa segun lo que lleve la respuesta.
+        out[tm] = [K.n(h.get(k) or "").strip()[:40] for h in t.hechos for k in ("texto", "base") if h.get(k)]
+    return out
+
+
+def calificar_texto(c: dict, texto: str, faq: dict) -> list:
+    """Una falla por cosa del mensaje que la respuesta no dice. Cada producto o rubro pedido, con su destino; cada
+    pregunta, con la respuesta de su tema; el reparto del pago y el tope, con sus numeros."""
+    t, fallas = K.n(texto), []
+    for o in c["lineas"]:
+        if o["si"]:
+            continue
+        if not re.search(o["cosa"], t):
+            fallas.append(f"no nombra {o['cosa'].split('|')[0]}")
+        elif o["dest"] and o["dest"] not in t:
+            fallas.append(f"no dice {o['dest']}")
+    for rx in c["preguntas"]:
+        if not any(x and x in t for tm in faq if re.fullmatch(TEMA[rx], tm) for x in faq[tm]):
+            fallas.append(f"no contesta {rx.split('|')[0]}")
+    if c["pago"] and not all(re.search(rf"\b{p}\s*%", t) for p in c["pago"]):
+        fallas.append(f"no reparte {c['pago']}")
+    if c["tope"] and not re.search(rf"{c['tope'] // 1000}[.]?000|{c['tope'] // 1000} mil", t):
+        fallas.append(f"no dice el tope {c['tope']}")
+    if any(not o["si"] and o["cant"] for o in c["lineas"]) and "total" not in t:
+        fallas.append("sin total")
+    return fallas
+
+
+def respuesta() -> None:
+    from banco_pruebas.agendas58 import EXPLICAR
+    from banco_pruebas import cableado58 as C58
+    interp = C58.instalar()
+    oro, faq = {c["id"]: c for c in casos()}, _faq()
+    filas = [json.loads(x) for x in open(GRABADO.replace(".jsonl", "_corrida.jsonl"), encoding="utf-8")]
+    nota, cuenta, n = collections.Counter(), {"lineas": collections.Counter(), "hoy": collections.Counter()}, 0
+    malos, todas = [], []
+    for f in filas:
+        n += 1
+        for nombre in ("lineas", "hoy"):
+            if f[nombre].get("sin"):
+                continue
+            charla = {"id": f"sint_{f['id']}", "turnos": [{"texto": f["mensaje"], "casillas": []}]}
+            texto = C58.correr(charla, [f[nombre]["agenda"]], interp, EXPLICAR)[0]["respuesta"]
+            fallas = calificar_texto(oro[f["id"]], texto, faq)
+            nota[nombre] += not fallas
+            for x in fallas:
+                cuenta[nombre][" ".join(x.split()[:2])] += 1
+            if nombre == "lineas" and fallas:
+                malos.append((f["id"], f["mensaje"], fallas, texto))
+            todas.append({"id": f["id"], "de": nombre, "fallas": fallas, "respuesta": texto})
+    with open(GRABADO.replace(".jsonl", "_respuesta.jsonl"), "w", encoding="utf-8") as fh:
+        for x in todas:
+            fh.write(json.dumps(x, ensure_ascii=False) + "\n")
+    print(f"\nLA RESPUESTA ENTERA · semilla {SEMILLA} · {n} mensajes · lo que lee el cliente, sin falla")
+    for nombre, titulo in (("lineas", "el codigo con las lineas"), ("hoy", "la lectura de hoy, la del bot")):
+        if sum(cuenta[nombre].values()) or nota[nombre]:
+            print(f"  {titulo:30} {nota[nombre]} · fallas por clase {dict(cuenta[nombre].most_common())}")
+    if VER:
+        for i, m, fl, tx in malos:
+            print(f"\n{i} {m}\n  MAL: {fl}\n  " + tx[:900].replace("\n", "\n  "))
+
+
 if __name__ == "__main__":
     if "--grabar" in ARGS:
         import asyncio
         asyncio.run(grabar())
+    elif "--respuesta" in ARGS:
+        respuesta()
     else:
         main()
