@@ -27038,3 +27038,12 @@
 {"dia": "2026-10-29", "hora": "17:31:48", "modelo": "gemini-3.1-flash-lite", "entrada": 3525, "salida": 41, "dolares": 0.00094, "proceso": 805}
 {"dia": "2026-10-29", "hora": "17:31:49", "modelo": "gemini-3.1-flash-lite", "entrada": 3581, "salida": 195, "dolares": 0.00119, "proceso": 805}
 {"dia": "2026-10-29", "hora": "17:31:50", "modelo": "gemini-3.1-flash-lite", "entrada": 4207, "salida": 64, "dolares": 0.00115, "proceso": 805}
+{"dia": "2026-10-29", "hora": "17:48:08", "modelo": "gemini-embedding-001", "entrada": 6, "salida": 0, "dolares": 0.0, "proceso": 358}
+{"dia": "2026-10-29", "hora": "17:48:10", "modelo": "gemini-embedding-001", "entrada": 9, "salida": 0, "dolares": 0.0, "proceso": 358}
+{"dia": "2026-10-29", "hora": "17:48:12", "modelo": "gemini-embedding-001", "entrada": 6, "salida": 0, "dolares": 0.0, "proceso": 358}
+{"dia": "2026-10-29", "hora": "17:48:14", "modelo": "gemini-embedding-001", "entrada": 4, "salida": 0, "dolares": 0.0, "proceso": 358}
+{"dia": "2026-10-29", "hora": "17:48:15", "modelo": "gemini-embedding-001", "entrada": 3, "salida": 0, "dolares": 0.0, "proceso": 358}
+{"dia": "2026-10-29", "hora": "17:48:18", "modelo": "gemini-embedding-001", "entrada": 2, "salida": 0, "dolares": 0.0, "proceso": 358}
+{"dia": "2026-10-29", "hora": "17:48:19", "modelo": "gemini-embedding-001", "entrada": 6, "salida": 0, "dolares": 0.0, "proceso": 358}
+{"dia": "2026-10-29", "hora": "17:48:55", "modelo": "gemini-embedding-001", "entrada": 4, "salida": 0, "dolares": 0.0, "proceso": 459}
+{"dia": "2026-10-29", "hora": "17:48:57", "modelo": "gemini-embedding-001", "entrada": 6, "salida": 0, "dolares": 0.0, "proceso": 459}
