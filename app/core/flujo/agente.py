@@ -112,7 +112,8 @@ def _vectores(textos: list, tarea: str) -> list:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{s.EMBEDDING_MODEL}:batchEmbedContents"
     for i in range(0, len(faltan), 100):
         lote = faltan[i:i + 100]
-        r = httpx.post(url, params={"key": (s.GEMINI_API_KEY or "").split()[0]}, timeout=60, json={"requests": [
+        # LA CLAVE VA EN EL ENCABEZADO: en la direccion, un error la escribia entera en el log.
+        r = httpx.post(url, headers={"x-goog-api-key": (s.GEMINI_API_KEY or "").split()[0]}, timeout=60, json={"requests": [
             {"model": f"models/{s.EMBEDDING_MODEL}", "content": {"parts": [{"text": t}]}, "taskType": tarea}
             for t in lote]})
         r.raise_for_status()
