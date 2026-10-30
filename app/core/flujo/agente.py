@@ -15,6 +15,7 @@ reemplaza a la lectura de la FICHA 81 en el bot. Medido en el banco, `banco_prue
 LA MEMORIA de la charla: el historial completo y, aparte, el pedido anotado, el ultimo presupuesto mostrado, el pago y
 el tope. El pedido cambia solo si el cliente compra, confirma o cambia: lo marca `anotar`.
 """
+import asyncio
 import collections
 import copy
 import json
@@ -102,6 +103,10 @@ def _agenda(preguntas: list) -> dict:
 
 _VEC: dict = {}
 _BASES: dict = {}
+# SI LOS EMBEDDINGS CAEN, se dejan de pedir un rato: cada busqueda no paga la espera de nuevo. El buscador sigue con lo
+# exacto, por nombre y alias.
+_CAIDOS = {"hasta": 0.0}
+PAUSA_EMBEDDINGS_S, ESPERA_EMBEDDINGS_S = 120, 10
 
 
 def _vectores(textos: list, tarea: str) -> list:
@@ -109,11 +114,14 @@ def _vectores(textos: list, tarea: str) -> list:
     import httpx
     s = get_settings()
     faltan = [t for t in dict.fromkeys(textos) if (tarea, t) not in _VEC]
+    if faltan and time.time() < _CAIDOS["hasta"]:
+        raise RuntimeError("embeddings en pausa por una caida reciente")
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{s.EMBEDDING_MODEL}:batchEmbedContents"
     for i in range(0, len(faltan), 100):
         lote = faltan[i:i + 100]
         # LA CLAVE VA EN EL ENCABEZADO: en la direccion, un error la escribia entera en el log.
-        r = httpx.post(url, headers={"x-goog-api-key": (s.GEMINI_API_KEY or "").split()[0]}, timeout=60, json={"requests": [
+        clave = {"x-goog-api-key": (s.GEMINI_API_KEY or "").split()[0]}
+        r = httpx.post(url, headers=clave, timeout=ESPERA_EMBEDDINGS_S, json={"requests": [
             {"model": f"models/{s.EMBEDDING_MODEL}", "content": {"parts": [{"text": t}]}, "taskType": tarea}
             for t in lote]})
         r.raise_for_status()
@@ -145,6 +153,8 @@ def _parecidos(consulta: str, tipo: str, tienda_id: str) -> list:
         docs = _vectores([t for t, _ in base], "RETRIEVAL_DOCUMENT")
         q = _vectores([consulta], "RETRIEVAL_QUERY")[0]
     except Exception as e:  # noqa: BLE001 — sin embeddings el buscador sigue con lo exacto
+        if "pausa" not in str(e):
+            _CAIDOS["hasta"] = time.time() + PAUSA_EMBEDDINGS_S
         log.warning("agente_embeddings_error", error=f"{type(e).__name__}: {str(e)[:160]}")
         return []
     mejor: dict = {}
@@ -375,7 +385,7 @@ def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
     """[[PRESUPUESTO]] se cambia por el ultimo presupuesto que armo el modelo, tal cual lo dio el ejecutor. Si no armo
     ninguno en este turno, el del pedido anotado."""
     ultimo = next((p["devuelve"] for p in reversed(pasos) if p["herramienta"] == "presupuesto"), "")
-    if not ultimo and re.search(r"\[\[\s*PRESUPUESTO\s*\]\]", texto):
+    if not ultimo and re.search(r"\[\[\s*PRESUPUESTO\s*\]\]", texto) and (memoria["pedido"] or memoria.get("mostrado")):
         ultimo = presupuesto({}, memoria, tienda_id)
     return re.sub(r"\[\[\s*PRESUPUESTO\s*\]\]", lambda _: ultimo, texto)
 
@@ -464,10 +474,11 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             visto = K.n(" ".join(salidas + dichos + [contexto]))
             nombre = c.function.name
             try:
-                res = buscar(str(a.get("consulta") or ""), tienda_id) if nombre == "buscar" else \
-                    presupuesto(a, memoria, tienda_id, visto) if nombre == "presupuesto" else \
-                    await cobrar(a, memoria, user_id, canal, tienda_id, trace_id) if nombre == "cobrar" else \
-                    calcular(str(a.get("cuenta") or ""))
+                # LO QUE BLOQUEA —Firestore, los embeddings— corre en un hilo: el servidor sigue con las otras charlas.
+                res = await asyncio.to_thread(buscar, str(a.get("consulta") or ""), tienda_id) if nombre == "buscar" \
+                    else await asyncio.to_thread(presupuesto, a, memoria, tienda_id, visto) if nombre == "presupuesto" \
+                    else await cobrar(a, memoria, user_id, canal, tienda_id, trace_id) if nombre == "cobrar" \
+                    else calcular(str(a.get("cuenta") or ""))
             except Exception as e:  # noqa: BLE001 — una herramienta que falla se lo dice al modelo, no al cliente
                 log.error("agente_herramienta_error", trace_id=trace_id, herramienta=nombre,
                           error=f"{type(e).__name__}: {str(e)[:200]}")
