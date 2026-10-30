@@ -58,11 +58,11 @@
 "rubro|HyperX Cloud II": [
 [
 "auriculares",
-0.6637
+0.6636
 ],
 [
 "microfono",
-0.6533
+0.6534
 ],
 [
 "teclado",
@@ -298,7 +298,7 @@
 "tema|auriculares": [
 [
 "usados",
-0.6547
+0.6546
 ],
 [
 "asesoramiento",
@@ -306,7 +306,7 @@
 ],
 [
 "marcas_originales",
-0.654
+0.6541
 ]
 ],
 "rubro|auriculares JBL": [
@@ -526,7 +526,7 @@
 ],
 [
 "promociones",
-0.655
+0.6551
 ],
 [
 "asesoramiento",
@@ -568,7 +568,7 @@
 ],
 [
 "placa de video",
-0.6578
+0.6577
 ],
 [
 "impresora",
@@ -732,7 +732,7 @@
 "rubro|mouse": [
 [
 "mouse",
-0.8114
+0.8113
 ],
 [
 "microfono",
@@ -942,11 +942,11 @@
 "tema|mouse Logitech M170 negro": [
 [
 "mouse_dpi",
-0.6705
+0.6704
 ],
 [
 "soporte_configuracion",
-0.6447
+0.6448
 ],
 [
 "compatibilidad",
@@ -1849,6 +1849,90 @@
 [
 "stock_disponibilidad",
 0.6037
+]
+],
+"rubro|auriculares compatibles con PlayStation 5": [
+[
+"auriculares",
+0.7696
+],
+[
+"parlante",
+0.6623
+],
+[
+"microfono",
+0.6573
+]
+],
+"tema|auriculares compatibles con PlayStation 5": [
+[
+"compatibilidad",
+0.6852
+],
+[
+"asesoramiento",
+0.6276
+],
+[
+"soporte_configuracion",
+0.6141
+]
+],
+"rubro|medios de pago cuotas debito": [
+[
+"fuente",
+0.6513
+],
+[
+"router",
+0.6388
+],
+[
+"auriculares",
+0.6372
+]
+],
+"tema|medios de pago cuotas debito": [
+[
+"cuotas",
+0.746
+],
+[
+"formas_pago",
+0.7184
+],
+[
+"pago_contra_entrega",
+0.6655
+]
+],
+"rubro|tablets similares a Samsung Galaxy Tab A9": [
+[
+"tablet",
+0.7493
+],
+[
+"auriculares",
+0.6522
+],
+[
+"notebook",
+0.6513
+]
+],
+"tema|tablets similares a Samsung Galaxy Tab A9": [
+[
+"especificaciones",
+0.645
+],
+[
+"compatibilidad",
+0.643
+],
+[
+"asesoramiento",
+0.6397
 ]
 ]
 }

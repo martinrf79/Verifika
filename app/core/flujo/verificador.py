@@ -79,6 +79,31 @@ def _primero(p: dict, clave: str, sentido: int, entre: list) -> bool:
 _ATRIBUTOS = set(K.PRIORIDAD) - {"tags", "modelo", "nombre", "descripcion", "marca", "bluetooth"}
 
 
+_VERBO = r"(sirve|sirven|anda|andan|funciona|funcionan|va|van|es compatible|son compatibles|conecta|conectan|entra|entran)"
+
+
+def _compatibilidad(p: dict, oracion: str, o: str, tienda_id: str) -> list:
+    """"El M170 anda con la Mac": cada equipo que la oracion nombra, contra la ficha de compatibilidad del producto. Lo
+    que la ficha no dice que anda no se afirma; negarlo cuando anda, tampoco. "No lo puedo confirmar" no afirma nada."""
+    from app.core.compatibilidad import etiqueta_plataforma, evaluar, plataformas_del_mensaje
+    from app.core.guia_compra import _RE_COMPATIBILIDAD
+    if not _RE_COMPATIBILIDAD.search(o):
+        return []
+    niega = bool(re.search(rf"\b(no|ni)\s+(\w+\s+){{0,2}}{_VERBO}\b", o))
+    duda = not niega and re.search(rf"\b(no|ni)\b.*\b{_VERBO}\b", o)
+    return [("compatibilidad", f"{p['nombre']}: {'no ' * niega}{etiqueta_plataforma(x, tienda_id)}")
+            for x in plataformas_del_mensaje(oracion, tienda_id) if not duda
+            and (evaluar(p, x, tienda_id)[0] == "compatible") == niega]
+
+
+def sin_marcadas(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -> str:
+    """La respuesta sin las oraciones que el verificador marca: lo que siguio marcado despues de corregir no le llega al
+    cliente. Lo que el codigo pego tal cual queda entero."""
+    lineas = [x if x.strip() and any(x in y for y in pegados) else " ".join(
+        o for o in re.split(r"(?<=[.!?])\s+", x) if not verificar(o, fuente, tienda_id, pegados)) for x in respuesta.split("\n")]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lineas)).strip()
+
+
 def verificar(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -> list:
     """Los hallazgos de una respuesta contra su fuente: [(clase, detalle)]. Lo que el codigo pego tal cual desde una
     herramienta —el presupuesto, el cobro— no lo escribio el modelo: se saca antes de mirar."""
@@ -117,6 +142,7 @@ def verificar(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -
                 vistos = [x for x in rubro if _en_fuente(x, f)]
                 if not (_primero(p, clave, sentido, rubro) or _primero(p, clave, sentido, vistos)):
                     hallazgos.append(("superlativo", f"{p['nombre']}: {orden}"))
+        hallazgos += _compatibilidad(p, oracion, o, tienda_id)
         if re.search(r"\b(no (hay|queda|quedan)\b|no (tenemos|tengo|tiene) (stock|mas)\b|sin stock|agotad)", o) and \
                 K.con_stock(p) and not re.search(r"\b(en|color)\s+\w+", o):
             hallazgos.append(("stock", f"{p['nombre']}: dice que no hay"))

@@ -19,12 +19,17 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
-import buscador_agente as B  # noqa: E402
-import verificador as V  # noqa: E402
+sys.path.insert(0, os.path.dirname(AQUI))
+from banco_pruebas import clon_produccion as C  # noqa: E402
+
+C.instalar()
+B = type("B", (), {"TID": C.TIENDA, "ARGS": sys.argv[1:]})  # la tienda y los argumentos; buscador_agente ya no importa
+from app.core import compatibilidad as CO  # noqa: E402
 from app.core.flujo import catalogo as K  # noqa: E402
+from app.core.flujo import verificador as V  # noqa: E402 — el del bot, desde el 30-oct; antes, la copia del banco
 
 VER = "--ver" in B.ARGS
-CLASES = ["dato", "producto", "atributo", "superlativo", "stock", "medida", "pago"]
+CLASES = ["dato", "producto", "atributo", "superlativo", "stock", "medida", "pago", "compatibilidad", "compat_negada"]
 
 
 def respuestas() -> list:
@@ -52,7 +57,7 @@ def inyectar(resp: str, fuente: str) -> dict:
     """{clase: respuesta con una alucinacion de esa clase}, para las que se pueden armar con esta respuesta."""
     todos = K.productos(B.TID)
     f = K.n(fuente)
-    nombrados = [p for _, p in V._productos(resp) if V._en_fuente(p, f)]
+    nombrados = [p for _, p in V._productos(resp, B.TID) if V._en_fuente(p, f)]
     out = {}
     m = re.search(r"\$\s?(\d[\d.]*)", resp)
     if m:
@@ -79,6 +84,18 @@ def inyectar(resp: str, fuente: str) -> dict:
     if K.con_stock(p):
         out["stock"] = resp + f"\nEl {corto} no tiene stock."
     out["medida"] = resp + f"\nEl {corto} pesa 999 g."
+    # LA COMPATIBILIDAD, 30-oct: un equipo con el que la ficha no dice que anda, y uno con el que anda, negado.
+    alias = {}
+    for a, ids in CO.vocabulario(B.TID)["alias_plataforma"].items():
+        for i in ids:
+            alias.setdefault(i, a)
+    veredictos = {x: CO.evaluar(p, x, B.TID)[0] for x in sorted(alias)}
+    no = next((x for x, v in veredictos.items() if v != "compatible"), None)
+    si = next((x for x, v in veredictos.items() if v == "compatible"), None)
+    if no:
+        out["compatibilidad"] = resp + f"\nEl {corto} anda con la {alias[no]}."
+    if si:
+        out["compat_negada"] = resp + f"\nEl {corto} no anda con la {alias[si]}."
     return out
 
 
@@ -86,12 +103,12 @@ def main() -> None:
     rs = respuestas()
     alarmas, cazadas, total, perdidas = [], collections.Counter(), collections.Counter(), []
     for rid, resp, fuente, pegados in rs:
-        base = V.verificar(resp, fuente, pegados)
+        base = V.verificar(resp, fuente, B.TID, pegados)
         if base:
             alarmas.append((rid, base, resp))
         for clase, mala in inyectar(resp, fuente).items():
             total[clase] += 1
-            nuevos = [h for h in V.verificar(mala, fuente, pegados) if h not in base]
+            nuevos = [h for h in V.verificar(mala, fuente, B.TID, pegados) if h not in base]
             if nuevos:
                 cazadas[clase] += 1
             else:

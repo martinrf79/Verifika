@@ -24,6 +24,8 @@ import re
 import time
 
 from app.config import get_settings
+from app.core.compatibilidad import etiqueta_plataforma, evaluar, plataformas_del_mensaje, vocabulario
+from app.core.guia_compra import _RE_COMPATIBILIDAD, categoria_no_vendida
 from app.logger import get_logger
 
 from . import catalogo as K
@@ -54,16 +56,17 @@ Tenes tres herramientas:
   entero corregido con anotar en true; sin renglones, usa el pedido actual tal cual.
 - calcular: una calculadora, para otra cuenta.
 
-Todo producto, precio, stock, dato de ficha, envio o regla que digas tiene que salir de las herramientas o de lo que
-ya le mostraste en la charla. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que
-falte. Antes de elegir un producto, buscalo: no elijas de memoria. Si el cliente compra, cambia o confirma algo del
-pedido, arma el presupuesto con el pedido entero como queda, aunque falte un dato, y pedi lo que falte. Donde va el
-presupuesto, escribi [[PRESUPUESTO]] y el sistema pega el ultimo que armaste, tal cual: no lo copies ni lo resumas, y no
-escribas montos del pedido por tu cuenta. Si el cliente
-pide algo que no eligio todavia y hace falta elegir para seguir, elegi vos con el criterio que dio, o el mas barato con
-stock, y decile cual elegiste. Si el cliente da un criterio para elegir —el mas barato, el mejor, el mas liviano—,
-busca con ese criterio aunque ya le hayas mostrado opciones: lo mostrado era una parte. Si el cliente dijo cuantos
-quiere de cada cosa, revisa que el presupuesto lo respete: la herramienta te devuelve la cuenta por clase.
+Todo producto, precio, stock, dato de ficha, envio o regla que digas tiene que salir de las herramientas o de lo que ya
+le mostraste en la charla. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que
+falte. Antes de elegir un producto, buscalo: no elijas de memoria. Al elegir o recomendar uno, deci el dato de la ficha
+en que te basas. Si pregunta si anda con un equipo suyo, buscalo con ese equipo; si la ficha no lo dice, no lo afirmes.
+Si el cliente compra, cambia o confirma algo del pedido, arma el presupuesto con el pedido entero como queda, aunque
+falte un dato, y pedi lo que falte. Donde va el presupuesto, escribi [[PRESUPUESTO]] y el sistema pega el ultimo que
+armaste, tal cual: no lo copies ni lo resumas, y no escribas montos del pedido por tu cuenta. Si el cliente pide algo
+que no eligio todavia y hace falta elegir para seguir, elegi vos con el criterio que dio, o el mas barato con stock, y
+decile cual elegiste. Si el cliente da un criterio para elegir —el mas barato, el mejor, el mas liviano—, busca con ese
+criterio aunque ya le hayas mostrado opciones: lo mostrado era una parte. Si el cliente dijo cuantos quiere de cada
+cosa, revisa que el presupuesto lo respete: la herramienta te devuelve la cuenta por clase.
 
 Las reglas de la tienda: para reservar una compra se le pide al cliente solo el nombre. Los datos para pagar —CBU,
 alias, links— salen solo de la herramienta cobrar: nunca los escribas por tu cuenta. Si la tienda no tiene algo,
@@ -207,12 +210,23 @@ def _fila(p: dict, todos: list) -> str:
     return "; ".join(datos(p, todos).split("; ")[:6])
 
 
+def _con(p: dict, plats: list, tienda_id: str) -> str:
+    """Con cada equipo que pregunta la consulta, lo que dice la ficha de compatibilidad del producto."""
+    dice = {"compatible": "anda", "incompatible": "no anda", "sin_dato": "la ficha no lo dice"}
+    return "".join(f"; con {etiqueta_plataforma(x, tienda_id)}: {dice[evaluar(p, x, tienda_id)[0]]}" for x in plats)
+
+
 def buscar(consulta: str, tienda_id: str) -> str:
     """Lo que la tienda tiene para la consulta, en texto: una cosa por busqueda, pocos resultados, con stock, filtrados
     por lo que dice la consulta y en el orden que pide."""
-    from app.core.guia_compra import _no_vendidas
     todos = K.productos(tienda_id)
     q = K.n(consulta)
+    # LA COMPATIBILIDAD QUE PREGUNTA, "auriculares para la PS5": cada producto con lo que dice su ficha, y el estante con
+    # los que andan, si hay. Sin esto el modelo la contestaba de memoria.
+    plats = plataformas_del_mensaje(consulta, tienda_id) if _RE_COMPATIBILIDAD.search(q) else []
+    andan = {str(p["id"]) for p in todos if all(_con(p, [x], tienda_id).endswith(": anda") for x in plats)}
+    equipo = {w for a in (vocabulario(tienda_id)["alias_plataforma"] if plats else ())
+              if re.search(rf"\b{re.escape(a)}\b", q) for w in a.split()}
     ws = [w for w in re.findall(r"[a-z0-9]+", q) if w not in K._RELLENO]
     out, vistos = [], set()
     for tramo, _ in MK._productos(ws, tienda_id):
@@ -220,7 +234,7 @@ def buscar(consulta: str, tienda_id: str) -> str:
         for p in [idt["producto"]] if idt["veredicto"] == "exists" else idt.get("opciones") or []:
             if familia(p) not in vistos:
                 vistos.add(familia(p))
-                out.append("PRODUCTO: " + datos(p, todos))
+                out.append("PRODUCTO: " + datos(p, todos) + _con(p, plats, tienda_id))
     cands = _parecidos(consulta, "rubro", tienda_id)
     por_sentido = [k for k, s in cands[:1] if s >= UMBRAL_RUBRO] if not vistos else []
     por_nombre = MK._rubros(q.split(), tienda_id)
@@ -236,19 +250,21 @@ def buscar(consulta: str, tienda_id: str) -> str:
     else:
         ordenes = [orden] * len(rs)
     for r, orden in list(zip(rs, ordenes))[:3]:
-        fuera = set(K.n(r).split()) | {w for w, _ in por_nombre} | set(K.n(orden).split()) | K._RELLENO
+        fuera = set(K.n(r).split()) | {w for w, _ in por_nombre} | set(K.n(orden).split()) | K._RELLENO | equipo
         ws_r = [w for w in q.split() if w not in fuera and not _lugares(w)]
         # Cada palabra filtra por su lado; la negacion va con lo que niega, "no sea redragon".
         i_neg = next((i for i, w in enumerate(ws_r) if w in ("no", "sin", "excepto", "menos")), len(ws_r))
         negada = " ".join(ws_r[i_neg:i_neg + 4])
         conds = [w for w in ws_r[:i_neg] if _atable(w, r, tienda_id)] + \
             ([negada] if negada and _atable(negada, r, tienda_id) else [])
-        res = K.buscar(r, conds, orden if orden != "nada" else "mas barato", 5, tienda_id)
+        entre = andan if plats and any(p.get("categoria") == r and str(p["id"]) in andan for p in todos) else None
+        res = K.buscar(r, conds, orden if orden != "nada" else "mas barato", 5, tienda_id, entre)
         total = len({familia(p) for p in todos if (not r or p.get("categoria") == r) and K.con_stock(p)})
         titulo = (r.upper() or "TODA LA TIENDA") + f", {total} modelos con stock" + \
             (f", filtrado por \"{' '.join(conds)}\"" if conds and not res["vacio_por"] else "") + \
+            (", solo los que andan con lo que pregunta" if entre else "") + \
             f", los primeros por {'precio de menor a mayor' if orden == 'nada' else orden}"
-        filas = [_fila(p, todos) for p in res["filas"]]
+        filas = [_fila(p, todos) + _con(p, plats, tienda_id) for p in res["filas"]]
         avisos = [f"ninguno cumple \"{c}\", van sin ese filtro" for c in res["vacio_por"]]
         out.append(f"{titulo}:\n  " + "\n  ".join(filas + avisos))
     tcands = _parecidos(consulta, "tema", tienda_id)
@@ -261,9 +277,9 @@ def buscar(consulta: str, tienda_id: str) -> str:
     for d in _lugares(consulta):
         t = ejecutar(_agenda([{"n": 1, "accion": "envio", "destino": d}]), E.leer({}), tienda_id)
         out.append("ENVIO: " + redaccion.texto(t.hechos, t.preguntas, False).replace("\n", " "))
-    # LO QUE LA TIENDA NO VENDE lo dice su fuente, `no_vendidas.json`, con su alternativa real si la hay.
-    no_vende = [(c, alt) for c, alt in _no_vendidas(tienda_id).items() if re.search(rf"\b{re.escape(K.n(c))}", q)]
-    for c, alt in no_vende[:1]:
+    # LO QUE LA TIENDA NO VENDE lo dice su fuente, `no_vendidas.json`, con su alternativa real si la hay. "Sirve para la
+    # PS5" no pide una PS5: lo decide `categoria_no_vendida`, la misma de todo el bot.
+    for c, alt in [x for x in [categoria_no_vendida(consulta, tienda_id)] if x]:
         out.insert(0, f"NO VENDEMOS {c.upper()}." + (f" Lo que si vendemos parecido: {alt}." if alt else ""))
         if alt and alt not in rs:
             res = K.buscar(alt, [], "mas barato", 5, tienda_id)
@@ -454,7 +470,8 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             texto = pegar(m.content or "", pasos, memoria, tienda_id)
             # EL CANDADO ES EL VERIFICADOR, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
             pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
-            malos = V.verificar(texto, " ".join(salidas + dichos + [mensaje, contexto]), tienda_id, pegados)
+            fuente = " ".join(salidas + dichos + [mensaje, contexto])
+            malos = V.verificar(texto, fuente, tienda_id, pegados)
             if malos and not corregido and vuelta < VUELTAS:
                 corregido = True
                 msgs.append(m.model_dump(exclude_none=True))
@@ -465,6 +482,10 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                              "sacalas, y escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta "
                              "revision ni pedir disculpas."})
                 continue
+            if malos:  # LO QUE SIGUE MARCADO DESPUES DE CORREGIR NO SALE: se saca la oracion entera.
+                from app.core.guia_venta_prosa import mensaje as prosa
+                texto = V.sin_marcadas(texto, fuente, tienda_id, pegados) or prosa(
+                    "sin_respaldo", "Eso prefiero confirmarlo antes de decírtelo. ¿Te ayudo con algo más mientras?")
             if memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
             ultimo = _pegado(pasos)
