@@ -99,6 +99,19 @@ def _dice(palabra, texto):
     return any(_n(o) in _n(texto) for o in palabra.split("|"))
 
 
+def _sin_negadas(palabra, texto):
+    """El texto sin las veces que la palabra va negada: "no son ni Genius ni Logitech" no ofrece Genius. 30-oct,
+    decision de Martin sobre K17 y C46."""
+    t = _n(texto)
+    for o in palabra.split("|"):
+        t = re.sub(rf"\b(?:no|ni|sin|excepto|menos)\b(?:(?!\bpero\b)[^.,;\n?!]){{0,15}}?{re.escape(_n(o))}", " ", t)
+    return t
+
+
+# LA REPREGUNTA QUE CONFIRMA: ante una referencia, "te referis al M170 o al G203?" vale como acertar. 30-oct, Martin.
+_CONFIRMA = re.compile(r"te referis|te referias|cual de (esos|estos|los|las)|queres decir|hablas de|\bo (el|la) [^?]{2,60}\?")
+
+
 _MONTO = re.compile(r"\$\s?(\d{4,})")
 
 
@@ -124,7 +137,11 @@ def nota_casilla(k, llamadas, texto, respuestas):
     if tipo == "dice":
         return all(_dice(p, texto) for p in k["palabras"])
     if tipo == "no_dice":
-        return not any(_dice(p, texto) for p in k["palabras"])
+        return not any(_dice(p, _sin_negadas(p, texto)) for p in k["palabras"])
+    if tipo == "confirma":
+        return "?" in texto and bool(_CONFIRMA.search(_n(texto)))
+    if tipo == "o_calla":  # lo que importa es no errar: sin montos dichos pasa, y si los dice, la casilla de adentro
+        return not _MONTO.search(_plata(texto)) or nota_casilla(k["casilla"], llamadas, texto, respuestas) is True
     if tipo == "plata":
         return str(k["monto"]) in re.sub(r"\D+", " ", _plata(texto)).split()
     if tipo == "no_patron":

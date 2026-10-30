@@ -22,6 +22,12 @@ vara puntua el loop de herramientas del banco y el camino real por el clon.
                 pedido queda sin destino
   total_general hay un monto que es la suma de los totales de cada bloque
   reparto_total el porcentaje sale sobre ese total general, no por bloque
+  confirma      repregunta para confirmar a cual se refiere: "te referis al A o al B?"
+  o_calla       sin montos dichos pasa; si dice plata, la casilla de adentro
+
+30-oct, decisiones de Martin: lo que importa es que no erre. Ante una referencia, acertar o repreguntar para
+confirmar valen igual, `ref`; despues del cobro, no repetir la plata no es error, `o_calla`; y nombrar una marca para
+negarla, "no son Redragon", no es ofrecerla, en `no_dice`.
 
 Los turnos sin casillas preparan la memoria: el bot contesta de verdad y lo que
 muestra es lo que despues se referencia.
@@ -73,6 +79,19 @@ def total_general(n="total general: la suma de los bloques"):
 
 def reparto_total(pct, n=""):
     return {"tipo": "reparto_total", "pct": pct, "n": n or f"el {pct}% sobre el total general"}
+
+
+def confirma(n="repregunta para confirmar a cual se refiere"):
+    return {"tipo": "confirma", "n": n}
+
+
+def ref(casilla):
+    """Una referencia, "ese", "el otro", "de esos": acierta, o repregunta para confirmar."""
+    return alguna(casilla, confirma(), n=casilla["n"] + ", o confirma a cual se refiere")
+
+
+def o_calla(casilla):
+    return {"tipo": "o_calla", "casilla": casilla, "n": casilla["n"] + ", si dice plata"}
 
 
 def t(texto, *casillas):
@@ -145,7 +164,7 @@ CHARLAS = [
         dice("rosario"), dice("mendoza"), plata(ENV["rosario"]), plata(ENV["mendoza"]))),
     c(27, "C", "ordenar dentro de un grupo dado",
       t("mostrame mouse Logitech"),
-      t("de esos, cual es el mas barato?", {"tipo": "mas_barato_de", "de_turno": 1, "n": "el mas barato de lo mostrado"})),
+      t("de esos, cual es el mas barato?", ref({"tipo": "mas_barato_de", "de_turno": 1, "n": "el mas barato de lo mostrado"}))),
 
     # ── D · DEPENDENCIA ──
     c(28, "D", "si no hay, esto otro",
@@ -189,9 +208,9 @@ CHARLAS = [
         dice("no tenemos|no hay|no tengo|no encontr|no contamos|no figura"))),
 
     # ── G · MEMORIA ──
-    c(43, "G", "ese", t("cuanto sale el K120?"), t("y ese es inalambrico?", dice("cable"))),
+    c(43, "G", "ese", t("cuanto sale el K120?"), t("y ese es inalambrico?", ref(dice("cable")))),
     c(44, "G", "el otro",
-      t("cuanto salen el G305 y el G203?"), t("el G305 no me convence, el otro tiene stock?", dice("g203"))),
+      t("cuanto salen el G305 y el G203?"), t("el G305 no me convence, el otro tiene stock?", ref(dice("g203")))),
     c(45, "G", "modificar la busqueda anterior",
       t("busco un mouse Logitech con cable"), t("y en blanco?", dice("blanco"), dice("logitech|g203|g502|m170"))),
     c(46, "G", "heredar una condicion vigente",
@@ -204,10 +223,10 @@ CHARLAS = [
       t("mandamelo a Rosario, cuanto seria en total?", dice("rosario"), plata(80500 + ENV["rosario"]))),
     c(49, "G", "referencia lejana por nombre parcial",
       t("cuanto sale el teclado Logitech K120 negro?"), t("y auriculares JBL tenes?"), t("tenes webcams?"),
-      t("el teclado logi ese del principio, tiene stock?", dice("k120"))),
+      t("el teclado logi ese del principio, tiene stock?", ref(dice("k120")))),
     c(50, "G", "respuesta a una repregunta",
       t("estoy entre el G203 y el G305"), t("me llevo uno", pregunta("pregunta cual")),
-      t("el primero", dice("g203"))),
+      t("el primero", ref(dice("g203")))),
     c(51, "G", "a otra pieza del mismo mensaje",
       t("cuanto sale el G305 negro? y mandame ese a Cordoba", plata(80500), dice("cordoba|córdoba"))),
     c(52, "G", "sin destino",
@@ -216,13 +235,13 @@ CHARLAS = [
 
     # ── H · CADENAS ──
     c(53, "H", "memoria con dependencia",
-      t("cuanto sale el G502 Hero?"), t("del que me dijiste, si no hay en negro dame el blanco", dice("blanco"))),
+      t("cuanto sale el G502 Hero?"), t("del que me dijiste, si no hay en negro dame el blanco", ref(dice("blanco")))),
     c(54, "H", "lo suyo con dependencia y orden",
       t("tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?",
         alguna(dice("4060"), dice("no figura|no tengo el dato|consumo|depende"), n="una 4060, o dice que falta el consumo"))),
     c(55, "H", "memoria, correccion y compra",
       t("cuanto salen el G305 negro y el G203 negro?"), t("me gusta el G305"),
-      t("ah no, el otro, y ese me lo llevo", dice("g203"), RESERVA)),
+      t("ah no, el otro, y ese me lo llevo", ref(dice("g203")), RESERVA)),
     c(56, "H", "multipregunta con dato falso y compra condicional",
       t("tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos",
         plata(14500), no_dice("te reserve", "te reservé", "reservado"))),
@@ -399,9 +418,9 @@ COMPLEJAS = [
       t("Sip", SIETE, plata(237000), reparto_total(70), SIN_JERGA),
       t("Mi nombre es Julio",
         alguna(dice("link"), dice("transfer"), dice("mercado"), dice("pago"), n="avanza al cobro"), *CERRADO),
-      t("Si", plata(237000), *CERRADO),
+      t("Si", o_calla(plata(237000)), *CERRADO),
       t("Color indistinto 70 por ciento transferencia",
-        plata(71100), alguna(plata(149310), plata(165900), n="la parte de transferencia"), *CERRADO)),
+        o_calla(plata(71100)), o_calla(alguna(plata(149310), plata(165900), n="la parte de transferencia")), *CERRADO)),
 ]
 
 # LAS CENTINELAS: diez de las 58, distintas entre si. Lo simple se da por

@@ -752,9 +752,19 @@
      "texto": "de esos, cual es el mas barato?",
      "casillas": [
       {
-       "tipo": "mas_barato_de",
-       "de_turno": 1,
-       "n": "el mas barato de lo mostrado"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "mas_barato_de",
+         "de_turno": 1,
+         "n": "el mas barato de lo mostrado"
+        },
+        {
+         "tipo": "confirma",
+         "n": "repregunta para confirmar a cual se refiere"
+        }
+       ],
+       "n": "el mas barato de lo mostrado, o confirma a cual se refiere"
       }
      ]
     }
@@ -1183,11 +1193,21 @@
      "texto": "y ese es inalambrico?",
      "casillas": [
       {
-       "tipo": "dice",
-       "palabras": [
-        "cable"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "cable"
+         ],
+         "n": "dice cable"
+        },
+        {
+         "tipo": "confirma",
+         "n": "repregunta para confirmar a cual se refiere"
+        }
        ],
-       "n": "dice cable"
+       "n": "dice cable, o confirma a cual se refiere"
       }
      ]
     }
@@ -1206,11 +1226,21 @@
      "texto": "el G305 no me convence, el otro tiene stock?",
      "casillas": [
       {
-       "tipo": "dice",
-       "palabras": [
-        "g203"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "g203"
+         ],
+         "n": "dice g203"
+        },
+        {
+         "tipo": "confirma",
+         "n": "repregunta para confirmar a cual se refiere"
+        }
        ],
-       "n": "dice g203"
+       "n": "dice g203, o confirma a cual se refiere"
       }
      ]
     }
@@ -1346,11 +1376,21 @@
      "texto": "el teclado logi ese del principio, tiene stock?",
      "casillas": [
       {
-       "tipo": "dice",
-       "palabras": [
-        "k120"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "k120"
+         ],
+         "n": "dice k120"
+        },
+        {
+         "tipo": "confirma",
+         "n": "repregunta para confirmar a cual se refiere"
+        }
        ],
-       "n": "dice k120"
+       "n": "dice k120, o confirma a cual se refiere"
       }
      ]
     }
@@ -1378,11 +1418,21 @@
      "texto": "el primero",
      "casillas": [
       {
-       "tipo": "dice",
-       "palabras": [
-        "g203"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "g203"
+         ],
+         "n": "dice g203"
+        },
+        {
+         "tipo": "confirma",
+         "n": "repregunta para confirmar a cual se refiere"
+        }
        ],
-       "n": "dice g203"
+       "n": "dice g203, o confirma a cual se refiere"
       }
      ]
     }
@@ -1445,11 +1495,21 @@
      "texto": "del que me dijiste, si no hay en negro dame el blanco",
      "casillas": [
       {
-       "tipo": "dice",
-       "palabras": [
-        "blanco"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "blanco"
+         ],
+         "n": "dice blanco"
+        },
+        {
+         "tipo": "confirma",
+         "n": "repregunta para confirmar a cual se refiere"
+        }
        ],
-       "n": "dice blanco"
+       "n": "dice blanco, o confirma a cual se refiere"
       }
      ]
     }
@@ -1504,11 +1564,21 @@
      "texto": "ah no, el otro, y ese me lo llevo",
      "casillas": [
       {
-       "tipo": "dice",
-       "palabras": [
-        "g203"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "dice",
+         "palabras": [
+          "g203"
+         ],
+         "n": "dice g203"
+        },
+        {
+         "tipo": "confirma",
+         "n": "repregunta para confirmar a cual se refiere"
+        }
        ],
-       "n": "dice g203"
+       "n": "dice g203, o confirma a cual se refiere"
       },
       {
        "tipo": "alguna",
@@ -3079,9 +3149,13 @@
      "texto": "Si",
      "casillas": [
       {
-       "tipo": "plata",
-       "monto": 237000,
-       "n": "el monto 237000"
+       "tipo": "o_calla",
+       "casilla": {
+        "tipo": "plata",
+        "monto": 237000,
+        "n": "el monto 237000"
+       },
+       "n": "el monto 237000, si dice plata"
       },
       {
        "tipo": "no_patron",
@@ -3104,25 +3178,33 @@
      "texto": "Color indistinto 70 por ciento transferencia",
      "casillas": [
       {
-       "tipo": "plata",
-       "monto": 71100,
-       "n": "el monto 71100"
+       "tipo": "o_calla",
+       "casilla": {
+        "tipo": "plata",
+        "monto": 71100,
+        "n": "el monto 71100"
+       },
+       "n": "el monto 71100, si dice plata"
       },
       {
-       "tipo": "alguna",
-       "opciones": [
-        {
-         "tipo": "plata",
-         "monto": 149310,
-         "n": "el monto 149310"
-        },
-        {
-         "tipo": "plata",
-         "monto": 165900,
-         "n": "el monto 165900"
-        }
-       ],
-       "n": "la parte de transferencia"
+       "tipo": "o_calla",
+       "casilla": {
+        "tipo": "alguna",
+        "opciones": [
+         {
+          "tipo": "plata",
+          "monto": 149310,
+          "n": "el monto 149310"
+         },
+         {
+          "tipo": "plata",
+          "monto": 165900,
+          "n": "el monto 165900"
+         }
+        ],
+        "n": "la parte de transferencia"
+       },
+       "n": "la parte de transferencia, si dice plata"
       },
       {
        "tipo": "no_patron",
