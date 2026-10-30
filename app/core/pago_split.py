@@ -1,13 +1,8 @@
 """SPLIT DE PAGO — reparte un total entre varios medios de pago y aplica el descuento por transferencia a la
 parte que corresponde."""
 import re
-import unicodedata
 
-
-def _norm(s: str) -> str:
-    s = unicodedata.normalize("NFKD", str(s or "").lower())
-    return "".join(c for c in s if not unicodedata.combining(c)).strip()
-
+from app.core.filtros_catalogo import _norm
 
 # Las palabras de la condicion que no nombran un medio: "PAGO por transferencia"
 # no puede hacer que "Mercado PAGO" lleve el descuento.

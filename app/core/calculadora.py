@@ -1,8 +1,6 @@
 """LA CALCULADORA — la cuenta y la tarifa de envio, selladas por codigo."""
 from app.storage.firestore_client import (
-    get_all_products,
     get_product_by_id,
-    get_categories,
     get_all_faq,
 )
 import re

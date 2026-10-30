@@ -3,7 +3,6 @@ cualquier motivo), avisa al dueno por Telegram con tres datos: - que pregunto el
 el bot - chat id del cliente para que el dueno le responda directo Usa el mismo token de Telegram del bot
 Verifika."""
 import os
-import asyncio
 import httpx
 
 # structlog, como el resto de los modulos.

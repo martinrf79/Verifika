@@ -3,9 +3,9 @@ import csv
 import json
 import os
 import re
-import unicodedata
 
 from app.core.contexto_turno import tienda_por_defecto
+from app.core.filtros_catalogo import _norm
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -16,11 +16,6 @@ CAMPOS_LISTA = ("conecta_por", "plataformas", "requiere", "provee",
 
 _CACHE_TABLA: dict[str, dict] = {}
 _CACHE_VOCAB: dict[str, dict] = {}
-
-
-def _norm(s) -> str:
-    s = unicodedata.normalize("NFKD", str(s or "").lower())
-    return "".join(c for c in s if not unicodedata.combining(c)).strip()
 
 
 def _ruta(tienda_id: str | None, archivo: str) -> str | None:
