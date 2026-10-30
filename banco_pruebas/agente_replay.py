@@ -66,7 +66,10 @@ def _paga():
     from banco_pruebas import libro_paga
     if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
         raise SystemExit("--vivo va con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
-    cli = OpenAI(api_key=os.environ["GEMINI_API_KEY_PROD"].split()[0], base_url=get_settings().GEMINI_BASE_URL)
+    s = get_settings()
+    cli = OpenAI(api_key=os.environ["GEMINI_API_KEY_PROD"].split()[0], base_url=s.GEMINI_BASE_URL)
+    # Los embeddings del buscador tambien con la paga, como en produccion: con la gratis agotada daban 429.
+    s.GEMINI_API_KEY = os.environ["GEMINI_API_KEY_PROD"]
     return libro_paga.envolver(cli)
 
 

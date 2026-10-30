@@ -123,11 +123,10 @@ que son los que hacen algo en vez de pedirlo:
 >>> LOS INSTRUMENTOS, y que contesta cada uno <<<
   pytest -q                              bateria offline, sin LLM
   banco_pruebas/produccion.py            charlas reales de Cloud Run
-  banco_pruebas/cableado58.py            las 58 por el flujo vivo, sin modelo
-  banco_pruebas/cableado58.py --grabadas el control con las traducciones de Gemini
-  banco_pruebas/traducciones58.py        lo que devuelve el interprete en cada turno, a mano
+  banco_pruebas/agente_replay.py         las 26 charlas grabadas por el agente vivo, sin modelo
+  banco_pruebas/agente_replay.py --vivo  lo mismo con el modelo de produccion, con la paga
 
-Camino vivo: orchestrator -> app/core/flujo/turno.procesar_turno
+Camino vivo: orchestrator -> app/core/flujo/turno.procesar_turno -> agente.responder
 Reglas: CLAUDE.md. Donde esta cada cosa: MAPA.md. El plan: CLAUDE.md, seccion 1.
 =============================================================================
 REGLAS
@@ -170,15 +169,7 @@ python3 scripts/areas.py 2>/dev/null
 echo ""
 echo "======================= DONDE ESTAMOS HOY (medido) ===================="
 python3 - <<'PYEOF' 2>/dev/null
-import json, os, subprocess
-from pathlib import Path
-
-def leer(ruta, *claves):
-    try:
-        d = json.loads(Path(ruta).read_text(encoding="utf-8"))
-        return " ".join(f"{k}={d[k]}" for k in claves if k in d)
-    except Exception:
-        return "sin medir"
+import os, subprocess
 
 rama = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
                       capture_output=True, text=True).stdout.strip()
@@ -198,12 +189,8 @@ print("  claves en el entorno: " + "  ".join(env))
 print("  (GCP_SA_KEY_B64 es claude-lector, SOLO LECTURA: con eso"
       " `python3 banco_pruebas/produccion.py` audita tus charlas reales)")
 
-print("  pisos medidos:")
-print("    cableado           " + leer("banco_pruebas/cableado_techo.json",
-                                       "techo"))
-print("    interpretacion     " + leer("banco_pruebas/interpretacion_piso.json",
-                                       "corridas_perfectas", "casillas_de_la_vara"))
+print("  el piso: tests/test_agente.py, las 26 charlas grabadas por el agente vivo, 69 de 75 turnos")
 PYEOF
-echo "  el marcador: pytest -q, con las 58 adentro: tests/test_cableado58.py."
+echo "  el marcador: pytest -q, con el agente adentro: tests/test_agente.py."
 echo "======================================================================="
 echo ""

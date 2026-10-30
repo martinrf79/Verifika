@@ -17,8 +17,8 @@ anterior, con las historias de cada regla, está en `archivo/documentacion/CLAUD
    literal; `--usuario <numero>` una sola. El entorno trae la cuenta de solo lectura. Sin `gcloud`, comentando
    `/logs` en el issue 31.
 5. **Dónde está cada parte del camino vivo lo dice `MAPA.md`, y sólo ése.** El camino es `orchestrator` →
-   `app/core/flujo/turno.procesar_turno`: el intérprete traduce, el ejecutor cumple, la redacción escribe.
-   `arquitectura/MAPA_CABLEADO.md` y las fichas hasta la 70 describen caminos ya borrados.
+   `app/core/flujo/turno.procesar_turno` → `agente.responder`: el modelo busca y escribe, el código pone los datos, el
+   verificador controla. `arquitectura/MAPA_CABLEADO.md` y las fichas hasta la 82 describen caminos ya borrados.
 
 ---
 
@@ -27,63 +27,39 @@ anterior, con las historias de cada regla, está en `archivo/documentacion/CLAUD
 **El objetivo:** que el bot venda y no alucine. En orden: que responda bien, con la plata bien; que sea
 conciso, sin repetir; que la memoria de la charla no se pierda.
 
-### El flujo de un mensaje, como tiene que ser
+### El flujo de un mensaje, desde el 30-oct
 
-1. **El modelo TRADUCE, no responde.** Parte el mensaje en preguntas si es una multipregunta, y por cada una
-   pide al código algo concreto de un **menú cerrado**: buscar, producto, envío, cuenta, política,
-   compatibilidad, comprar. Si una pregunta no necesita traducción, la repite tal cual.
-2. **El código responde** con sus herramientas deterministas. Ahí no hay modelo, y por eso no hay invento.
-3. **El modelo redacta** sólo con lo que devolvió el código. Los montos y los presupuestos los pone el código.
-4. **Lo que se le da al intérprete es lo que se trabaja:** la información justa, con pocos tokens, armada
-   desde las 58 combinaciones y desde cómo rindió el modelo de producción en las pruebas.
+Por orden de Martín, el turno lo contesta el agente de la FICHA 83, `app/core/flujo/agente.py`. Reemplazó a la lectura
+de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 
-### Lo medido, que dice dónde falla
+1. **El modelo vende con herramientas en su idioma:** buscar en castellano libre, presupuesto, cobrar y calcular.
+2. **El código pone los datos:** el buscador devuelve filas reales de la tienda, el ejecutor pone montos, envíos y
+   reparto, y el cobro sale del código de cobro. El presupuesto lo pega el código tal cual.
+3. **El verificador controla cada afirmación** contra lo que devolvieron las herramientas y la charla: datos, productos,
+   atributos, superlativos y stock. Lo que marca vuelve una vez al modelo.
+4. **La memoria** es el historial y la del agente, `memoria_agente`: el pedido anotado, lo último mostrado, el pago y el
+   tope.
 
-- **Con la charla bien dada, el intérprete traduce bien.** Con el contexto escrito a mano: 167 de 174
-  mensajes. Con las 58 como ejemplos resueltos, en la validación limpia: 12 de 12 en tres repeticiones, en
-  una sola llamada y unos 3.000 tokens. FICHA 67 y FICHA 69.
-- **La falla está en lo que le da producción.** El contexto se arma desde nueve campos sueltos de la charla y
-  la traducción cae: 21 de 30 con charla previa, 7 de 10 con un pedido armado. FICHA 69.
-- **La maraña está después del intérprete.** Once capas de código vuelven a leer el mensaje o la memoria para
-  corregir lo que entregó el intérprete. Cada falla sumó una capa: ahí nacen los parches.
-- **El código ya resuelve bien lo que el intérprete traduce bien**, visto el 16-oct en K21 y C35: las fallas
-  que quedan en vivo son del intérprete o del redactor.
+### Lo medido
 
-### El plan, en este orden
+- **La vara sin modelo:** `tests/test_agente.py`, las 26 charlas grabadas por el agente pasan por el webhook vivo con un
+  modelo falso que repite lo grabado: 69 de 75 turnos, y cada herramienta devuelve lo mismo que cuando se midió.
+- **Con el modelo de producción por el bot**, `agente_replay.py --vivo`, el 30-oct: 67 y 68 de 75 en dos corridas. La
+  variación entre corridas es de unos 7 turnos: una corrida sola no separa una mejora chica.
+- **En las mismas 21 charlas**, el agente 56 a 58 de 61 turnos contra 51 a 52 de la lectura.
+- **Lo que falla, por causa**, en la FICHA 83: herramientas que aceptan datos malos sin avisar, referencias como "de esos"
+  o "el otro", y casillas que esperan a Martín.
 
-Cambiado por Martín el 19-oct: **el cableado desde cero, sobre las 58, sin modelos.** Reemplaza al plan de la
-FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 6 están hechos: el flujo es el camino vivo.
+### Lo que sigue
 
-1. **El flujo vive en `app/core/flujo/`.** Estado, intérprete, ejecutor, catálogo, redacción y cierre, escritos de
-   cero. De lo viejo usa sólo las herramientas: motor, calculadora, envío, políticas, compatibilidad, `leads` y
-   Firestore.
-2. **Sin modelos.** Las dos llamadas al modelo, traducir y explicar, las reemplaza el banco con lo escrito a mano en
-   `banco_pruebas/agendas58.py`: desde el 20-oct el intérprete devuelve una agenda, una pregunta por cosa pedida,
-   `flujo/agenda.py`. El corredor bloquea cualquier otra llamada.
-3. **La vara es la de Martín**: las casillas de `vara_58.json`, que no se tocan, por el webhook entero:
-   `python3 -m banco_pruebas.cableado58`.
-4. **El control contra la trampa**: antes del modelo, `tests/test_ficha.py` lleva gratis las fichas grabadas por el
-   adaptador y el ejecutor, con un techo que sólo baja; al final, una corrida con el modelo, `pedido_documento/medir_pedido.py
-   --vivo`, `prod7_ficha.py` y `variantes.py`. Un arreglo entra si sirve para una clase, no para un caso.
-5. **Las 58 están en la batería**, `tests/test_cableado58.py`: una charla rota frena el deploy. Desde el 22-oct el
-   intérprete llena la ficha nativa con el esquema de Gemini, y `flujo/ficha.py` la lleva a la agenda, FICHA 76. `tablero.py`, `respuesta.py` y las once capas se borraron. Si falla en
-   vivo, git.
-6. **La forma normal**, 21-oct, FICHA 74: entre el intérprete y el ejecutor, `flujo/normal.py` lleva lo que dijo el
-   modelo a la forma que el ejecutor cumple. No corrige al modelo ni lee el mensaje: define qué quiere decir cada
-   forma. Una regla nueva entra si en `banco_pruebas/forma_normal/regrado.py` no rompe ninguna de las 3.107
-   traducciones grabadas de seis modelos, y si la batería sigue verde.
-7. **Lo que sigue, por orden de Martín del 22-oct:** la pregunta como pista. Como las 58 clasifican charlas, cada
-   pregunta se clasifica por la forma de respuesta que la tienda puede dar según el índice, y cada clase activa su
-   herramienta, código o modelo, solo cuando hace falta. El primer paso, medido en la FICHA 75, es atar las condiciones
-   por el índice. Después, cada pregunta del bot con su espera. Jev como contexto en cada mensaje no entró: empeora las
-   charlas reales. Está en `PENDIENTE.md`.
+Está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con una corrida `--vivo` al final.
 
 ### Qué es parche, y cómo no se cae en eso
 
 - **Un arreglo corrige la causa donde vive, y cubre la clase entera.** La prueba: si mañana llega la misma
   falla dicha de otra forma, ¿queda cubierta sin tocar nada?
 - **No se juzga a ojo: se mide.** Un cambio que mueve sólo el caso que lo motivó es parche y no entra. Lo decide
-  `cableado58.py` con las agendas a mano y la corrida final con el modelo, no la sesión.
+  `tests/test_agente.py` y la corrida final con el modelo, no la sesión.
 - **No se suma un campo, una pregunta o una capa nueva por cada falla.** Ese es el patrón que trajo la
   maraña. Lo que falla seguido, se le achica al modelo.
 - **Si para que pase un caso hay que cambiar un test, sumar una palabra a una lista o poner un umbral, se para
@@ -187,10 +163,9 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 6 están 
 
 ```bash
 python3 -m pytest -q                       # la batería offline, sin modelo
-python3 -m pytest tests/test_cableado58.py      # la vara fija: las 58 por el flujo vivo, sin modelo
-python3 -m banco_pruebas.cableado58 --ver        # lo mismo, con lo que recibe el cliente
-python3 -m pytest tests/test_ficha.py -s        # las fichas grabadas por el adaptador y el ejecutor, sin modelo
-python3 banco_pruebas/forma_normal/regrado.py   # las 3.107 traducciones grabadas, con el codigo de hoy, sin modelo
+python3 -m pytest tests/test_agente.py -s       # la vara: las charlas grabadas por el agente vivo, sin modelo
+python3 banco_pruebas/agente_replay.py --ver     # lo mismo, con lo que lee el cliente
+MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/agente_replay.py --vivo   # con el modelo de produccion
 uvicorn app.main:app --reload --port 8080  # correr local
 ```
 
