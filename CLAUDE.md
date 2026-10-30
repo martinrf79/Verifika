@@ -43,16 +43,18 @@ de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 ### Lo medido
 
 - **La vara sin modelo:** `tests/test_agente.py`, las 26 charlas grabadas por el agente pasan por el webhook vivo con un
-  modelo falso que repite lo grabado: 69 de 75 turnos, y cada herramienta devuelve lo mismo que cuando se midió.
-- **Con el modelo de producción por el bot**, `agente_replay.py --vivo`, el 30-oct: 67 y 68 de 75 en dos corridas. La
-  variación entre corridas es de unos 7 turnos: una corrida sola no separa una mejora chica.
-- **En las mismas 21 charlas**, el agente 56 a 58 de 61 turnos contra 51 a 52 de la lectura.
-- **Lo que falla, por causa**, en la FICHA 83: herramientas que aceptan datos malos sin avisar, referencias como "de esos"
-  o "el otro", y casillas que esperan a Martín.
+  modelo falso que repite lo grabado: 74 de 75 turnos, y cada herramienta devuelve lo mismo que cuando se midió. Las
+  casillas que esperaban a Martín se decidieron el 30-oct: vale acertar o repreguntar, lo que importa es no errar.
+- **Con el modelo de producción**, el 30-oct: 72 de 75 con la clave gratis, `agente_replay.py --gratis`. La variación
+  entre corridas es de unos 7 turnos: una corrida sola no separa una mejora chica.
+- **Las alucinaciones:** `banco_pruebas/alucinaciones.py` inyecta cada clase en las respuestas grabadas, compatibilidad
+  incluida: el verificador caza el 99,3%, con 0 falsas alarmas. Lo que sigue marcado después de corregir no sale.
+- **Lo que falla, por causa**, en `PENDIENTE.md`, SIGUE 1.
 
 ### Lo que sigue
 
-Está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con una corrida `--vivo` al final.
+Está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con tres corridas `--gratis`. Si
+el código cambia lo que lee el modelo, las charlas afectadas se regraban con `--gratis --regrabar`.
 
 ### Qué es parche, y cómo no se cae en eso
 
@@ -165,6 +167,7 @@ Está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin mod
 python3 -m pytest -q                       # la batería offline, sin modelo
 python3 -m pytest tests/test_agente.py -s       # la vara: las charlas grabadas por el agente vivo, sin modelo
 python3 banco_pruebas/agente_replay.py --ver     # lo mismo, con lo que lee el cliente
+python3 banco_pruebas/agente_replay.py --gratis [K21]   # con el modelo de produccion por la clave gratis
 MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/agente_replay.py --vivo   # con el modelo de produccion
 uvicorn app.main:app --reload --port 8080  # correr local
 ```

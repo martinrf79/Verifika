@@ -301,3 +301,20 @@ que fallo, y se le pregunta la causa puntual. Lo que dice, contrastado con lo gr
 - **El modelo se culpa a si mismo o a la casilla donde lo grabado muestra que falto el dato o la herramienta confundio**,
   y como arreglo siempre propone mas reglas en la consigna, lo que ya se midio que no mueve nada. Sirve la frase que cita;
   la causa se confirma contra lo grabado.
+
+### El agente en el bot, y lo que se vio en WhatsApp, 30-oct
+
+Despues del deploy, Martin probo por WhatsApp y se arreglo, cada cosa con su test y medida contra lo grabado:
+- **Lo interno llegaba al cliente:** la nota del presupuesto para el modelo, "En el pedido, por clase...", y la
+  repregunta cruda del ejecutor, "¿Cuáles son Teclado (a definir)?". Las herramientas devuelven dos partes, la del
+  cliente y la del modelo; al cliente va solo la primera.
+- **La compatibilidad salia de memoria:** "los Stinger 2 van directo al joystick" de la PS5, sin que el buscador la
+  mostrara. El buscador da lo que dice la ficha con ese equipo, y el verificador controla toda frase que afirme que algo
+  anda, sirve o es compatible. Lo que sigue marcado despues de corregir se saca.
+- **La plata:** un renglon que no es un producto trababa el presupuesto entero; el modelo inventaba los medios de un
+  70/30 y la transferencia llevaba un descuento que nadie eligio; el cobro salia con Mercado Pago sin preguntar y "no
+  tengo MP" no tenia como cambiarlo. Ahora: solo entran renglones certificados, el reparto sin medio se muestra y se
+  pregunta, sin medio no se cobra, y los datos de pago los pega el codigo.
+
+Lo medido: la vara sin modelo, 74 de 75; con la gratis, 72 de 75; alucinaciones inyectadas, 99,3% cazadas y 0 falsas
+alarmas. Lo que queda, en `PENDIENTE.md`.

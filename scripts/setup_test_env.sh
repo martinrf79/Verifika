@@ -189,7 +189,7 @@ print("  claves en el entorno: " + "  ".join(env))
 print("  (GCP_SA_KEY_B64 es claude-lector, SOLO LECTURA: con eso"
       " `python3 banco_pruebas/produccion.py` audita tus charlas reales)")
 
-print("  el piso: tests/test_agente.py, las 26 charlas grabadas por el agente vivo, 69 de 75 turnos")
+print("  el piso: tests/test_agente.py, las 26 charlas grabadas por el agente vivo, 74 de 75 turnos")
 PYEOF
 echo "  el marcador: pytest -q, con el agente adentro: tests/test_agente.py."
 echo "======================================================================="
