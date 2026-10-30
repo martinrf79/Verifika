@@ -127,7 +127,7 @@ def verificar(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -
         ws = re.findall(r"[a-z0-9]+", o)
         propias = set(K.n(f"{p.get('categoria')} {p.get('marca')} {p.get('modelo')} {p.get('nombre')}").split())
         for i, w in enumerate(ws):
-            if w in K._RELLENO or w in propias or len(w) < 3 or w.isdigit():
+            if w in K._RELLENO or w in propias or w in _NIEGA or len(w) < 3 or w.isdigit():
                 continue
             filtro = K.atar(w, rubro, tienda_id)
             if "campo" not in filtro or not (filtro["campo"] in _ATRIBUTOS or filtro.get("si_no")):

@@ -42,6 +42,14 @@ def test_cada_afirmacion_de_compatibilidad_contra_la_ficha(V):
     assert not malas
 
 
+def test_una_negacion_no_es_un_atributo(V):
+    """C46 con la gratis, 30-oct: "sin teclado numerico" marcaba "sin" como atributo, y el bloqueo sacaba un teclado
+    que estaba bien ofrecido."""
+    from app.core.flujo import catalogo as K
+    t = "El HyperX Alloy Origins Core es TKL, sin teclado numérico, y viene en negro."
+    assert V.verificar(t, K.n("Teclado HyperX Alloy Origins Core Negro " + t), C.TIENDA) == []
+
+
 def test_lo_marcado_sale_y_lo_pegado_queda(V):
     from app.core.flujo import catalogo as K
     pegado = "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nTotal: $12.000"
