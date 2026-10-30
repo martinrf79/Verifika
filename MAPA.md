@@ -43,7 +43,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | La llamada al modelo y el reintento | `app/core/llm_reintento.py` |
 | Campos y filtros del catálogo | `app/core/filtros_catalogo.py` |
 | Cuenta, precios, envío | `app/core/calculadora.py`, `app/core/envio.py` |
-| Textos del cierre y cobro | `app/core/cierre.py`, `app/core/pago.py` |
+| Textos del cobro | `app/core/pago.py` |
 | Aviso de lead | `app/core/leads.py` |
 | Prosa fija de la casa | `app/core/guia_venta_prosa.py` |
 | Leer y escribir Firestore | `app/storage/firestore_client.py` |
