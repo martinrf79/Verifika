@@ -12,6 +12,8 @@ armado una vez con los vectores guardados del banco.
 
     python3 banco_pruebas/agente_replay.py [--ver] [K21 ...]
     python3 banco_pruebas/agente_replay.py --parecidos        rearma agente_parecidos.json, con numpy y los vectores
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/agente_replay.py --vivo [K21 ...]
+                                                              las mismas charlas con el modelo de produccion, al libro
 """
 import asyncio
 import collections
@@ -57,17 +59,32 @@ class Grabado:
         return _respuesta(self.cola.pop(0)) if self.cola else _respuesta(texto=self.final)
 
 
-def instalar():
-    """El clon del bot con el modelo falso y los parecidos grabados. Devuelve el modelo falso y la lista donde quedan
-    los turnos del agente."""
+def _paga():
+    """El modelo de produccion con la clave paga, cada llamada al libro y contra el tope del dia."""
+    from openai import OpenAI
+    from app.config import get_settings
+    from banco_pruebas import libro_paga
+    if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
+        raise SystemExit("--vivo va con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
+    cli = OpenAI(api_key=os.environ["GEMINI_API_KEY_PROD"].split()[0], base_url=get_settings().GEMINI_BASE_URL)
+    return libro_paga.envolver(cli)
+
+
+def instalar(vivo: bool = False):
+    """El clon del bot con el modelo falso y los parecidos grabados, o con el modelo de produccion y los embeddings de
+    verdad. Devuelve el modelo falso y la lista donde quedan los turnos del agente."""
     from banco_pruebas import clon_produccion as C
     C.instalar()
     from app.core import llm_reintento
     from app.core.flujo import agente
     falso = Grabado()
-    llm_reintento._cliente = lambda: falso
-    tabla = json.load(open(PARECIDOS, encoding="utf-8"))
-    agente._parecidos = lambda consulta, tipo, tienda_id: [tuple(x) for x in tabla.get(f"{tipo}|{consulta}", [])]
+    if vivo:
+        cli = _paga()
+        llm_reintento._cliente = lambda: cli
+    else:
+        llm_reintento._cliente = lambda: falso
+        tabla = json.load(open(PARECIDOS, encoding="utf-8"))
+        agente._parecidos = lambda consulta, tipo, tienda_id: [tuple(x) for x in tabla.get(f"{tipo}|{consulta}", [])]
     vistos = []
     responder = agente.responder
 
@@ -79,11 +96,11 @@ def instalar():
     return falso, vistos
 
 
-def correr(ids: list = None) -> dict:
+def correr(ids: list = None, vivo: bool = False) -> dict:
     """{"turnos", "bien", "llamadas", "iguales", "filas"} de las charlas grabadas por el agente vivo."""
     from banco_pruebas import clon_produccion as C
     from banco_pruebas.sonda_charlas import nota_casilla
-    falso, vistos = instalar()
+    falso, vistos = instalar(vivo)
     vara = {c["id"]: c for c in json.load(open(os.path.join(AQUI, "vara_58.json"), encoding="utf-8"))["charlas"]}
     out = {"turnos": 0, "bien": 0, "llamadas": 0, "iguales": 0, "filas": []}
     for ch, grabados in _charlas().items():
@@ -146,7 +163,12 @@ if __name__ == "__main__":
     if "--parecidos" in args:
         parecidos()
         raise SystemExit
-    r = correr([a for a in args if not a.startswith("--")])
+    r = correr([a for a in args if not a.startswith("--")], vivo="--vivo" in args)
+    if "--vivo" in args:
+        with open(os.path.join(AQUI, "agente_vivo.jsonl"), "a", encoding="utf-8") as fh:
+            for f in r["filas"]:
+                fh.write(json.dumps({k: f[k] for k in ("id", "turno", "malas", "texto", "pasos_vivos")},
+                                    ensure_ascii=False) + "\n")
     for f in r["filas"]:
         if f["malas"] or f["distintas"]:
             print(f"{f['id']} t{f['turno'] + 1}: MAL {f['malas']} · distintas {f['distintas']}")
