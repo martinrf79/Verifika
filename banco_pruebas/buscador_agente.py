@@ -48,6 +48,8 @@ TID = HM.TID
 ARGS = HM.ARGS
 GRABADO = os.path.join(AQUI, "buscador_agente.jsonl")
 VUELTAS = 6
+# Lo que va antes del contexto de cada turno: el catalogo entero en `catalogo_entero.py`. Vacio, el buscador de siempre.
+EXTRA = ""
 
 CONSIGNA = """Sos vendedor de una tienda online de tecnologia de Argentina que vende por WhatsApp. Contestas el ultimo
 mensaje del cliente como un buen vendedor: corto, claro, en español rioplatense con voseo, contestando todo lo que
@@ -387,7 +389,9 @@ def agente(cli, modelo: str, paga: bool, msg: str, estado: dict, h: list, memori
     contexto = _memoria_texto(memoria) if memoria is not None else \
         (f"ESTADO DEL PEDIDO:\n{CM.carrito(estado)}\n\nEL PEDIDO ACTUAL, en el formato del presupuesto: "
          f"{json.dumps(pedido_actual(estado), ensure_ascii=False)}")
-    msgs = [{"role": "system", "content": CONSIGNA},
+    if EXTRA:
+        contexto = f"{EXTRA}\n\n{contexto}"
+    msgs =[{"role": "system", "content": CONSIGNA},
             {"role": "user", "content": f"{charla(h)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {msg}"}]
     if memoria is not None:
         memoria.pop("_ultimo", None)

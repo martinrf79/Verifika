@@ -263,3 +263,26 @@ fue del verificador:
 
 Con eso, sobre lo grabado, el verificador sigue en 99,0% cazadas y 0,6% de falsas alarmas. Falta medirlo con el modelo
 otra vez, y con tres corridas para ver la variación.
+
+### El catalogo entero en contexto, 30-oct, con la gratis
+
+Pregunta de Martin: los errores se repiten, ¿son del modelo o de lo que le acercamos? `catalogo_entero.py`: el mismo
+agente, con las mismas herramientas y el verificador, y en cada turno el catalogo entero, una linea por modelo con las
+variantes que difieren, unos 45.000 tokens. Es el techo, no es para el bot: unas veinte veces el costo del buscador, y no
+escala a una tienda grande.
+
+| | Sueltos, de 129 |
+|---|---|
+| El buscador, con el verificador | 117 |
+| El catalogo entero | 116, mas K04 sin respuesta: se quedo dando vueltas |
+
+Con todo a la vista no mejora: lo que falla no es lo que el buscador le acerca de los productos.
+- **Lo que no esta en el contexto, el modelo lo inventa en vez de buscarlo.** Con el catalogo adelante dejo de usar el
+  buscador para las reglas, 1,0 busquedas por turno, y fallaron cinco de reglas: factura A, 50 off, mayorista, jubilado y
+  la transferencia de K07. Es la misma clase que K19 y C41 en el buscador.
+- **Fallan igual en los dos:** los cambios del pedido, K20 y K21 en el segundo turno, que pierden renglones; K21 en el
+  tercero; y la casilla de palabras de J06.
+- **Lo de toda la tienda,** K01 y K18, el mas caro de todo: con el catalogo por rubro no compara entre rubros.
+
+Lo que sigue: el mapa de la tienda y sus reglas siempre en contexto, con el buscador para los productos; y los cambios
+del pedido como cambios, no como el pedido entero reescrito.
