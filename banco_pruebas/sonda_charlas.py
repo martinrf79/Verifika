@@ -157,6 +157,8 @@ def nota_casilla(k, llamadas, texto, respuestas):
             e = (_n(p["modelo"]) + " " + _n(p["color"])).strip()
             if e in mostrados:
                 precios[e] = int(p["precio_ars"])
+            elif _n(p["modelo"]) in mostrados:  # mostrado sin color al lado: "M170: $12.000 (Negro o Blanco)"
+                precios[_n(p["modelo"])] = min(int(p["precio_ars"]), precios.get(_n(p["modelo"]), 10 ** 12))
         if not precios:
             return None
         barato = min(precios, key=precios.get)
