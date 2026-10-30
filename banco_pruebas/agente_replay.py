@@ -81,11 +81,17 @@ def _paga(gratis: bool = False):
 
 
 def _precargar(agente, tienda_id: str) -> None:
-    """Los vectores de los rubros y temas, antes de la primera charla y con reintentos: con la gratis, un corte por minuto
-    en esa carga dejaba toda la corrida sin embeddings, y lo grabado no era lo que hace el bot."""
+    """Los vectores de los rubros, temas y consultas ya medidos, del disco: la gratis deja mil textos por dia, y cada
+    corrida volvia a pedir los cientos de la base. El 30-oct se agoto asi. A Google va solo lo que falta, con reintentos."""
     import time
+    import numpy as np
+    for f in ("buscar_mejoras_emb.npz", "responder_lineas_emb.npz"):
+        z = np.load(os.path.join(AQUI, f), allow_pickle=False)
+        for k, v in zip(z["claves"].tolist(), z["vectores"].astype(float)):
+            tarea, _, texto = k.partition("|")
+            agente._VEC[(tarea, texto)] = (v / (np.linalg.norm(v) or 1.0)).tolist()
     textos = [t for t, _ in agente._base(tienda_id)]
-    for espera in (0, 20, 40, 60, 90):
+    for espera in (0,) + (65,) * 3:
         time.sleep(espera)
         try:
             agente._vectores(textos, "RETRIEVAL_DOCUMENT")
