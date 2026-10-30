@@ -26,6 +26,7 @@ import time
 from app.config import get_settings
 from app.core.compatibilidad import etiqueta_plataforma, evaluar, plataformas_del_mensaje, vocabulario
 from app.core.guia_compra import _RE_COMPATIBILIDAD, categoria_no_vendida
+from app.core.pago_split import descuento_de
 from app.logger import get_logger
 
 from . import catalogo as K
@@ -68,9 +69,10 @@ decile cual elegiste. Si el cliente da un criterio para elegir —el mas barato,
 criterio aunque ya le hayas mostrado opciones: lo mostrado era una parte. Si el cliente dijo cuantos quiere de cada
 cosa, revisa que el presupuesto lo respete: la herramienta te devuelve la cuenta por clase.
 
-Las reglas de la tienda: para reservar una compra se le pide al cliente solo el nombre. Los datos para pagar —CBU,
-alias, links— salen solo de la herramienta cobrar: nunca los escribas por tu cuenta. Si la tienda no tiene algo,
-decilo claro: "no vendemos eso", y ofrece lo que si hay."""
+Las reglas de la tienda: para reservar una compra se le pide al cliente solo el nombre. Antes de cobrar, el cliente
+tiene que haber dicho con que medio paga cada parte: si no lo dijo, preguntaselo, y no lo des por acordado. Los datos
+para pagar —CBU, alias, links— salen solo de la herramienta cobrar: donde van, escribi [[COBRO]] y el sistema los pega;
+nunca los escribas por tu cuenta. Si la tienda no tiene algo, decilo claro: "no vendemos eso", y ofrece lo que si hay."""
 
 HERRAMIENTAS = [
     {"type": "function", "function": {
@@ -90,9 +92,11 @@ HERRAMIENTAS = [
             "anotar": {"type": "boolean", "description": "true si el cliente compra, confirma o cambia su pedido; "
                                                          "false si solo pide precios para ver"}}}}},
     {"type": "function", "function": {
-        "name": "cobrar", "description": "Cuando el cliente confirma el pedido y da su nombre: devuelve como pagar, "
-                                         "los datos de transferencia o el link, para cada medio del pago dividido.",
-        "parameters": {"type": "object", "properties": {"nombre": {"type": "string"}}, "required": ["nombre"]}}},
+        "name": "cobrar", "description": "Cuando el cliente confirma el pedido, da su nombre y dijo con que medio paga: "
+                                         "devuelve como pagar, los datos de transferencia o el link, para cada medio.",
+        "parameters": {"type": "object", "properties": {"nombre": {"type": "string"}, "pago": {
+            "type": "string", "description": "el medio que dijo, si lo dijo o lo cambio: \"100 transferencia\""}},
+            "required": ["nombre"]}}},
     {"type": "function", "function": {
         "name": "calcular", "description": "Una calculadora para otra cuenta: numeros, + - * / y parentesis.",
         "parameters": {"type": "object", "properties": {"cuenta": {"type": "string"}}, "required": ["cuenta"]}}}]
@@ -307,13 +311,16 @@ def _visto(nombre: str, texto: str, tienda_id: str) -> bool:
     return any(K.n(x) in texto for x in nombres) or idt["veredicto"] != "exists"
 
 
-def _reparto(pago: str) -> list:
-    return [{"medio": m.group(2).strip(), "porcentaje": int(m.group(1))}
-            for m in re.finditer(r"(\d{1,3})\s*%?\s*(?:por ciento\s*)?(?:en|por|con)?\s*([a-z ]+?)(?=,|\by\b|$|\d)",
-                                 K.n(pago or ""))]
+def _reparto(pago: str, dijo: str = None) -> list:
+    """[{"medio", "porcentaje"}], tambien sin medio: "70, 30". UN MEDIO QUE EL CLIENTE NO DIJO NO SE ANOTA: el 30-oct, a
+    "setenta treinta" el modelo le puso transferencia y Mercado Pago, y la transferencia llevo un descuento que nadie
+    eligio. Sin medio, el ejecutor pregunta con cual paga cada parte."""
+    ms = re.finditer(r"(\d{1,3})\s*%?\s*(?:por ciento\s*)?(?:en|por|con)?\s*([a-z ]*?)\s*(?=,|\by\b|$|\d)", K.n(pago or ""))
+    return [{"medio": m.group(2) if dijo is None or m.group(2)[:4] in dijo else "",
+             "porcentaje": int(m.group(1))} for m in ms]
 
 
-def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> tuple:
+def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo: str = None) -> tuple:
     """(lo que lee el cliente, la nota para el modelo). Los renglones del pedido entero, cada uno con producto, cantidad
     y destino, y si lo dijo, el pago dividido y el tope. Lo cumple el ejecutor de siempre, que pone los montos, los
     envios, el envio gratis y el reparto. AL CLIENTE VA SOLO EL TEXTO DEL EJECUTOR: la nota es para el modelo, y el
@@ -322,8 +329,15 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> tu
         list(memoria["pedido"] or memoria.get("mostrado") or [])
     # LA MEMORIA DE LA CHARLA: el pago y el tope dichos antes valen hasta que diga otros.
     a = {**a, "pago": a.get("pago") or memoria.get("pago") or "", "tope": a.get("tope") or memoria.get("tope") or 0}
+    # SOLO LO CERTIFICADO ENTRA: un renglon que no es un producto de la tienda, "Teclado (a definir)", o que puede ser
+    # muchos, "teclado", no traba a los demas. Vuelve al modelo; el cliente no lee la repregunta interna del ejecutor.
+    idts = {str(x["producto"]): K.identificar(str(x["producto"]), "", tienda_id) for x in rs}
+    fuera = [p for p, i in idts.items() if i["veredicto"] != "exists"]
+    rs = [x for x in rs if str(x["producto"]) not in fuera]
+    afuera = f" Quedaron afuera, porque no son un producto exacto de la tienda: {'; '.join(fuera)}. Buscalos y manda " \
+        "el modelo exacto, o preguntale al cliente cual quiere." if fuera else ""
     if not rs:
-        return "", "El pedido esta vacio: faltan los renglones, producto, cantidad y destino de cada uno."
+        return "", "El pedido esta vacio: faltan los renglones, producto, cantidad y destino de cada uno." + afuera
     # EL CANDADO DE PRODUCTOS: un producto que no salio del buscador, de la charla ni del pedido no se elige de memoria.
     if visto is not None:
         nuevos = [str(x["producto"]) for x in rs if not _visto(str(x["producto"]), visto, tienda_id)]
@@ -332,7 +346,8 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> tu
     agrega = [{k: v for k, v in {"producto": str(x["producto"]), "cantidad": K.entero(x.get("cantidad")) or 1,
                                  "destino": str(x.get("destino") or ""), "color": str(x.get("color") or "")}.items()
                if v} for x in rs]
-    reparto = _reparto(a.get("pago"))
+    reparto = _reparto(a.get("pago"), dijo)
+    a["pago"] = ", ".join(f"{x['porcentaje']} {x['medio']}".strip() for x in reparto)
     tope = K.entero(a.get("tope"))
     ps = [{"n": 1, "cita": "el pedido", "accion": "comprar", "agrega": agrega, "reemplaza": True},
           {"n": 2, "cita": "el presupuesto", "accion": "cuenta", **({"tope": tope} if tope else {}),
@@ -341,9 +356,8 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> tu
     # LA CUENTA POR CLASE, para que el modelo controle lo que pidio el cliente: "2 auriculares, 2 mouse, 2 memorias".
     clases = collections.Counter()
     for x in rs:
-        idt = K.identificar(str(x["producto"]), "", tienda_id)
-        clases[(idt.get("producto") or {}).get("categoria") or str(x["producto"])] += K.entero(x.get("cantidad")) or 1
-    cuenta = "En el pedido, por clase: " + ", ".join(f"{v} {k}" for k, v in clases.items()) + "."
+        clases[idts[str(x["producto"])]["producto"].get("categoria")] += K.entero(x.get("cantidad")) or 1
+    cuenta = "En el pedido, por clase: " + ", ".join(f"{v} {k}" for k, v in clases.items()) + "." + afuera
     if any(not x.get("destino") for x in rs):
         cuenta += " Hay renglones sin destino: su envio no esta sumado. Si el cliente dijo a donde va, ponelo en cada renglon."
     # LA MEMORIA GUARDA LAS DOS COSAS: el ultimo presupuesto que vio el cliente, siempre, y el pedido, solo si compra,
@@ -351,20 +365,30 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> tu
     memoria["_ultimo"] = {"mostrado": rs, "pago": a.get("pago") or "", "tope": tope,
                           **({"pedido": rs} if a.get("anotar") else {})}
     cliente = redaccion.texto(t.hechos, t.preguntas, False)
+    pct, cond = descuento_de(tienda_id)
+    if cliente and pct and any(not x["medio"] for x in reparto):
+        cliente += f"\nLa parte con {cond} lleva {pct}% de descuento."
     return cliente, ("" if cliente else "No se pudo armar.\n") + cuenta
 
 
-async def cobrar(a: dict, memoria: dict, user_id: str, canal: str, tienda_id: str, trace_id: str) -> str:
-    """Como pagar, del codigo de cobro del bot, para cada medio del pago dividido; y el lead con aviso al dueño, uno
-    por charla: si el pedido cambia, se actualiza el mismo."""
+async def cobrar(a: dict, memoria: dict, user_id: str, canal: str, tienda_id: str, trace_id: str,
+                 dijo: str = None) -> tuple:
+    """(lo que lee el cliente, la nota para el modelo). Como pagar, del codigo de cobro del bot, para cada medio del pago
+    dividido; y el lead con aviso al dueño, uno por charla: si el pedido cambia, se actualiza el mismo. SIN MEDIO DICHO
+    NO SE COBRA: el 30-oct salia el link de Mercado Pago por defecto, tambien para la parte "por transferencia", y a
+    "no tengo MP" el modelo no tenia como cambiarlo."""
     from app.core import leads
     from app.core.pago import instruccion_cobro
     pedido = memoria.get("pedido") or []
     if not pedido:
-        return "No hay pedido anotado todavia: arma el presupuesto con anotar en true."
+        return "", "No hay pedido anotado todavia: arma el presupuesto con anotar en true."
+    if a.get("pago"):
+        memoria["pago"] = ", ".join(f"{x['porcentaje']} {x['medio']}".strip() for x in _reparto(a["pago"], dijo))
     pago = memoria.get("pago") or ""
+    if not _reparto(pago) or any(not x["medio"] for x in _reparto(pago)):
+        return "", "Falta con que medio paga el cliente cada parte: preguntaselo, y cobra cuando lo diga, con el pago."
     orden = presupuesto({"renglones": pedido, "pago": pago}, {**memoria}, tienda_id)[0]
-    medios = [m["medio"] for m in _reparto(pago)] or [""]
+    medios = [m["medio"] for m in _reparto(pago)]
     nombre = str(a.get("nombre") or "").strip()
     destinos = ", ".join(dict.fromkeys(str(x.get("destino")) for x in pedido if x.get("destino")))
     lead = {"nombre": nombre, "telefono": user_id, "forma_pago": " y ".join(m for m in medios if m),
@@ -385,7 +409,7 @@ async def cobrar(a: dict, memoria: dict, user_id: str, canal: str, tienda_id: st
             out.append(await instruccion_cobro(orden, {**lead, "forma_pago": m}, tienda_id, trace_id) or "")
         except Exception as e:  # noqa: BLE001
             log.warning("agente_cobro_error", trace_id=trace_id, error=str(e)[:160])
-    return "\n".join(x for x in out if x) or "El pago lo coordina una persona de la tienda."
+    return "\n".join(x for x in out if x) or "El pago lo coordina una persona de la tienda.", ""
 
 
 def calcular(cuenta: str) -> str:
@@ -400,9 +424,9 @@ def calcular(cuenta: str) -> str:
         else f"{cuenta} = {round(v, 2)}"
 
 
-def _pegado(pasos: list) -> str:
-    """Lo que el cliente lee del ultimo presupuesto del turno: solo el texto del ejecutor."""
-    return next((p.get("al_cliente", "") for p in reversed(pasos) if p["herramienta"] == "presupuesto"), "")
+def _pegado(pasos: list, herramienta: str = "presupuesto") -> str:
+    """Lo que el cliente lee de la ultima llamada del turno a esa herramienta: solo el texto del codigo."""
+    return next((p.get("al_cliente", "") for p in reversed(pasos) if p["herramienta"] == herramienta), "")
 
 
 def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
@@ -411,7 +435,11 @@ def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
     ultimo = _pegado(pasos)
     if not ultimo and re.search(r"\[\[\s*PRESUPUESTO\s*\]\]", texto) and (memoria["pedido"] or memoria.get("mostrado")):
         ultimo = presupuesto({}, memoria, tienda_id)[0]
-    return re.sub(r"\[\[\s*PRESUPUESTO\s*\]\]", lambda _: ultimo, texto)
+    texto = re.sub(r"\[\[\s*PRESUPUESTO\s*\]\]", lambda _: ultimo, texto)
+    # LOS DATOS DE PAGO LOS PEGA EL CODIGO, donde dice [[COBRO]] o al final: el modelo los reescribia y salian rotos.
+    cobro = _pegado(pasos, "cobrar")
+    return re.sub(r"\[\[\s*COBRO\s*\]\]", lambda _: cobro, texto) if re.search(r"\[\[\s*COBRO", texto) else \
+        texto + (f"\n\n{cobro}" if cobro and cobro not in texto else "")
 
 
 # ══ EL TURNO DEL AGENTE ══
@@ -454,6 +482,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     msgs = [{"role": "system", "content": CONSIGNA},
             {"role": "user", "content": f"{charla(historial)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
     dichos = [str(m.get("content") or "") for m in historial]
+    dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"]))
     memoria.pop("_ultimo", None)
     pasos, salidas, entrada, salida, corregido = [], [], 0, 0, False
     t0 = time.time()
@@ -506,17 +535,17 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             try:
                 # LO QUE BLOQUEA —Firestore, los embeddings— corre en un hilo: el servidor sigue con las otras charlas.
                 res = await asyncio.to_thread(buscar, str(a.get("consulta") or ""), tienda_id) if nombre == "buscar" \
-                    else await asyncio.to_thread(presupuesto, a, memoria, tienda_id, visto) if nombre == "presupuesto" \
-                    else await cobrar(a, memoria, user_id, canal, tienda_id, trace_id) if nombre == "cobrar" \
+                    else await asyncio.to_thread(presupuesto, a, memoria, tienda_id, visto, dijo) if nombre == "presupuesto" \
+                    else await cobrar(a, memoria, user_id, canal, tienda_id, trace_id, dijo) if nombre == "cobrar" \
                     else calcular(str(a.get("cuenta") or ""))
-                if nombre == "presupuesto":  # al modelo, las dos partes; al cliente, solo la suya
+                if nombre in ("presupuesto", "cobrar"):  # al modelo, las dos partes; al cliente, solo la suya
                     cliente, res = res[0], "\n".join(x for x in res if x)
             except Exception as e:  # noqa: BLE001 — una herramienta que falla se lo dice al modelo, no al cliente
                 log.error("agente_herramienta_error", trace_id=trace_id, herramienta=nombre,
                           error=f"{type(e).__name__}: {str(e)[:200]}")
                 res = "La herramienta fallo. Segui con lo que tenes o pedile al cliente lo que falte."
             pasos.append({"herramienta": nombre, "pide": a, "devuelve": res,
-                          **({"al_cliente": cliente} if nombre == "presupuesto" else {})})
+                          **({"al_cliente": cliente} if nombre in ("presupuesto", "cobrar") else {})})
             salidas.append(res)
             msgs.append({"role": "tool", "tool_call_id": c.id, "content": res})
     return {"error": "sin respuesta", "pasos": pasos}

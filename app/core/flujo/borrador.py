@@ -476,11 +476,11 @@ def faltantes(b: dict, res: list) -> list:
 # ══ 5. DERIVAR ═══════════════════════════════════════════════════════════════
 
 def pago_listo(b: dict) -> list:
-    """El pago que se cuenta: con cada medio dicho y que sume cien. Si no, ninguno."""
+    """El pago que se cuenta: que sume cien. Si no, ninguno. LA PARTE SIN MEDIO SE MUESTRA, sin descuento, y el medio se
+    pregunta igual: el 30-oct, a "setenta treinta" el cliente no veia el reparto. Decision de Martin."""
     p = b["pago"]
-    ok = p and sum(K.entero(x["porcentaje"]) for x in p) == 100 and \
-        not any(K.n(x["medio"]) in SIN_MEDIO for x in p)
-    return list(p) if ok else []
+    ok = p and sum(K.entero(x["porcentaje"]) for x in p) == 100
+    return [{**x, "medio": "a definir"} if K.n(x["medio"]) in SIN_MEDIO else x for x in p] if ok else []
 
 
 NO_FRENAN = ("pago", "medio", "supuesto")

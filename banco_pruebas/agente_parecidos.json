@@ -1934,5 +1934,313 @@
 "asesoramiento",
 0.6397
 ]
+],
+"rubro|auriculares origen no chino": [
+[
+"auriculares",
+0.8069
+],
+[
+"parlante",
+0.6908
+],
+[
+"fuente",
+0.6773
+]
+],
+"tema|auriculares origen no chino": [
+[
+"marcas_originales",
+0.6791
+],
+[
+"origen_procedencia",
+0.6718
+],
+[
+"fabricacion",
+0.6616
+]
+],
+"rubro|mouse origen no chino": [
+[
+"mouse",
+0.7596
+],
+[
+"fuente",
+0.6845
+],
+[
+"auriculares",
+0.6672
+]
+],
+"tema|mouse origen no chino": [
+[
+"origen_procedencia",
+0.7046
+],
+[
+"mouse_dpi",
+0.7023
+],
+[
+"marcas_originales",
+0.6787
+]
+],
+"rubro|memoria ram origen no chino": [
+[
+"memoria ram",
+0.7637
+],
+[
+"placa de video",
+0.6763
+],
+[
+"procesador",
+0.6557
+]
+],
+"tema|memoria ram origen no chino": [
+[
+"origen_procedencia",
+0.6648
+],
+[
+"marcas_originales",
+0.6616
+],
+[
+"fabricacion",
+0.6597
+]
+],
+"rubro|Teclado Logitech K120 Negro": [
+[
+"teclado",
+0.7513
+],
+[
+"mouse",
+0.6613
+],
+[
+"microfono",
+0.6609
+]
+],
+"tema|Teclado Logitech K120 Negro": [
+[
+"teclado_mecanico_membrana",
+0.6513
+],
+[
+"especificaciones",
+0.6345
+],
+[
+"compatibilidad",
+0.632
+]
+],
+"rubro|auriculares económicos": [
+[
+"auriculares",
+0.8137
+],
+[
+"parlante",
+0.6916
+],
+[
+"microfono",
+0.6503
+]
+],
+"tema|auriculares económicos": [
+[
+"usados",
+0.6528
+],
+[
+"promociones",
+0.6456
+],
+[
+"asesoramiento",
+0.6371
+]
+],
+"rubro|mouse económicos": [
+[
+"mouse",
+0.7759
+],
+[
+"auriculares",
+0.6893
+],
+[
+"webcam",
+0.6648
+]
+],
+"tema|mouse económicos": [
+[
+"mouse_dpi",
+0.7064
+],
+[
+"usados",
+0.6589
+],
+[
+"promociones",
+0.6465
+]
+],
+"rubro|memoria ram económica": [
+[
+"memoria ram",
+0.7919
+],
+[
+"placa de video",
+0.6986
+],
+[
+"gabinete",
+0.6746
+]
+],
+"tema|memoria ram económica": [
+[
+"usados",
+0.6365
+],
+[
+"compatibilidad",
+0.623
+],
+[
+"promociones",
+0.622
+]
+],
+"rubro|teclado económico": [
+[
+"teclado",
+0.8166
+],
+[
+"notebook",
+0.675
+],
+[
+"auriculares",
+0.6707
+]
+],
+"tema|teclado económico": [
+[
+"teclado_mecanico_membrana",
+0.7025
+],
+[
+"usados",
+0.6521
+],
+[
+"costo_envio",
+0.6415
+]
+],
+"rubro|memoria ram sin componentes chinos": [
+[
+"memoria ram",
+0.7847
+],
+[
+"placa de video",
+0.6932
+],
+[
+"procesador",
+0.6842
+]
+],
+"tema|memoria ram sin componentes chinos": [
+[
+"marcas_originales",
+0.6595
+],
+[
+"fabricacion",
+0.6549
+],
+[
+"origen_procedencia",
+0.6483
+]
+],
+"rubro|auriculares mas baratos": [
+[
+"auriculares",
+0.8162
+],
+[
+"parlante",
+0.6976
+],
+[
+"microfono",
+0.6607
+]
+],
+"tema|auriculares mas baratos": [
+[
+"promociones",
+0.6588
+],
+[
+"marcas_originales",
+0.645
+],
+[
+"usados",
+0.6448
+]
+],
+"rubro|memoria ram mas barata": [
+[
+"memoria ram",
+0.797
+],
+[
+"placa de video",
+0.7125
+],
+[
+"gabinete",
+0.6888
+]
+],
+"tema|memoria ram mas barata": [
+[
+"costo_envio",
+0.6417
+],
+[
+"promociones",
+0.6404
+],
+[
+"compatibilidad",
+0.6337
+]
 ]
 }
