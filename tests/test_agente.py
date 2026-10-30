@@ -4,7 +4,7 @@ Reemplaza a `test_cableado58.py`, que pasaba las 58 con la traduccion a mano por
 Las 26 charlas que el agente grabo en el banco con su propia memoria pasan por el webhook entero del clon, con un modelo
 falso que devuelve lo que devolvio el de verdad, `banco_pruebas/agente_replay.py`. Corre en cada push, antes del deploy.
 
-  bien      turnos cuyas casillas de `vara_58.json` pasan: el piso es lo medido en el banco, 69 de 75.
+  bien      turnos cuyas casillas de `vara_58.json` pasan: el piso es lo medido, 73 de 75 desde las casillas del 30-oct.
   iguales   llamadas a herramientas que devuelven lo mismo que en el banco: todas. Si una cambia, el codigo cambio lo
             que el modelo leyo cuando se midio, y hay que medir de nuevo con el modelo.
 """
@@ -12,7 +12,7 @@ import pytest
 
 from banco_pruebas import agente_replay as R
 
-TURNOS, PISO_BIEN = 75, 69
+TURNOS, PISO_BIEN = 75, 73
 
 
 @pytest.fixture(scope="module")
