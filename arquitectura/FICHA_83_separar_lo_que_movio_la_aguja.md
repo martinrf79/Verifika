@@ -286,3 +286,18 @@ Con todo a la vista no mejora: lo que falla no es lo que el buscador le acerca d
 
 Lo que sigue: el mapa de la tienda y sus reglas siempre en contexto, con el buscador para los productos; y los cambios
 del pedido como cambios, no como el pedido entero reescrito.
+
+### La entrevista de las causas, 30-oct, con la gratis
+
+`entrevista_causas.py`: diez fallas que se repiten; el modelo ve exactamente lo que recibio, lo que hizo y la casilla
+que fallo, y se le pregunta la causa puntual. Lo que dice, contrastado con lo grabado:
+- **K20 y K21 en el segundo turno, sueltos: es el cableado del banco.** El estado que recibe sale del flujo viejo con la
+  agenda a mano y llega roto: "2 los otros, falta otros" y un listado como respuesta anterior. Con su propia memoria,
+  `--charlas`, los mismos turnos salen bien. Esas fallas no son del modelo.
+- **K21 en el tercer turno y K04: la herramienta.** El presupuesto contesta con la voz del cliente, "¿te sirve otro color
+  u otro modelo?", y el modelo cambia de modelo en vez de color; en K04 la fila cortada deja el peso afuera.
+- **C11, C13 y C41 con el catalogo: las reglas no estaban en el contexto.**
+- **K18: el catalogo por rubro no deja ver lo mas caro de toda la tienda.**
+- **El modelo se culpa a si mismo o a la casilla donde lo grabado muestra que falto el dato o la herramienta confundio**,
+  y como arreglo siempre propone mas reglas en la consigna, lo que ya se midio que no mueve nada. Sirve la frase que cita;
+  la causa se confirma contra lo grabado.

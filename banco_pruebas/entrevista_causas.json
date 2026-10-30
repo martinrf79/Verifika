@@ -1,0 +1,122 @@
+[
+ {
+  "fuente": "catalogo",
+  "conjunto": "primeros",
+  "id": "C41",
+  "turno": 0,
+  "mensaje": "soy jubilado, tienen descuento?",
+  "malas": [
+   "dice transferencia"
+  ],
+  "causa": "1. **Causa puntual:** F) La revisión está mal. Mi respuesta fue correcta.\n\n2. **Frase que me llevó a la respuesta:** \"soy jubilado, tienen descuento?\" (El cliente preguntó por descuentos, y mi respuesta fue clara al informar que no contamos con ese beneficio específico, cumpliendo con la consigna de ser claro y contestar lo que pidió).\n\n3. **Cambio puntual:** Ninguno. La consigna indica que si la tienda no tiene algo (en este caso, un descuento para jubilados), debo decirlo claro. Mi respuesta siguió esa instrucción al pie de la letra. La revisión parece haber interpretado erróneamente que debía haber mencionado una \"transferencia\" (quizás confundiendo el término con el proceso de pago), pero como no hubo venta ni presupuesto, no correspondía mencionar datos de cobro."
+ },
+ {
+  "fuente": "catalogo",
+  "conjunto": "primeros",
+  "id": "C11",
+  "turno": 0,
+  "mensaje": "hacen factura A?",
+  "malas": [
+   "dice cuit"
+  ],
+  "causa": "1. **Causa puntual:** A) El dato que hacía falta no estaba en lo que recibiste.\n\n2. **Dato faltante:** El catálogo y las reglas de la tienda proporcionadas en la consigna no incluyen información sobre la emisión de factura A ni sobre la solicitud de CUIT al cliente.\n\n3. **Cambio puntual:** Agregar una regla explícita en la sección \"Las reglas de la tienda\" que indique: \"Si el cliente consulta por factura A, informale que la emitimos y solicitale su CUIT para procesarla\"."
+ },
+ {
+  "fuente": "catalogo",
+  "conjunto": "primeros",
+  "id": "C13",
+  "turno": 0,
+  "mensaje": "soy revendedor, tienen precio mayorista?",
+  "malas": [
+   "dice mayorista|reventa|cantidad"
+  ],
+  "causa": "1. **Causa:** C) La consigna me llevó a hacerlo así. Al indicarme que soy un vendedor de una tienda online que contesta como un \"buen vendedor\" y que debo llevar al cliente a la venta, prioricé la atención estándar del catálogo sin tener una regla explícita en las herramientas sobre cómo gestionar consultas de reventa o precios mayoristas.\n\n2. **Frase que llevó al error:** \"soy revendedor, tienen precio mayorista?\"\n\n3. **Cambio puntual:** Agregar una regla específica en la sección de \"Reglas de la tienda\" dentro de la consigna que indique explícitamente: \"Si el cliente consulta por precios mayoristas o reventa, informar que la tienda no cuenta con lista de precios diferenciada y que los precios publicados son los finales para todo tipo de cliente\"."
+ },
+ {
+  "fuente": "catalogo",
+  "conjunto": "fuera de muestra",
+  "id": "K18",
+  "turno": 0,
+  "mensaje": "cual es el articulo mas caro que vendes?",
+  "malas": [
+   "dice rog strix",
+   "el monto 3100500"
+  ],
+  "causa": "1. **B**: Estaba en el catálogo y no lo vi al momento de buscar el producto más caro.\n\n2. \"Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD Gris $3.100.500\"\n\n3. Que el catálogo estuviera ordenado por precio de forma global y no solo por rubro, o haber realizado una búsqueda exhaustiva en todo el texto antes de responder."
+ },
+ {
+  "fuente": "catalogo",
+  "conjunto": "con charla",
+  "id": "K20",
+  "turno": 1,
+  "mensaje": "si, el teclado era una memoria",
+  "malas": [
+   "el monto 7500",
+   "el monto 6500",
+   "el monto 10000",
+   "conserva 2 auricular, 2 mouse, 2 memoria",
+   "total general: la suma de los bloques",
+   "el 70% sobre el total general"
+  ],
+  "causa": "1. **La causa puntual:** B) El dato estaba en el mensaje recibido (el pedido original del cliente: \"dos auriculares, dos mouse y dos memorias\") y no lo usé correctamente al armar el presupuesto, ya que ignoré la cantidad total solicitada y reemplacé ítems en lugar de completar el pedido.\n\n2. **Frase que llevó al error:** \"Dame precio de dos auriculares, dos mouse y dos memorias.\" (Al recibir la aclaración \"el teclado era una memoria\", debí ajustar el pedido a 2 auriculares, 2 mouse y 2 memorias, pero en mi respuesta alteré las cantidades y productos de forma arbitraria).\n\n3. **Cambio puntual:** Incluir en la consigna una instrucción de validación obligatoria: \"Antes de generar el presupuesto, compara siempre el carrito actual contra el pedido inicial del cliente para asegurar que las cantidades totales (2 auriculares, 2 mouse, 2 memorias) coincidan con lo solicitado originalmente\"."
+ },
+ {
+  "fuente": "catalogo",
+  "conjunto": "con charla",
+  "id": "K21",
+  "turno": 1,
+  "mensaje": "En realidad son 7 articulos el teclado va a concordia, lo demas esta bien",
+  "malas": [
+   "exactamente 2 auricular, 2 mouse, 2 memoria y 1 teclado",
+   "total general: la suma de los bloques",
+   "el 70% sobre el total general"
+  ],
+  "causa": "1. **Causa puntual:** B) El dato estaba en el mensaje inicial del cliente (\"dos auriculares, dos mouse y dos memorias\") y en el estado del pedido, pero al procesar la corrección del cliente (\"son 7 artículos\"), no integré correctamente la cantidad total de ítems solicitados originalmente, omitiendo las memorias y desbalanceando el pedido.\n\n2. **Frase que llevó al error:** \"Dame precio de dos auriculares, dos mouse y dos memorias.\" (El error fue ignorar esta instrucción inicial al intentar \"completar\" el pedido con productos elegidos por mí en lugar de respetar la cantidad y tipo de artículos pedidos desde el principio).\n\n3. **Cambio puntual:** Modificar la consigna para que, ante cualquier cambio o aclaración del cliente, el sistema me obligue a **releer y validar el carrito contra el mensaje inicial del cliente** antes de generar el presupuesto, asegurando que la suma de ítems coincida con la cantidad total solicitada (2 auriculares, 2 mouse, 2 memorias, 1 teclado = 7 artículos)."
+ },
+ {
+  "fuente": "catalogo",
+  "conjunto": "con charla",
+  "id": "K21",
+  "turno": 2,
+  "mensaje": "Como son chinos seria todo igual salvo el precio, quiero los mas economicos de cada clase.",
+  "malas": [
+   "dice kb-110"
+  ],
+  "causa": "1. **Causa puntual:** B) El dato estaba en el catálogo (Teclado Genius KB-110X Blanco con stock), pero al buscarlo con la herramienta, esta me devolvió erróneamente que no tenía stock, por lo que lo descarté y elegí otro por mi cuenta.\n\n2. **Frase que recibí:** \"Teclado Genius KB-110X Blanco $12.000, stock 11; colores con stock: Blanco; garantia: 24 meses; switch teclado: membrana; resistencia agua: si, resistente a derrames y sa; conexion: con cable USB; peso: 816 g | otra variante: Negro, peso: 872 g\"\n\n3. **Cambio puntual:** Que la herramienta `presupuesto` o `buscar` sea consistente con el catálogo provisto, ya que el error se originó al confiar en la respuesta de la herramienta sobre la disponibilidad, ignorando que el catálogo indicaba stock positivo para el modelo más económico."
+ },
+ {
+  "fuente": "buscador",
+  "conjunto": "fuera de muestra",
+  "id": "K04",
+  "turno": 0,
+  "mensaje": "el mouse mas liviano y el teclado mas barato, los dos a Rosario, cuanto es todo?",
+  "malas": [
+   "dice g pro",
+   "el monto 205000"
+  ],
+  "causa": "1. **Causa:** B. El dato estaba en la herramienta `buscar` (el Mouse Logitech G Pro Wireless es el más liviano de la lista), pero al procesar la información elegí el G502 X por error de lectura, ignorando el orden de prioridad de la búsqueda.\n\n2. **Frase que causó el error:** \"Mouse Logitech G Pro Wireless Blanco $186.000, stock 16; colores con stock: Negro, Blanco; garantia: 24 meses; conexion: inalambrico; sensor: sensor optico; bateria: si, bateria recargable, hasta\" (Este era el primero de la lista de livianos).\n\n3. **Cambio puntual:** Una instrucción más estricta en la consigna que obligue a realizar una validación cruzada entre el criterio del cliente (\"el más liviano\") y el primer resultado de la lista devuelta por la herramienta `buscar` antes de proceder a armar el presupuesto."
+ },
+ {
+  "fuente": "buscador",
+  "conjunto": "fuera de muestra",
+  "id": "K19",
+  "turno": 0,
+  "mensaje": "Tenes catalogo? que tipo de productos venden?",
+  "malas": [
+   "dice mouse",
+   "dice teclado"
+  ],
+  "causa": "1. **Causa:** B) Estaba y no lo usé o no lo vi. Al no ejecutar la herramienta `buscar` para obtener el catálogo real, respondí de forma genérica en lugar de listar los productos disponibles según la base de datos de la tienda.\n\n2. **Frase:** \"Tenes catalogo? que tipo de productos venden?\"\n\n3. **Cambio:** La consigna debería ser más estricta al obligar el uso de la herramienta `buscar` ante cualquier consulta general sobre el catálogo, prohibiendo explícitamente responder de memoria o de forma genérica sin haber consultado primero el inventario real."
+ },
+ {
+  "fuente": "buscador",
+  "conjunto": "primeros",
+  "id": "C41",
+  "turno": 0,
+  "mensaje": "soy jubilado, tienen descuento?",
+  "malas": [
+   "dice transferencia"
+  ],
+  "causa": "1. **Causa puntual:** B) El dato estaba en las reglas de la tienda (que debía consultar mediante la herramienta `buscar`), pero no lo utilicé.\n\n2. **Frase que me llevó al error:** \"tienen descuento?\" (Al no usar la herramienta `buscar` para consultar las reglas de la tienda, asumí que no había descuentos en lugar de verificar si existía alguna política de beneficios o formas de pago con descuento).\n\n3. **Cambio puntual:** Incluir en la consigna una instrucción explícita de ejecutar la herramienta `buscar` ante cualquier consulta sobre políticas, beneficios o reglas de la tienda, incluso si el vendedor cree conocer la respuesta de memoria."
+ }
+]
