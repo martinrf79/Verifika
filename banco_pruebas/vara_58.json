@@ -3065,24 +3065,56 @@
      "texto": "Sip",
      "casillas": [
       {
-       "tipo": "articulos_exactos",
-       "cantidades": {
-        "auricular": 2,
-        "mouse": 2,
-        "memoria": 2,
-        "teclado": 1
-       },
-       "n": "exactamente 2 auricular, 2 mouse, 2 memoria y 1 teclado"
-      },
-      {
-       "tipo": "plata",
-       "monto": 237000,
-       "n": "el monto 237000"
-      },
-      {
-       "tipo": "reparto_total",
-       "pct": 70,
-       "n": "el 70% sobre el total general"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "todas",
+         "opciones": [
+          {
+           "tipo": "articulos_exactos",
+           "cantidades": {
+            "auricular": 2,
+            "mouse": 2,
+            "memoria": 2,
+            "teclado": 1
+           },
+           "n": "exactamente 2 auricular, 2 mouse, 2 memoria y 1 teclado"
+          },
+          {
+           "tipo": "plata",
+           "monto": 237000,
+           "n": "el monto 237000"
+          },
+          {
+           "tipo": "reparto_total",
+           "pct": 70,
+           "n": "el 70% sobre el total general"
+          }
+         ],
+         "n": "muestra el pedido"
+        },
+        {
+         "tipo": "todas",
+         "opciones": [
+          {
+           "tipo": "dice",
+           "palabras": [
+            "nombre"
+           ],
+           "n": "dice nombre"
+          },
+          {
+           "tipo": "dice",
+           "palabras": [
+            "medio"
+           ],
+           "n": "dice medio"
+          }
+         ],
+         "n": "pide el nombre y el medio de pago"
+        }
+       ],
+       "n": "muestra el pedido, o pide lo que falta para cerrar"
       },
       {
        "tipo": "no_patron",
