@@ -39,6 +39,22 @@ def test_el_reparto_no_inventa_medios_y_se_muestra(A):
     assert "transferencia (70%)" in dicho and "descuento =" in dicho
 
 
+def test_el_mismo_producto_con_y_sin_destino_no_traba(A):
+    """30-oct, despues del deploy: el modelo mando cada producto dos veces, sin destino y con destino, y el ejecutor
+    preguntaba "¿A dónde va...?" sin armar nada."""
+    a = {"renglones": [{"producto": p["producto"], "cantidad": 2} for p in PEDIDO] + PEDIDO, "pago": "70, 30"}
+    cliente, nota = A.presupuesto(a, A.memoria_de({}), C.TIENDA, None, "")
+    assert "Total general" in cliente and "(70%)" in cliente and "¿A dónde va" not in cliente
+    assert "ya iban con destino" in nota
+
+
+def test_el_medio_que_ofrecio_el_bot_vale_como_dicho(A):
+    """ "¿Transferencia o Mercado Pago?" y "no tengo mp" es transferencia; un solo pago sin medio no es un reparto."""
+    assert A._reparto("100 transferencia", "no tengo mp ¿preferis transferencia o mercado pago?") == \
+        [{"medio": "transferencia", "porcentaje": 100}]
+    assert A._reparto("100 transferencia", "no tengo mp") == []
+
+
 def test_sin_medio_no_se_cobra_y_el_medio_dicho_si(A):
     m = A.memoria_de({})
     m["pedido"] = PEDIDO

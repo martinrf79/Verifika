@@ -42,6 +42,10 @@ VUELTAS = 6
 # UMBRALES de los embeddings, medidos en el banco el 29-oct: el rubro correcto da cerca de 0,78 y el ruido de 0,65 a 0,74.
 UMBRAL_RUBRO, UMBRAL_TEMA = 0.75, 0.70
 MEMORIA = {"pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": ""}
+# UMBRAL, 30-oct: hasta cuantas palabras la respuesta del cliente elige el medio que le ofrecio el bot. "Joaquin no tengo
+# mp" son 4; con 6, "si, el teclado era una memoria" anotaba transferencia en K20 y "color indistinto 70 por ciento
+# transferencia" anotaba Mercado Pago al 30% en K21, sin que el cliente lo dijera.
+RESPUESTA_CORTA = 4
 
 CONSIGNA = """Sos vendedor de una tienda online de tecnologia de Argentina que vende por WhatsApp. Contestas el ultimo
 mensaje del cliente como un buen vendedor: corto, claro, en español rioplatense con voseo, contestando todo lo que
@@ -316,8 +320,9 @@ def _reparto(pago: str, dijo: str = None) -> list:
     "setenta treinta" el modelo le puso transferencia y Mercado Pago, y la transferencia llevo un descuento que nadie
     eligio. Sin medio, el ejecutor pregunta con cual paga cada parte."""
     ms = re.finditer(r"(\d{1,3})\s*%?\s*(?:por ciento\s*)?(?:en|por|con)?\s*([a-z ]*?)\s*(?=,|\by\b|$|\d)", K.n(pago or ""))
-    return [{"medio": m.group(2) if dijo is None or m.group(2)[:4] in dijo else "",
-             "porcentaje": int(m.group(1))} for m in ms]
+    out = [{"medio": m.group(2) if dijo is None or m.group(2)[:4] in dijo else "", "porcentaje": int(m.group(1))}
+           for m in ms]
+    return [] if len(out) == 1 and not out[0]["medio"] else out  # un solo pago sin medio no es un reparto
 
 
 def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo: str = None) -> tuple:
@@ -334,8 +339,15 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     idts = {str(x["producto"]): K.identificar(str(x["producto"]), "", tienda_id) for x in rs}
     fuera = [p for p, i in idts.items() if i["veredicto"] != "exists"]
     rs = [x for x in rs if str(x["producto"]) not in fuera]
+    # EL MISMO PRODUCTO CON Y SIN DESTINO es el pedido dicho dos veces, el total y el reparto, visto el 30-oct: va el
+    # que tiene destino, y el modelo se entera.
+    con = {idts[str(x["producto"])]["producto"]["id"] for x in rs if x.get("destino")}
+    dobles = [str(x["producto"]) for x in rs if not x.get("destino") and idts[str(x["producto"])]["producto"]["id"] in con]
+    rs = [x for x in rs if x.get("destino") or str(x["producto"]) not in dobles]
     afuera = f" Quedaron afuera, porque no son un producto exacto de la tienda: {'; '.join(fuera)}. Buscalos y manda " \
         "el modelo exacto, o preguntale al cliente cual quiere." if fuera else ""
+    afuera += f" Saque los renglones sin destino de {'; '.join(dict.fromkeys(dobles))}: ya iban con destino. Si eran " \
+        "aparte, mandalos con el suyo." if dobles else ""
     if not rs:
         return "", "El pedido esta vacio: faltan los renglones, producto, cantidad y destino de cada uno." + afuera
     # EL CANDADO DE PRODUCTOS: un producto que no salio del buscador, de la charla ni del pedido no se elige de memoria.
@@ -482,7 +494,10 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     msgs = [{"role": "system", "content": CONSIGNA},
             {"role": "user", "content": f"{charla(historial)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
     dichos = [str(m.get("content") or "") for m in historial]
-    dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"]))
+    # LO QUE DIJO EL CLIENTE, y lo que le ofrecio el ultimo mensaje del bot si contesta corto: a "¿transferencia o Mercado
+    # Pago?", "no tengo MP" es transferencia; un mensaje largo de otra cosa no elige medio. Decision de Martin, 30-oct.
+    corto = dichos[-1:] if len(mensaje.split()) <= RESPUESTA_CORTA else []
+    dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"] + corto))
     memoria.pop("_ultimo", None)
     pasos, salidas, entrada, salida, corregido = [], [], 0, 0, False
     t0 = time.time()
