@@ -297,20 +297,22 @@ def _reparto(pago: str) -> list:
                                  K.n(pago or ""))]
 
 
-def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> str:
-    """Los renglones del pedido entero, cada uno con producto, cantidad y destino, y si lo dijo, el pago dividido y el
-    tope. Lo cumple el ejecutor de siempre, que pone los montos, los envios, el envio gratis y el reparto."""
+def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> tuple:
+    """(lo que lee el cliente, la nota para el modelo). Los renglones del pedido entero, cada uno con producto, cantidad
+    y destino, y si lo dijo, el pago dividido y el tope. Lo cumple el ejecutor de siempre, que pone los montos, los
+    envios, el envio gratis y el reparto. AL CLIENTE VA SOLO EL TEXTO DEL EJECUTOR: la nota es para el modelo, y el
+    30-oct salia pegada en WhatsApp."""
     rs = [x for x in a.get("renglones") or [] if isinstance(x, dict) and x.get("producto")] or \
         list(memoria["pedido"] or memoria.get("mostrado") or [])
     # LA MEMORIA DE LA CHARLA: el pago y el tope dichos antes valen hasta que diga otros.
     a = {**a, "pago": a.get("pago") or memoria.get("pago") or "", "tope": a.get("tope") or memoria.get("tope") or 0}
     if not rs:
-        return "El pedido esta vacio: faltan los renglones, producto, cantidad y destino de cada uno."
+        return "", "El pedido esta vacio: faltan los renglones, producto, cantidad y destino de cada uno."
     # EL CANDADO DE PRODUCTOS: un producto que no salio del buscador, de la charla ni del pedido no se elige de memoria.
     if visto is not None:
         nuevos = [str(x["producto"]) for x in rs if not _visto(str(x["producto"]), visto, tienda_id)]
         if nuevos:
-            return "Primero busca estos productos con el buscador: " + "; ".join(nuevos) + "."
+            return "", "Primero busca estos productos con el buscador: " + "; ".join(nuevos) + "."
     agrega = [{k: v for k, v in {"producto": str(x["producto"]), "cantidad": K.entero(x.get("cantidad")) or 1,
                                  "destino": str(x.get("destino") or ""), "color": str(x.get("color") or "")}.items()
                if v} for x in rs]
@@ -332,7 +334,8 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None) -> st
     # confirma o cambia. Se aplica al final del turno, si la respuesta sale.
     memoria["_ultimo"] = {"mostrado": rs, "pago": a.get("pago") or "", "tope": tope,
                           **({"pedido": rs} if a.get("anotar") else {})}
-    return (redaccion.texto(t.hechos, t.preguntas, False) or "No se pudo armar.") + "\n" + cuenta
+    cliente = redaccion.texto(t.hechos, t.preguntas, False)
+    return cliente, ("" if cliente else "No se pudo armar.\n") + cuenta
 
 
 async def cobrar(a: dict, memoria: dict, user_id: str, canal: str, tienda_id: str, trace_id: str) -> str:
@@ -344,7 +347,7 @@ async def cobrar(a: dict, memoria: dict, user_id: str, canal: str, tienda_id: st
     if not pedido:
         return "No hay pedido anotado todavia: arma el presupuesto con anotar en true."
     pago = memoria.get("pago") or ""
-    orden = presupuesto({"renglones": pedido, "pago": pago}, {**memoria}, tienda_id)
+    orden = presupuesto({"renglones": pedido, "pago": pago}, {**memoria}, tienda_id)[0]
     medios = [m["medio"] for m in _reparto(pago)] or [""]
     nombre = str(a.get("nombre") or "").strip()
     destinos = ", ".join(dict.fromkeys(str(x.get("destino")) for x in pedido if x.get("destino")))
@@ -381,12 +384,17 @@ def calcular(cuenta: str) -> str:
         else f"{cuenta} = {round(v, 2)}"
 
 
+def _pegado(pasos: list) -> str:
+    """Lo que el cliente lee del ultimo presupuesto del turno: solo el texto del ejecutor."""
+    return next((p.get("al_cliente", "") for p in reversed(pasos) if p["herramienta"] == "presupuesto"), "")
+
+
 def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
-    """[[PRESUPUESTO]] se cambia por el ultimo presupuesto que armo el modelo, tal cual lo dio el ejecutor. Si no armo
-    ninguno en este turno, el del pedido anotado."""
-    ultimo = next((p["devuelve"] for p in reversed(pasos) if p["herramienta"] == "presupuesto"), "")
+    """[[PRESUPUESTO]] se cambia por el ultimo presupuesto que armo el modelo, tal cual lo dio el ejecutor, sin la nota
+    para el modelo. Si no armo ninguno en este turno, o el ultimo no salio, el del pedido anotado."""
+    ultimo = _pegado(pasos)
     if not ultimo and re.search(r"\[\[\s*PRESUPUESTO\s*\]\]", texto) and (memoria["pedido"] or memoria.get("mostrado")):
-        ultimo = presupuesto({}, memoria, tienda_id)
+        ultimo = presupuesto({}, memoria, tienda_id)[0]
     return re.sub(r"\[\[\s*PRESUPUESTO\s*\]\]", lambda _: ultimo, texto)
 
 
@@ -445,7 +453,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
         if not m.tool_calls:
             texto = pegar(m.content or "", pasos, memoria, tienda_id)
             # EL CANDADO ES EL VERIFICADOR, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
-            pegados = [p["devuelve"] for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
+            pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
             malos = V.verificar(texto, " ".join(salidas + dichos + [mensaje, contexto]), tienda_id, pegados)
             if malos and not corregido and vuelta < VUELTAS:
                 corregido = True
@@ -459,7 +467,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                 continue
             if memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
-            ultimo = next((p["devuelve"] for p in reversed(pasos) if p["herramienta"] == "presupuesto"), "")
+            ultimo = _pegado(pasos)
             log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos],
                      pide=json.dumps([p["pide"] for p in pasos], ensure_ascii=False)[:3000], hallazgos=malos,
                      corregido=corregido, entrada=entrada, salida=salida, seg=round(time.time() - t0, 1))
@@ -473,17 +481,21 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                 a = {}
             visto = K.n(" ".join(salidas + dichos + [contexto]))
             nombre = c.function.name
+            cliente = ""
             try:
                 # LO QUE BLOQUEA —Firestore, los embeddings— corre en un hilo: el servidor sigue con las otras charlas.
                 res = await asyncio.to_thread(buscar, str(a.get("consulta") or ""), tienda_id) if nombre == "buscar" \
                     else await asyncio.to_thread(presupuesto, a, memoria, tienda_id, visto) if nombre == "presupuesto" \
                     else await cobrar(a, memoria, user_id, canal, tienda_id, trace_id) if nombre == "cobrar" \
                     else calcular(str(a.get("cuenta") or ""))
+                if nombre == "presupuesto":  # al modelo, las dos partes; al cliente, solo la suya
+                    cliente, res = res[0], "\n".join(x for x in res if x)
             except Exception as e:  # noqa: BLE001 — una herramienta que falla se lo dice al modelo, no al cliente
                 log.error("agente_herramienta_error", trace_id=trace_id, herramienta=nombre,
                           error=f"{type(e).__name__}: {str(e)[:200]}")
                 res = "La herramienta fallo. Segui con lo que tenes o pedile al cliente lo que falte."
-            pasos.append({"herramienta": nombre, "pide": a, "devuelve": res})
+            pasos.append({"herramienta": nombre, "pide": a, "devuelve": res,
+                          **({"al_cliente": cliente} if nombre == "presupuesto" else {})})
             salidas.append(res)
             msgs.append({"role": "tool", "tool_call_id": c.id, "content": res})
     return {"error": "sin respuesta", "pasos": pasos}
