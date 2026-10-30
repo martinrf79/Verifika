@@ -269,6 +269,14 @@ SIN_JERGA = no_patron(r"\bids?\b|el sistema|identificador|denominacion|[a-z]{3}\
                       r"|no existe un articulo con ese nombre|no (puedo|podemos) sumarl", "sin jerga interna")
 
 
+SIETE = {"tipo": "articulos_exactos", "cantidades": {"auricular": 2, "mouse": 2, "memoria": 2, "teclado": 1},
+         "n": "exactamente 2 auricular, 2 mouse, 2 memoria y 1 teclado"}
+# EL CIERRE NO VUELVE ATRAS: ni el color ni los destinos que ya dio.
+CERRADO = (no_patron("negro o blanco|blanco o negro|que color|cual color|elegis el color|elijas el color",
+                     "no vuelve a preguntar el color"),
+           no_patron("codigo postal|que provincia|la provincia", "no pide destinos que ya tiene"), SIN_JERGA)
+
+
 def k(num, clase, *turnos):
     return {"id": f"K{num:02d}", "grupo": "K", "clase": clase, "turnos": list(turnos)}
 
@@ -377,6 +385,23 @@ COMPLEJAS = [
         articulos(auricular=2, mouse=2, memoria=2), total_general(), reparto_total(70), SIN_JERGA)),
     k(19, "real: el catalogo",
       t("Tenes catalogo? que tipo de productos venden?", dice("mouse"), dice("teclado"), dice("notebook"), SIN_JERGA)),
+    k(21, "real 7-oct por WhatsApp, Julio: la K20 hasta el cierre. Pide 7 articulos en tres destinos, pasa a los mas "
+          "baratos, da el nombre y paga. El bot perdio el pedido al cerrar",
+      t("Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que "
+        "necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. "
+        "Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el "
+        "presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+        pregunta(n="pregunta antes de calcular"), SIN_JERGA),
+      t("En realidad son 7 articulos el teclado va a concordia, lo demas esta bien",
+        SIETE, total_general(), reparto_total(70), SIN_JERGA),
+      t("Como son chinos seria todo igual salvo el precio, quiero los mas economicos de cada clase.",
+        dice("dx-110"), dice("zeus"), dice("kb-110"), SIN_JERGA),
+      t("Sip", SIETE, plata(237000), reparto_total(70), SIN_JERGA),
+      t("Mi nombre es Julio",
+        alguna(dice("link"), dice("transfer"), dice("mercado"), dice("pago"), n="avanza al cobro"), *CERRADO),
+      t("Si", plata(237000), *CERRADO),
+      t("Color indistinto 70 por ciento transferencia",
+        plata(71100), alguna(plata(149310), plata(165900), n="la parte de transferencia"), *CERRADO)),
 ]
 
 # LAS CENTINELAS: diez de las 58, distintas entre si. Lo simple se da por
