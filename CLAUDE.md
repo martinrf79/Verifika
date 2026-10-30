@@ -106,6 +106,11 @@ FICHA 70 y al criterio de sacar las once capas de a una. Los pasos 1 a 6 están 
 - **Una sesión no termina con trabajo sin mergear.** O está en `main`, o está descartado por escrito.
 - **Un parche no puede tocar `.github/workflows/`:** un cambio de workflow va en su propio commit por la
   integración de GitHub.
+- **Ninguna propuesta sin la evidencia del caso**, 30-oct, Martín: antes de proponer, se muestra lo grabado del caso, qué
+  recibió el modelo, qué hizo y qué contestó. Si no se muestra, la propuesta no vale.
+- **Se revisa la prueba antes de creer el número.** Cada falla se clasifica contra lo grabado: faltó el dato, la
+  herramienta confundió, el modelo se equivocó, la casilla está mal, o la prueba está rota. Solo se arregla lo del bot.
+  El 30-oct, K20 y K21 sueltos fallaban por el pedido roto que les daba el banco, no por el modelo.
 
 ---
 
