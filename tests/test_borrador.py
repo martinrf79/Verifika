@@ -180,33 +180,6 @@ def test_el_color_de_un_renglon_de_rubro_entra_en_su_busqueda():
     assert [x["falta"] for x in falta] == ["stock"] and "fucsia" in qs[0], qs
 
 
-def test_un_pedido_que_cambia_despues_del_cierre_actualiza_el_mismo_lead(monkeypatch):
-    import asyncio
-    from app.core import leads
-    from app.core.flujo import cierre
-    creados, actualizados = [], []
-    monkeypatch.setattr(leads, "crear_lead", lambda *a, **k: creados.append(1) or f"lead-{len(creados)}")
-    monkeypatch.setattr(leads, "actualizar_lead", lambda lid, *a, **k: actualizados.append(lid))
-
-    async def _avisar(**k):
-        return None
-    monkeypatch.setattr(leads, "notificar_lead", _avisar)
-    monkeypatch.setattr(leads, "modo_cierre", lambda t: "pedido")
-    b = B.leer({})
-    b["cliente"]["nombre"] = "Julio"
-    estado = {"borrador": b}
-    textos = []
-    for cantidad in (1, 1, 2):
-        B.aplicar(b, {"agrega": [{"producto": "G203", "cantidad": 1, "color": "negro"}]} if not b["renglones"]
-                  else {"cambia": [{"es": "L-1", "cantidad": cantidad}]})
-        res = B.resolver(b, TIENDA)
-        estado["pedido"] = B.articulos(res, B.faltantes(b, res))
-        textos.append(asyncio.run(cierre.cerrar(estado, "549", "whatsapp", TIENDA, "Presupuesto: x", "t")))
-    # Cierra, no repite lo cerrado, y con la cantidad cambiada actualiza el mismo lead.
-    assert bool(textos[0]) and textos[1] == "" and bool(textos[2]), textos
-    assert creados == [1] and actualizados == ["lead-1", "lead-1"]
-
-
 def test_una_charla_de_antes_del_borrador_no_pierde_su_pedido():
     from app.core.flujo import estado as E
     viejo = {"pedido": [{"id": "x", "nombre": "Mouse Logitech G203 Lightsync Negro", "cantidad": 2, "destino": "Rosario"}],

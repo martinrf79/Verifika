@@ -379,7 +379,6 @@ def _cumple(espera: dict, t, texto: str) -> str:
 def llenar(tid: str = TID) -> dict:
     """Cada caso llenado y validado. Devuelve {"casos": [...], "hallazgos": {...}}."""
     from app.core.flujo import estado as E
-    from app.core.flujo import interprete
     from app.core.flujo import redaccion
     from . import casos as C
     from . import mapa as M
@@ -402,7 +401,13 @@ def llenar(tid: str = TID) -> dict:
             continue
         if antes:
             _correr(antes, estado, tid)
-        libreta = interprete.libreta(estado, [], tid)
+        # La libreta del interprete se saco el 30-oct con la lectura: queda lo que el ejecutor dejo anotado.
+        from app.core.flujo import borrador as Bo
+        b = Bo.leer(estado.get("borrador"))
+        res = Bo.resolver(b, tid) if b["renglones"] else []
+        libreta = "LIBRETA:\n" + "\n".join([f"- MOSTRADO {m['nombre']} {m['precio']}" for m in estado["mostrados"]]
+                                            + Bo.libreta(b, res, Bo.faltantes(b, res))) if res or estado["mostrados"] \
+            else "LIBRETA: vacia, es el primer mensaje."
         frases = [{"texto": _en_frase(f, v, fuente.dichos, k), "variacion": var, "dificil": dif}
                   for k, (f, var, dif) in enumerate(caso["frases"])]
         if caso["responde"] or caso["cliente"]:

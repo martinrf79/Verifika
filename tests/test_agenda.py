@@ -4,51 +4,15 @@ El 22-oct el requisito cambio, FICHA 76: el modelo llena la ficha nativa y ya no
 ejemplos de la consigna, el control de lo que faltaba citar, la tabla del marcador al modelo y la suficiencia, que
 median la agenda escrita por el modelo. Quedan:
   1. el candado: una pregunta que el ejecutor no puede cumplir no se pierde;
-  2. las agendas a mano, dentro del menu;
-  3. el peso: lo que recibe el modelo en cada turno de las 58 y las K entra en tres mil tokens.
-La ficha y su paso a la agenda se prueban en `test_ficha.py`.
+  2. las agendas a mano, dentro del menu.
+El peso de lo que recibia la lectura se saco el 30-oct con la lectura: el turno lo contesta el agente, FICHA 83.
 """
-import asyncio
-import copy
-
 import pytest
 
 from banco_pruebas import cableado58 as CB
-from banco_pruebas import clon_produccion as C
 from banco_pruebas.agendas58 import AGENDAS
 
 TIENDA = "verifika_prod"
-
-
-def _vistas() -> list:
-    """[(charla, turno, mensaje, estado, historial)] de las 58 y las K, antes de cada turno, con las agendas a mano."""
-    interprete = CB.instalar()
-    from banco_pruebas.agendas58 import EXPLICAR
-    out = []
-    for charla in CB.charlas():
-        uid = f"peso_{charla['id']}"
-        C.reiniciar_cliente(uid)
-        cola = list(AGENDAS[charla["id"]])
-
-        async def _interpretar(mensaje, historial, estado, *a, _c=charla["id"], _cola=cola, **k):
-            out.append((_c, len([x for x in out if x[0] == _c]), mensaje, copy.deepcopy(estado), list(historial)))
-            return _cola.pop(0) if _cola else {}
-
-        async def _explicar(pregunta, *a, **k):
-            return EXPLICAR.get(pregunta, "")
-        interprete.interpretar, interprete.explicar = _interpretar, _explicar
-        for t in charla["turnos"]:
-            asyncio.run(C.turno(uid, t["texto"]))
-    return out
-
-
-@pytest.fixture(scope="module")
-def vistas():
-    from app.core import llm_reintento
-    puerta = llm_reintento._cliente
-    v = _vistas()
-    yield v
-    llm_reintento._cliente = puerta
 
 
 def test_el_candado_no_deja_una_pregunta_sin_estado():
@@ -74,16 +38,3 @@ def test_una_agenda_a_mano_por_turno_y_dentro_del_menu():
                 if p["accion"] in A.OBLIGATORIO:
                     assert p.get(A.OBLIGATORIO[p["accion"]]), (c["id"], p)
     print(f"\nAGENDAS: {len(charlas)} charlas, {sum(len(c['turnos']) for c in charlas)} turnos, {preguntas} preguntas")
-
-
-def test_lo_que_recibe_el_modelo_entra_en_cuatro_mil_quinientos_tokens(vistas):
-    """El umbral sube de 3.000 a 4.500 el 25-oct, FICHA 81, con el ok de Martin: la lectura de los dos ejes lleva 26
-    casos resueltos de la plantilla de venta y las casillas de los datos. Medido sobre los 105 turnos de las 58: el mayor
-    4.332, en K21 T3, y el promedio 3.839, contra unos 3.000 de la ficha nativa."""
-    from app.core.flujo import lectura as L
-    pesos = [(sum(len(m["content"].encode()) for m in L.mensajes(msj, h, e, TIENDA)) // 4, cid, t + 1)
-             for cid, t, msj, e, h in vistas]
-    mayor = max(pesos)
-    assert mayor[0] <= 4500, f"{mayor[1]} T{mayor[2]}: {mayor[0]} tokens"
-    print(f"\nPESO: {len(pesos)} turnos, el mayor {mayor[0]} tokens en {mayor[1]} T{mayor[2]}, "
-          f"el promedio {sum(p[0] for p in pesos) // len(pesos)}")

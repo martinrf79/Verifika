@@ -11,7 +11,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 
 **Arranque corto:**
 
-1. El camino vivo es `orchestrator` → `flujo.turno.procesar_turno`: intérprete, ejecutor, redacción, cierre.
+1. El camino vivo es `orchestrator` → `flujo.turno.procesar_turno` → `flujo.agente.responder`: buscador, ejecutor, verificador.
    El motor busca. Lo viejo está en `archivo/` y NO se reenchufa.
 2. Se lee entera la ficha abierta que nombra `PENDIENTE.md` antes de tocar una mejora.
 3. No se crea una función sin mirar si ya existe. La identidad la certifica
@@ -26,10 +26,10 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | --- | --- |
 | Entrada de WhatsApp y Telegram, webhooks | `app/main.py` |
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
-| El turno entero: leer, interpretar, ejecutar, redactar, cerrar, guardar | `app/core/flujo/turno.py` |
-| Las llamadas al modelo: traducir, elegir la lectura, explicar y vender; la libreta | `app/core/flujo/interprete.py` |
-| La lectura del mensaje: los dos ejes y las casillas, la cobertura con su segunda vuelta, la forma normal y el paso a la agenda, FICHA 81 | `app/core/flujo/lectura.py` |
-| Lo que es en la tienda un articulo que nombra la lectura: renglon, mostrado, modelo o rubro | `app/core/flujo/ficha.py` |
+| El turno entero: la charla, el agente, guardar el historial y su memoria | `app/core/flujo/turno.py` |
+| El agente, FICHA 83: el buscador, el presupuesto, el cobro con el lead, la calculadora y la llamada al modelo | `app/core/flujo/agente.py` |
+| El verificador: cada afirmacion de la respuesta contra la fuente | `app/core/flujo/verificador.py` |
+| La ficha de un producto en texto y los numeros de lo mostrado | `app/core/flujo/interprete.py` |
 | Lo que dijo el cliente, las lecturas que cierran y lo supuesto hasta que acepta | `app/core/flujo/borrador.py` |
 | La agenda: el menu de acciones que cumple el ejecutor | `app/core/flujo/agenda.py` |
 | Lo que el codigo reconoce en un texto: modelos, rubros, temas, montos; la respuesta corta contra lo que espera la pregunta | `app/core/flujo/marcador.py` |
@@ -38,7 +38,6 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |
 | La respuesta al cliente, escrita por el código | `app/core/flujo/redaccion.py` |
 | El estado único de la charla | `app/core/flujo/estado.py` |
-| El cierre: pedido y nombre, lead, aviso y cobro | `app/core/flujo/cierre.py` |
 | Índice de la tienda, rubro, cuenta, envío, compatibilidad | `app/core/agente.py` |
 | El motor: buscar, identidad, filtros, cuenta | `app/core/motor.py` |
 | La llamada al modelo y el reintento | `app/core/llm_reintento.py` |
@@ -61,6 +60,7 @@ permiso.
 | Qué querés medir | Archivo |
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
+| Las 26 charlas grabadas por el agente vivo, sin modelo: la vara del bot | `banco_pruebas/agente_replay.py`, `tests/test_agente.py` |
 | Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
 | La multipregunta de los siete artículos miles de veces, con el cliente y el modelo simulados | `banco_pruebas/simulador.py` |
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |

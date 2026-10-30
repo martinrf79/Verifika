@@ -46,6 +46,8 @@ class Settings(BaseModel):
     GEMINI_BASE_URL: str = os.getenv(
         "GEMINI_BASE_URL",
         "https://generativelanguage.googleapis.com/v1beta/openai/")
+    # Los embeddings del buscador del agente, para el rubro y la regla mas parecidos por significado (FICHA 83).
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "gemini-embedding-001")
     # DEEPSEEK, el otro proveedor que se mide (27-sep-2026).
     DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
     DEEPSEEK_BASE_URL: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")

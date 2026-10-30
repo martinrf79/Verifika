@@ -291,6 +291,8 @@ def save_conversation(user_id: str, history: list[dict], summary: str = "",
                       # EL REPARTO DEL PAGO ES DEL PEDIDO (16-oct, K21): "setenta treinta" dicho una vez vale
                       # hasta que el cliente diga otro. [] = sin reparto.
                       reparto_pago: list | None = None,
+                      # La memoria del agente, FICHA 83: el pedido anotado, lo ultimo mostrado, el pago y el tope.
+                      memoria_agente: dict | None = None,
                       **extras):
     """None no pisa lo guardado. Los campos que escribian los caminos viejos se sacaron el 16-oct: nadie los
     pasaba."""

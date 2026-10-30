@@ -436,22 +436,18 @@ def informe(revisadas: list, meta: dict | None = None) -> str:
 
 
 
-# ── LA PELICULA DEL TURNO — que tradujo el interprete y que hizo el codigo ──
-# Desde el 19-oct el turno es `app/core/flujo/`, y escribe tres renglones por turno: `interprete_ok` con las
-# casillas que lleno el modelo, `flujo_turno` con lo que hizo el codigo —hechos, preguntas, herramientas— y, si
-# cerro, `flujo_cierre`. Los errores tienen su renglon. El texto que leyo el cliente no esta en los logs: esta en
+# ── LA PELICULA DEL TURNO — que pidio el agente y que marco el verificador ──
+# Desde el 30-oct el turno es el agente, `app/core/flujo/agente.py`, y escribe un renglon por turno, `agente_turno`,
+# con las herramientas, lo que pidio a cada una, lo que marco el verificador y los tokens. Los errores tienen su renglon. El texto que leyo el cliente no esta en los logs: esta en
 # la transcripcion, al final del informe.
 
 EVENTOS_PELICULA = (
-    "message_received", "antijailbreak_bloqueo",
-    "interprete_ok", "interprete_error", "explicar_error",
-    "flujo_turno", "flujo_ejecutor_error", "flujo_cierre", "flujo_cierre_lead_error", "flujo_cobro_error",
-    "flujo_guardar_error", "agente_herramienta_error", "flujo_pregunta_sin_estado")
+    "message_received", "antijailbreak_bloqueo", "agente_turno", "agente_modelo_error", "agente_herramienta_error",
+    "agente_lead_error", "agente_cobro_error", "agente_embeddings_error", "flujo_guardar_error")
 
 # Los renglones que avisan que algo fallo: la pelicula los muestra con su error.
-AVISOS = ("antijailbreak_bloqueo", "interprete_error", "explicar_error", "flujo_ejecutor_error",
-          "flujo_cierre_lead_error", "flujo_cobro_error", "flujo_guardar_error", "agente_herramienta_error",
-          "flujo_pregunta_sin_estado")
+AVISOS = ("antijailbreak_bloqueo", "agente_modelo_error", "agente_herramienta_error", "agente_lead_error",
+          "agente_cobro_error", "agente_embeddings_error", "flujo_guardar_error")
 
 # Cuantos turnos se cuentan por defecto. Tres alcanzan para una prueba por
 # WhatsApp; el informe de arriba sigue midiendo la ventana entera.
@@ -508,7 +504,7 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
         return []
     ultimos = list(por_turno.items())[-max(1, turnos):]
     out = ["", "=" * 64, f"LA PELICULA DE LOS ULTIMOS {len(ultimos)} TURNOS",
-           "Lo que tradujo el interprete y lo que hizo el codigo. El texto que leyo el cliente esta en la "
+           "Lo que pidio el agente a cada herramienta y lo que marco el verificador. El texto que leyo el cliente esta en la "
            "transcripcion, al final.", "=" * 64]
     for trace, evs in ultimos:
         cab = next((e for e in evs if e.get("event") == "message_received"), {})
@@ -518,26 +514,20 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
             out.append(f"  CLIENTE: {cab['msg_preview']}")
         for e in evs:
             ev = e.get("event")
-            if ev == "interprete_ok":
-                # Desde el 22-oct el modelo llena la ficha nativa: se muestra entera, que es lo que decidio, y la
-                # agenda que armo el codigo con ella.
-                if e.get("ficha"):
-                    out.append("  FICHA     " + str(e["ficha"]))
-                out.append("  TRADUJO   " + str(e.get("agenda") or ", ".join(map(str, e.get("casillas") or []))
-                                                or "nada"))
-            elif ev == "flujo_turno":
-                out.append("  HIZO      " + (", ".join(map(str, e.get("hechos") or [])) or "nada")
-                           + (" · estados " + ", ".join(map(str, e.get("estados"))) if e.get("estados") else "")
-                           + (f" · {_n(e.get('preguntas'))} preguntas" if _n(e.get("preguntas")) else "")
-                           + (" · herramientas " + ", ".join(map(str, e.get("herramientas")))
-                              if e.get("herramientas") else ""))
-            elif ev == "flujo_cierre":
-                out.append(f"  CERRO     {_n(e.get('articulos'))} articulos, pago {e.get('medio') or 'sin decir'}")
+            if ev == "agente_turno":
+                # Desde el 30-oct el turno lo contesta el agente: lo que pidio a cada herramienta y lo que marco el
+                # verificador.
+                out.append("  HIZO      " + (", ".join(map(str, e.get("herramientas") or [])) or "sin herramientas")
+                           + (f" · {_n(e.get('entrada'))}+{_n(e.get('salida'))} tokens" if e.get("entrada") else ""))
+                if e.get("pide"):
+                    out.append("  PIDIO     " + str(e["pide"]))
+                if e.get("hallazgos"):
+                    out.append("  VERIFICO  " + str(e["hallazgos"]) + (" · corregido" if e.get("corregido") else ""))
             elif ev in AVISOS:
                 out.append(f"  AVISO     {ev} " + str(e.get("error") or e.get("motivo") or e.get("cita") or "")[:160])
-        if not any(e.get("event") == "flujo_turno" for e in evs) and \
+        if not any(e.get("event") == "agente_turno" for e in evs) and \
                 not any(e.get("event") == "antijailbreak_bloqueo" for e in evs):
-            out.append("  (este turno no llego a `flujo_turno`: se cayo antes o el modelo no contesto)")
+            out.append("  (este turno no llego a `agente_turno`: se cayo antes o el modelo no contesto)")
     return out
 
 

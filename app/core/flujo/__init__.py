@@ -1,11 +1,7 @@
-"""EL FLUJO DE UN MENSAJE — desde cero, sobre las 58 (19-oct-2026, orden de Martin).
+"""EL FLUJO DE UN MENSAJE — el agente de la tienda, desde el 30-oct-2026 por orden de Martin, FICHA 83.
 
-  1. interprete.interpretar   el modelo llena la ficha nativa con el pedido entero, y `ficha.a_agenda` la lleva a
-                              una agenda, una pregunta por cosa pedida. Es la unica decision del modelo. FICHA 76.
-  2. ejecutor.ejecutar        el codigo cumple cada pregunta con las herramientas deterministas.
-  3. redaccion.texto          el codigo escribe la respuesta con lo que devolvieron.
-  4. estado                   el codigo guarda lo que pasa al turno siguiente.
-
-Se arma en el banco y entra a `app/` en un solo deploy, reemplazando a `tablero.py` y `respuesta.py`.
-`turno.procesar_turno` tiene la misma firma que `respuesta.procesar_turno`.
+  1. agente.responder      el modelo busca con sus palabras, arma el presupuesto y escribe la respuesta.
+  2. ejecutor.ejecutar     el codigo cumple lo que piden las herramientas: montos, envios, reparto y reglas.
+  3. verificador           cada afirmacion de la respuesta contra la fuente; lo que marca vuelve una vez al modelo.
+  4. turno                 guarda el historial y la memoria del agente para el turno siguiente.
 """

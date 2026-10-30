@@ -1,6 +1,0 @@
-{
-  "nota": "FICHA 72: el simulador de la multipregunta de los siete articulos, 20 corridas por guion con semillas fijas y el modelo eligiendo bien el 90%. Cuantas corridas terminan con el pedido de la verdad aceptado y sin nada abierto. El piso SOLO SUBE. Medido el 20-oct con el borrador que elige entre lecturas.",
-  "corridas": 20,
-  "elige": 0.9,
-  "bien": {"aparte": 18, "memoria": 13, "siete_concordia": 16, "siete_posadas": 15}
-}
