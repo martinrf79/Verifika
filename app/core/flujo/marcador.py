@@ -30,20 +30,30 @@ def _modelo(p: dict) -> str:
     return f"{p.get('categoria', '').capitalize()} {p.get('marca') or ''} {p.get('modelo') or p['nombre']}".strip()
 
 
+def _palabras(t) -> list:
+    """Como parte el mensaje: "i9-14900K" es "i9" y "14900k" tambien en el catalogo; si no, el Core i9 no se reconocia."""
+    return re.findall(r"[a-z0-9]+", K.n(t))
+
+
 def _propias(p: dict) -> set:
-    return set(K.n(f"{p.get('categoria')} {p.get('marca')} {p.get('modelo')} {p.get('color')}").split())
+    return set(_palabras(f"{p.get('categoria')} {p.get('marca')} {p.get('modelo')} {p.get('color')}"))
 
 
 def _productos(ws: list, tienda_id: str) -> list:
-    """Cada tramo de hasta cuatro palabras que nombra un modelo, sin pisarse: primero los que dan uno solo, despues
+    """Cada tramo de hasta tantas palabras como el modelo mas largo de la tienda que nombra un modelo, sin pisarse: primero los que dan uno solo, despues
     los que dan dos o tres. El tramo tiene que traer una palabra con letras del modelo mismo —"G305", "Stinger"—:
     "mouse inalambrico" es una busqueda. Las puntas que no son del producto se recortan: "cuanto sale g305" es "g305"."""
-    de_modelo = {w for p in K.productos(tienda_id) for w in K.n(p.get("modelo")).split() if re.search(r"[a-z]", w)}
+    de_modelo = {w for p in K.productos(tienda_id) for w in _palabras(p.get("modelo")) if re.search(r"[a-z]", w)}
+    # EL LARGO LO DA LA TIENDA: con cuatro palabras fijas, "IdeaPad 3 Core i5 16GB" no separaba el Core i5 del Ryzen 7.
+    largo = max((len(_palabras(f"{p.get('marca')} {p.get('modelo')}")) for p in K.productos(tienda_id)), default=4)
+    # Un nombre de producto tiene solo palabras de algun nombre del catalogo: las ventanas largas con otras no se prueban.
+    vocab = set().union(*(_propias(p) for p in K.productos(tienda_id)))
     hallados, usadas, vistos = [], set(), {}
     for una in (True, False):
-        for tam in range(min(4, len(ws)), 0, -1):
+        for tam in range(min(largo, len(ws)), 0, -1):
             for i in range(len(ws) - tam + 1):
-                if set(range(i, i + tam)) & usadas or not de_modelo & set(ws[i:i + tam]):
+                if set(range(i, i + tam)) & usadas or not de_modelo & set(ws[i:i + tam]) or \
+                        (tam > 4 and not set(ws[i:i + tam]) <= vocab):
                     continue
                 tramo = " ".join(ws[i:i + tam])
                 if tramo not in vistos:
@@ -51,7 +61,7 @@ def _productos(ws: list, tienda_id: str) -> list:
                     vistos[tramo] = [idt["producto"]] if idt["veredicto"] == "exists" else idt.get("opciones") or []
                 ps = vistos[tramo]
                 if not ps or (len(ps) == 1) != una or len(ps) > 3 or not all(
-                        set(K.n(p.get("modelo")).split()) & de_modelo & set(ws[i:i + tam]) for p in ps):
+                        set(_palabras(p.get("modelo"))) & de_modelo & set(ws[i:i + tam]) for p in ps):
                     continue
                 propias = set().union(*map(_propias, ps))
                 a, b = i, i + tam

@@ -89,6 +89,14 @@ def _identificar(nombre: str, color: str, todos: list) -> dict:
     if not hallados:
         return {"veredicto": "not_found", "nombre": nombre}
     modelos = list(dict.fromkeys((p.get("marca"), p.get("modelo") or p["id"]) for p in hallados))
+    # EL NOMBRE GANA A LAS ETIQUETAS, 31-oct: si uno solo de los modelos trae en su nombre todas las palabras dichas, es
+    # ese. Las notebooks Ryzen traen "core i5" en los tags, y "IdeaPad 3 Core i5" salia ambiguo con la Ryzen 7.
+    ws, clave = lambda t: set(re.findall(r"[a-z0-9]+", n(t))), lambda p: (p.get("marca"), p.get("modelo") or p["id"])
+    por_nombre = [m for m in modelos if ws(texto) <= set().union(*(ws(f"{p['nombre']} {p.get('categoria')} {p.get('marca')}")
+                                                                 for p in hallados if clave(p) == m))]
+    # Solo entre versiones de una misma linea, que comparten palabras del modelo: "Logitech" y "Bluetooth" no son el Z207.
+    if len(por_nombre) == 1 and set.intersection(*(ws(m[1]) for m in modelos)):
+        hallados, modelos = [p for p in hallados if clave(p) == por_nombre[0]], por_nombre
     if len(modelos) > 1:
         return {"veredicto": "ambiguous", "nombre": nombre,
                 "opciones": [next(p for p in hallados if (p.get("marca"), p.get("modelo") or p["id"]) == m)

@@ -382,7 +382,7 @@ CASOS = [
          [com(art("{producto}", cantidad=2, color="{color}"), art("{producto_otro}"))], ok("pedido")),
     caso("AR03a", [("el {producto} en {color} y un {producto_otro}", "B"), ("{producto} {color} mas un {producto_otro}", "K")],
          [com(art("{producto}", color="{color}"), art("{producto_otro}"))], ok("pedido")),
-    caso("AR04a", [("{rubro} y {rubro2}, todo lo mas barato", "K"), ("{rubro} y {rubro2}, los dos lo mas baratos posible", "B")],
+    caso("AR04a", [("{rubro} y {rubro2}, todo lo mas barato", "K"), ("quiero {rubro} y {rubro2}, de cada uno el de menor precio", "B")],
          [bu("{rubro}", orden="mas barato", cantidad=1), bu("{rubro2}", orden="mas barato", cantidad=1)], ok("lista")),
     caso("AR05a", [("uno a {lugar} y otro a {lugar2}", "B"), ("mandame uno a {lugar} y el otro a {lugar2}", "B"),
                    ("son dos, uno va a {lugar}, el otro a {lugar2}", "C")],
