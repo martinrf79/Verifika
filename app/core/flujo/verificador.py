@@ -112,8 +112,7 @@ def _reglas(o: str, tienda_id: str) -> list:
     """Una oracion que niega o restringe un tema de la FAQ, con el tema despues de la negacion en la misma parte de la
     oracion, cuando la regla de ese tema no niega ni restringe nada."""
     from app.core import agente
-    from app.storage.firestore_client import get_all_faq
-    faq, out = get_all_faq(tienda_id=tienda_id) or {}, []
+    faq, out = K.fc.get_all_faq(tienda_id=tienda_id) or {}, []
     for parte in re.split(r"[,;:]|\bpero\b", o):
         for m in re.finditer(rf"{_NIEGA_REGLA}|{_SOLO}", parte):
             # Lo que niega "no tenemos" va en la parte; lo que restringe "solo", en las cuatro palabras siguientes.

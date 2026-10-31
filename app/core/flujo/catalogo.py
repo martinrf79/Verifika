@@ -139,12 +139,17 @@ _RELLENO = set("a al con de del el en la las lo los para por que un una unos una
                "preferiblemente idealmente algo alguno alguna".split())
 
 
+_VALORES: dict = {}
+
+
 def _valores(prod: dict, campo: str) -> str:
     """El valor de un campo: arriba de todo, en `specs` o derivado del origen —el pais de la marca y el de fabricacion,
     que el origen trae en prosa—. Uno solo para todos: `filtros_catalogo._valor_crudo`."""
-    if campo == "tags":
-        return n(prod.get("tags"))
-    return n(_valor_crudo(prod, campo))
+    # GUARDADO POR PRODUCTO Y CAMPO, 31-oct: atar recorre la tienda entera por palabra, y normalizar cada vez costaba
+    # cuatro segundos por turno. Vale mientras sea el mismo producto, el mismo objeto del catalogo.
+    if (hay := _VALORES.get((id(prod), campo))) is None or hay[0] is not prod:
+        hay = _VALORES[(id(prod), campo)] = (prod, n(prod.get("tags")) if campo == "tags" else n(_valor_crudo(prod, campo)))
+    return hay[1]
 
 
 def _pistas_derivadas(palabras: list) -> dict:
@@ -205,7 +210,10 @@ def atar(condicion: str, universo: list, tienda_id: str) -> dict:
     pista = [w for w in palabras if w in campos and w not in ("modelo", "nombre", "descripcion")]
     valor = " ".join(w for w in palabras if w not in pista and w not in derivadas)
     si_no = _si_no_nombrado(c, universo, tienda_id)
-    if si_no and (not valor or not any(_contiene(_valores(p, x), valor) for x in PRIORIDAD for p in universo)):
+    # Los valores de un campo en todo el universo, juntos: una sola busqueda de palabra entera en vez de una por
+    # producto, que costaba casi un segundo por turno, 31-oct.
+    juntos = {x: " | ".join(_valores(p, x) for p in universo) for x in dict.fromkeys(PRIORIDAD + tuple(DERIVADOS))}
+    if si_no and (not valor or not any(_contiene(juntos[x], valor) for x in PRIORIDAD)):
         # UN CAMPO DE SI O NO NOMBRADO por su clave se cumple por su veredicto: "resistente al agua" es el "si, ..."
         # de `resistencia_agua`, y "sin bluetooth" su "no". Solo si la frase no es un valor que ya ata, como "rgb".
         return {"campo": si_no, "valor": "si", "niega": niega, "si_no": True}
@@ -213,9 +221,11 @@ def atar(condicion: str, universo: list, tienda_id: str) -> dict:
         return {"sin_campo": condicion}
     donde = list(dict.fromkeys(pista + list(derivadas.values()))) + [x for x in PRIORIDAD if x not in pista]
     for campo in donde:
-        for v in dict.fromkeys([valor] + [valor[:-len(f)] for f in ("s", "es") if valor.endswith(f) and len(valor) > 4]):
-            # El plural del cliente tambien: "cables" ata en "con cable usb".
-            if any(_contiene(_valores(p, campo), v) for p in universo):
+        sing = [valor[:-len(f)] for f in ("s", "es") if valor.endswith(f) and len(valor) > 4]
+        for v in dict.fromkeys([valor] + sing + [x[:-1] + {"o": "a", "a": "o"}[x[-1]] for x in [valor] + sing
+                                                if x[-1:] in ("o", "a") and len(x) > 4]):
+            # El plural y el genero del cliente tambien: "cables" ata en "con cable usb", "chinos" en "China", 31-oct.
+            if _contiene(juntos.get(campo) or " | ".join(_valores(p, campo) for p in universo), v):
                 return {"campo": campo, "valor": v, "niega": niega}
     # Toda la frase no esta: cada palabra por su lado, y todas tienen que estar.
     partes = [atar(w, universo, tienda_id) for w in valor.split()] if " " in valor else []

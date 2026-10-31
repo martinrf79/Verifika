@@ -68,3 +68,19 @@ def test_lo_no_fabricado_en_china_trae_el_origen_y_ninguno_es_de_china(A):
 def test_el_origen_de_un_producto_nombrado(A):
     filas = _filas(A.buscar("origen del mouse logitech g203", C.TIENDA))
     assert filas[0].startswith("PRODUCTO:") and "origen: Marca Logitech de Suiza. Fabricado en China." in filas[0]
+
+
+# LO NEGADO, 31-oct: "sin componentes chinos" no filtraba por "componentes", que no ata nada; "chinos" no ataba "China"
+# por el genero; y lo negado que no ata nada en el rubro no filtra por "no" solo.
+NEGADAS = [("mouse sin componentes chinos", 'ninguno cumple "sin chinos"'),
+           ("auriculares que no sean chinos", 'ninguno cumple "no chinos"'),
+           ("teclado que no sea redragon", 'filtrado por "no redragon"'),
+           ("memoria que no sea kingston fury beast", 'filtrado por "no kingston fury beast"'),
+           ("mouse que no sea kingston fury beast", None)]
+
+
+def test_lo_negado_filtra_por_lo_que_el_catalogo_ata(A):
+    malos = [(q, e) for q, e in NEGADAS if (e or "filtrado por") in A.buscar(q, C.TIENDA) if e is None] + \
+        [(q, e) for q, e in NEGADAS if e and e not in A.buscar(q, C.TIENDA)]
+    print(f"\nNEGADAS: {len(NEGADAS) - len(malos)} de {len(NEGADAS)}")
+    assert not malos, malos

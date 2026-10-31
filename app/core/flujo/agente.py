@@ -252,19 +252,16 @@ def _campos(q: str, conds: list, orden: str, tienda_id: str) -> list:
     `specs_preguntables`, por la etiqueta de un derivado —"fabricado" es el origen—, por el orden que pide o por la
     condicion que ata."""
     from app.core.fuente_producto import specs_config
-    ws = q.split()
-    universo = K.productos(tienda_id)
-    campos = [c for c in dict.fromkeys([*K.vocabulario(tienda_id), *(k for p in universo[:50] for k in p)])
-              if c not in _NO_PEDIBLES]
+    ws, universo = q.split(), K.productos(tienda_id)
+    campos = dict.fromkeys([*K.vocabulario(tienda_id), *(k for p in universo[:50] for k in p)])
     out = [c for c in campos for w in ws for parte in c.split("_")
            if len(parte) > 2 and (w == parte or (len(parte) > 4 and w[:5] == parte[:5]))]
-    out += [s["id"] for s in specs_config(tienda_id) if s["rx_pregunta"].search(q)]
-    out += list(K._pistas_derivadas(ws).values())
-    out += [K.ORDEN[orden][0]] if orden in K.ORDEN else []
-    out += [f["campo"] for c in conds for f in [K.atar(c, universo, tienda_id)] if "campo" in f]
+    out += [s["id"] for s in specs_config(tienda_id) if s["rx_pregunta"].search(q)] + list(K._pistas_derivadas(ws).values())
+    out += ([K.ORDEN[orden][0]] if orden in K.ORDEN else []) + [
+        f["campo"] for c in conds for f in [K.atar(c, universo, tienda_id)] if "campo" in f]
     # El pais de la marca o de fabricacion se lee en el origen, que dice los dos.
-    out = ["origen" if c in K.DERIVADOS else c for c in out]
-    return [c for c in dict.fromkeys(out) if c not in _NO_PEDIBLES and c != "precio_ars"]
+    return [c for c in dict.fromkeys("origen" if c in K.DERIVADOS else c for c in out)
+            if c not in _NO_PEDIBLES and c != "precio_ars"]
 
 
 def _fila(p: dict, todos: list, campos: list = (), ya: str = None) -> str:
@@ -325,7 +322,9 @@ def buscar(consulta: str, tienda_id: str) -> str:
         ws_r = [w for w in q.split() if w not in fuera and not _lugares(w)]
         # Cada palabra filtra por su lado; la negacion va con lo que niega, "no sea redragon".
         i_neg = next((i for i, w in enumerate(ws_r) if w in ("no", "sin", "excepto", "menos")), len(ws_r))
-        negada = " ".join(ws_r[i_neg:i_neg + 4])
+        # Lo negado, con las palabras que el catalogo ata: "sin componentes chinos" es "sin chinos", 31-oct.
+        negada = " ".join(ws_r[i_neg:i_neg + 1] + ata) if (ata := [w for w in ws_r[i_neg + 1:i_neg + 4]
+                                                                    if _atable(w, r, tienda_id)]) else ""
         conds = [w for w in ws_r[:i_neg] if _atable(w, r, tienda_id)] + \
             ([negada] if negada and _atable(negada, r, tienda_id) else [])
         entre = andan if plats and any(p.get("categoria") == r and str(p["id"]) in andan for p in todos) else None
@@ -522,14 +521,31 @@ def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
 
 # ══ EL TURNO DEL AGENTE ══
 
+def sin_buscar(mensaje: str, pasos: list, tienda_id: str) -> list:
+    """LOS CRITERIOS DEL CLIENTE QUE NINGUNA HERRAMIENTA LLEVO, 31-oct: cada palabra del mensaje que el catalogo ata a
+    un campo —"chinas" al pais de fabricacion, "inalambrico" a la conexion— cuando nada de lo que pidio el modelo ata
+    ese campo. En el examen real, "las menos partes chinas" se buscaba como "auriculares" en once charlas. En un campo
+    de si o no vale solo su clave, "rgb", no una palabra de su texto."""
+    tipos, todos = K.campos_filtrables(tienda_id), K.productos(tienda_id)
+
+    def campos(texto: str) -> dict:
+        ws = [w for w in re.findall(r"[a-z0-9]+", K.n(texto)) if w not in K._RELLENO and len(w) > 2 and not w.isdigit()]
+        # Solo un tramo que nombra un producto: "rgb" esta en el modelo de varios y no nombra a ninguno.
+        de_producto = {w for t, es in MK._productos(ws, tienda_id) if es.startswith("el producto") for w in t.split()}
+        return {w: f["campo"] for w in ws if w not in de_producto and "campo" in (f := K.atar(w, todos, tienda_id))
+                and f["campo"] not in _NO_PEDIBLES and (tipos.get(f["campo"]) != "si_no" or f.get("si_no")
+                                                       or K._si_no_nombrado(w, todos, tienda_id) == f["campo"])}
+    pidio = set(campos(json.dumps([p["pide"] for p in pasos], ensure_ascii=False)).values())
+    return [w for w, c in campos(mensaje).items() if c not in pidio]
+
+
 def hoja_reglas(tienda_id: str) -> str:
     """LAS REGLAS DE LA TIENDA SIEMPRE A LA VISTA, 31-oct, orden de Martin: una linea por tema, de la FAQ de la tienda,
     tal como esta hoy. Llegaban solo si el modelo las buscaba, y en el examen real dijo que no habia descuento por
     cantidad, con mayoristas y 10% por transferencia en la FAQ. Sale de la FAQ en cada turno: si cambia, cambia."""
     from app.storage.firestore_client import get_all_faq
-    faq = get_all_faq(tienda_id=tienda_id) or {}
     lineas = [f"- {(d.get('tema') or t).replace('_', ' ')}: {' '.join(str(d.get('respuesta') or '').split())}"
-              for t, d in sorted(faq.items()) if isinstance(d, dict) and d.get("respuesta")]
+              for t, d in sorted((get_all_faq(tienda_id=tienda_id) or {}).items()) if isinstance(d, dict) and d.get("respuesta")]
     return "LAS REGLAS DE LA TIENDA, de su FAQ, valen siempre:\n" + "\n".join(lineas) if lineas else ""
 
 
@@ -594,15 +610,17 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
             fuente = " ".join(salidas + dichos + [mensaje, contexto, hoja])
             malos = V.verificar(texto, fuente, tienda_id, pegados)
-            if malos and not corregido and vuelta < VUELTAS:
+            faltan = [] if corregido else sin_buscar(mensaje, pasos, tienda_id)
+            if (malos or faltan) and not corregido and vuelta < VUELTAS:
                 corregido = True
                 msgs.append(m.model_dump(exclude_none=True))
                 # LA REVISION ES INTERNA: el cliente no la ve ni la dijo. Sin esto el modelo le pedia disculpas.
-                msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: tu "
-                             "borrador dice cosas que no respaldan las herramientas ni la charla: "
-                             + "; ".join(f"{c}: {d}" for c, d in malos) + ". Corregilas con las herramientas o "
-                             "sacalas, y escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta "
-                             "revision ni pedir disculpas."})
+                msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: " + (
+                    "tu borrador dice cosas que no respaldan las herramientas ni la charla: " + "; ".join(
+                        f"{c}: {d}" for c, d in malos) + ". Corregilas con las herramientas o sacalas. " if malos else "")
+                    + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo: si es parte de lo que pide, "
+                       "buscalo con eso. " if faltan else "") + "Escribi de nuevo la respuesta para el cliente, completa,"
+                    " sin mencionar esta revision ni pedir disculpas."})
                 continue
             if malos:  # LO QUE SIGUE MARCADO DESPUES DE CORREGIR NO SALE: se saca la oracion entera.
                 from app.core.guia_venta_prosa import mensaje as prosa
@@ -611,7 +629,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             if memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
             ultimo = _pegado(pasos)
-            log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos],
+            log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos], sin_buscar=faltan,
                      pide=json.dumps([p["pide"] for p in pasos], ensure_ascii=False)[:3000], hallazgos=malos,
                      corregido=corregido, entrada=entrada, salida=salida, seg=round(time.time() - t0, 1))
             return {"respuesta": texto, "pasos": pasos, "hallazgos": malos, "presupuesto": ultimo}
