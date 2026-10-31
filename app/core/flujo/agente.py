@@ -61,8 +61,8 @@ Tenes tres herramientas:
   entero corregido con anotar en true; sin renglones, usa el pedido actual tal cual.
 - calcular: una calculadora, para otra cuenta.
 
-Todo producto, precio, stock, dato de ficha, envio o regla que digas tiene que salir de las herramientas o de lo que ya
-le mostraste en la charla. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que
+Todo producto, precio, stock, dato de ficha, envio o regla que digas tiene que salir de las herramientas, de las reglas
+de la tienda que van abajo o de lo que ya le mostraste en la charla. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que
 falte. Antes de elegir un producto, buscalo: no elijas de memoria. Al elegir o recomendar uno, deci el dato de la ficha
 en que te basas. Si pregunta si anda con un equipo suyo, buscalo con ese equipo; si la ficha no lo dice, no lo afirmes.
 Si el cliente compra, cambia o confirma algo del pedido, arma el presupuesto con el pedido entero como queda, aunque
@@ -267,22 +267,13 @@ def _campos(q: str, conds: list, orden: str, tienda_id: str) -> list:
     return [c for c in dict.fromkeys(out) if c not in _NO_PEDIBLES and c != "precio_ars"]
 
 
-def _extra(p: dict, campos: list, ya: str = "") -> list:
-    """Los campos pedidos, enteros, que no estan en `ya`."""
-    out = []
-    for c in campos:
-        e = "peso" if c == "peso_gramos" else c.replace("_", " ")
-        v = K._valor_crudo(p, c)
-        if v not in (None, "", []) and f"{e}:" not in ya:
-            out.append(f"{e}: {v}" + (" g" if c == "peso_gramos" else ""))
-    return out
-
-
-def _fila(p: dict, todos: list, campos: list = ()) -> str:
-    """El producto en una linea: lo primero de su ficha y, enteros, los campos que pide la consulta."""
-    pedidos = {"peso" if c == "peso_gramos" else c.replace("_", " ") for c in campos}
-    base = [x for x in datos(p, todos).split("; ")[:6] if x.split(":")[0] not in pedidos]
-    return "; ".join(base + _extra(p, campos))
+def _fila(p: dict, todos: list, campos: list = (), ya: str = None) -> str:
+    """El producto en una linea: lo primero de su ficha y, enteros, los campos que pide la consulta. Con `ya`, solo
+    los campos pedidos que esa linea no trae."""
+    et = {c: "peso" if c == "peso_gramos" else c.replace("_", " ") for c in campos}
+    base = [x for x in datos(p, todos).split("; ")[:6] if x.split(":")[0] not in et.values()] if ya is None else []
+    return "; ".join(base + [f"{e}: {v}" + " g" * (c == "peso_gramos") for c, e in et.items()
+                             if (v := K._valor_crudo(p, c)) not in (None, "", []) and f"{e}:" not in (ya or "")])
 
 
 def _con(p: dict, plats: list, tienda_id: str) -> str:
@@ -311,7 +302,7 @@ def buscar(consulta: str, tienda_id: str) -> str:
             if familia(p) not in vistos:
                 vistos.add(familia(p))
                 d = datos(p, todos)
-                out.append("PRODUCTO: " + "; ".join([d] + _extra(p, pide, d)) + _con(p, plats, tienda_id))
+                out.append("PRODUCTO: " + "; ".join(x for x in (d, _fila(p, todos, pide, d)) if x) + _con(p, plats, tienda_id))
     cands = _parecidos(consulta, "rubro", tienda_id)
     por_sentido = [k for k, s in cands[:1] if s >= UMBRAL_RUBRO] if not vistos else []
     por_nombre = MK._rubros(q.split(), tienda_id)
@@ -531,6 +522,17 @@ def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
 
 # ══ EL TURNO DEL AGENTE ══
 
+def hoja_reglas(tienda_id: str) -> str:
+    """LAS REGLAS DE LA TIENDA SIEMPRE A LA VISTA, 31-oct, orden de Martin: una linea por tema, de la FAQ de la tienda,
+    tal como esta hoy. Llegaban solo si el modelo las buscaba, y en el examen real dijo que no habia descuento por
+    cantidad, con mayoristas y 10% por transferencia en la FAQ. Sale de la FAQ en cada turno: si cambia, cambia."""
+    from app.storage.firestore_client import get_all_faq
+    faq = get_all_faq(tienda_id=tienda_id) or {}
+    lineas = [f"- {(d.get('tema') or t).replace('_', ' ')}: {' '.join(str(d.get('respuesta') or '').split())}"
+              for t, d in sorted(faq.items()) if isinstance(d, dict) and d.get("respuesta")]
+    return "LAS REGLAS DE LA TIENDA, de su FAQ, valen siempre:\n" + "\n".join(lineas) if lineas else ""
+
+
 def charla(historial: list) -> str:
     if not historial:
         return "Charla nueva."
@@ -566,7 +568,8 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     """Un turno: {"respuesta", "pasos", "hallazgos", "presupuesto"}, o {"error"} si el modelo no contesto. La memoria se
     actualiza solo si hay respuesta."""
     contexto = memoria_texto(memoria)
-    msgs = [{"role": "system", "content": CONSIGNA},
+    hoja = hoja_reglas(tienda_id)
+    msgs = [{"role": "system", "content": f"{CONSIGNA}\n\n{hoja}".strip()},
             {"role": "user", "content": f"{charla(historial)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
     dichos = [str(m.get("content") or "") for m in historial]
     # LO QUE DIJO EL CLIENTE, y lo que le ofrecio el ultimo mensaje del bot si contesta corto: a "¿transferencia o Mercado
@@ -589,7 +592,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             texto = pegar(m.content or "", pasos, memoria, tienda_id)
             # EL CANDADO ES EL VERIFICADOR, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
             pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
-            fuente = " ".join(salidas + dichos + [mensaje, contexto])
+            fuente = " ".join(salidas + dichos + [mensaje, contexto, hoja])
             malos = V.verificar(texto, fuente, tienda_id, pegados)
             if malos and not corregido and vuelta < VUELTAS:
                 corregido = True

@@ -7,7 +7,11 @@ Sin modelo. La fuente es lo que devolvieron las herramientas, la charla y el men
                "rgb", "negro"— tiene que cumplirla ese producto; con "no" o "sin" delante, al reves.
   superlativo  "el mas barato": el primero de su rubro en ese orden, en la tienda o entre los de la fuente.
   stock        "hay stock", "no hay", "sin stock": contra el stock del producto.
-Medido en `banco_pruebas/alucinaciones.py`: caza 99% de las alucinaciones inyectadas con 0,6% de falsas alarmas.
+  regla        31-oct, orden de Martin: una oracion sin producto que habla de un tema de la FAQ, por las frases del
+               propio tema, y niega o restringe —"no hay descuento por cantidad", "solo Mercado Pago"— cuando la regla
+               de ningun tema nombrado lo hace.
+Medido en `banco_pruebas/alucinaciones.py`, 31-oct: caza 99,3% de las inyectadas; marca 2 de 164 respuestas grabadas, las dos
+reglas negadas de verdad: K13, sin descuento por cantidad, y K21, sin el origen.
 """
 import re
 
@@ -96,6 +100,33 @@ def _compatibilidad(p: dict, oracion: str, o: str, tienda_id: str) -> list:
             and (evaluar(p, x, tienda_id)[0] == "compatible") == niega]
 
 
+# LA TIENDA NIEGA O RESTRINGE UNA REGLA: "no tenemos", "no contamos con", "no hay", o "solo" pegado al tema. "Sin
+# problemas", "solo me falta tu localidad" o "no vendemos teclados Samsung", que es de productos, no son una regla.
+_NIEGA_REGLA = r"\b(?:no|ni)\s+(?:\w+\s+)?(?:hay|tenemos|tengo|contamos|cuento|hacemos|hago|aceptamos|acepto|trabajamos|" \
+    r"trabajo|manejamos|manejo|ofrecemos|ofrezco|damos|doy|emitimos|cobramos|podemos|puedo)\b"
+_SOLO = r"\b(?:solo|solamente|unicamente)\b(?!\s+(?:me|te|nos|le|les|se)\b)"
+_RESTRINGE = rf"{_NIEGA_REGLA}|{_SOLO}|\bno\b"
+
+
+def _reglas(o: str, tienda_id: str) -> list:
+    """Una oracion que niega o restringe un tema de la FAQ, con el tema despues de la negacion en la misma parte de la
+    oracion, cuando la regla de ese tema no niega ni restringe nada."""
+    from app.core import agente
+    from app.storage.firestore_client import get_all_faq
+    faq, out = get_all_faq(tienda_id=tienda_id) or {}, []
+    for parte in re.split(r"[,;:]|\bpero\b", o):
+        for m in re.finditer(rf"{_NIEGA_REGLA}|{_SOLO}", parte):
+            # Lo que niega "no tenemos" va en la parte; lo que restringe "solo", en las cuatro palabras siguientes.
+            resto = parte[m.end():] if not re.fullmatch(_SOLO, m.group(0)) else " ".join(parte[m.end():].split()[:4])
+            nombrados = {t: K.n((faq.get(t) or {}).get("respuesta")) for t, d in agente.indice(tienda_id)["temas"].items()
+                         if any(re.search(rf"\b{re.escape(f)}\b", resto) for f in d.get("frases") or [])}
+            # NEGAR OTRA COSA NO CONTRADICE LA REGLA: "no tenemos promo de 50% off" con la promo del 10%.
+            otra = any(x not in re.findall(r"\d+", r) for x in re.findall(r"\d+", resto) for r in nombrados.values())
+            if nombrados and not otra and not any(re.search(_RESTRINGE, r) for r in nombrados.values()):
+                out.append(("regla", f"{', '.join(sorted(nombrados))}: {parte.strip()[:80]}"))
+    return out
+
+
 def sin_marcadas(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -> str:
     """La respuesta sin las oraciones que el verificador marca: lo que siguio marcado despues de corregir no le llega al
     cliente. Lo que el codigo pego tal cual queda entero."""
@@ -120,7 +151,11 @@ def verificar(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -
             if not _en_fuente(p, f):
                 hallazgos.append(("producto", p["nombre"]))
         # UNA PREGUNTA O UN "SI BUSCAS..." NO AFIRMAN: "¿queres uno inalambrico o el G203?" no dice que el G203 lo sea.
-        if len({q["id"] for _, q in nombrados}) != 1 or "?" in oracion or re.match(r"\W*si\b", o):
+        if "?" in oracion or re.match(r"\W*si\b", o):
+            continue
+        if not nombrados:
+            hallazgos += _reglas(o, tienda_id)
+        if len({q["id"] for _, q in nombrados}) != 1:
             continue
         p = nombrados[0][1]
         rubro = [x for x in todos if x.get("categoria") == p.get("categoria")]
