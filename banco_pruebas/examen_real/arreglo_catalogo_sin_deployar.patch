@@ -1,0 +1,118 @@
+From a012bf3703f7363166e10e1296edcfe3ff8b21c7 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 30 Oct 2026 22:37:35 +0000
+Subject: [PATCH] EL BUSCADOR VE LA TIENDA ENTERA Y CUENTA BIEN, 30-oct, lo que
+ Martin vio en WhatsApp, FICHA 83.
+
+"Pasame catalogo": el buscador daba "TODA LA TIENDA, 325 modelos" y diez filas, y el modelo dijo
+"mas de 300 productos". Contaba familias, marca y dos palabras del modelo, que juntaban un teclado,
+una placa y notebooks ROG Strix; hay 463 modelos con stock.
+- Cada rubro dice sus modelos con stock contados como catalogo.buscar, sus marcas y de cuanto a cuanto.
+- La tienda entera, rubro por rubro, para "todos los productos" y para lo que no nombra producto,
+  rubro ni regla: "catalogo", "que venden" ya no dan "la tienda no tiene eso".
+- "que tenes de logitech" filtra la marca en toda la tienda; "producto mas caro" en singular busca
+  en toda la tienda; la familia lleva el rubro.
+Medido sin modelo: 74 de 75, igual que antes. Cambia lo que lee el modelo: 53 de 117 llamadas
+devuelven lo mismo que lo grabado, y test_agente falla hasta regrabar con --gratis --regrabar.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_012wHqLAgvJLDH7XSkmBC7De
+---
+ app/core/flujo/agente.py | 58 +++++++++++++++++++++++++++++++---------
+ 1 file changed, 45 insertions(+), 13 deletions(-)
+
+diff --git a/app/core/flujo/agente.py b/app/core/flujo/agente.py
+index 3385ce6..fdc2cfa 100644
+--- a/app/core/flujo/agente.py
++++ b/app/core/flujo/agente.py
+@@ -182,8 +182,35 @@ def rubros(tienda_id: str) -> list:
+ 
+ 
+ def familia(p: dict) -> str:
+-    """La marca y la linea del modelo: la Fury Beast de 32 es de la familia de la de 16."""
+-    return " ".join([K.n(p.get("marca"))] + K.n(p.get("modelo")).split()[:2]).strip()
++    """El rubro, la marca y la linea del modelo: la Fury Beast de 32 es de la familia de la de 16. Sin el rubro, el teclado
++    ROG Strix tapaba a la placa ROG Strix."""
++    return " ".join([K.n(p.get("categoria")), K.n(p.get("marca"))] + K.n(p.get("modelo")).split()[:2]).strip()
++
++
++def _plata(x) -> str:
++    return f"${K.entero(x):,}".replace(",", ".")
++
++
++def _estante(ps: list, con_marcas: bool = True) -> str:
++    """Cuantos modelos con stock hay, uno por modelo como los cuenta `catalogo.buscar`, sus marcas y de cuanto a cuanto.
++    El 30-oct contaba familias: la tienda decia 325 y el modelo le dijo al cliente "mas de 300 productos"."""
++    ps = [p for p in ps if K.con_stock(p)]
++    if not ps:
++        return "0 modelos con stock"
++    marcas = collections.Counter(p.get("marca") for p in {(p.get("marca"), p.get("modelo") or p["id"]): p
++                                                          for p in ps}.values() if p.get("marca"))
++    precios = [K.entero(p.get("precio_ars")) for p in ps]
++    return (f"{len({(p.get('marca'), p.get('modelo') or p['id']) for p in ps})} modelos con stock"
++            + (f", marcas {', '.join(m for m, _ in marcas.most_common())}" if con_marcas else "")
++            + f", de {_plata(min(precios))} a {_plata(max(precios))}")
++
++
++def panorama(tienda_id: str) -> str:
++    """La tienda entera, rubro por rubro: lo que contesta "pasame el catalogo". El 30-oct el buscador daba diez filas y
++    el modelo no sabia que mas habia."""
++    todos = K.productos(tienda_id)
++    return f"LA TIENDA ENTERA, {_estante(todos, False)}. Por rubro:\n  " + "\n  ".join(
++        f"{r}: {_estante([p for p in todos if p.get('categoria') == r])}" for r in rubros(tienda_id))
+ 
+ 
+ def _lugares(texto) -> list:
+@@ -250,8 +277,11 @@ def buscar(consulta: str, tienda_id: str) -> str:
+     # El orden tambien dicho sin "mas": "mouse liviano" es el mas liviano.
+     orden = _orden_de(q, tienda_id) or next((o for w in q.split() if (o := _orden_de(f"mas {w}", tienda_id))
+                                              and K.n(o) in K.ORDEN), "") or "nada"
+-    toda = not rs and not vistos and re.search(r"\b(tienda|todo|todos|articulos|productos)\b", q)
++    toda = not rs and not vistos and re.search(r"\b(tienda|todo|todos|articulos?|productos?)\b", q)
++    resto = [w for w in q.split() if w not in K._RELLENO and _atable(w, "", tienda_id)]
+     if toda and orden == "nada":
++        if not resto:
++            out.append(panorama(tienda_id))
+         rs, ordenes = ["", ""], ["mas barato", "mas caro"]
+     elif toda:
+         rs, ordenes = [""], [orden]
+@@ -267,8 +297,8 @@ def buscar(consulta: str, tienda_id: str) -> str:
+             ([negada] if negada and _atable(negada, r, tienda_id) else [])
+         entre = andan if plats and any(p.get("categoria") == r and str(p["id"]) in andan for p in todos) else None
+         res = K.buscar(r, conds, orden if orden != "nada" else "mas barato", 5, tienda_id, entre)
+-        total = len({familia(p) for p in todos if (not r or p.get("categoria") == r) and K.con_stock(p)})
+-        titulo = (r.upper() or "TODA LA TIENDA") + f", {total} modelos con stock" + \
++        titulo = (r.upper() or "TODA LA TIENDA") + \
++            (f", {_estante([p for p in todos if p.get('categoria') == r])}" if r else "") + \
+             (f", filtrado por \"{' '.join(conds)}\"" if conds and not res["vacio_por"] else "") + \
+             (", solo los que andan con lo que pregunta" if entre else "") + \
+             f", los primeros por {'precio de menor a mayor' if orden == 'nada' else orden}"
+@@ -293,15 +323,17 @@ def buscar(consulta: str, tienda_id: str) -> str:
+             res = K.buscar(alt, [], "mas barato", 5, tienda_id)
+             out.append(f"{alt.upper()}, los primeros por precio de menor a mayor:\n  "
+                        + "\n  ".join(_fila(p, todos) for p in res["filas"]))
+-    if not out and cands:
+-        # NADA PASO EL CORTE: lo mas parecido que hay, dicho como tal, y que puede no servir.
+-        r = cands[0][0]
+-        res = K.buscar(r, [], "mas barato", 5, tienda_id)
+-        out.append(f"No encontre eso en la tienda. Lo mas parecido es {r.upper()}, que puede no ser lo que busca:\n  "
+-                   + "\n  ".join(_fila(p, todos) for p in res["filas"])
+-                   + "\nLa tienda vende: " + ", ".join(rubros(tienda_id)) + ".")
+     if not out:
+-        return "La tienda no tiene eso. Vende: " + ", ".join(rubros(tienda_id)) + "."
++        # NI PRODUCTO NI RUBRO NI REGLA: lo que el resto ata en toda la tienda, "que tenes de Logitech", y la tienda
++        # entera. "Pasame el catalogo" o "que venden" no son algo que la tienda no tenga: el 30-oct daba "no tiene eso".
++        res = K.buscar("", resto, "mas barato", 5, tienda_id) if resto else {"filas": []}
++        if res["filas"] and not res["vacio_por"]:
++            out.append(f"TODA LA TIENDA, filtrado por \"{' '.join(resto)}\", los primeros por precio de menor a "
++                       "mayor:\n  " + "\n  ".join(_fila(p, todos) for p in res["filas"]))
++        else:
++            out.append("No hay un producto ni un rubro con ese nombre. " + panorama(tienda_id)
++                       + "".join(f"\nEl rubro mas parecido por sentido, que puede no ser lo que busca: {r}."
++                                 for r, _ in cands[:1]))
+     return "\n".join(out)
+ 
+ 
+-- 
+2.43.0
+

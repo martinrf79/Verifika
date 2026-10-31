@@ -1,0 +1,376 @@
+{
+ "corrida": "31-oct, codigo de origin/main a8776a6, el de produccion, con la clave gratis",
+ "calificador": "Claude, a mano, leyendo cada turno; la aprueba Martin",
+ "causas": {
+  "dato": "la ficha tiene el dato y el buscador no se lo pasa al modelo",
+  "herramienta": "la herramienta acepta o devuelve algo mal",
+  "regla": "el modelo afirma una regla de la tienda sin buscarla y el verificador no la controla",
+  "memoria": "el modelo pierde parte del pedido"
+ },
+ "turnos": [
+  {
+   "id": "c52411bf07",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "76eac58c67",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "76eac58c67",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "pasame catalogo: diez filas y la cuenta mal, 325 modelos"
+  },
+  {
+   "id": "1fdccdd0d7",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "dice que no hay descuento por cantidad: la FAQ tiene mayoristas y 10% por transferencia; medios sin tarjetas"
+  },
+  {
+   "id": "e4ed989771",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e4ed989771",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e4ed989771",
+   "turno": 3,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "6740e01771",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "memoria",
+   "por_que": "se pierden los 3 a Toledo"
+  },
+  {
+   "id": "6740e01771",
+   "turno": 2,
+   "en_banco": true,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "igual que 154122"
+  },
+  {
+   "id": "7c7947db9f",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "dice que el origen esta en la ficha y no lo da: el buscador no lo muestra"
+  },
+  {
+   "id": "58cd96dfb4",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "mas de 300 productos: la cuenta por familias"
+  },
+  {
+   "id": "58cd96dfb4",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e3585160f3",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e3585160f3",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e3585160f3",
+   "turno": 3,
+   "en_banco": true,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "todos con 12 meses de garantia: la FAQ dice minimo 6, segun producto"
+  },
+  {
+   "id": "e3585160f3",
+   "turno": 4,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "d0c439c575",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "no contamos con informacion del origen: la ficha lo tiene"
+  },
+  {
+   "id": "d0c439c575",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "memoria",
+   "por_que": "pierde los destinos al corregir"
+  },
+  {
+   "id": "b5ddaad494",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen, igual"
+  },
+  {
+   "id": "b5ddaad494",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "herramienta",
+   "por_que": "\"Cordoba capital y Posadas\" como un destino, un solo envio"
+  },
+  {
+   "id": "83e58acb78",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen, igual"
+  },
+  {
+   "id": "83e58acb78",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "herramienta",
+   "por_que": "dos destinos en uno; 3 memorias y sin teclado"
+  },
+  {
+   "id": "386b8a84eb",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen, igual"
+  },
+  {
+   "id": "386b8a84eb",
+   "turno": 2,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "6344deed8c",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen, igual"
+  },
+  {
+   "id": "6344deed8c",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "08e6c44238",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen, igual"
+  },
+  {
+   "id": "08e6c44238",
+   "turno": 2,
+   "en_banco": true,
+   "bien": false,
+   "causa": "memoria",
+   "por_que": "anota 30 Mercado Pago que el cliente no dijo"
+  },
+  {
+   "id": "854f1bea2c",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "herramienta",
+   "por_que": "inventa el criterio de menor peso y el texto se contradice: dice que sumo Patriot y pregunta si cambia"
+  },
+  {
+   "id": "e328e77809",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e328e77809",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e328e77809",
+   "turno": 3,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "06d02631b7",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "06d02631b7",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "06d02631b7",
+   "turno": 3,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "c48ed9921d",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "aecba84109",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "389090ca1a",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "389090ca1a",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "0cdeffc8a2",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "e993ae644d",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "e993ae644d",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "herramienta",
+   "por_que": "producto con Negro en el nombre y color blanco: la herramienta vuelve a preguntar el color"
+  },
+  {
+   "id": "e993ae644d",
+   "turno": 3,
+   "en_banco": true,
+   "bien": false,
+   "causa": "herramienta",
+   "por_que": "igual"
+  },
+  {
+   "id": "e993ae644d",
+   "turno": 4,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "e993ae644d",
+   "turno": 5,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "e993ae644d",
+   "turno": 6,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "7355526504",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "353270d278",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "c3391deb1a",
+   "turno": 1,
+   "en_banco": false,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "dice que armo el presupuesto y no lo armo; no da las cuotas"
+  },
+  {
+   "id": "bf4a05c745",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "bf4a05c745",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "la mayoria de los mouses USB andan en la Play: sin respaldo"
+  },
+  {
+   "id": "d29c5ac43a",
+   "turno": 1,
+   "en_banco": false,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "la fila no muestra el peso: elige el tercero mas liviano"
+  },
+  {
+   "id": "8e13ecbb7c",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  }
+ ]
+}

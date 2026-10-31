@@ -1,0 +1,564 @@
+[
+ {
+  "id": "76eac58c67",
+  "desde": "",
+  "mensajes": [
+   "Hola quien eres",
+   "Pasame catalogo"
+  ],
+  "en_banco": [
+   false,
+   false
+  ]
+ },
+ {
+  "id": "1fdccdd0d7",
+  "desde": "20260927T154122",
+  "mensajes": [
+   "Okay dame el precio de los dos artículos más baratos que tengas en la tienda y de los dos más caros en total serían cuatro artículos de los cuales luego te diré a dónde sería el envío Dime qué medios de pago reciben Y si tienen descuentos por cantidad"
+  ],
+  "en_banco": [
+   true
+  ]
+ },
+ {
+  "id": "e4ed989771",
+  "desde": "20260927T180342",
+  "mensajes": [
+   "entre el G305 y el G203, dame el que sea inalámbrico",
+   "si el G305 anda con Mac, me lo llevo",
+   "tienen 50 off, no"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "6740e01771",
+  "desde": "20260927T180609",
+  "mensajes": [
+   "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
+   "Okay dame el precio de los dos artículos más baratos que tengas en la tienda y de los dos más caros en total serían cuatro artículos de los cuales luego te diré a dónde sería el envío Dime qué medios de pago reciben Y si tienen descuentos por cantidad"
+  ],
+  "en_banco": [
+   true,
+   true
+  ]
+ },
+ {
+  "id": "7c7947db9f",
+  "desde": "20260927T180710",
+  "mensajes": [
+   "Tienes algun articulo queno sea fabricado en china"
+  ],
+  "en_banco": [
+   true
+  ]
+ },
+ {
+  "id": "58cd96dfb4",
+  "desde": "20260927T180815",
+  "mensajes": [
+   "Me pasas catalogo",
+   "Dame precio del articulo mas caro que vendes"
+  ],
+  "en_banco": [
+   true,
+   true
+  ]
+ },
+ {
+  "id": "33dbb56c1b",
+  "desde": "20260927T181333",
+  "mensajes": [
+   "Tenes algun articulo bueno y barato para escribir con mucha garantia.",
+   "Y uno termino medio",
+   "Me decis cono se conecta o que ficha trae para saber si es compatible con mi pc",
+   "Me dijeron que duran mas con cable, sera cierto, tenes alguno asi, como se conectaria."
+  ],
+  "en_banco": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "7f8cd4a5ca",
+  "desde": "20260927T194112",
+  "mensajes": [
+   "Que dispositivo para juegos tenes",
+   "Aparte de monitores y placas de videos tenea alguna otra cosa.",
+   "Voy a empezar con placas de video, sabes cual calienta menos.",
+   "Ok llevo de las que mencionaste la mas economica.",
+   "Juan gonzalez calle avellaneda 300 barrio primero de mayo cordoba capital",
+   "Tarjeta naranja"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "e3585160f3",
+  "desde": "20260927T194408",
+  "mensajes": [
+   "Tienen celulares",
+   "Algo parecido",
+   "Me lo hubieras dicho recien, cual es la mas barata en cuotas con garantia y envio gratis",
+   "Envio a palermo puede ser color gris"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "d0c439c575",
+  "desde": "20261003T213947",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Me confundi pero serian 7 cosas, no tenes teclados"
+  ],
+  "en_banco": [
+   true,
+   false
+  ]
+ },
+ {
+  "id": "fe67b477ec",
+  "desde": "20261015T214013",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "En realidad son 7 articulos el teclado va a concordia, lo demas dsta bien",
+   "Comp son chinos seria todo igual salvo el precio, quiero los mas economicos de cada clase.",
+   "Sip",
+   "Mi nombre es Julio",
+   "Si",
+   "Color indistinto 70 por ciento transferencia",
+   "Blancos"
+  ],
+  "en_banco": [
+   true,
+   false,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "b5ddaad494",
+  "desde": "20261019T061703",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Si en realidad son 7 articulos el teclado va a misiones posadas"
+  ],
+  "en_banco": [
+   true,
+   false
+  ]
+ },
+ {
+  "id": "83e58acb78",
+  "desde": "20261019T064312",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "En realidad son 7 articulos, vendeme los mas baratos"
+  ],
+  "en_banco": [
+   true,
+   false
+  ]
+ },
+ {
+  "id": "386b8a84eb",
+  "desde": "20261019T131938",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Ok serian 7 en total dime como quedarian con los envios"
+  ],
+  "en_banco": [
+   true,
+   false
+  ]
+ },
+ {
+  "id": "b8df72a33c",
+  "desde": "20261019T134322",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Si serian 7 articulos en total, lo demas como te dije",
+   "Y 1 teclado",
+   "Pasame totales con envio"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "157b658bc8",
+  "desde": "20261019T183804",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Si en realidad son 7 articulos, el teclado va a concordia, lo demas como te dije.",
+   "Si suma el teclado"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "6344deed8c",
+  "desde": "20261019T200100",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Ok en total serian 7 articulos el teclado va a posadas. Con esa correccion y el 70 transferencia armame presupuestos"
+  ],
+  "en_banco": [
+   true,
+   true
+  ]
+ },
+ {
+  "id": "08e6c44238",
+  "desde": "20261020T061004",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "El teclado va aparte envio a posadas. Lo demas ests bien y 70 transferencia"
+  ],
+  "en_banco": [
+   true,
+   true
+  ]
+ },
+ {
+  "id": "96b39fa8fd",
+  "desde": "20261020T152947",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Son 7 cosas, el teclado va a posadas no concordia, lo demas esta bien el  70 transferencia",
+   "Que medios de pago tenes aparte de transferencia",
+   "Tarjeta visa",
+   "Joaquin"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "781919fa60",
+  "desde": "20261020T153221",
+  "mensajes": [
+   "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "Esta bien son 7 cosas en total , mi error, el teclado tambien. Decime si tenes descuento con tarjeta o transferencia, que me conviene mas."
+  ],
+  "en_banco": [
+   true,
+   true
+  ]
+ },
+ {
+  "id": "854f1bea2c",
+  "desde": "20261020T165506",
+  "mensajes": [
+   "Dame precio de 3 auriculares, dos mouse y 4 memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes de estados unidos posibles.  Dos auriculares y dos mouse será envío a Córdoba capital. Un teclado y 3 memorias será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta transferencia, ya que veré en la fase siguiente cómo seguimos"
+  ],
+  "en_banco": [
+   true
+  ]
+ },
+ {
+  "id": "e328e77809",
+  "desde": "20261020T183934",
+  "mensajes": [
+   "Quiero precio de 4 mouse y 2 monitor. Un mouse y el monitor van a Rosario, lo otro va a Mendoza, y sumame una webcam para Mendoza",
+   "Ok \"¿Qué cuotas tienen?",
+   "Joaquin"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "06d02631b7",
+  "desde": "20261020T192601",
+  "mensajes": [
+   "Necesito tres mouse, dos teclados y un par de auriculares. No quiero gastar más de 600 mil en total. Dos mouse y un teclado van a Rosario, el resto a Neuquén, y sumame una webcam para Rosario. Pago la mitad con transferencia y la mitad con Mastercard",
+   "¿Cuánto tarda el envío a Neuquén",
+   "Tienen garantía?”"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "e105d5a00b",
+  "desde": "20261020T221115",
+  "mensajes": [
+   "Necesito tres mouse, dos teclados y un par de auriculares. No quiero gastar más de 600 mil en total. Dos mouse y un teclado van a Rosario, el resto a Neuquén, y sumame una webcam para Rosario. Pago la mitad con transferencia y la mitad con Mastercard",
+   "y si en vez de pedirte lo mas barato me presupuestas lo mejor que tengas",
+   "Arma todo con lo mejor que tengas",
+   "No tomes lo mas barato toma lo mas caro",
+   "¿Cuánto tarda el envío a Neuquén",
+   "Sumame el envio a neuquen tomare el pedido mas barato",
+   "Joaquin"
+  ],
+  "en_banco": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ {
+  "id": "a96e63a0cb",
+  "desde": "20261021T041919",
+  "mensajes": [
+   "Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil. Dos mouse y un teclado a Rosario, el resto a Neuquén, sumame una webcam para Rosario. Pago mitad transferencia y mitad Mastercard",
+   "No mas de $600000 entre todos"
+  ],
+  "en_banco": [
+   true,
+   true
+  ]
+ },
+ {
+  "id": "c48ed9921d",
+  "desde": "20261021T042053",
+  "mensajes": [
+   "cuanto sale el envio a Posadas"
+  ],
+  "en_banco": [
+   true
+  ]
+ },
+ {
+  "id": "aecba84109",
+  "desde": "20261021T042215",
+  "mensajes": [
+   "jaja buenisimo gracias crack, che y el G305 tiene garantia"
+  ],
+  "en_banco": [
+   true
+  ]
+ },
+ {
+  "id": "c52411bf07",
+  "desde": "20261021T042344",
+  "mensajes": [
+   "de cuanto es la garantia del g305"
+  ],
+  "en_banco": [
+   false
+  ]
+ },
+ {
+  "id": "389090ca1a",
+  "desde": "20261021T042600",
+  "mensajes": [
+   "que tenes en mouse Logitech, teclados Logitech y auriculares JBL",
+   "y ese cuanto?"
+  ],
+  "en_banco": [
+   true,
+   true
+  ]
+ },
+ {
+  "id": "815c0c9b65",
+  "desde": "20261021T235339",
+  "mensajes": [
+   "Entre el G305 y el G203, dame el que sea inalámbrico",
+   "el que sea inalambrico",
+   "decime vos",
+   "te tildaste o si no dime no me entiendes, eres una maquina",
+   "dale"
+  ],
+  "en_banco": [
+   true,
+   true,
+   false,
+   false,
+   true
+  ]
+ },
+ {
+  "id": "0cdeffc8a2",
+  "desde": "20261022T004937",
+  "mensajes": [
+   "de estos dos, el G502 Hero y el G305, mandame el que no tenga cable"
+  ],
+  "en_banco": [
+   false
+  ]
+ },
+ {
+  "id": "e993ae644d",
+  "desde": "20261022T011512",
+  "mensajes": [
+   "si el M170 está por debajo de 15 lucas me llevo tres",
+   "En blanco los que te dije",
+   "Joaquin",
+   "No me preguntaste era por transferencia",
+   "Entonces dime",
+   "Ok"
+  ],
+  "en_banco": [
+   false,
+   false,
+   true,
+   false,
+   false,
+   true
+  ]
+ },
+ {
+  "id": "7355526504",
+  "desde": "20261022T012840",
+  "mensajes": [
+   "Dame precio de mause con luces cicodelicas"
+  ],
+  "en_banco": [
+   false
+  ]
+ },
+ {
+  "id": "badf4f114b",
+  "desde": "20261023T011628",
+  "mensajes": [
+   "quiero el K380 pero solo si funciona con mi iPad",
+   "El ultimo de samsung"
+  ],
+  "en_banco": [
+   true,
+   false
+  ]
+ },
+ {
+  "id": "c499622280",
+  "desde": "20261030T003005",
+  "mensajes": [
+   "Quiero un Logitech M170",
+   "blanco",
+   "sumame también un Redragon Cobra"
+  ],
+  "en_banco": [
+   false,
+   true,
+   false
+  ]
+ },
+ {
+  "id": "353270d278",
+  "desde": "20261030T044914",
+  "mensajes": [
+   "que auriculares accesibles tienen"
+  ],
+  "en_banco": [
+   false
+  ]
+ },
+ {
+  "id": "c3391deb1a",
+  "desde": "20261030T163518",
+  "mensajes": [
+   "dame precio de un teclado el mas eco, si no me alcanza necesito cuotas o llevare unos auriculares"
+  ],
+  "en_banco": [
+   false
+  ]
+ },
+ {
+  "id": "b8bb001ee8",
+  "desde": "20261030T163935",
+  "mensajes": [
+   "tenés auriculares que anden con la PS5",
+   "Si el mas eco en negro",
+   "Seria a villa del prado pcia de cordoba",
+   "Joaquin",
+   "Pero no tengo mp"
+  ],
+  "en_banco": [
+   false,
+   false,
+   false,
+   true,
+   false
+  ]
+ },
+ {
+  "id": "bf4a05c745",
+  "desde": "20261030T164407",
+  "mensajes": [
+   "¿el mouse M170 anda con la Play?",
+   "Y  cual si"
+  ],
+  "en_banco": [
+   false,
+   false
+  ]
+ },
+ {
+  "id": "d29c5ac43a",
+  "desde": "20261030T164454",
+  "mensajes": [
+   "dame el mouse más liviano"
+  ],
+  "en_banco": [
+   false
+  ]
+ },
+ {
+  "id": "58b5a11775",
+  "desde": "20261030T222236",
+  "mensajes": [
+   "tenés auriculares que anden con la PS5",
+   "El mas eco en negro",
+   "A villa del prado cordoba",
+   "Joaquin no tengo mp"
+  ],
+  "en_banco": [
+   false,
+   false,
+   false,
+   false
+  ]
+ },
+ {
+  "id": "8e13ecbb7c",
+  "desde": "",
+  "mensajes": [
+   "hola el teclado K120 inalambrico ese cuanto sale? creo que se llama asi"
+  ],
+  "en_banco": [
+   true
+  ]
+ }
+]
