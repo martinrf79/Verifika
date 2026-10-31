@@ -241,8 +241,48 @@ def _tema_por_clave(q: str, tienda_id: str) -> str:
     return dichas[0][1] if dichas else ""
 
 
-def _fila(p: dict, todos: list) -> str:
-    return "; ".join(datos(p, todos).split("; ")[:6])
+# Los campos que no dicen nada del producto para elegirlo, o que la fila ya trae siempre.
+_NO_PEDIBLES = {"nombre", "modelo", "descripcion", "descripcion_rica", "precio_ars", "marca", "color", "tags", "id",
+                "categoria", "stock", "compat"}
+
+
+def _campos(q: str, conds: list, orden: str, tienda_id: str) -> list:
+    """LOS CAMPOS QUE PIDE LA CONSULTA, 31-oct, el examen real: 13 de las 16 fallas de dato eran un campo que la ficha
+    tiene y la fila no mostraba —el origen, el peso—. Lo nombra la consulta por el nombre del campo, por una clave de
+    `specs_preguntables`, por la etiqueta de un derivado —"fabricado" es el origen—, por el orden que pide o por la
+    condicion que ata."""
+    from app.core.fuente_producto import specs_config
+    ws = q.split()
+    universo = K.productos(tienda_id)
+    campos = [c for c in dict.fromkeys([*K.vocabulario(tienda_id), *(k for p in universo[:50] for k in p)])
+              if c not in _NO_PEDIBLES]
+    out = [c for c in campos for w in ws for parte in c.split("_")
+           if len(parte) > 2 and (w == parte or (len(parte) > 4 and w[:5] == parte[:5]))]
+    out += [s["id"] for s in specs_config(tienda_id) if s["rx_pregunta"].search(q)]
+    out += list(K._pistas_derivadas(ws).values())
+    out += [K.ORDEN[orden][0]] if orden in K.ORDEN else []
+    out += [f["campo"] for c in conds for f in [K.atar(c, universo, tienda_id)] if "campo" in f]
+    # El pais de la marca o de fabricacion se lee en el origen, que dice los dos.
+    out = ["origen" if c in K.DERIVADOS else c for c in out]
+    return [c for c in dict.fromkeys(out) if c not in _NO_PEDIBLES and c != "precio_ars"]
+
+
+def _extra(p: dict, campos: list, ya: str = "") -> list:
+    """Los campos pedidos, enteros, que no estan en `ya`."""
+    out = []
+    for c in campos:
+        e = "peso" if c == "peso_gramos" else c.replace("_", " ")
+        v = K._valor_crudo(p, c)
+        if v not in (None, "", []) and f"{e}:" not in ya:
+            out.append(f"{e}: {v}" + (" g" if c == "peso_gramos" else ""))
+    return out
+
+
+def _fila(p: dict, todos: list, campos: list = ()) -> str:
+    """El producto en una linea: lo primero de su ficha y, enteros, los campos que pide la consulta."""
+    pedidos = {"peso" if c == "peso_gramos" else c.replace("_", " ") for c in campos}
+    base = [x for x in datos(p, todos).split("; ")[:6] if x.split(":")[0] not in pedidos]
+    return "; ".join(base + _extra(p, campos))
 
 
 def _con(p: dict, plats: list, tienda_id: str) -> str:
@@ -264,12 +304,14 @@ def buscar(consulta: str, tienda_id: str) -> str:
               if re.search(rf"\b{re.escape(a)}\b", q) for w in a.split()}
     ws = [w for w in re.findall(r"[a-z0-9]+", q) if w not in K._RELLENO]
     out, vistos = [], set()
+    pide = _campos(q, [], "", tienda_id)
     for tramo, _ in MK._productos(ws, tienda_id):
         idt = K.identificar(tramo, "", tienda_id)
         for p in [idt["producto"]] if idt["veredicto"] == "exists" else idt.get("opciones") or []:
             if familia(p) not in vistos:
                 vistos.add(familia(p))
-                out.append("PRODUCTO: " + datos(p, todos) + _con(p, plats, tienda_id))
+                d = datos(p, todos)
+                out.append("PRODUCTO: " + "; ".join([d] + _extra(p, pide, d)) + _con(p, plats, tienda_id))
     cands = _parecidos(consulta, "rubro", tienda_id)
     por_sentido = [k for k, s in cands[:1] if s >= UMBRAL_RUBRO] if not vistos else []
     por_nombre = MK._rubros(q.split(), tienda_id)
@@ -302,7 +344,8 @@ def buscar(consulta: str, tienda_id: str) -> str:
             (f", filtrado por \"{' '.join(conds)}\"" if conds and not res["vacio_por"] else "") + \
             (", solo los que andan con lo que pregunta" if entre else "") + \
             f", los primeros por {'precio de menor a mayor' if orden == 'nada' else orden}"
-        filas = [_fila(p, todos) + _con(p, plats, tienda_id) for p in res["filas"]]
+        campos = _campos(q, conds, orden, tienda_id)
+        filas = [_fila(p, todos, campos) + _con(p, plats, tienda_id) for p in res["filas"]]
         avisos = [f"ninguno cumple \"{c}\", van sin ese filtro" for c in res["vacio_por"]]
         out.append(f"{titulo}:\n  " + "\n  ".join(filas + avisos))
     tcands = _parecidos(consulta, "tema", tienda_id)
@@ -322,14 +365,14 @@ def buscar(consulta: str, tienda_id: str) -> str:
         if alt and alt not in rs:
             res = K.buscar(alt, [], "mas barato", 5, tienda_id)
             out.append(f"{alt.upper()}, los primeros por precio de menor a mayor:\n  "
-                       + "\n  ".join(_fila(p, todos) for p in res["filas"]))
+                       + "\n  ".join(_fila(p, todos, pide) for p in res["filas"]))
     if not out:
         # NI PRODUCTO NI RUBRO NI REGLA: lo que el resto ata en toda la tienda, "que tenes de Logitech", y la tienda
         # entera. "Pasame el catalogo" o "que venden" no son algo que la tienda no tenga: el 30-oct daba "no tiene eso".
         res = K.buscar("", resto, "mas barato", 5, tienda_id) if resto else {"filas": []}
         if res["filas"] and not res["vacio_por"]:
             out.append(f"TODA LA TIENDA, filtrado por \"{' '.join(resto)}\", los primeros por precio de menor a "
-                       "mayor:\n  " + "\n  ".join(_fila(p, todos) for p in res["filas"]))
+                       "mayor:\n  " + "\n  ".join(_fila(p, todos, pide) for p in res["filas"]))
         else:
             out.append("No hay un producto ni un rubro con ese nombre. " + panorama(tienda_id)
                        + "".join(f"\nEl rubro mas parecido por sentido, que puede no ser lo que busca: {r}."
