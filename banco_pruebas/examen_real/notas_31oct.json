@@ -1,10 +1,10 @@
 {
- "corrida": "31-oct, codigo de origin/main a8776a6, el de produccion, con la clave gratis",
+ "corrida": "31-oct, codigo de produccion a8776a6: 28 charlas con la clave gratis y 14 con la paga, el mismo modelo",
  "calificador": "Claude, a mano, leyendo cada turno; la aprueba Martin",
  "causas": {
   "dato": "la ficha tiene el dato y el buscador no se lo pasa al modelo",
   "herramienta": "la herramienta acepta o devuelve algo mal",
-  "regla": "el modelo afirma una regla de la tienda sin buscarla y el verificador no la controla",
+  "regla": "el modelo afirma algo sin respaldo de las herramientas, una regla de la tienda, un dato o algo que no hizo, y el verificador no lo caza",
   "memoria": "el modelo pierde parte del pedido"
  },
  "turnos": [
@@ -371,6 +371,402 @@
    "turno": 1,
    "en_banco": true,
    "bien": true
+  },
+  {
+   "id": "33dbb56c1b",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "33dbb56c1b",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "33dbb56c1b",
+   "turno": 3,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "33dbb56c1b",
+   "turno": 4,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "7f8cd4a5ca",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "7f8cd4a5ca",
+   "turno": 2,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "aparte de monitores y placas: el buscador no da la tienda entera"
+  },
+  {
+   "id": "7f8cd4a5ca",
+   "turno": 3,
+   "en_banco": true,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "la que calienta menos: inventa la gestion termica, la ficha no lo dice"
+  },
+  {
+   "id": "7f8cd4a5ca",
+   "turno": 4,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "7f8cd4a5ca",
+   "turno": 5,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "7f8cd4a5ca",
+   "turno": 6,
+   "en_banco": true,
+   "bien": false,
+   "causa": "herramienta",
+   "por_que": "cobra con tarjeta Naranja: la tienda toma Visa, Mastercard y Amex"
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen: la ficha lo tiene"
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 2,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 3,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 4,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 5,
+   "en_banco": true,
+   "bien": false,
+   "causa": "memoria",
+   "por_que": "pone 30 en Mercado Pago, el cliente dijo solo setenta treinta"
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 6,
+   "en_banco": true,
+   "bien": false,
+   "causa": "memoria",
+   "por_que": "cobra con ese Mercado Pago no dicho"
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 7,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "fe67b477ec",
+   "turno": 8,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "b8df72a33c",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen: la ficha lo tiene"
+  },
+  {
+   "id": "b8df72a33c",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "b8df72a33c",
+   "turno": 3,
+   "en_banco": true,
+   "bien": false,
+   "causa": "memoria",
+   "por_que": "suma un segundo teclado: el cliente decia el que faltaba"
+  },
+  {
+   "id": "b8df72a33c",
+   "turno": 4,
+   "en_banco": true,
+   "bien": false,
+   "causa": "memoria",
+   "por_que": "30 en Mercado Pago no dicho"
+  },
+  {
+   "id": "157b658bc8",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen: la ficha lo tiene"
+  },
+  {
+   "id": "157b658bc8",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "157b658bc8",
+   "turno": 3,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "96b39fa8fd",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen: la ficha lo tiene"
+  },
+  {
+   "id": "96b39fa8fd",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "96b39fa8fd",
+   "turno": 3,
+   "en_banco": true,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "otros medios: dice solo Mercado Pago, la FAQ tiene tarjetas"
+  },
+  {
+   "id": "96b39fa8fd",
+   "turno": 4,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "96b39fa8fd",
+   "turno": 5,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "781919fa60",
+   "turno": 1,
+   "en_banco": true,
+   "bien": false,
+   "causa": "dato",
+   "por_que": "origen: la ficha lo tiene"
+  },
+  {
+   "id": "781919fa60",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e105d5a00b",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e105d5a00b",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e105d5a00b",
+   "turno": 3,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e105d5a00b",
+   "turno": 4,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e105d5a00b",
+   "turno": 5,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e105d5a00b",
+   "turno": 6,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "e105d5a00b",
+   "turno": 7,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "a96e63a0cb",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "a96e63a0cb",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "815c0c9b65",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "815c0c9b65",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "815c0c9b65",
+   "turno": 3,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "815c0c9b65",
+   "turno": 4,
+   "en_banco": false,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "dice que no es una maquina, y que anoto el pago sin anotarlo"
+  },
+  {
+   "id": "815c0c9b65",
+   "turno": 5,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "badf4f114b",
+   "turno": 1,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "badf4f114b",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "dice que no tiene teclados inalambricos: el K380 lo es"
+  },
+  {
+   "id": "c499622280",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "c499622280",
+   "turno": 2,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "c499622280",
+   "turno": 3,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "b8bb001ee8",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "b8bb001ee8",
+   "turno": 2,
+   "en_banco": false,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "el mas eco con PS5: elige uno sin compatibilidad en la ficha y la afirma"
+  },
+  {
+   "id": "b8bb001ee8",
+   "turno": 3,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "b8bb001ee8",
+   "turno": 4,
+   "en_banco": true,
+   "bien": true
+  },
+  {
+   "id": "b8bb001ee8",
+   "turno": 5,
+   "en_banco": false,
+   "bien": false,
+   "causa": "regla",
+   "por_que": "dice que pasa los datos de pago y no los pasa"
+  },
+  {
+   "id": "58b5a11775",
+   "turno": 1,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "58b5a11775",
+   "turno": 2,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "58b5a11775",
+   "turno": 3,
+   "en_banco": false,
+   "bien": true
+  },
+  {
+   "id": "58b5a11775",
+   "turno": 4,
+   "en_banco": false,
+   "bien": false,
+   "causa": "herramienta",
+   "por_que": "cobrar se llama y los datos de transferencia no llegan al cliente"
   }
  ]
 }

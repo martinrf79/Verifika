@@ -9,11 +9,12 @@ cliente y lo que devolvieron las herramientas.
   corrida_<dia>.jsonl     lo que contesto el bot y lo que pidio y devolvio cada herramienta
   notas_<dia>.json        cada turno bien o mal, con su causa y por que
 
-El 31-oct, con el codigo de produccion: 30 de 53 turnos bien, el mismo 57% en lo que estaba en el banco y en lo que no.
-Faltan 14 charlas, que cortaron por la cuota del dia de la gratis.
+El 31-oct, con el codigo de produccion, las 42: 72 de 113 turnos bien, el 64%; 52 de 80 de lo que ya estaba en el banco
+y 20 de 33 de lo que no. 28 charlas con la gratis y 14 con la paga, el mismo modelo, 11 centavos.
 
     python3 banco_pruebas/examen_real/examen.py corrida_<dia>.jsonl [id ...]
     python3 banco_pruebas/examen_real/examen.py --ver corrida_<dia>.jsonl [id ...]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/examen_real/examen.py --paga corrida_<dia>.jsonl
 
 Una charla con un turno sin respuesta del modelo no se guarda: se corre de nuevo. Lo ya guardado no se repite.
 """
@@ -43,10 +44,10 @@ def ver(salida: str, ids: list) -> None:
             print("   BOT:", t["bot"].replace("\n", " / "))
 
 
-def correr(salida: str, ids: list) -> None:
+def correr(salida: str, ids: list, paga: bool = False) -> None:
     from banco_pruebas import agente_replay as R
     from banco_pruebas import clon_produccion as C
-    falso, vistos = R.instalar(vivo=True, gratis=True)
+    falso, vistos = R.instalar(vivo=True, gratis=not paga)
     hechos = {json.loads(x)["id"] for x in open(salida, encoding="utf-8")} if os.path.exists(salida) else set()
     for e in json.load(open(os.path.join(AQUI, "charlas.json"), encoding="utf-8")):
         if (ids and e["id"] not in ids) or e["id"] in hechos:
@@ -72,7 +73,6 @@ def correr(salida: str, ids: list) -> None:
 
 if __name__ == "__main__":
     a = sys.argv[1:]
-    modo_ver = a[:1] == ["--ver"]
-    a = a[1:] if modo_ver else a
+    modo = a.pop(0) if a[:1] in (["--ver"], ["--paga"]) else ""
     archivo = a[0] if os.path.isabs(a[0]) else os.path.join(AQUI, a[0])
-    (ver if modo_ver else correr)(archivo, a[1:])
+    ver(archivo, a[1:]) if modo == "--ver" else correr(archivo, a[1:], modo == "--paga")
