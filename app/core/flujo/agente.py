@@ -63,8 +63,8 @@ Tenes tres herramientas:
 
 Todo producto, precio, stock, dato de ficha, envio o regla que digas tiene que salir de las herramientas, de las reglas
 de la tienda que van abajo o de lo que ya le mostraste en la charla. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que
-falte. Antes de elegir un producto, buscalo: no elijas de memoria; en el presupuesto va con el id entre corchetes que te
-dio el buscador, y el id no se lo escribas al cliente. Al elegir o recomendar uno, deci el dato de la ficha en que te basas. Si pregunta si anda con un equipo suyo, buscalo con ese equipo; si la ficha no lo dice, no lo afirmes.
+falte. Antes de elegir un producto, buscalo: no elijas de memoria. Al elegir o recomendar uno, deci el dato de la ficha
+en que te basas. Si pregunta si anda con un equipo suyo, buscalo con ese equipo; si la ficha no lo dice, no lo afirmes.
 Si el cliente compra, cambia o confirma algo del pedido, arma el presupuesto con el pedido entero como queda, aunque
 falte un dato, y pedi lo que falte. Donde va el presupuesto, escribi [[PRESUPUESTO]] y el sistema pega el ultimo que
 armaste, tal cual: no lo copies ni lo resumas, y no escribas montos del pedido por tu cuenta. Si el cliente pide algo
@@ -89,8 +89,7 @@ HERRAMIENTAS = [
                                               "precios, envios, total y reparto.",
         "parameters": {"type": "object", "properties": {
             "renglones": {"type": "array", "items": {"type": "object", "properties": {
-                "producto": {"type": "string", "description": "el id que dio el buscador, como [MOU0001]"},
-                "cantidad": {"type": "integer"}, "destino": {"type": "string"},
+                "producto": {"type": "string"}, "cantidad": {"type": "integer"}, "destino": {"type": "string"},
                 "color": {"type": "string"}}, "required": ["producto"]}},
             "pago": {"type": "string", "description": "como \"70 transferencia, 30 mercado pago\""},
             "tope": {"type": "integer"},
@@ -268,7 +267,7 @@ def _fila(p: dict, todos: list, campos: list = (), ya: str = None) -> str:
     los campos pedidos que esa linea no trae."""
     et = {c: "peso" if c == "peso_gramos" else c.replace("_", " ") for c in campos}
     base = [x for x in datos(p, todos).split("; ")[:6] if x.split(":")[0] not in et.values()] if ya is None else []
-    return ("" if ya is not None else f"[{p['id']}] ") + "; ".join(base + [f"{e}: {v}" + " g" * (c == "peso_gramos") for c, e in et.items()
+    return "; ".join(base + [f"{e}: {v}" + " g" * (c == "peso_gramos") for c, e in et.items()
                              if (v := K._valor_crudo(p, c)) not in (None, "", []) and f"{e}:" not in (ya or "")])
 
 
@@ -298,7 +297,7 @@ def buscar(consulta: str, tienda_id: str) -> str:
             if familia(p) not in vistos:
                 vistos.add(familia(p))
                 d = datos(p, todos)
-                out.append(f"PRODUCTO: [{p['id']}] " + "; ".join(x for x in (d, _fila(p, todos, pide, d)) if x) + _con(p, plats, tienda_id))
+                out.append("PRODUCTO: " + "; ".join(x for x in (d, _fila(p, todos, pide, d)) if x) + _con(p, plats, tienda_id))
     cands = _parecidos(consulta, "rubro", tienda_id)
     por_sentido = [k for k, s in cands[:1] if s >= UMBRAL_RUBRO] if not vistos else []
     por_nombre = MK._rubros(q.split(), tienda_id)
@@ -400,9 +399,6 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     a = {**a, "pago": a.get("pago") or memoria.get("pago") or "", "tope": a.get("tope") or memoria.get("tope") or 0}
     # SOLO LO CERTIFICADO ENTRA: un renglon que no es un producto de la tienda, "Teclado (a definir)", o que puede ser
     # muchos, "teclado", no traba a los demas. Vuelve al modelo; el cliente no lee la repregunta interna del ejecutor.
-    # EL PRODUCTO POR SU ID, 1-nov: el modelo copia el id de la fila del buscador y el codigo pone el producto exacto.
-    rs = [{**x, "producto": {str(p["id"]).lower(): p["nombre"] for p in K.productos(tienda_id)}.get(
-        str(x["producto"]).strip(" []").lower(), x["producto"])} for x in rs]
     idts = {str(x["producto"]): K.identificar(str(x["producto"]), "", tienda_id) for x in rs}
     # LO AMBIGUO SE RESUELVE POR LO MOSTRADO, 1-nov: "Notebook Asus ROG Strix G16" es la Core i7 o la Ryzen 7, y la
     # charla mostro la Core i7. Es la opcion cuyas palabras propias, las que no comparte con las otras, estan dichas.
@@ -566,11 +562,14 @@ def charla(historial: list) -> str:
 
 def memoria_texto(memoria: dict) -> str:
     """Lo que el agente recuerda de la charla: el pedido tal como quedo, renglon por renglon, y el pago y el tope."""
-    m, j = memoria, lambda x: json.dumps(x, ensure_ascii=False)
-    return "\n".join([f"EL PEDIDO ANOTADO, en el formato del presupuesto: {j(m['pedido'])}"] + [
-        f"EL ULTIMO PRESUPUESTO QUE LE MOSTRASTE, sin anotar: {j(m['mostrado'])}"] * bool(m.get("mostrado") and m[
-            "mostrado"] != m["pedido"]) + [f"EL PAGO QUE DIJO: {m['pago']}"] * bool(m.get("pago")) + [
-        f"EL TOPE QUE DIJO: {m['tope']}"] * bool(m.get("tope")))
+    t = "EL PEDIDO ANOTADO, en el formato del presupuesto: " + json.dumps(memoria["pedido"], ensure_ascii=False)
+    if memoria.get("mostrado") and memoria["mostrado"] != memoria["pedido"]:
+        t += "\nEL ULTIMO PRESUPUESTO QUE LE MOSTRASTE, sin anotar: " + json.dumps(memoria["mostrado"], ensure_ascii=False)
+    if memoria.get("pago"):
+        t += f"\nEL PAGO QUE DIJO: {memoria['pago']}"
+    if memoria.get("tope"):
+        t += f"\nEL TOPE QUE DIJO: {memoria['tope']}"
+    return t
 
 
 async def _llamar(msgs: list, herramientas: bool, trace_id: str):
@@ -610,8 +609,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             entrada, salida = entrada + (r.usage.prompt_tokens or 0), salida + (r.usage.completion_tokens or 0)
         m = r.choices[0].message
         if not m.tool_calls:
-            # LOS IDS SON INTERNOS: si el modelo escribe "[MOU0001]", el cliente no lo lee.
-            texto = re.sub(r"\s*\[[A-Z]{2,4}\d{3,6}\]", "", pegar(m.content or "", pasos, memoria, tienda_id))
+            texto = pegar(m.content or "", pasos, memoria, tienda_id)
             # EL CANDADO ES EL VERIFICADOR, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
             pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
             fuente = " ".join(salidas + dichos + [mensaje, contexto, hoja])

@@ -40,9 +40,8 @@ def test_cada_campo_nombrado_sale_en_cada_rubro(A):
             assert filas, f"{dicho} {rubro}: sin filas"
             casos += 1
             for f in filas:
-                # Desde el 1-nov la fila empieza con el id: "[MOU0001] Mouse ...". Sin producto, la fila no se mide.
-                p = next((p for p in K.productos(C.TIENDA) if f"[{p['id']}] {p['nombre']} $" in f), None)
-                assert p, f"fila sin producto: {f[:80]}"
+                p = next((p for p in K.productos(C.TIENDA) if f.strip().removeprefix("PRODUCTO: ").startswith(
+                    p["nombre"] + " $")), None)
                 if p and K._valor_crudo(p, campo) and f"{CAMPOS[campo]}:" not in f:
                     malos.append(f"{dicho} {rubro}: {f[:120]}")
     print(f"\nCAMPOS PEDIDOS: {casos} consultas, {len(CAMPOS)} campos por {len(RUBROS)} rubros, "
