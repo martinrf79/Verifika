@@ -50,8 +50,9 @@ def inventados(respuesta: str, fuente: str) -> list:
 
 
 def _productos(texto: str, tienda_id: str) -> list:
-    """Los productos que nombra un texto, uno por modelo: el que la identidad certifica."""
-    ws = [w for w in re.findall(r"[a-z0-9]+", K.n(texto)) if w not in K._RELLENO]
+    """Los productos que nombra un texto, uno por modelo: el que la identidad certifica. Un monto no es parte de un
+    nombre: el "3" de "$3.100.500" con "1TB SSD" era la IdeaPad 3, 1-nov."""
+    ws = [w for w in re.findall(r"[a-z0-9]+", K.n(re.sub(r"\$\s?\d[\d.,]*", " ", texto))) if w not in K._RELLENO]
     out = []
     for tramo, _ in MK._productos(ws, tienda_id):
         # Una medida sola no nombra un producto: "25w" de la potencia de un parlante no es el cargador de 25W.

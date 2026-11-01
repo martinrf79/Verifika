@@ -40,8 +40,8 @@ def _propias(p: dict) -> set:
 
 
 def _productos(ws: list, tienda_id: str) -> list:
-    """Cada tramo de hasta tantas palabras como el modelo mas largo de la tienda que nombra un modelo, sin pisarse: primero los que dan uno solo, despues
-    los que dan dos o tres. El tramo tiene que traer una palabra con letras del modelo mismo —"G305", "Stinger"—:
+    """Cada tramo de hasta tantas palabras como el modelo mas largo de la tienda que nombra un modelo, sin pisarse:
+    primero los que dan uno solo, despues los que dan dos o tres. El tramo tiene que traer una palabra con letras del modelo mismo —"G305", "Stinger"—:
     "mouse inalambrico" es una busqueda. Las puntas que no son del producto se recortan: "cuanto sale g305" es "g305"."""
     de_modelo = {w for p in K.productos(tienda_id) for w in _palabras(p.get("modelo")) if re.search(r"[a-z]", w)}
     # EL LARGO LO DA LA TIENDA: con cuatro palabras fijas, "IdeaPad 3 Core i5 16GB" no separaba el Core i5 del Ryzen 7.
@@ -49,9 +49,11 @@ def _productos(ws: list, tienda_id: str) -> list:
     # Un nombre de producto tiene solo palabras de algun nombre del catalogo: las ventanas largas con otras no se prueban.
     vocab = set().union(*(_propias(p) for p in K.productos(tienda_id)))
     hallados, usadas, vistos = [], set(), {}
+    # DE IZQUIERDA A DERECHA, en cada lugar el mas largo, 1-nov: probando primero todas las ventanas largas de la
+    # oracion, "lightspeed inalambrico gamer negro" se llevaba el "Lightspeed" del G305 para los auriculares G733.
     for una in (True, False):
-        for tam in range(min(largo, len(ws)), 0, -1):
-            for i in range(len(ws) - tam + 1):
+        for i in range(len(ws)):
+            for tam in range(min(largo, len(ws) - i), 0, -1):
                 if set(range(i, i + tam)) & usadas or not de_modelo & set(ws[i:i + tam]) or \
                         (tam > 4 and not set(ws[i:i + tam]) <= vocab):
                     continue
@@ -72,12 +74,11 @@ def _productos(ws: list, tienda_id: str) -> list:
                 # Se ocupa solo lo que quedo despues de recortar las puntas: "cloud ii ecotank l3250" encuentra la
                 # EcoTank, y el Cloud II de la punta queda libre para su propio tramo (29-oct).
                 usadas |= set(range(a, b))
-                if una:
-                    colores = [v["color"] for v in K._colores_de(ps[0], K.productos(tienda_id)) if v.get("color")]
-                    es = f"el producto {_modelo(ps[0])}" + (f", en {' o '.join(colores)}" if len(colores) > 1 else "")
-                else:
-                    es = "puede ser " + " o ".join(_modelo(p) for p in ps)
+                colores = [v["color"] for v in K._colores_de(ps[0], K.productos(tienda_id)) if v.get("color")] if una else []
+                es = f"el producto {_modelo(ps[0])}" + (f", en {' o '.join(colores)}" if len(colores) > 1 else "") \
+                    if una else "puede ser " + " o ".join(_modelo(p) for p in ps)
                 hallados.append((a, " ".join(ws[a:b]), es))
+                break
     return [(d, e) for _, d, e in sorted(hallados)]
 
 
