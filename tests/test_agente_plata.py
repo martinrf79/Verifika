@@ -66,3 +66,14 @@ def test_sin_medio_no_se_cobra_y_el_medio_dicho_si(A):
     pegado = A.pegar("Listo Joaquin.", [{"herramienta": "cobrar", "devuelve": cliente, "al_cliente": cliente}], m,
                      C.TIENDA)
     assert cliente in pegado
+
+
+def test_lo_ambiguo_del_pedido_se_resuelve_por_lo_mostrado(A):
+    """K18, 1-nov: "sumame uno de cada uno" con "Notebook Asus ROG Strix G16", que es la Core i7 o la Ryzen 7. La charla
+    mostro la Core i7, y el bot contestaba "no me figura en el sistema". Sin lo que la distingue dicho, sigue afuera."""
+    a = {"renglones": [{"producto": "Notebook Asus ROG Strix G16", "destino": "Posadas"}]}
+    visto = "la notebook asus rog strix g16, con procesador core i7, 16gb de ram y 1tb de ssd, a $3.100.500"
+    cliente, nota = A.presupuesto(a, A.memoria_de({}), C.TIENDA, visto, "")
+    assert "Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD" in cliente and "afuera" not in nota
+    cliente, nota = A.presupuesto(a, A.memoria_de({}), C.TIENDA, "la notebook asus rog strix g16", "")
+    assert not cliente and "afuera" in nota

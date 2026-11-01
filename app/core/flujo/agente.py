@@ -242,8 +242,7 @@ def _tema_por_clave(q: str, tienda_id: str) -> str:
 
 
 # Los campos que no dicen nada del producto para elegirlo, o que la fila ya trae siempre.
-_NO_PEDIBLES = {"nombre", "modelo", "descripcion", "descripcion_rica", "precio_ars", "marca", "color", "tags", "id",
-                "categoria", "stock", "compat"}
+_NO_PEDIBLES = set("nombre modelo descripcion descripcion_rica precio_ars marca color tags id categoria stock compat".split())
 
 
 def _campos(q: str, conds: list, orden: str, tienda_id: str) -> list:
@@ -253,15 +252,14 @@ def _campos(q: str, conds: list, orden: str, tienda_id: str) -> list:
     condicion que ata."""
     from app.core.fuente_producto import specs_config
     ws, universo = q.split(), K.productos(tienda_id)
-    campos = dict.fromkeys([*K.vocabulario(tienda_id), *(k for p in universo[:50] for k in p)])
-    out = [c for c in campos for w in ws for parte in c.split("_")
+    out = [c for c in dict.fromkeys([*K.vocabulario(tienda_id), *(k for p in universo[:50] for k in p)])
+           for w in ws for parte in c.split("_")
            if len(parte) > 2 and (w == parte or (len(parte) > 4 and w[:5] == parte[:5]))]
     out += [s["id"] for s in specs_config(tienda_id) if s["rx_pregunta"].search(q)] + list(K._pistas_derivadas(ws).values())
     out += ([K.ORDEN[orden][0]] if orden in K.ORDEN else []) + [
         f["campo"] for c in conds for f in [K.atar(c, universo, tienda_id)] if "campo" in f]
     # El pais de la marca o de fabricacion se lee en el origen, que dice los dos.
-    return [c for c in dict.fromkeys("origen" if c in K.DERIVADOS else c for c in out)
-            if c not in _NO_PEDIBLES and c != "precio_ars"]
+    return [c for c in dict.fromkeys("origen" if c in K.DERIVADOS else c for c in out) if c not in _NO_PEDIBLES]
 
 
 def _fila(p: dict, todos: list, campos: list = (), ya: str = None) -> str:
@@ -402,6 +400,14 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     # SOLO LO CERTIFICADO ENTRA: un renglon que no es un producto de la tienda, "Teclado (a definir)", o que puede ser
     # muchos, "teclado", no traba a los demas. Vuelve al modelo; el cliente no lee la repregunta interna del ejecutor.
     idts = {str(x["producto"]): K.identificar(str(x["producto"]), "", tienda_id) for x in rs}
+    # LO AMBIGUO SE RESUELVE POR LO MOSTRADO, 1-nov: "Notebook Asus ROG Strix G16" es la Core i7 o la Ryzen 7, y la
+    # charla mostro la Core i7. Es la opcion cuyas palabras propias, las que no comparte con las otras, estan dichas.
+    for k, ops in [(k, i["opciones"]) for k, i in idts.items() if i["veredicto"] == "ambiguous" and visto]:
+        # La eligio lo mostrado: queda vista.
+        if len(u := [o["nombre"] for o in ops if set(K.n(o["nombre"]).split()) - set.intersection(*(set(K.n(
+                x["nombre"]).split()) for x in ops)) <= set(re.findall(r"[a-z0-9]+", visto))]) == 1:
+            idts.pop(k); idts[u[0]], visto, rs = K.identificar(u[0], "", tienda_id), f"{visto} {K.n(u[0])}", [
+                {**x, "producto": u[0]} if str(x["producto"]) == k else x for x in rs]
     fuera = [p for p, i in idts.items() if i["veredicto"] != "exists"]
     rs = [x for x in rs if str(x["producto"]) not in fuera]
     # EL MISMO PRODUCTO CON Y SIN DESTINO es el pedido dicho dos veces, el total y el reparto, visto el 30-oct: va el
@@ -526,9 +532,7 @@ def sin_buscar(mensaje: str, pasos: list, tienda_id: str) -> list:
     un campo —"chinas" al pais de fabricacion, "inalambrico" a la conexion— cuando nada de lo que pidio el modelo ata
     ese campo. En el examen real, "las menos partes chinas" se buscaba como "auriculares" en once charlas. En un campo
     de si o no vale solo su clave, "rgb", no una palabra de su texto."""
-    tipos, todos = K.campos_filtrables(tienda_id), K.productos(tienda_id)
-
-    def campos(texto: str) -> dict:
+    def campos(texto: str, tipos=K.campos_filtrables(tienda_id), todos=K.productos(tienda_id)) -> dict:
         ws = [w for w in re.findall(r"[a-z0-9]+", K.n(texto)) if w not in K._RELLENO and len(w) > 2 and not w.isdigit()]
         # Solo un tramo que nombra un producto: "rgb" esta en el modelo de varios y no nombra a ninguno.
         de_producto = {w for t, es in MK._productos(ws, tienda_id) if es.startswith("el producto") for w in t.split()}

@@ -112,18 +112,17 @@ _RESTRINGE = rf"{_NIEGA_REGLA}|{_SOLO}|\bno\b"
 def _reglas(o: str, tienda_id: str) -> list:
     """Una oracion que niega o restringe un tema de la FAQ, con el tema despues de la negacion en la misma parte de la
     oracion, cuando la regla de ese tema no niega ni restringe nada."""
-    from app.core import agente
-    faq, out = K.fc.get_all_faq(tienda_id=tienda_id) or {}, []
+    faq, out, temas = K.fc.get_all_faq(tienda_id=tienda_id) or {}, [], K.agente.indice(tienda_id)["temas"]
     for parte in re.split(r"[,;:]|\bpero\b", o):
         for m in re.finditer(rf"{_NIEGA_REGLA}|{_SOLO}", parte):
             # Lo que niega "no tenemos" va en la parte; lo que restringe "solo", en las cuatro palabras siguientes.
             resto = parte[m.end():] if not re.fullmatch(_SOLO, m.group(0)) else " ".join(parte[m.end():].split()[:4])
-            nombrados = {t: K.n((faq.get(t) or {}).get("respuesta")) for t, d in agente.indice(tienda_id)["temas"].items()
+            nombrados = {t: K.n((faq.get(t) or {}).get("respuesta")) for t, d in temas.items()
                          if any(re.search(rf"\b{re.escape(f)}\b", resto) for f in d.get("frases") or [])}
             # NEGAR OTRA COSA NO CONTRADICE LA REGLA: "no tenemos promo de 50% off" con la promo del 10%.
-            otra = any(x not in re.findall(r"\d+", r) for x in re.findall(r"\d+", resto) for r in nombrados.values())
-            if nombrados and not otra and not any(re.search(_RESTRINGE, r) for r in nombrados.values()):
-                out.append(("regla", f"{', '.join(sorted(nombrados))}: {parte.strip()[:80]}"))
+            out += [("regla", f"{', '.join(sorted(nombrados))}: {parte.strip()[:80]}")] if nombrados and not any(
+                x not in re.findall(r"\d+", r) for x in re.findall(r"\d+", resto) for r in nombrados.values()) and \
+                not any(re.search(_RESTRINGE, r) for r in nombrados.values()) else []
     return out
 
 
