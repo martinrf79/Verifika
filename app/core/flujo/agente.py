@@ -547,9 +547,8 @@ def hoja_reglas(tienda_id: str) -> str:
     """LAS REGLAS DE LA TIENDA SIEMPRE A LA VISTA, 31-oct, orden de Martin: una linea por tema, de la FAQ de la tienda,
     tal como esta hoy. Llegaban solo si el modelo las buscaba, y en el examen real dijo que no habia descuento por
     cantidad, con mayoristas y 10% por transferencia en la FAQ. Sale de la FAQ en cada turno: si cambia, cambia."""
-    from app.storage.firestore_client import get_all_faq
     lineas = [f"- {(d.get('tema') or t).replace('_', ' ')}: {' '.join(str(d.get('respuesta') or '').split())}"
-              for t, d in sorted((get_all_faq(tienda_id=tienda_id) or {}).items()) if isinstance(d, dict) and d.get("respuesta")]
+              for t, d in sorted((K.fc.get_all_faq(tienda_id=tienda_id) or {}).items()) if isinstance(d, dict) and d.get("respuesta")]
     return "LAS REGLAS DE LA TIENDA, de su FAQ, valen siempre:\n" + "\n".join(lineas) if lineas else ""
 
 
@@ -616,15 +615,19 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             malos = V.verificar(texto, fuente, tienda_id, pegados)
             faltan = [] if corregido else sin_buscar(mensaje, pasos, tienda_id)
             if (malos or faltan) and not corregido and vuelta < VUELTAS:
-                corregido = True
+                corregido, ws = True, K.n(mensaje).split()
+                # LA BUSQUEDA QUE FALTA LA HACE EL CODIGO, 1-nov: con solo el aviso, el modelo lo ignoraba en el
+                # examen. Cada busqueda del turno, de nuevo con las palabras del cliente alrededor del criterio.
+                frase = " ".join(dict.fromkeys(x for w in faltan for i, y in enumerate(ws) if K.n(w) in y for x in ws[max(0, i - 3):i + 1]))
+                salidas += (extra := [buscar(f"{p['pide']['consulta']} {frase}", tienda_id) for p in pasos if faltan and p["herramienta"] == "buscar"
+                                      and p["pide"].get("consulta")][:3])
                 msgs.append(m.model_dump(exclude_none=True))
                 # LA REVISION ES INTERNA: el cliente no la ve ni la dijo. Sin esto el modelo le pedia disculpas.
                 msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: " + (
                     "tu borrador dice cosas que no respaldan las herramientas ni la charla: " + "; ".join(
                         f"{c}: {d}" for c, d in malos) + ". Corregilas con las herramientas o sacalas. " if malos else "")
-                    + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo: si es parte de lo que pide, "
-                       "buscalo con eso. " if faltan else "") + "Escribi de nuevo la respuesta para el cliente, completa,"
-                    " sin mencionar esta revision ni pedir disculpas."})
+                    + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo. El buscador con eso da:\n" + "\n".join(extra)
+                       + "\n" if faltan else "") + "Escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta revision ni pedir disculpas."})
                 continue
             if malos:  # LO QUE SIGUE MARCADO DESPUES DE CORREGIR NO SALE: se saca la oracion entera.
                 from app.core.guia_venta_prosa import mensaje as prosa

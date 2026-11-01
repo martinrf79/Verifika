@@ -45,9 +45,8 @@ def _productos(ws: list, tienda_id: str) -> list:
     "mouse inalambrico" es una busqueda. Las puntas que no son del producto se recortan: "cuanto sale g305" es "g305"."""
     de_modelo = {w for p in K.productos(tienda_id) for w in _palabras(p.get("modelo")) if re.search(r"[a-z]", w)}
     # EL LARGO LO DA LA TIENDA: con cuatro palabras fijas, "IdeaPad 3 Core i5 16GB" no separaba el Core i5 del Ryzen 7.
-    largo = max((len(_palabras(f"{p.get('marca')} {p.get('modelo')}")) for p in K.productos(tienda_id)), default=4)
     # Un nombre de producto tiene solo palabras de algun nombre del catalogo: las ventanas largas con otras no se prueban.
-    vocab = set().union(*(_propias(p) for p in K.productos(tienda_id)))
+    largo, vocab = max(len(_palabras(f"{p.get('marca')} {p.get('modelo')}")) for p in K.productos(tienda_id)), set().union(*map(_propias, K.productos(tienda_id)))
     hallados, usadas, vistos = [], set(), {}
     # DE IZQUIERDA A DERECHA, en cada lugar el mas largo, 1-nov: probando primero todas las ventanas largas de la
     # oracion, "lightspeed inalambrico gamer negro" se llevaba el "Lightspeed" del G305 para los auriculares G733.

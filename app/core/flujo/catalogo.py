@@ -131,7 +131,7 @@ PRIORIDAD = ("marca", "color", "conexion", "ram", "almacenamiento", "procesador"
              "memoria_video", "potencia", "switch_teclado", "retroiluminacion", "bluetooth", "pais_fabricacion",
              "pais_marca", "tags", "modelo", "nombre", "descripcion")
 
-_NIEGA = re.compile(r"^(?:que\s+)?(?:no\s+(?:sea[ns]?\s+)?|sin\s+|ni\s+|excepto\s+|salvo\s+|nada\s+de\s+)")
+_NIEGA = re.compile(r"^(?:que\s+)?(?:no\s+(?:sea[ns]?\s+)?|sin\s+|ni\s+|excepto\s+|salvo\s+|menos\s+|nada\s+de\s+)")
 # Un tope es de plata si el numero no lleva unidad: "hasta 16 GB" es memoria, no precio.
 _TOPE = re.compile(r"\b(menos de|hasta|maximo|no mas de|por debajo de|mas de|desde|minimo)\s*\$?\s*([\d.,]+)"
                    r"(?![\d.,])\s*(millones|millon|mil|k|lucas)?\b(?!\s*(?:gb|tb|hz|w|watts|mah|mm|pulgadas|gramos|g|meses)\b)")
