@@ -105,8 +105,7 @@ def _compatibilidad(p: dict, oracion: str, o: str, tienda_id: str) -> list:
 # problemas", "solo me falta tu localidad" o "no vendemos teclados Samsung", que es de productos, no son una regla.
 _NIEGA_REGLA = r"\b(?:no|ni)\s+(?:\w+\s+)?(?:hay|tenemos|tengo|contamos|cuento|hacemos|hago|aceptamos|acepto|trabajamos|" \
     r"trabajo|manejamos|manejo|ofrecemos|ofrezco|damos|doy|emitimos|cobramos|podemos|puedo)\b"
-_SOLO = r"\b(?:solo|solamente|unicamente)\b(?!\s+(?:me|te|nos|le|les|se)\b)"
-_RESTRINGE = rf"{_NIEGA_REGLA}|{_SOLO}|\bno\b"
+_SOLO = r"\b(?:solo|solamente|unicamente)\b(?!\s+(?:me|te|nos|le|les|se)\b)"; _RESTRINGE = rf"{_NIEGA_REGLA}|{_SOLO}|\bno\b"
 
 
 def _reglas(o: str, tienda_id: str) -> list:
@@ -120,7 +119,9 @@ def _reglas(o: str, tienda_id: str) -> list:
             nombrados = {t: K.n((faq.get(t) or {}).get("respuesta")) for t, d in temas.items()
                          if any(re.search(rf"\b{re.escape(f)}\b", resto) for f in d.get("frases") or [])}
             # NEGAR OTRA COSA NO CONTRADICE LA REGLA: "no tenemos promo de 50% off" con la promo del 10%.
-            out += [("regla", f"{', '.join(sorted(nombrados))}: {parte.strip()[:80]}")] if nombrados and not any(
+            # LA REGLA VA EN EL HALLAZGO, 1-nov: con solo el tema, en K13 el modelo volvia a negar el mayorista.
+            out += [("regla", f"{parte.strip()[:80]}; la regla dice: " + " ".join(str((faq.get(t) or {}).get(
+                "respuesta") or "") for t in sorted(nombrados)))] if nombrados and not any(
                 x not in re.findall(r"\d+", r) for x in re.findall(r"\d+", resto) for r in nombrados.values()) and \
                 not any(re.search(_RESTRINGE, r) for r in nombrados.values()) else []
     return out
