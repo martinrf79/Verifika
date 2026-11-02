@@ -40,8 +40,10 @@ def turno(A, memoria: dict, comandos: dict, dijo: str) -> tuple:
 
 
 def renglones(memoria: dict) -> list:
+    """El borrador como lo lee la herramienta: el guardado, o el pedido viejo convertido."""
+    from app.core.flujo import agente
     return [(r["L"], r["que"], r["cantidad"], r["destino"])
-            for r in ((memoria.get("estado") or {}).get("borrador") or {}).get("renglones") or []]
+            for r in agente.estado_de(memoria)["borrador"].get("renglones") or []]
 
 
 TRES = {"agrega": [
@@ -126,10 +128,13 @@ def test_charla_8_la_charla_vieja_no_pierde_el_pedido(A):
     vieja = {"memoria_agente": {"pedido": [{"producto": M220, "cantidad": 1, "destino": "Concordia"},
                                            {"producto": HYPERX, "cantidad": 2, "destino": "Posadas"}]}}
     m = A.memoria_de(vieja)
-    assert [(L, q, c, d) for L, q, c, d in renglones(m)] == [("L-1", M220, 1, "Concordia"), ("L-2", HYPERX, 2, "Posadas")]
-    assert all(r["confirmado"] for r in m["estado"]["borrador"]["renglones"])
-    # Y la memoria de hoy no se pisa: si ya tiene estado, se usa ese.
-    assert A.memoria_de({"memoria_agente": m})["estado"]["borrador"]["renglones"] == m["estado"]["borrador"]["renglones"]
+    assert renglones(m) == [("L-1", M220, 1, "Concordia"), ("L-2", HYPERX, 2, "Posadas")]
+    assert all(r["confirmado"] for r in A.estado_de(m)["borrador"]["renglones"])
+    # Se convierte al leer y no se guarda: mientras el bot use el pedido viejo, no queda un estado viejo al lado.
+    assert m["estado"] == {}
+    # Cuando `pedido` escribe, el estado manda, y un pedido vaciado no resucita el viejo.
+    turno(A, m, {"saca": ["L-1", "L-2"]}, "saca todo")
+    assert m["estado"] and renglones(m) == []
 
 
 def test_charla_9_el_turno_que_falla_no_guarda(A):

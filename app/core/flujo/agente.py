@@ -763,19 +763,18 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
 
 def memoria_de(conv: dict) -> dict:
     guardada = (conv or {}).get("memoria_agente") or {}
-    m = {k: copy.deepcopy(guardada.get(k, v)) for k, v in MEMORIA.items()}
-    if "estado" not in guardada and m["pedido"]:
-        # LA CHARLA EMPEZADA ANTES DEL PEDIDO POR COMANDOS, FICHA 86: cada renglon del pedido viejo pasa al borrador como
-        # dicho y confirmado. Solo la primera vez: con el estado guardado, un pedido vaciado no resucita.
-        m["estado"] = {"borrador": {"siguiente": len(m["pedido"]) + 1, "renglones": [
-            {"L": f"L-{i}", "que": str(r.get("producto") or ""), "cantidad": K.entero(r.get("cantidad")) or 1,
-             "color": str(r.get("color") or ""), "destino": str(r.get("destino") or ""), "condicion": "", "cita": "",
-             "confirmado": True} for i, r in enumerate(m["pedido"], 1)]}}
-    return m
+    return {k: copy.deepcopy(guardada.get(k, v)) for k, v in MEMORIA.items()}
 
 
 def estado_de(memoria: dict) -> dict:
     """El estado del pedido, una copia: el del ultimo `pedido` del turno si hubo, o el guardado. `estado.leer` recibe el
     documento de la charla, no el estado: pasarle el estado directo lo devuelve vacio sin aviso, probado el 2-nov."""
     guardado = (memoria.get("_ultimo") or {}).get("estado") or memoria.get("estado") or {}
+    if not guardado.get("borrador") and memoria.get("pedido"):
+        # LA CHARLA DEL PEDIDO VIEJO, FICHA 86: cada renglon pasa al borrador como dicho y confirmado. Se convierte al leer
+        # y no se guarda: el estado se guarda recien cuando `pedido` lo escribe, asi no queda uno viejo al lado del pedido.
+        guardado = {"borrador": {"siguiente": len(memoria["pedido"]) + 1, "renglones": [
+            {"L": f"L-{i}", "que": str(r.get("producto") or ""), "cantidad": K.entero(r.get("cantidad")) or 1,
+             "color": str(r.get("color") or ""), "destino": str(r.get("destino") or ""), "condicion": "", "cita": "",
+             "confirmado": True} for i, r in enumerate(memoria["pedido"], 1)]}}
     return E.leer({"estado_charla": copy.deepcopy(guardado)})
