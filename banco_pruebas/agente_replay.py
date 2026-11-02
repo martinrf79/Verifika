@@ -153,12 +153,41 @@ def guardadas(etiqueta: str) -> dict:
     return out
 
 
-def correr(ids: list = None, vivo: bool = False, gratis: bool = False, etiqueta: str = "") -> dict:
-    """{"turnos", "bien", "llamadas", "iguales", "filas"} de las charlas grabadas por el agente vivo. Con etiqueta, cada
-    charla entera se guarda apenas termina y las ya guardadas no se corren; la primera con un turno sin respuesta del
-    modelo corta la corrida: con la gratis es la cuota, y se sigue otro dia."""
+# LA GRATIS CORTA POR MINUTO, 2-nov: sin pausa, la base del paso 0 se corto en la novena charla con 429 y la clave
+# contestaba de nuevo enseguida. Con la gratis, una pausa entre turnos; y una charla cortada se repite despues de un
+# minuto, hasta dos veces, antes de dar la cuota del dia por terminada.
+PAUSA_GRATIS_S, ESPERA_CORTE_S, INTENTOS = 6, 65, 3
+
+
+def _una(ch: str, grabados: list, falso, vistos, vara: dict, pausa: float) -> list:
+    """Las filas de una charla entera, turno por turno."""
+    import time
     from banco_pruebas import clon_produccion as C
     from banco_pruebas.sonda_charlas import nota_casilla
+    uid = f"agente_{ch}"
+    C.reiniciar_cliente(uid)
+    respuestas, filas = [], []
+    for g in grabados:
+        time.sleep(pausa)
+        falso.turno(g)
+        vistos.clear()
+        texto = "\n".join(asyncio.run(C.turno(uid, g["mensaje"])))
+        respuestas.append(texto)
+        casillas = vara[ch]["turnos"][g["turno"]]["casillas"]
+        malas = [k["n"] for k in casillas if nota_casilla(k, [], texto, respuestas) is not True]
+        vivos = (vistos[-1].get("pasos") if vistos else None) or []
+        distintas = [p["herramienta"] for p, v in zip(g.get("pasos") or [], vivos) if p["devuelve"] != v["devuelve"]]
+        filas.append({"id": ch, "turno": g["turno"], "malas": malas, "distintas": distintas,
+                      "texto": texto, "pasos_vivos": vivos, "pasos": g.get("pasos") or [],
+                      "mensaje": g["mensaje"], "respuesta": vistos[-1].get("respuesta") if vistos else None})
+    return filas
+
+
+def correr(ids: list = None, vivo: bool = False, gratis: bool = False, etiqueta: str = "") -> dict:
+    """{"turnos", "bien", "llamadas", "iguales", "filas"} de las charlas grabadas por el agente vivo. Con etiqueta, cada
+    charla entera se guarda apenas termina y las ya guardadas no se corren; una charla con un turno sin respuesta del
+    modelo se repite despues de un minuto, y si sigue sin respuesta corta la corrida: es la cuota, y se sigue otro dia."""
+    import time
     falso, vistos = instalar(vivo, gratis)
     vara = {c["id"]: c for c in json.load(open(os.path.join(AQUI, "vara_58.json"), encoding="utf-8"))["charlas"]}
     out = {"turnos": 0, "bien": 0, "llamadas": 0, "iguales": 0, "filas": [], "cortada": False}
@@ -166,33 +195,26 @@ def correr(ids: list = None, vivo: bool = False, gratis: bool = False, etiqueta:
     for ch, grabados in _charlas().items():
         if (ids and ch not in ids) or ch in hechas:
             continue
-        VISTOS_PARECIDOS.clear()
-        desde = len(out["filas"])
-        uid = f"agente_{ch}"
-        C.reiniciar_cliente(uid)
-        respuestas = []
-        for g in grabados:
-            falso.turno(g)
-            vistos.clear()
-            texto = "\n".join(asyncio.run(C.turno(uid, g["mensaje"])))
-            respuestas.append(texto)
-            casillas = vara[ch]["turnos"][g["turno"]]["casillas"]
-            malas = [k["n"] for k in casillas if nota_casilla(k, [], texto, respuestas) is not True]
-            vivos = (vistos[-1].get("pasos") if vistos else None) or []
-            distintas = [p["herramienta"] for p, v in zip(g.get("pasos") or [], vivos) if p["devuelve"] != v["devuelve"]]
-            out["turnos"] += 1
-            out["bien"] += not malas
-            out["llamadas"] += len(g.get("pasos") or [])
-            out["iguales"] += len(g.get("pasos") or []) - len(distintas) - max(0, len(g.get("pasos") or []) - len(vivos))
-            out["filas"].append({"id": ch, "turno": g["turno"], "malas": malas, "distintas": distintas,
-                                 "texto": texto, "pasos_vivos": vivos, "pasos": g.get("pasos") or [],
-                                 "mensaje": g["mensaje"], "respuesta": vistos[-1].get("respuesta") if vistos else None})
-        if etiqueta:
-            filas = out["filas"][desde:]
-            if any(f["respuesta"] is None for f in filas):
-                print(f"{ch}: un turno sin respuesta del modelo, no se guarda y la corrida se corta", flush=True)
-                out["cortada"] = True
+        for intento in range(INTENTOS if etiqueta else 1):
+            if intento:
+                print(f"{ch}: un turno sin respuesta del modelo, se repite en {ESPERA_CORTE_S} segundos", flush=True)
+                time.sleep(ESPERA_CORTE_S)
+            VISTOS_PARECIDOS.clear()
+            filas = _una(ch, grabados, falso, vistos, vara, PAUSA_GRATIS_S if gratis else 0)
+            if all(f["respuesta"] is not None for f in filas):
                 break
+        if etiqueta and any(f["respuesta"] is None for f in filas):
+            print(f"{ch}: sin respuesta del modelo {INTENTOS} veces, no se guarda y la corrida se corta", flush=True)
+            out["cortada"] = True
+            break
+        for f in filas:
+            n = len(f["pasos"])
+            out["turnos"] += 1
+            out["bien"] += not f["malas"]
+            out["llamadas"] += n
+            out["iguales"] += n - len(f["distintas"]) - max(0, n - len(f["pasos_vivos"]))
+        out["filas"] += filas
+        if etiqueta:
             with open(VIVO, "a", encoding="utf-8") as fh:
                 for f in filas:
                     fh.write(json.dumps({**{k: f[k] for k in ("id", "turno", "malas", "texto", "pasos_vivos",
