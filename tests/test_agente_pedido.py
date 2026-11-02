@@ -11,8 +11,6 @@ import pytest
 
 from banco_pruebas import clon_produccion as C
 
-# PLAN: FICHA 86, pasos 2 a 4. Se saca cuando el estado, procedencia y la herramienta pedido esten en agente.py.
-PLAN = pytest.mark.xfail(strict=True, reason="PLAN: FICHA 86, el pedido por comandos todavia no esta en agente.py")
 
 M220 = "Mouse Logitech M220 Silent Negro"
 HYPERX = "Auriculares HyperX Cloud Stinger 2 Negro"
@@ -53,7 +51,6 @@ TRES = {"agrega": [
 DIJO_TRES = "quiero el m220 a concordia, dos hyperx a posadas y un g203 tambien a posadas"
 
 
-@PLAN
 def test_charla_1_pedido_simple(A):
     m = A.memoria_de({})
     dijo = "quiero el mouse m220 negro, mandalo a concordia"
@@ -64,7 +61,6 @@ def test_charla_1_pedido_simple(A):
     assert "L-1" in nota
 
 
-@PLAN
 def test_charla_2_el_destino_que_no_dijo_no_entra(A):
     m = A.memoria_de({})
     turno(A, m, {"agrega": [{"producto": M220, "cantidad": 1, "destino": "Concordia", "cita": "el m220 a concordia"}]},
@@ -77,7 +73,6 @@ def test_charla_2_el_destino_que_no_dijo_no_entra(A):
     assert "¿A dónde va" in cliente
 
 
-@PLAN
 def test_charla_3_el_medio_que_no_dijo_no_entra(A):
     m = A.memoria_de({})
     turno(A, m, {"agrega": [{"producto": M220, "cantidad": 1, "destino": "Concordia", "cita": "el m220 a concordia"}]},
@@ -87,7 +82,6 @@ def test_charla_3_el_medio_que_no_dijo_no_entra(A):
     assert "descuento =" not in cliente
 
 
-@PLAN
 def test_charla_4_solo_el_cambio(A):
     m = A.memoria_de({})
     turno(A, m, TRES, DIJO_TRES)
@@ -100,7 +94,6 @@ def test_charla_4_solo_el_cambio(A):
     assert despues[1:] == antes[1:]
 
 
-@PLAN
 def test_charla_5_entre_dos_pregunta_y_no_elige(A):
     m = A.memoria_de({})
     cliente, _ = turno(A, m, {"agrega": [{"entre": [G203, G305], "cantidad": 1, "cita": "me llevo uno"}]},
@@ -109,7 +102,6 @@ def test_charla_5_entre_dos_pregunta_y_no_elige(A):
     assert renglones(m) == []
 
 
-@PLAN
 def test_charla_6_sacar_sin_perder_los_otros(A):
     m = A.memoria_de({})
     turno(A, m, TRES, DIJO_TRES)
@@ -118,7 +110,6 @@ def test_charla_6_sacar_sin_perder_los_otros(A):
     assert renglones(m) == [antes[0], antes[2]]
 
 
-@PLAN
 def test_charla_7_la_cita_que_no_dijo_no_se_aplica(A):
     m = A.memoria_de({})
     _, nota = turno(A, m, {"agrega": [{"producto": M220, "cantidad": 3, "destino": "Concordia",
@@ -141,7 +132,6 @@ def test_charla_8_la_charla_vieja_no_pierde_el_pedido(A):
     assert A.memoria_de({"memoria_agente": m})["estado"]["borrador"]["renglones"] == m["estado"]["borrador"]["renglones"]
 
 
-@PLAN
 def test_charla_9_el_turno_que_falla_no_guarda(A):
     m = A.memoria_de({})
     turno(A, m, {"agrega": [{"producto": M220, "cantidad": 1, "destino": "Concordia", "cita": "el m220 a concordia"}]},
@@ -153,7 +143,6 @@ def test_charla_9_el_turno_que_falla_no_guarda(A):
     assert renglones(m) == antes
 
 
-@PLAN
 def test_dos_llamadas_en_el_mismo_turno_se_suman(A):
     """La segunda llamada a `pedido` del turno parte de lo que dejo la primera, no de la memoria guardada."""
     m = A.memoria_de({})
@@ -163,6 +152,15 @@ def test_dos_llamadas_en_el_mismo_turno_se_suman(A):
              m, C.TIENDA, VISTO, _n("el m220 a concordia y dos hyperx a posadas"))
     m.update(m.pop("_ultimo"))
     assert [x[1] for x in renglones(m)] == [M220, HYPERX]
+
+
+def test_el_pedido_lo_pega_el_codigo(A):
+    """K21: el modelo no escribio el presupuesto porque creyo que no cambio nada. Si hubo `pedido`, va igual."""
+    pasos = [{"herramienta": "pedido", "pide": {}, "devuelve": "", "al_cliente": "Presupuesto: 1x Mouse"}]
+    m = A.memoria_de({})
+    assert A.pegar("Listo, te lo sumo.", pasos, m, C.TIENDA).endswith("Presupuesto: 1x Mouse")
+    assert A.pegar("Asi queda:\n[[PEDIDO]]\nTe sirve?", pasos, m, C.TIENDA) == "Asi queda:\nPresupuesto: 1x Mouse\nTe sirve?"
+    assert A.pegar("Hola", [], m, C.TIENDA) == "Hola"
 
 
 # ══ PROCEDENCIA SOLA: el paso 3, sin el ejecutor ══

@@ -29,6 +29,7 @@ from app.core.guia_compra import _RE_COMPATIBILIDAD, categoria_no_vendida
 from app.core.pago_split import descuento_de
 from app.logger import get_logger
 
+from . import borrador as B
 from . import catalogo as K
 from . import estado as E
 from . import marcador as MK
@@ -428,6 +429,55 @@ def procedencia(a: dict, memoria: dict, dijo: str) -> tuple:
     return out, fuera
 
 
+def por_lo_mostrado(nombre: str, visto: str, tienda_id: str) -> str:
+    """LO AMBIGUO SE RESUELVE POR LO MOSTRADO, 1-nov: "Notebook Asus ROG Strix G16" es la Core i7 o la Ryzen 7, y la
+    charla mostro la Core i7. Es la opcion cuyas palabras propias, las que no comparte con las otras, estan dichas. Si
+    no hay una sola, queda el nombre como vino. La usan `presupuesto` y `pedido`, FICHA 86."""
+    idt = K.identificar(nombre, "", tienda_id)
+    if idt["veredicto"] != "ambiguous" or not visto:
+        return nombre
+    comunes = set.intersection(*(set(K.n(o["nombre"]).split()) for o in idt["opciones"]))
+    u = [o["nombre"] for o in idt["opciones"]
+         if set(K.n(o["nombre"]).split()) - comunes <= set(re.findall(r"[a-z0-9]+", visto))]
+    return u[0] if len(u) == 1 else nombre
+
+
+def pedido(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo: str = "") -> tuple:
+    """(lo que lee el cliente, la nota para el modelo). EL PEDIDO POR COMANDOS, FICHA 86: el modelo manda solo el cambio
+    —agrega, cambia L-n, saca L-n, confirma, pago, tope, total— con las palabras del cliente en `cita`, y el codigo lo
+    valida con `procedencia` y lo aplica sobre el borrador de la FICHA 71, que vive entre turnos en `memoria["estado"]`.
+    Lo que falta lo pregunta el borrador. La nota es la libreta del pedido y lo que no se aplico. El estado nuevo va a
+    `_ultimo`: se guarda solo si el turno responde."""
+    a, fuera = procedencia(a, memoria, dijo)
+    items = a.get("agrega", []) + a.get("cambia", [])
+    # EL CANDADO DE PRODUCTOS, el de `presupuesto`: lo que no salio del buscador ni de la charla se busca primero.
+    nombres = [str(n) for x in items for n in (x.get("entre") or [x.get("producto")]) if n]
+    if visto is not None and (nuevos := [n for n in nombres if not _visto(n, visto, tienda_id)]):
+        return "", "Primero busca estos productos con el buscador: " + "; ".join(nuevos) + "."
+    for x in items:
+        if x.get("producto") and not x.get("entre"):
+            x["producto"] = por_lo_mostrado(str(x["producto"]), visto, tienda_id)
+    fuera += [f"No apliqué \"{x.get('cita')}\": falta el producto." for x in a.get("agrega", [])
+              if not x.get("producto") and not x.get("entre")]
+    compra = {k: a[k] for k in ("cambia", "saca", "confirma", "total") if a.get(k)}
+    compra["agrega"] = [x for x in a.get("agrega", []) if x.get("producto") and not x.get("entre")]
+    ps = [{"accion": "comprar", "cita": "el pedido", **compra}] if any(compra.values()) else []
+    # CADA DUDA ENTRE PRODUCTOS EN SU PROPIA COMPRA: el ejecutor pregunta cual, y eso no frena a lo demas del mensaje.
+    ps += [{"accion": "comprar", "cita": str(x.get("cita")), "agrega": [
+        {**{k: v for k, v in x.items() if k != "entre"}, "producto": list(x["entre"])}]} for x in a.get("agrega", [])
+        if x.get("entre")]
+    if a.get("reparto") or a.get("tope"):
+        ps.append({"accion": "cuenta", "cita": "el presupuesto", **({"reparto": a["reparto"]} if a.get("reparto") else {}),
+                   **({"tope": K.entero(a["tope"])} if a.get("tope") else {})})
+    estado = estado_de(memoria)
+    t = ejecutar(_agenda([{**p, "n": i} for i, p in enumerate(ps, 1)]), estado, tienda_id) if ps else None
+    b = B.leer(estado["borrador"])
+    res = B.resolver(b, tienda_id)
+    memoria["_ultimo"] = {**(memoria.get("_ultimo") or {}), "estado": estado}
+    nota = "\n".join(fuera + (B.libreta(b, res, B.faltantes(b, res)) or ["El pedido esta vacio."]))
+    return (redaccion.texto(t.hechos, t.preguntas, False) if t else ""), nota
+
+
 def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo: str = None) -> tuple:
     """(lo que lee el cliente, la nota para el modelo). Los renglones del pedido entero, cada uno con producto, cantidad
     y destino, y si lo dijo, el pago dividido y el tope. Lo cumple el ejecutor de siempre, que pone los montos, los
@@ -437,17 +487,14 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
         list(memoria["pedido"] or memoria.get("mostrado") or [])
     # LA MEMORIA DE LA CHARLA: el pago y el tope dichos antes valen hasta que diga otros.
     a = {**a, "pago": a.get("pago") or memoria.get("pago") or "", "tope": a.get("tope") or memoria.get("tope") or 0}
+    # LO AMBIGUO SE RESUELVE POR LO MOSTRADO, `por_lo_mostrado`. La que eligio lo mostrado queda vista.
+    rs = [dict(x) for x in rs]
+    for x in rs:
+        if (u := por_lo_mostrado(str(x["producto"]), visto, tienda_id)) != str(x["producto"]):
+            x["producto"], visto = u, f"{visto} {K.n(u)}"
     # SOLO LO CERTIFICADO ENTRA: un renglon que no es un producto de la tienda, "Teclado (a definir)", o que puede ser
     # muchos, "teclado", no traba a los demas. Vuelve al modelo; el cliente no lee la repregunta interna del ejecutor.
     idts = {str(x["producto"]): K.identificar(str(x["producto"]), "", tienda_id) for x in rs}
-    # LO AMBIGUO SE RESUELVE POR LO MOSTRADO, 1-nov: "Notebook Asus ROG Strix G16" es la Core i7 o la Ryzen 7, y la
-    # charla mostro la Core i7. Es la opcion cuyas palabras propias, las que no comparte con las otras, estan dichas.
-    for k, ops in [(k, i["opciones"]) for k, i in idts.items() if i["veredicto"] == "ambiguous" and visto]:
-        # La eligio lo mostrado: queda vista.
-        if len(u := [o["nombre"] for o in ops if set(K.n(o["nombre"]).split()) - set.intersection(*(set(K.n(
-                x["nombre"]).split()) for x in ops)) <= set(re.findall(r"[a-z0-9]+", visto))]) == 1:
-            idts.pop(k); idts[u[0]], visto, rs = K.identificar(u[0], "", tienda_id), f"{visto} {K.n(u[0])}", [
-                {**x, "producto": u[0]} if str(x["producto"]) == k else x for x in rs]
     fuera = [p for p, i in idts.items() if i["veredicto"] != "exists"]
     rs = [x for x in rs if str(x["producto"]) not in fuera]
     # EL MISMO PRODUCTO CON Y SIN DESTINO es el pedido dicho dos veces, el total y el reparto, visto el 30-oct: va el
@@ -485,7 +532,8 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
         cuenta += " Hay renglones sin destino: su envio no esta sumado. Si el cliente dijo a donde va, ponelo en cada renglon."
     # LA MEMORIA GUARDA LAS DOS COSAS: el ultimo presupuesto que vio el cliente, siempre, y el pedido, solo si compra,
     # confirma o cambia. Se aplica al final del turno, si la respuesta sale.
-    memoria["_ultimo"] = {"mostrado": rs, "pago": a.get("pago") or "", "tope": tope,
+    # Cada herramienta pisa solo sus claves de `_ultimo`: el estado de `pedido` del mismo turno queda.
+    memoria["_ultimo"] = {**(memoria.get("_ultimo") or {}), "mostrado": rs, "pago": a.get("pago") or "", "tope": tope,
                           **({"pedido": rs} if a.get("anotar") else {})}
     cliente = redaccion.texto(t.hechos, t.preguntas, False)
     pct, cond = descuento_de(tienda_id)
@@ -559,6 +607,10 @@ def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
     if not ultimo and re.search(r"\[\[\s*PRESUPUESTO\s*\]\]", texto) and (memoria["pedido"] or memoria.get("mostrado")):
         ultimo = presupuesto({}, memoria, tienda_id)[0]
     texto = re.sub(r"\[\[\s*PRESUPUESTO\s*\]\]", lambda _: ultimo, texto)
+    # EL PEDIDO LO PEGA EL CODIGO, FICHA 86: donde dice [[PEDIDO]], o al final si hubo `pedido` y no lo escribio, K21.
+    hecho = _pegado(pasos, "pedido")
+    texto = re.sub(r"\[\[\s*PEDIDO\s*\]\]", lambda _: hecho, texto) if re.search(r"\[\[\s*PEDIDO", texto) else \
+        texto + (f"\n\n{hecho}" if hecho and hecho not in texto else "")
     # LOS DATOS DE PAGO LOS PEGA EL CODIGO, donde dice [[COBRO]] o al final: el modelo los reescribia y salian rotos.
     cobro = _pegado(pasos, "cobrar")
     return re.sub(r"\[\[\s*COBRO\s*\]\]", lambda _: cobro, texto) if re.search(r"\[\[\s*COBRO", texto) else \
