@@ -167,7 +167,6 @@ def test_dos_llamadas_en_el_mismo_turno_se_suman(A):
 
 # ══ PROCEDENCIA SOLA: el paso 3, sin el ejecutor ══
 
-@PLAN
 def test_procedencia_rechaza_destino_medio_y_cita(A):
     dijo = _n("el m220 a concordia, pago setenta treinta")
     a, fuera = A.procedencia({"agrega": [{"producto": M220, "destino": "CABA", "cita": "el m220"},
@@ -178,7 +177,6 @@ def test_procedencia_rechaza_destino_medio_y_cita(A):
     assert any("CABA" in x for x in fuera) and any("regalar" in x for x in fuera)
 
 
-@PLAN
 def test_procedencia_deja_lo_dicho(A):
     dijo = _n("el m220 a concordia, 70 por transferencia y 30 con mercado pago")
     a, fuera = A.procedencia({"agrega": [{"producto": M220, "destino": "Concordia", "cita": "el m220 a concordia"}],

@@ -395,6 +395,39 @@ def _reparto(pago: str, dijo: str = None) -> list:
     return [] if len(out) == 1 and not out[0]["medio"] else out  # un solo pago sin medio no es un reparto
 
 
+_CUANTOS = {"un": 1, "una": 1, "uno": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8,
+            "nueve": 9, "diez": 10}
+
+
+def procedencia(a: dict, memoria: dict, dijo: str) -> tuple:
+    """(los comandos con lo que dijo el cliente, lo que no se aplico). LA PROCEDENCIA, FICHA 86: cada dato del pedido
+    sale de lo que dijo el cliente, y se controla aca y en ningun otro lado. Un comando cuya cita no dijo no se aplica;
+    un destino que no dijo ni estaba en el pedido sale del renglon; un medio que no dijo queda sin decir y lo pregunta
+    el borrador; una cantidad distinta de la unica que dice su cita es la de la cita."""
+    dichas = set(re.findall(r"[a-z0-9]+", dijo or ""))
+    ya = {K.n(r.get("destino")) for r in estado_de(memoria)["borrador"].get("renglones") or []}
+    out, fuera = {k: a[k] for k in ("saca", "confirma", "total", "tope") if a.get(k)}, []
+    for clave in ("agrega", "cambia"):
+        for x in [dict(x) for x in a.get(clave) or [] if isinstance(x, dict)]:
+            cita = K.n(x.get("cita"))
+            ws = [w for w in cita.split() if len(w) > 2] or cita.split()
+            if not ws or sum(w in dichas for w in ws) < UMBRAL_CITA * len(ws):
+                fuera.append(f"No apliqué \"{x.get('cita') or ''}\": no lo dijo el cliente.")
+                continue
+            if (d := K.n(x.get("destino"))) and d not in ya and not set(d.split()) <= dichas:
+                fuera.append(f"Saqué el destino {x.pop('destino')}: no lo dijo el cliente.")
+            n = [int(w) if w.isdigit() else _CUANTOS[w] for w in cita.split() if w.isdigit() or w in _CUANTOS]
+            if len(n) == 1 and x.get("cantidad") not in (None, "") and K.entero(x["cantidad"]) != n[0]:
+                fuera.append(f"Puse {n[0]} y no {x['cantidad']}: es lo que dice la cita.")
+                x["cantidad"] = n[0]
+            out.setdefault(clave, []).append(x)
+    if a.get("pago"):
+        out["reparto"] = _reparto(a["pago"], dijo or "")
+        fuera += [f"El medio {x['medio']} no lo dijo el cliente: queda a preguntar." for x, y in
+                  zip(_reparto(a["pago"]), out["reparto"]) if x["medio"] and not y["medio"]]
+    return out, fuera
+
+
 def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo: str = None) -> tuple:
     """(lo que lee el cliente, la nota para el modelo). Los renglones del pedido entero, cada uno con producto, cantidad
     y destino, y si lo dijo, el pago dividido y el tope. Lo cumple el ejecutor de siempre, que pone los montos, los
