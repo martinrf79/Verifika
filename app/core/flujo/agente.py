@@ -47,6 +47,12 @@ MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "l
 # mp" son 4; con 6, "si, el teclado era una memoria" anotaba transferencia en K20 y "color indistinto 70 por ciento
 # transferencia" anotaba Mercado Pago al 30% en K21, sin que el cliente lo dijera.
 RESPUESTA_CORTA = 4
+# UMBRAL, 2-nov, FICHA 86: la cita de un comando del pedido vale si la mitad o mas de sus palabras de tres letras o mas
+# las dijo el cliente. Cuentas sobre las charlas de tests/test_agente_pedido.py: las citas copiadas del cliente dan 1,0;
+# "el mouse cambialo por el g305" contra lo dicho da 1,0; la cita inventada "quiero tres mouse para la oficina" contra
+# "hola, que tal" da 0,0. Con 0,5 entra una cita resumida, "dos hyperx a posadas" de un mensaje mas largo, y no una
+# inventada. Se revisa con las citas reales del modelo en el paso 6, al regrabar.
+UMBRAL_CITA = 0.5
 
 CONSIGNA = """Sos vendedor de una tienda online de tecnologia de Argentina que vende por WhatsApp. Contestas el ultimo
 mensaje del cliente como un buen vendedor: corto, claro, en español rioplatense con voseo, contestando todo lo que
