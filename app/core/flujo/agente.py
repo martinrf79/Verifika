@@ -41,7 +41,8 @@ log = get_logger(__name__)
 VUELTAS = 6
 # UMBRALES de los embeddings, medidos en el banco el 29-oct: el rubro correcto da cerca de 0,78 y el ruido de 0,65 a 0,74.
 UMBRAL_RUBRO, UMBRAL_TEMA = 0.75, 0.70
-MEMORIA = {"pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": ""}
+# "estado" es el estado entero del ejecutor, con el borrador de la FICHA 71: lo que dijo el cliente, entre turnos. FICHA 86.
+MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": ""}
 # UMBRAL, 30-oct: hasta cuantas palabras la respuesta del cliente elige el medio que le ofrecio el bot. "Joaquin no tengo
 # mp" son 4; con 6, "si, el teclado era una memoria" anotaba transferencia en K20 y "color indistinto 70 por ciento
 # transferencia" anotaba Mercado Pago al 30% en K21, sin que el cliente lo dijera.
@@ -671,4 +672,19 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
 
 def memoria_de(conv: dict) -> dict:
     guardada = (conv or {}).get("memoria_agente") or {}
-    return {k: copy.deepcopy(guardada.get(k, v)) for k, v in MEMORIA.items()}
+    m = {k: copy.deepcopy(guardada.get(k, v)) for k, v in MEMORIA.items()}
+    if "estado" not in guardada and m["pedido"]:
+        # LA CHARLA EMPEZADA ANTES DEL PEDIDO POR COMANDOS, FICHA 86: cada renglon del pedido viejo pasa al borrador como
+        # dicho y confirmado. Solo la primera vez: con el estado guardado, un pedido vaciado no resucita.
+        m["estado"] = {"borrador": {"siguiente": len(m["pedido"]) + 1, "renglones": [
+            {"L": f"L-{i}", "que": str(r.get("producto") or ""), "cantidad": K.entero(r.get("cantidad")) or 1,
+             "color": str(r.get("color") or ""), "destino": str(r.get("destino") or ""), "condicion": "", "cita": "",
+             "confirmado": True} for i, r in enumerate(m["pedido"], 1)]}}
+    return m
+
+
+def estado_de(memoria: dict) -> dict:
+    """El estado del pedido, una copia: el del ultimo `pedido` del turno si hubo, o el guardado. `estado.leer` recibe el
+    documento de la charla, no el estado: pasarle el estado directo lo devuelve vacio sin aviso, probado el 2-nov."""
+    guardado = (memoria.get("_ultimo") or {}).get("estado") or memoria.get("estado") or {}
+    return E.leer({"estado_charla": copy.deepcopy(guardado)})

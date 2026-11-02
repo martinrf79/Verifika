@@ -131,7 +131,6 @@ def test_charla_7_la_cita_que_no_dijo_no_se_aplica(A):
     assert renglones(m) == [("L-1", HYPERX, 2, "Posadas")]
 
 
-@PLAN
 def test_charla_8_la_charla_vieja_no_pierde_el_pedido(A):
     vieja = {"memoria_agente": {"pedido": [{"producto": M220, "cantidad": 1, "destino": "Concordia"},
                                            {"producto": HYPERX, "cantidad": 2, "destino": "Posadas"}]}}
