@@ -27,6 +27,7 @@ mejora: si hace falta, se corrige aparte y la base se vuelve a calificar.
 No llama al modelo.
 
   python3 -m banco_pruebas.puerta --base v58_clon_p --cambio v58_compra_ --busca C29,C32,C50,C55
+  python3 -m banco_pruebas.puerta --base base86_ --cambio pedido86_     las corridas del agente vivo, 2-nov
   (las etiquetas son prefijos: v58_clon_p toma v58_clon_p1, p2 y p3)
 """
 import json
@@ -43,6 +44,9 @@ def notas(prefijo: str) -> dict:
     `desmenuzar.CASOS` —las complejas del grupo K, la memoria— se juzga solo por
     la respuesta: hasta el 1-oct la puerta las salteaba, y las complejas no
     pasaban por ella."""
+    vivas = _notas_agente(prefijo)
+    if vivas["etiquetas"]:
+        return vivas
     from banco_pruebas.desmenuzar import CASOS
     casos = {c[0]: c for c in CASOS}
     etiquetas = sorted({json.loads(x)["etiqueta"] for x in open(S.SALIDA, encoding="utf-8")
@@ -55,6 +59,36 @@ def notas(prefijo: str) -> dict:
                 continue
             n = S.interpretacion_de(f, casos[f["id"]])
             out.setdefault(f["id"], []).append((S.respuesta_ok(f), n["bien"] == n["piezas"]))
+    return {"etiquetas": etiquetas, "notas": out}
+
+
+def _notas_agente(prefijo: str) -> dict:
+    """Las corridas del agente vivo, `agente_replay.py --gratis --etiqueta`: cada charla entera bien si todas las
+    casillas de cada turno pasan con lo que leyo el cliente, recalificada con la vara de hoy. Sin interpretacion: el
+    agente no tiene piezas. 2-nov, FICHA 86."""
+    import os
+    from banco_pruebas import agente_replay as R
+    from banco_pruebas.sonda_charlas import nota_casilla
+    if not os.path.exists(R.VIVO):
+        return {"etiquetas": [], "notas": {}}
+    vara = {c["id"]: c for c in json.load(open(os.path.join(R.AQUI, "vara_58.json"), encoding="utf-8"))["charlas"]}
+    filas = [r for r in map(json.loads, open(R.VIVO, encoding="utf-8"))
+             if (r.get("etiqueta") or "").startswith(prefijo)]
+    etiquetas = sorted({r["etiqueta"] for r in filas})
+    out: dict = {}
+    for e in etiquetas:
+        charlas: dict = {}
+        for r in filas:
+            if r["etiqueta"] == e:
+                charlas.setdefault(r["id"], []).append(r)
+        for cid, ts in sorted(charlas.items()):
+            ts.sort(key=lambda r: r["turno"])
+            respuestas, bien = [], True
+            for t in ts:
+                respuestas.append(t["texto"])
+                casillas = vara[cid]["turnos"][t["turno"]]["casillas"]
+                bien &= all(nota_casilla(k, [], t["texto"], respuestas) is True for k in casillas)
+            out.setdefault(cid, []).append((bien, None))
     return {"etiquetas": etiquetas, "notas": out}
 
 
@@ -93,8 +127,9 @@ def main():
     if not base or not cambio:
         print(__doc__)
         return 2
-    from banco_pruebas.pedido_agente import preparar_sin_modelo
-    preparar_sin_modelo()
+    if not _notas_agente(base)["etiquetas"]:
+        from banco_pruebas.pedido_agente import preparar_sin_modelo
+        preparar_sin_modelo()
     B, C = notas(base), notas(cambio)
     r = comparar(B, C, busca)
     print(f"\nPUERTA · base {', '.join(B['etiquetas'])} · cambio {', '.join(C['etiquetas'])}")

@@ -17,6 +17,11 @@ armado una vez con los vectores guardados del banco.
     python3 banco_pruebas/agente_replay.py --gratis [K21 ...]  lo mismo con la clave gratis de Gemini, el mismo modelo
     ... --gratis --regrabar K10                                 y esas charlas pasan a ser lo grabado: cuando el codigo
                                                               cambia lo que lee el modelo, se graba de nuevo con el
+    ... --gratis --etiqueta base86_1                            cada charla se guarda en agente_vivo.jsonl apenas
+                                                              termina, con su etiqueta; si la cuota se corta, la misma
+                                                              orden al dia siguiente sigue desde la que falta, y
+                                                              --regrabar graba cuando estan todas. puerta.py compara
+                                                              las etiquetas charla por charla, 2-nov, FICHA 86.
 """
 import asyncio
 import collections
@@ -30,6 +35,7 @@ REPO = os.path.dirname(AQUI)
 sys.path.insert(0, REPO)
 GRABADO = os.path.join(AQUI, "buscador_charlas.jsonl")
 PARECIDOS = os.path.join(AQUI, "agente_parecidos.json")
+VIVO = os.path.join(AQUI, "agente_vivo.jsonl")
 VISTOS_PARECIDOS: dict = {}
 
 
@@ -137,16 +143,31 @@ def instalar(vivo: bool = False, gratis: bool = False):
     return falso, vistos
 
 
-def correr(ids: list = None, vivo: bool = False, gratis: bool = False) -> dict:
-    """{"turnos", "bien", "llamadas", "iguales", "filas"} de las charlas grabadas por el agente vivo."""
+def guardadas(etiqueta: str) -> dict:
+    """{id: [fila por turno]} de las charlas ya corridas con esa etiqueta."""
+    out: dict = {}
+    if os.path.exists(VIVO):
+        for r in map(json.loads, open(VIVO, encoding="utf-8")):
+            if r.get("etiqueta") == etiqueta:
+                out.setdefault(r["id"], []).append(r)
+    return out
+
+
+def correr(ids: list = None, vivo: bool = False, gratis: bool = False, etiqueta: str = "") -> dict:
+    """{"turnos", "bien", "llamadas", "iguales", "filas"} de las charlas grabadas por el agente vivo. Con etiqueta, cada
+    charla entera se guarda apenas termina y las ya guardadas no se corren; la primera con un turno sin respuesta del
+    modelo corta la corrida: con la gratis es la cuota, y se sigue otro dia."""
     from banco_pruebas import clon_produccion as C
     from banco_pruebas.sonda_charlas import nota_casilla
     falso, vistos = instalar(vivo, gratis)
     vara = {c["id"]: c for c in json.load(open(os.path.join(AQUI, "vara_58.json"), encoding="utf-8"))["charlas"]}
-    out = {"turnos": 0, "bien": 0, "llamadas": 0, "iguales": 0, "filas": []}
+    out = {"turnos": 0, "bien": 0, "llamadas": 0, "iguales": 0, "filas": [], "cortada": False}
+    hechas = guardadas(etiqueta) if etiqueta else {}
     for ch, grabados in _charlas().items():
-        if ids and ch not in ids:
+        if (ids and ch not in ids) or ch in hechas:
             continue
+        VISTOS_PARECIDOS.clear()
+        desde = len(out["filas"])
         uid = f"agente_{ch}"
         C.reiniciar_cliente(uid)
         respuestas = []
@@ -166,12 +187,27 @@ def correr(ids: list = None, vivo: bool = False, gratis: bool = False) -> dict:
             out["filas"].append({"id": ch, "turno": g["turno"], "malas": malas, "distintas": distintas,
                                  "texto": texto, "pasos_vivos": vivos, "pasos": g.get("pasos") or [],
                                  "mensaje": g["mensaje"], "respuesta": vistos[-1].get("respuesta") if vistos else None})
+        if etiqueta:
+            filas = out["filas"][desde:]
+            if any(f["respuesta"] is None for f in filas):
+                print(f"{ch}: un turno sin respuesta del modelo, no se guarda y la corrida se corta", flush=True)
+                out["cortada"] = True
+                break
+            with open(VIVO, "a", encoding="utf-8") as fh:
+                for f in filas:
+                    fh.write(json.dumps({**{k: f[k] for k in ("id", "turno", "malas", "texto", "pasos_vivos",
+                                                              "mensaje", "respuesta")},
+                                         "clave": "gratis" if gratis else "paga", "etiqueta": etiqueta,
+                                         "parecidos": dict(VISTOS_PARECIDOS)}, ensure_ascii=False) + "\n")
+            print(f"{ch}: guardada, {sum(not f['malas'] for f in filas)} de {len(filas)} turnos bien", flush=True)
     return out
 
 
 def regrabar(filas: list) -> None:
     """Las charlas corridas con el modelo pasan a ser lo grabado, en el mismo formato. Solo enteras: si un turno no tuvo
     respuesta del modelo, no se graba nada."""
+    for f in filas:
+        VISTOS_PARECIDOS.update(f.get("parecidos") or {})
     if not filas or any(f["respuesta"] is None for f in filas):
         raise SystemExit("no se regraba: algun turno quedo sin respuesta del modelo")
     if any(not v for v in VISTOS_PARECIDOS.values()):
@@ -181,7 +217,7 @@ def regrabar(filas: list) -> None:
     with open(GRABADO, "w", encoding="utf-8") as fh:
         for r in viejas + [{"id": f["id"], "turno": f["turno"], "mensaje": f["mensaje"], "respuesta": f["respuesta"],
                             "pasos": [{k: p[k] for k in ("herramienta", "pide", "devuelve")} for p in f["pasos_vivos"]],
-                            "regrabado": "30-oct"} for f in filas]:
+                            "regrabado": f.get("etiqueta") or "30-oct"} for f in filas]:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
     tabla = json.load(open(PARECIDOS, encoding="utf-8"))
     tabla.update(VISTOS_PARECIDOS)
@@ -226,18 +262,26 @@ if __name__ == "__main__":
         parecidos()
         raise SystemExit
     gratis = "--gratis" in args
-    r = correr([a for a in args if not a.startswith("--")], vivo="--vivo" in args or gratis, gratis=gratis)
-    if "--vivo" in args or gratis:
-        with open(os.path.join(AQUI, "agente_vivo.jsonl"), "a", encoding="utf-8") as fh:
-            for f in r["filas"]:
-                fh.write(json.dumps({**{k: f[k] for k in ("id", "turno", "malas", "texto", "pasos_vivos")},
-                                     "clave": "gratis" if gratis else "paga"}, ensure_ascii=False) + "\n")
+    etiqueta = args[args.index("--etiqueta") + 1] if "--etiqueta" in args else ""
+    if etiqueta:
+        args.remove(etiqueta)
+    elif "--vivo" in args or gratis:
+        raise SystemExit("con el modelo va --etiqueta: cada charla se guarda apenas termina")
+    pedidas = [a for a in args if not a.startswith("--")]
+    r = correr(pedidas, vivo="--vivo" in args or gratis, gratis=gratis, etiqueta=etiqueta)
     if "--regrabar" in args:
-        regrabar(r["filas"])
+        hechas = guardadas(etiqueta)
+        faltan = sorted(set(pedidas or _charlas()) - set(hechas))
+        if faltan:
+            raise SystemExit(f"no se regraba todavia: faltan {faltan}; la misma orden otro dia sigue")
+        regrabar([f for ch in sorted(hechas) if not pedidas or ch in pedidas
+                  for f in sorted(hechas[ch], key=lambda x: x["turno"])])
     for f in r["filas"]:
         if f["malas"] or f["distintas"]:
             print(f"{f['id']} t{f['turno'] + 1}: MAL {f['malas']} · distintas {f['distintas']}")
             if "--ver" in args:
                 print("  " + f["texto"][:600].replace("\n", "\n  "))
+    if r.get("cortada"):
+        print("\nCORTADA: la cuota no alcanzo. Lo guardado queda; la misma orden otro dia sigue desde la que falta.")
     print(f"\nEL AGENTE VIVO CON LO GRABADO: {r['bien']} de {r['turnos']} turnos bien · {r['iguales']} de "
           f"{r['llamadas']} llamadas a herramientas devuelven lo mismo que en el banco")
