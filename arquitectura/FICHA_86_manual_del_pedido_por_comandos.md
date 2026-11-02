@@ -1,7 +1,7 @@
 FICHA 86 — MANUAL DEL PEDIDO POR COMANDOS
 
 2-nov-2026, con Martín. Para Claude Code, Opus, Grok o Cursor.
-Reemplaza al paso 3 y al paso 5 de la FICHA 85. El resto de la FICHA 85 sigue, con las correcciones de la parte 10.
+Se lee solo: la FICHA 85 nunca se subió, y lo que hace falta de ella está escrito acá.
 Antes de tocar nada: el bloque 0 de CLAUDE.md, MAPA.md y este manual entero. Nada más.
 
 
@@ -29,7 +29,7 @@ Dos. Le pasa el pedido entero con reemplaza en true. Por eso el modelo tiene que
 Tres. La memoria del agente guarda los renglones como JSON escrito por el modelo, no lo que dijo el cliente.
 Cuatro. Lo que falta lo pregunta el modelo cuando quiere, y la consigna le dice elegí vos.
 
-Esto explica los errores 1, 2, 3, 5, 7, 9, 12, 13 y 17 de la FICHA 85 con una sola causa: la máquina del pedido está, pero el agente la saltea.
+Esto explica los errores 1, 2, 3, 5, 7, 9, 12, 13 y 17 de la parte 12 con una sola causa: la máquina del pedido está, pero el agente la saltea.
 
 La solución es conectar el agente a la máquina que ya existe, no construir otra.
 
@@ -142,7 +142,7 @@ cantidad: si la cita trae una sola cantidad, en cifras o en palabras de uno a di
 
 Lo rechazado no se aplica y vuelve al modelo en la nota de la herramienta, una línea por campo, con el motivo. No se suma un aviso nuevo por cada caso: es siempre la misma frase, ese dato no lo dijo el cliente.
 
-Esta misma función es la vara del pedido de la FICHA 85, paso 1f: se corre sobre las charlas grabadas y cuenta cuántos datos del pedido no tienen procedencia. Error 24.
+Esta misma función es la vara del pedido: se corre sobre las charlas grabadas y cuenta cuántos datos del pedido no tienen procedencia. Error 24.
 
 
 PARTE 6. EL ESTADO ENTRE TURNOS
@@ -278,7 +278,7 @@ PARTE 10. LOS PASOS DE EDICIÓN
 Regla para cada paso: primero el test, después el código, después la medición. Un paso por sesión. Antes de cada paso se lee el archivo entero que se va a editar. El push se consulta con Martín, como dice el bloque 0.
 
 Paso 0. El instrumento, prerrequisito.
-Es el paso 1 de la FICHA 85, al menos 1a, 1b y 1c, y tres corridas de la base. Sin eso no se puede saber si lo de abajo mejora.
+Tres corridas de la base con la clave gratis, banco_pruebas/agente_replay.py --gratis, cada una con su etiqueta. Las compara banco_pruebas/puerta.py charla por charla contra las tres del cambio: entra si no rompe ninguna charla que estaba firme en la base. Con la gratis la memoria de respuestas de libro_paga no se usa, así que las corridas son independientes; si alguna vez se mide con la paga, esa memoria se saltea. El replay guarda charla por charla: si la cuota del día se acaba, se sigue al día siguiente, nunca con la paga. Sin esa base no se puede saber si lo de abajo mejora.
 
 Paso 1. Los tests de las charlas modelo.
 Archivo nuevo: tests/test_agente_pedido.py, con el clon como en tests/test_agente_plata.py.
@@ -318,20 +318,20 @@ Las 26 charlas con la gratis:
 ```bash
 python3 banco_pruebas/agente_replay.py --gratis --regrabar
 ```
-Después, tres corridas con la gratis y la regla de decisión de la FICHA 85, paso 1d.
-Después, el examen real de 42 charlas, tres corridas.
-Criterio para que entre: la vara no baja del piso de la base medida en el paso 0, y en el examen real bajan los errores de destino, medio, omisión y duplicado sin que suba otra clase.
+Después, tres corridas con la gratis, y puerta.py contra las tres de la base del paso 0.
+Después, el examen real de 42 charlas, banco_pruebas/examen_real/, una sola corrida, mirando solo destino, medio, omisión y duplicado contra la corrida del 1-nov.
+Criterio para que entre: puerta.py no marca ninguna charla rota, y en el examen real bajan los errores de destino, medio, omisión y duplicado.
 Si no entra: se revierte con git y se anota en PENDIENTE.md qué clase falló, con lo grabado del caso.
 
 Paso 7. Lo que quedó muerto.
 Con el camino nuevo vivo, se mira con cobertura qué partes de presupuesto, memoria_texto y los arreglos del pedido JSON ya no corren, y se pasan a archivo en su propio commit.
 
-Corrección a la FICHA 85, paso 2a: NO se archivan borrador.py, el comprar y el derivar del ejecutor, ni normal.py. Con este manual vuelven a ser el camino vivo. Lo que se mide como muerto se mide después del paso 6, no antes.
+Lo que NO se archiva: NO se archivan borrador.py, el comprar y el derivar del ejecutor, ni normal.py. Con este manual vuelven a ser el camino vivo. Lo que se mide como muerto se mide después del paso 6, no antes.
 
 
 PARTE 11. LO QUE NO SE HACE
 
-No se agrega una segunda llamada al modelo. El pedido por comandos resuelve el traspaso dentro de la misma llamada. El paso 5 de la FICHA 85 queda descartado salvo que el examen real lo vuelva a pedir.
+No se agrega una segunda llamada al modelo. El pedido por comandos resuelve el traspaso dentro de la misma llamada. Se reconsidera solo si el examen real lo vuelve a pedir.
 No se cambia el modelo de producción.
 No se pone el id del producto en lo que lee el modelo.
 No se tocan las casillas de la vara sin el ok de Martín.
@@ -347,14 +347,14 @@ Del modelo:
 3, omisiones en mensaje largo: comandos por cambio, la libreta muestra lo que falta.
 4, niega una regla a la vista: sigue en el verificador como hoy. Este manual no lo cubre; se mide si baja al achicar lo que lee el modelo.
 5, elige solo: el modelo manda entre, pregunta el código.
-6, inventa etiquetas: no lo toca este manual. FICHA 85, 4c.
+6, inventa etiquetas: no lo toca este manual.
 7, reenvía el pedido entero: comandos por cambio.
 8, no muestra el presupuesto: pegar lo pone siempre que hubo pedido.
 9, no compara pedido con lo pedido: lo hace el código con resolver, faltantes y el total.
 
 Del cableado:
 10, una sola llamada: se mantiene, ahora con el traspaso resuelto.
-11, 7.000 tokens: la libreta en lugar del JSON; el resto en FICHA 85, paso 2.
+11, 7.000 tokens: la libreta en lugar del JSON.
 12, el código no guarda lo dicho: el borrador entre turnos y la cita.
 13, guardas por campo: procedencia en un solo lugar.
 14 y 15, capas viejas y líneas muertas: pasan a ser el camino vivo o se archivan en el paso 7.
@@ -363,10 +363,10 @@ Del cableado:
 18, notas ruidosas: la nota de pedido es solo la libreta y lo rechazado.
 
 Del banco:
-19 a 23: FICHA 85, paso 1, que es el paso 0 acá.
+19 a 23: el paso 0 de este manual, la base con puerta.py.
 24, la vara mira el texto: procedencia corrida sobre lo grabado.
 
-De la sesión, 25 a 30: FICHA 85, paso 1, reglas de método.
+De la sesión, 25 a 30: las reglas de método de CLAUDE.md.
 
 
 PARTE 13. RIESGOS CONOCIDOS
