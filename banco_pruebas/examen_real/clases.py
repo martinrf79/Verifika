@@ -20,7 +20,9 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(AQUI)))
-CLASES = ("destino", "medio", "omision", "duplicado")
+# "verificador": lo que marco el verificador en la respuesta, que vuelve al modelo; con el codigo de hoy sobre una
+# corrida grabada, `examen.py --codigo`, es lo que el verificador caza de lo que escribio el modelo ese dia.
+CLASES = ("destino", "medio", "omision", "duplicado", "verificador")
 RESPUESTA_CORTA = 4  # la misma de agente.py: la respuesta corta elige lo que le ofrecio el bot
 CUANTOS = {"un": 1, "una": 1, "uno": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8,
            "nueve": 9, "diez": 10}
@@ -83,7 +85,9 @@ def contar(archivo: str, tienda_id: str) -> dict:
     ruta = archivo if os.path.isabs(archivo) else os.path.join(AQUI, archivo)
     charlas = [json.loads(x) for x in open(ruta, encoding="utf-8")]
     return {"charlas": len(charlas), "turnos": sum(len(c["turnos"]) for c in charlas),
-            "marcas": {c["id"]: marcas(c, tienda_id) for c in charlas}}
+            "marcas": {c["id"]: marcas(c, tienda_id) + [(i, "verificador", str(h)[:160]) for i, t in
+                                                         enumerate(c["turnos"], 1) for h in t.get("hallazgos") or []]
+                       for c in charlas}}
 
 
 if __name__ == "__main__":

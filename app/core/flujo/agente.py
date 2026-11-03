@@ -386,14 +386,126 @@ def _visto(nombre: str, texto: str, tienda_id: str) -> bool:
     return any(K.n(x) in texto for x in nombres) or idt["veredicto"] != "exists"
 
 
-def _reparto(pago: str, dijo: str = None) -> list:
+# LOS MEDIOS DE PAGO POR SU NOMBRE COMUN, 3-nov. Es vocabulario general, no de una tienda: lo que toma cada tienda sale
+# de su FAQ, tema formas_pago, con `medios_de_la_tienda`. Una marca de tarjeta sola es una tarjeta: "naranja". Por
+# comienzo de palabra, para que "transf", "tranferencia" o "debito" escritos como sea entren: mayusculas, tildes,
+# signos y guiones ya los saca `K.n`.
+MEDIOS = {"transferencia": r"tr[a]?n?s?f\w*|cbu|deposit\w*", "mercado pago": r"mercado ?pago\w*|mp|mpago",
+          "tarjeta": r"tarj\w*|credit\w*|debit\w*", "efectivo": r"efectiv\w*|efvo|cash",
+          "cripto": r"cripto\w*|bitcoin|usdt", "paypal": r"paypal"}
+MARCAS_TARJETA = {"visa": "visa", "mastercard": "mastercard", "master": "mastercard", "american express": "amex",
+                  "amex": "amex", "naranja": "naranja", "cabal": "cabal", "maestro": "maestro", "diners": "diners",
+                  "nativa": "nativa"}
+_NIEGA_MEDIO = ("no", "sin", "ni")
+
+
+def menciones(texto: str) -> list:
+    """[(medio, negado)] en el orden del texto: "no tengo mp, pago con tarjeta naranja" da [("mercado pago", True),
+    ("tarjeta naranja", False)]. Negado si un "no", "sin" o "ni" va hasta dos palabras antes, o un "no" justo despues:
+    "mp no tengo"."""
+    ws = re.findall(r"[a-z0-9]+", K.n(texto))
+    hallados = []
+    i = 0
+    while i < len(ws):
+        for largo in (2, 1):
+            frase = " ".join(ws[i:i + largo])
+            base = next((m for m, rx in MEDIOS.items() if re.fullmatch(rx, frase)), None) if largo == 2 and \
+                frase.startswith("mercado") or largo == 1 else None
+            marca = MARCAS_TARJETA.get(frase)
+            if base or marca:
+                hallados.append((i, largo, base, marca))
+                break
+        i += largo if (base or marca) else 1
+    out, j, fin_antes = [], 0, -1
+    while j < len(hallados):
+        i, largo, base, marca = hallados[j]
+        # "tarjeta naranja", "tarjetas Visa, Mastercard y American Express" o "naranja" sola: una tarjeta por marca.
+        marcas, fin, k = [marca] if marca else [], i + largo, j + 1
+        while k < len(hallados) and hallados[k][0] <= fin + 2 and not hallados[k][2] in MEDIOS.keys() - {"tarjeta"} \
+                and (base == "tarjeta" or marca):
+            marcas += [hallados[k][3]] if hallados[k][3] else []
+            fin, k = hallados[k][0] + hallados[k][1], k + 1
+        # El "no" que niega al medio de antes, "la transferencia no, mejor mp", no niega a este.
+        antes = [w for x, w in enumerate(ws[max(0, i - 2):i], max(0, i - 2)) if w in _NIEGA_MEDIO and x != fin_antes]
+        negado = bool(antes) or ws[fin:fin + 1] == ["no"]
+        out += [(f"tarjeta {m}", negado) for m in dict.fromkeys(marcas)] or [(base, negado)]
+        j, fin_antes = k, fin
+    return out
+
+
+def medios_de_la_tienda(tienda_id: str) -> tuple:
+    """(los medios, las marcas de tarjeta) que nombra la FAQ de la tienda, tema formas_pago; sin ese tema, (None, None):
+    no se controla."""
+    try:
+        from app.storage.firestore_client import get_all_faq
+        t = (get_all_faq(tienda_id=tienda_id) or {}).get("formas_pago") or {}
+    except Exception:  # noqa: BLE001 — sin FAQ no se controla el medio
+        return None, None
+    texto = " ".join(str(t.get(k) or "") for k in ("respuesta", "respuesta_curada"))
+    ms = [m for m, _ in menciones(texto)]
+    if not ms:
+        return None, None
+    return {m.split()[0] if m.startswith("tarjeta") else m for m in ms}, {m.split()[1] for m in ms if " " in m and
+                                                                          m.startswith("tarjeta ")}
+
+
+def no_lo_toma(medio: str, tienda_id: str) -> bool:
+    bases, marcas = medios_de_la_tienda(tienda_id)
+    if not bases or not medio:
+        return False
+    base, _, marca = medio.partition(" ") if medio.startswith("tarjeta") else (medio, "", "")
+    return base not in bases or bool(marca and marcas and marca not in marcas)
+
+
+def de_la_oferta(mensaje: str, ultimo_bot: str) -> list:
+    """Los medios que el cliente elige al contestar lo que le ofrecio el bot, decision de Martin del 30-oct, cerrada el
+    3-nov: a "¿transferencia o Mercado Pago?", "no tengo mp" es transferencia porque descarta todos menos uno; a
+    "¿pagas por transferencia?", "si" es transferencia porque hay uno solo. Lo demas no elige: "mi nombre es Julio"
+    despues de un mensaje que nombra dos medios no eligio ninguno, y el 31-oct se anotaba Mercado Pago."""
+    from .agenda import _VACIAS, palabras
+    if len(mensaje.split()) > RESPUESTA_CORTA:
+        return []
+    # LA OFERTA ES LO QUE ESCRIBIO EL BOT, no lo que pego el codigo: el reparto, "- transferencia (70%)", y "La parte con
+    # transferencia lleva 10% de descuento" nombran medios y no los ofrecen. "Ya te anote el pago 100% transferencia" si.
+    prosa = "\n".join(x for x in (ultimo_bot or "").splitlines()
+                      if not re.match(r"\s*-\s|\s*La parte con .* lleva \d+% de descuento", x))
+    ofrecidos = list(dict.fromkeys(m for m, _ in menciones(prosa)))
+    negados = {m for m, neg in menciones(mensaje) if neg}
+    quedan = [m for m in ofrecidos if m not in negados]
+    if negados & set(ofrecidos) and len(quedan) == 1:
+        return quedan
+    ws = palabras(mensaje)
+    if not negados and ws and set(ws) <= _VACIAS and len(ofrecidos) == 1:
+        return ofrecidos
+    return []
+
+
+def _reparto(pago: str, dijo: str = None, tienda_id: str = None) -> list:
     """[{"medio", "porcentaje"}], tambien sin medio: "70, 30". UN MEDIO QUE EL CLIENTE NO DIJO NO SE ANOTA: el 30-oct, a
     "setenta treinta" el modelo le puso transferencia y Mercado Pago, y la transferencia llevo un descuento que nadie
-    eligio. Sin medio, el ejecutor pregunta con cual paga cada parte."""
-    ms = re.finditer(r"(\d{1,3})\s*%?\s*(?:por ciento\s*)?(?:en|por|con)?\s*([a-z ]*?)\s*(?=,|\by\b|$|\d)", K.n(pago or ""))
-    out = [{"medio": m.group(2) if dijo is None or m.group(2)[:4] in dijo else "", "porcentaje": int(m.group(1))}
-           for m in ms]
+    eligio. Sin medio, el ejecutor pregunta con cual paga cada parte. `dijo` es lo que dijo el cliente, con lo que eligio
+    de la oferta del bot, `de_la_oferta`; el medio vale si el cliente nombro ese mismo medio sin negarlo. UN MEDIO QUE LA
+    TIENDA NO TOMA TAMPOCO SE ANOTA, 3-nov: "tarjeta naranja" se cobraba y la tienda toma Visa, Mastercard y Amex."""
+    dichos = {m for m, neg in menciones(dijo or "") if not neg}
+    out = []
+    for m in re.finditer(r"(\d{1,3})\s*%?\s*(?:por ciento\s*)?(?:en|por|con)?\s*([a-z ]*?)\s*(?=,|\by\b|$|\d)",
+                         K.n(pago or "")):
+        medio = m.group(2)
+        nombrado = [x for x, _ in menciones(medio)]
+        canon = nombrado[0] if nombrado else medio
+        # "tarjeta" vale si dijo una tarjeta de cualquier marca, "visa"; la marca vale solo si la dijo.
+        if dijo is not None and canon not in dichos and not (canon == "tarjeta" and any(
+                d.startswith("tarjeta") for d in dichos)):
+            canon = ""
+        if canon and tienda_id and no_lo_toma(canon, tienda_id):
+            canon = ""
+        out.append({"medio": canon, "porcentaje": int(m.group(1))})
     return [] if len(out) == 1 and not out[0]["medio"] else out  # un solo pago sin medio no es un reparto
+
+
+def medios_rechazados(pago: str, tienda_id: str) -> list:
+    """Los medios del pago que la tienda no toma, para decirselo al modelo con lo que si toma."""
+    return [m for m, _ in menciones(pago or "") if no_lo_toma(m, tienda_id)]
 
 
 _CUANTOS = {"un": 1, "una": 1, "uno": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8,
@@ -494,6 +606,14 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
             x["producto"], visto = u, f"{visto} {K.n(u)}"
     # SOLO LO CERTIFICADO ENTRA: un renglon que no es un producto de la tienda, "Teclado (a definir)", o que puede ser
     # muchos, "teclado", no traba a los demas. Vuelve al modelo; el cliente no lee la repregunta interna del ejecutor.
+    # EL COLOR DICHO GANA AL DEL NOMBRE, 3-nov: "Mouse Logitech M170 Negro" con color blanco volvia a preguntar el color
+    # dos turnos seguidos, y con un color que no hay, rojo, salia negro sin decir nada. Va el modelo sin el color del
+    # nombre, y el ejecutor elige la variante del color pedido o dice que no viene en ese color.
+    for x in rs:
+        p = K.identificar(str(x["producto"]), "", tienda_id)
+        col, suyo = K.n(x.get("color")), K.n((p.get("producto") or {}).get("color"))
+        if p["veredicto"] == "exists" and col and suyo and col != suyo:
+            x["producto"] = re.sub(rf"(?i)\s*\b{re.escape(p['producto']['color'])}\b", "", p["producto"]["nombre"]).strip()
     idts = {str(x["producto"]): K.identificar(str(x["producto"]), "", tienda_id) for x in rs}
     fuera = [p for p, i in idts.items() if i["veredicto"] != "exists"]
     rs = [x for x in rs if str(x["producto"]) not in fuera]
@@ -502,8 +622,15 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     con = {idts[str(x["producto"])]["producto"]["id"] for x in rs if x.get("destino")}
     dobles = [str(x["producto"]) for x in rs if not x.get("destino") and idts[str(x["producto"])]["producto"]["id"] in con]
     rs = [x for x in rs if x.get("destino") or str(x["producto"]) not in dobles]
+    # UN RENGLON, UN DESTINO, 3-nov: "Córdoba capital y Posadas" salia como un lugar con un solo envio. El reparto entre
+    # los dos no lo adivina el codigo: vuelve al modelo, que lo sabe por la charla, y los demas renglones siguen.
+    varios = {str(x["producto"]): _lugares(x.get("destino")) for x in rs if len(_lugares(x.get("destino"))) > 1}
+    rs = [x for x in rs if len(_lugares(x.get("destino"))) < 2]
     afuera = f" Quedaron afuera, porque no son un producto exacto de la tienda: {'; '.join(fuera)}. Buscalos y manda " \
         "el modelo exacto, o preguntale al cliente cual quiere." if fuera else ""
+    afuera += " Quedaron afuera, porque van a mas de un lugar: " + "; ".join(
+        f"{p} a {' y '.join(ls)}" for p, ls in varios.items()) + ". Manda un renglon por destino, con la cantidad que va " \
+        "a cada uno." if varios else ""
     afuera += f" Saque los renglones sin destino de {'; '.join(dict.fromkeys(dobles))}: ya iban con destino. Si eran " \
         "aparte, mandalos con el suyo." if dobles else ""
     if not rs:
@@ -516,7 +643,8 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     agrega = [{k: v for k, v in {"producto": str(x["producto"]), "cantidad": K.entero(x.get("cantidad")) or 1,
                                  "destino": str(x.get("destino") or ""), "color": str(x.get("color") or "")}.items()
                if v} for x in rs]
-    reparto = _reparto(a.get("pago"), dijo)
+    reparto = _reparto(a.get("pago"), dijo, tienda_id)
+    no_toma = medios_rechazados(a.get("pago"), tienda_id)
     a["pago"] = ", ".join(f"{x['porcentaje']} {x['medio']}".strip() for x in reparto)
     tope = K.entero(a.get("tope"))
     ps = [{"n": 1, "cita": "el pedido", "accion": "comprar", "agrega": agrega, "reemplaza": True},
@@ -528,6 +656,8 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     for x in rs:
         clases[idts[str(x["producto"])]["producto"].get("categoria")] += K.entero(x.get("cantidad")) or 1
     cuenta = "En el pedido, por clase: " + ", ".join(f"{v} {k}" for k, v in clases.items()) + "." + afuera
+    if no_toma:
+        cuenta += f" La tienda no toma {', '.join(no_toma)}: decíselo al cliente y preguntale con cual de los que toma paga."
     if any(not x.get("destino") for x in rs):
         cuenta += " Hay renglones sin destino: su envio no esta sumado. Si el cliente dijo a donde va, ponelo en cada renglon."
     # LA MEMORIA GUARDA LAS DOS COSAS: el ultimo presupuesto que vio el cliente, siempre, y el pedido, solo si compra,
@@ -554,8 +684,10 @@ async def cobrar(a: dict, memoria: dict, user_id: str, canal: str, tienda_id: st
     if not pedido:
         return "", "No hay pedido anotado todavia: arma el presupuesto con anotar en true."
     if a.get("pago"):
-        memoria["pago"] = ", ".join(f"{x['porcentaje']} {x['medio']}".strip() for x in _reparto(a["pago"], dijo))
+        memoria["pago"] = ", ".join(f"{x['porcentaje']} {x['medio']}".strip() for x in _reparto(a["pago"], dijo, tienda_id))
     pago = memoria.get("pago") or ""
+    if no_toma := medios_rechazados(a.get("pago"), tienda_id):
+        return "", f"La tienda no toma {', '.join(no_toma)}: decíselo al cliente y preguntale con cual de los que toma paga."
     if not _reparto(pago) or any(not x["medio"] for x in _reparto(pago)):
         return "", "Falta con que medio paga el cliente cada parte: preguntaselo, y cobra cuando lo diga, con el pago."
     orden = presupuesto({"renglones": pedido, "pago": pago}, {**memoria}, tienda_id)[0]
@@ -635,6 +767,28 @@ def sin_buscar(mensaje: str, pasos: list, tienda_id: str) -> list:
     return [w for w, c in campos(mensaje).items() if c not in pidio]
 
 
+def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
+    """LO QUE EL CLIENTE NOMBRO CON SU CANTIDAD Y EL PRESUPUESTO DEL TURNO NO TRAE, 3-nov: "dos memorias" y la cuenta con
+    una, "no tenes teclados" con el teclado afuera. En el examen real el pedido perdia renglones y nadie se enteraba.
+    Solo lo dicho con un numero delante, "un teclado", "2 notebooks": "cambia el mouse" no pide un mouse."""
+    if not any(p["herramienta"] == "presupuesto" for p in pasos):
+        return []
+    rs = (memoria.get("_ultimo") or {}).get("mostrado") or []
+    hay = collections.Counter()
+    for x in rs:
+        if (i := K.identificar(str(x.get("producto")), "", tienda_id))["veredicto"] == "exists":
+            hay[i["producto"].get("categoria")] += K.entero(x.get("cantidad")) or 1
+    ws = re.findall(r"[a-z0-9]+", K.n(mensaje))
+    pide = {}
+    for w, r in MK._rubros(ws, tienda_id):
+        j = ws.index(w.split()[0])
+        c = ws[j - 1] if j else ""
+        n = int(c) if c.isdigit() else _CUANTOS.get(c, 0)
+        if n:
+            pide[r] = max(pide.get(r, 0), n)
+    return [f"{n} {r} y el presupuesto trae {hay.get(r, 0)}" for r, n in pide.items() if hay.get(r, 0) < n]
+
+
 def hoja_reglas(tienda_id: str) -> str:
     """LAS REGLAS DE LA TIENDA SIEMPRE A LA VISTA, 31-oct, orden de Martin: una linea por tema, de la FAQ de la tienda,
     tal como esta hoy. Llegaban solo si el modelo las buscaba, y en el examen real dijo que no habia descuento por
@@ -685,10 +839,11 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     dichos = [str(m.get("content") or "") for m in historial]
     # LO QUE DIJO EL CLIENTE, y lo que le ofrecio el ultimo mensaje del bot si contesta corto: a "¿transferencia o Mercado
     # Pago?", "no tengo MP" es transferencia; un mensaje largo de otra cosa no elige medio. Decision de Martin, 30-oct.
-    corto = dichos[-1:] if len(mensaje.split()) <= RESPUESTA_CORTA else []
-    dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"] + corto))
+    ultimo_bot = next((x for m, x in zip(reversed(historial), reversed(dichos)) if m.get("role") == "assistant"), "")
+    dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
+                        + de_la_oferta(mensaje, ultimo_bot)))
     memoria.pop("_ultimo", None)
-    pasos, salidas, entrada, salida, corregido = [], [], 0, 0, False
+    pasos, salidas, entrada, salida, corregido, avisos = [], [], 0, 0, False, []
     t0 = time.time()
     for vuelta in range(VUELTAS + 1):
         try:
@@ -706,8 +861,9 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             fuente = " ".join(salidas + dichos + [mensaje, contexto, hoja])
             malos = V.verificar(texto, fuente, tienda_id, pegados)
             faltan = [] if corregido else sin_buscar(mensaje, pasos, tienda_id)
-            if (malos or faltan) and not corregido and vuelta < VUELTAS:
-                corregido, ws = True, K.n(mensaje).split()
+            omite = [] if corregido else omitidos(mensaje, memoria, pasos, tienda_id)
+            if (malos or faltan or omite) and not corregido and vuelta < VUELTAS:
+                corregido, ws, avisos = True, K.n(mensaje).split(), omite
                 # LA BUSQUEDA QUE FALTA LA HACE EL CODIGO, 1-nov: con solo el aviso, el modelo lo ignoraba en el
                 # examen. Cada busqueda del turno, de nuevo con las palabras del cliente alrededor del criterio.
                 frase = " ".join(dict.fromkeys(x for w in faltan for i, y in enumerate(ws) if K.n(w) in y for x in ws[max(0, i - 3):i + 1]))
@@ -719,7 +875,10 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                     "tu borrador dice cosas que no respaldan las herramientas ni la charla: " + "; ".join(
                         f"{c}: {d}" for c, d in malos) + ". Corregilas con las herramientas o sacalas. " if malos else "")
                     + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo. El buscador con eso da:\n" + "\n".join(extra)
-                       + "\n" if faltan else "") + "Escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta revision ni pedir disculpas."})
+                       + "\n" if faltan else "")
+                    + (f"el cliente pidio {'; '.join(omite)}: arma el presupuesto con el pedido entero, o preguntale si "
+                       "es lo que quiso decir. " if omite else "")
+                    + "Escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta revision ni pedir disculpas."})
                 continue
             if malos:  # LO QUE SIGUE MARCADO DESPUES DE CORREGIR NO SALE: se saca la oracion entera.
                 from app.core.guia_venta_prosa import mensaje as prosa
@@ -729,9 +888,10 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                 memoria.update(memoria.pop("_ultimo"))
             ultimo = _pegado(pasos)
             log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos], sin_buscar=faltan,
+                     omitidos=avisos,
                      pide=json.dumps([p["pide"] for p in pasos], ensure_ascii=False)[:3000], hallazgos=malos,
                      corregido=corregido, entrada=entrada, salida=salida, seg=round(time.time() - t0, 1))
-            return {"respuesta": texto, "pasos": pasos, "hallazgos": malos, "presupuesto": ultimo}
+            return {"respuesta": texto, "pasos": pasos, "hallazgos": malos, "presupuesto": ultimo, "omitidos": avisos}
         # El mensaje del modelo vuelve entero, con lo que agrega el proveedor: sin eso, la segunda vuelta da 400.
         msgs.append(m.model_dump(exclude_none=True))
         for c in m.tool_calls:

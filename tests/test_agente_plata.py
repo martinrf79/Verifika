@@ -77,3 +77,56 @@ def test_lo_ambiguo_del_pedido_se_resuelve_por_lo_mostrado(A):
     assert "Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD" in cliente and "afuera" not in nota
     cliente, nota = A.presupuesto(a, A.memoria_de({}), C.TIENDA, "la notebook asus rog strix g16", "")
     assert not cliente and "afuera" in nota
+
+
+# ── LO QUE FALLABA EN EL EXAMEN REAL, 3-nov: medido con `examen_real/examen.py --codigo corrida_31oct.jsonl` ──
+
+def test_la_oferta_del_bot_elige_solo_si_el_cliente_la_contesta(A):
+    """fe67b4 y b8df72: "Mi nombre es Julio" e "Y 1 teclado" anotaban transferencia y Mercado Pago que nadie eligio;
+    815c0c: "dale" a "ya te anote el pago 100% transferencia" si la elige. 4 casos."""
+    assert A.de_la_oferta("Joaquin no tengo mp", "¿Preferís transferencia o Mercado Pago?") == ["transferencia"]
+    assert A.de_la_oferta("dale", "Ya te anoté el G305 con pago 100% transferencia.\n¿Me pasás tu nombre?") == \
+        ["transferencia"]
+    assert A.de_la_oferta("Mi nombre es Julio", "- transferencia (70%): $1\n¿Con qué medio pagás cada parte?\n"
+                                                "La parte con pago por transferencia bancaria lleva 10% de descuento.") == []
+    assert A.de_la_oferta("Y 1 teclado", "confirmame si pagás por transferencia o mercado pago") == []
+
+
+def test_un_medio_que_la_tienda_no_toma_no_se_cobra(A):
+    """7f8cd4: "tarjeta naranja" se cobraba con el link; la tienda toma Visa, Mastercard y Amex."""
+    m = A.memoria_de({})
+    m["pedido"] = PEDIDO
+    cliente, nota = asyncio.run(A.cobrar({"nombre": "Juan", "pago": "100 tarjeta naranja"}, m, "u", "telegram",
+                                         C.TIENDA, "t", "tarjeta naranja"))
+    assert not cliente and "no toma tarjeta naranja" in nota
+    assert A._reparto("100 tarjeta visa", "con visa", C.TIENDA) == [{"medio": "tarjeta visa", "porcentaje": 100}]
+
+
+def test_un_renglon_a_dos_lugares_vuelve_al_modelo(A):
+    """b5ddaa y 83e58a: "Córdoba capital y Posadas" salia como un destino con un solo envio."""
+    a = {"renglones": [{"producto": PEDIDO[1]["producto"], "cantidad": 2, "destino": "Córdoba capital y Posadas"},
+                       PEDIDO[0]]}
+    cliente, nota = A.presupuesto(a, A.memoria_de({}), C.TIENDA, None, "")
+    assert "Posadas" not in cliente and "Envio a Concordia" in cliente and "mas de un lugar" in nota
+
+
+def test_el_color_dicho_gana_al_del_nombre(A):
+    """e993ae: "Mouse Logitech M170 Negro" con color blanco volvia a preguntar el color; con rojo salia negro."""
+    def con(color):
+        a = {"renglones": [{"producto": "Mouse Logitech M170 Negro", "cantidad": 3, "color": color}]}
+        return A.presupuesto(a, A.memoria_de({}), C.TIENDA, None, "")[0]
+    assert "3x Mouse Logitech M170 Blanco" in con("blanco")
+    assert "no viene en rojo" in con("rojo")
+
+
+def test_el_medio_se_lee_como_lo_escriba_el_cliente(A):
+    """Martin, 3-nov: una mayuscula, un guion o una letra de menos no pueden tirar una venta. 14 formas."""
+    formas = {"TRANSFERENCIA": "transferencia", "Transf.": "transferencia", "tranferencia": "transferencia",
+              "x transfe": "transferencia", "por MP": "mercado pago", "Mercado-Pago": "mercado pago",
+              "MercadoPago": "mercado pago", "«mp»": "mercado pago", "Débito": "tarjeta", "con VISA": "tarjeta visa",
+              "Master": "tarjeta mastercard", "efvo": "efectivo", "tarjeta de crédito visa": "tarjeta visa",
+              "transporte": None}
+    for texto, medio in formas.items():
+        assert [m for m, _ in A.menciones(texto)] == ([medio] if medio else []), texto
+    assert A.menciones("la transferencia no, mejor mp") == [("transferencia", True), ("mercado pago", False)]
+    assert A.menciones("mp no tengo") == [("mercado pago", True)]
