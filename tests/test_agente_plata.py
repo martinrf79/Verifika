@@ -130,3 +130,15 @@ def test_el_medio_se_lee_como_lo_escriba_el_cliente(A):
         assert [m for m, _ in A.menciones(texto)] == ([medio] if medio else []), texto
     assert A.menciones("la transferencia no, mejor mp") == [("transferencia", True), ("mercado pago", False)]
     assert A.menciones("mp no tengo") == [("mercado pago", True)]
+
+
+def test_el_criterio_del_cliente_se_controla_en_el_presupuesto(A):
+    """d29c5a: "dame el mouse más liviano" y el presupuesto con el G502 X, el tercero. Entre lo mostrado no aplica."""
+    def aviso(producto, mensaje):
+        m = A.memoria_de({})
+        m["_ultimo"] = {"mostrado": [{"producto": producto}]}
+        return A.omitidos(mensaje, m, [{"herramienta": "presupuesto"}], C.TIENDA)
+    assert aviso("Mouse Logitech G502 X Negro", "dame el mouse más liviano")
+    assert not aviso("Mouse Logitech G Pro Wireless Blanco", "dame el mouse más liviano")
+    assert not aviso("Mouse Logitech G502 X Negro", "de esos, el más liviano")
+    assert not aviso("Mouse Logitech G502 X Negro", "quiero un mouse")

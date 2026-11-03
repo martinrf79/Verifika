@@ -786,7 +786,18 @@ def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
         n = int(c) if c.isdigit() else _CUANTOS.get(c, 0)
         if n:
             pide[r] = max(pide.get(r, 0), n)
-    return [f"{n} {r} y el presupuesto trae {hay.get(r, 0)}" for r, n in pide.items() if hay.get(r, 0) < n]
+    out = [f"{n} {r} y el presupuesto trae {hay.get(r, 0)}" for r, n in pide.items() if hay.get(r, 0) < n]
+    # EL CRITERIO DEL CLIENTE, d29c5a: "el mouse mas liviano" y el presupuesto con el tercero mas liviano. Un rubro solo
+    # en el pedido y un orden del vocabulario: el elegido tiene que ser el primero de su rubro con stock.
+    clave, sentido = K.ORDEN.get(_orden_de(K.n(mensaje), tienda_id), (None, 0))
+    # "De esos, el mas barato" elige entre lo mostrado, no en la tienda.
+    entre = re.search(r"\b(de esos|de estos|de esas|de estas|de los que|entre)\b", K.n(mensaje))
+    for x in rs if clave and len(hay) == 1 and not entre else []:
+        p = K.identificar(str(x.get("producto")), "", tienda_id).get("producto") or {}
+        rubro = [y for y in K.productos(tienda_id) if y.get("categoria") == p.get("categoria")]
+        if p and not V._primero(p, clave, sentido, rubro):
+            out.append(f"el {_orden_de(K.n(mensaje), tienda_id)} y {p['nombre']} no lo es: busca con ese criterio")
+    return out
 
 
 def hoja_reglas(tienda_id: str) -> str:
