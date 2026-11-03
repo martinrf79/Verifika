@@ -210,6 +210,26 @@ def _medios(o: str, tienda_id: str) -> list:
                   and len(dichos) > 1 or faltan and re.search(r"\bademas\b", o) else [])
 
 
+# LO QUE DICE DE TODA LA TIENDA, 3-nov, e35851: "todos nuestros productos tienen garantía oficial de 12 meses", con
+# garantias de 12 a 120 meses. Una medida dicha de todos tiene que ser la de cada producto, en el campo de su unidad.
+_TODOS = r"\b(?:todos|todas)\s+(?:nuestros|nuestras|los|las)\s+(?:productos|equipos|articulos)\b|\btodo lo que vendemos\b"
+_CAMPO_UNIDAD = {"meses": "garantia_meses", "g": "peso_gramos", "kg": "peso_gramos"}
+
+
+def _de_todos(o: str, tienda_id: str) -> list:
+    if not re.search(_TODOS, o):
+        return []
+    out = []
+    for m in _medidas(o):
+        n, unidad = m.split()
+        campo = _CAMPO_UNIDAD.get(unidad)
+        valores = {x.get(campo) for x in K.productos(tienda_id) if campo and x.get(campo) not in (None, "")}
+        n = int(n) * (1000 if unidad == "kg" else 1)
+        if valores and valores != {n}:
+            out.append(("regla", f"dice que todos tienen {m}, y van de {min(valores)} a {max(valores)}"))
+    return out
+
+
 def sin_marcadas(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -> str:
     """La respuesta sin las oraciones que el verificador marca: lo que siguio marcado despues de corregir no le llega al
     cliente. Lo que el codigo pego tal cual queda entero."""
@@ -247,7 +267,7 @@ def verificar(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -
         hallazgos += _existencia(re.sub(r"^\W*si\b[^,]*,", "", o), tienda_id)
         if re.match(r"\W*si\b", o):
             continue
-        hallazgos += _medios(o, tienda_id)
+        hallazgos += _medios(o, tienda_id) + _de_todos(o, tienda_id)
         if not sujeto:
             hallazgos += _reglas(o, tienda_id) + _compat_general(oracion, o, tienda_id)
         nombrados = sujeto

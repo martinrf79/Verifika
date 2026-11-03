@@ -601,6 +601,19 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     a = {**a, "pago": a.get("pago") or memoria.get("pago") or "", "tope": a.get("tope") or memoria.get("tope") or 0}
     # LO AMBIGUO SE RESUELVE POR LO MOSTRADO, `por_lo_mostrado`. La que eligio lo mostrado queda vista.
     rs = [dict(x) for x in rs]
+    # LO QUE EL CLIENTE NO CAMBIO QUEDA, 3-nov, d0c439: al corregir, el modelo mando "2 auriculares" sin destino y se
+    # perdia el reparto de antes, uno a Cordoba y uno a Posadas. Un renglon sin destino con la misma cantidad que ese
+    # producto tenia repartida vuelve a su reparto.
+    con = collections.defaultdict(list)
+    for y in memoria.get("pedido") or memoria.get("mostrado") or []:
+        if y.get("destino"):
+            con[_id_de(y.get("producto"), tienda_id)].append(y)
+    heredado = []
+    for x in rs:
+        ys = [] if x.get("destino") else con.get(_id_de(x["producto"], tienda_id)) or []
+        igual = ys and sum(K.entero(y.get("cantidad")) or 1 for y in ys) == (K.entero(x.get("cantidad")) or 1)
+        heredado += [dict(y) for y in ys] if igual else [x]
+    rs = heredado
     for x in rs:
         if (u := por_lo_mostrado(str(x["producto"]), visto, tienda_id)) != str(x["producto"]):
             x["producto"], visto = u, f"{visto} {K.n(u)}"
@@ -767,6 +780,18 @@ def sin_buscar(mensaje: str, pasos: list, tienda_id: str) -> list:
     return [w for w, c in campos(mensaje).items() if c not in pidio]
 
 
+def _id_de(nombre, tienda_id: str) -> str:
+    return (K.identificar(str(nombre), "", tienda_id).get("producto") or {}).get("id") or K.n(nombre)
+
+
+def _por_rubro(rs: list, tienda_id: str) -> collections.Counter:
+    hay = collections.Counter()
+    for x in rs:
+        if (i := K.identificar(str(x.get("producto")), "", tienda_id))["veredicto"] == "exists":
+            hay[i["producto"].get("categoria")] += K.entero(x.get("cantidad")) or 1
+    return hay
+
+
 def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
     """LO QUE EL CLIENTE NOMBRO CON SU CANTIDAD Y EL PRESUPUESTO DEL TURNO NO TRAE, 3-nov: "dos memorias" y la cuenta con
     una, "no tenes teclados" con el teclado afuera. En el examen real el pedido perdia renglones y nadie se enteraba.
@@ -774,10 +799,7 @@ def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
     if not any(p["herramienta"] == "presupuesto" for p in pasos):
         return []
     rs = (memoria.get("_ultimo") or {}).get("mostrado") or []
-    hay = collections.Counter()
-    for x in rs:
-        if (i := K.identificar(str(x.get("producto")), "", tienda_id))["veredicto"] == "exists":
-            hay[i["producto"].get("categoria")] += K.entero(x.get("cantidad")) or 1
+    hay, antes = _por_rubro(rs, tienda_id), _por_rubro(memoria.get("mostrado") or [], tienda_id)
     ws = re.findall(r"[a-z0-9]+", K.n(mensaje))
     pide = {}
     for w, r in MK._rubros(ws, tienda_id):
@@ -787,6 +809,27 @@ def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
         if n:
             pide[r] = max(pide.get(r, 0), n)
     out = [f"{n} {r} y el presupuesto trae {hay.get(r, 0)}" for r, n in pide.items() if hay.get(r, 0) < n]
+    # SUMAR LO QUE YA ESTABA, b8df72: "Y 1 teclado" con el teclado ya en el pedido quedaba con dos. Sin "otro", se
+    # pregunta si es otro o el mismo.
+    otro = re.search(r"\b(otro|otra|otros|otras|mas|ademas)\b", K.n(mensaje))
+    out += [f"{n} {r}, y ya habia {antes[r]}: quedan {hay[r]}; si no dijo otro, preguntale si es otro mas o el que ya "
+            "estaba" for r, n in pide.items() if not otro and antes.get(r, 0) >= n and hay.get(r, 0) == antes[r] + n]
+    # LO QUE EL CLIENTE NO TOCO NO CAMBIA, 83e58a: "son 7, los mas baratos" y las memorias pasaban de 2 a 3. Un rubro
+    # que el mensaje no nombra conserva la cantidad del presupuesto anterior.
+    # El rubro se nombra tambien por un modelo: "sumame un Redragon Cobra" nombra un mouse.
+    # Si el modelo es ambiguo, "Redragon Cobra", el rubro es el de sus opciones.
+    nombrados = {r for _, r in MK._rubros(ws, tienda_id)} | {(i.get("producto") or (i.get("opciones") or [{}])[0]).get(
+        "categoria") for t, _ in MK._productos(ws, tienda_id) for i in [K.identificar(t, "", tienda_id)]}
+    out += [f"{r}: eran {antes[r]} y quedan {hay.get(r, 0)}, sin que el cliente lo nombre; si no lo pidio, dejalo como "
+            "estaba" for r in antes if hay and r not in nombrados and hay.get(r, 0) != antes[r]]
+    # UN LUGAR DICHO QUE EL PRESUPUESTO NO TRAE, 6740e0: "2 a villa maria y 3 a toledo" y Toledo se perdia. Por oracion,
+    # porque el padron corta en comas; "era para Cordoba, no Rosario" no pide Rosario.
+    destinos = " ".join(K.n(x.get("destino")) for x in rs)
+    lugares = [x for o in re.split(r"[.!?\n]", mensaje) for x in _lugares(o)
+               if not re.search(rf"\b(?:no|ni|sin)\s+(?:\w+\s+)?{re.escape(K.n(x))}\b", K.n(o)) and
+               re.search(rf"\b(?:a|para|hacia|envio|envios|mandar|manda)\s+(?:la\s+|el\s+)?{re.escape(K.n(x))}\b", K.n(o))]
+    out += [f"el cliente dijo {x} y ningun renglon va ahi" for x in dict.fromkeys(lugares)
+            if destinos.strip() and K.n(x) not in destinos]
     # EL CRITERIO DEL CLIENTE, d29c5a: "el mouse mas liviano" y el presupuesto con el tercero mas liviano. Un rubro solo
     # en el pedido y un orden del vocabulario: el elegido tiene que ser el primero de su rubro con stock.
     clave, sentido = K.ORDEN.get(_orden_de(K.n(mensaje), tienda_id), (None, 0))

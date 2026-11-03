@@ -5,6 +5,7 @@
   compatibilidad una clase entera que anda con un equipo, "la mayoria de los mouses andan en la Play": bf4a05; y la
                  oracion sin producto que sigue a una que nombra uno, "Es compatible con PS5": b8bb00.
   medios         los medios que la tienda dice aceptar son todos los de su FAQ: 96b39f.
+  de todos       una medida dicha de todos los productos es la de cada uno: "todos con 12 meses de garantia", e35851.
 Las frases son las del bot, tal cual. Las que no deben marcarse cuidan las falsas alarmas.
 """
 import pytest
@@ -19,14 +20,15 @@ MARCAN = {
     "compatibilidad": ["La verdad es que la mayoría de los mouses USB funcionan en la Play, pero no tenemos uno que lo "
                        "diga.", "El más económico es el Redragon Zeus X a $57.500. Es compatible con PS5."],
     "regla": ["¡Hola! Además de transferencia bancaria, aceptamos Mercado Pago.",
-              "Aceptamos transferencia, Mercado Pago y tarjeta Naranja."],
+              "Aceptamos transferencia, Mercado Pago y tarjeta Naranja.",
+              "Te cuento: todos nuestros productos tienen garantía oficial de 12 meses."],
 }
 NO_MARCAN = ["¿Te gustaría que te arme un presupuesto por uno?", "Si me confirmás, así te armo el presupuesto.",
              "Pasame tu nombre y te paso los datos para la transferencia.", "No tenemos teclados Samsung.",
              "No tenemos teclados rosas.", "Para saber qué memoria le sirve a tu notebook, pasame el modelo.",
              "Sobre la tarjeta de débito, la aceptamos a través de Mercado Pago.",
              "Aceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express.",
-             "El G305 es inalámbrico. Es muy preciso."]
+             "El G305 es inalámbrico. Es muy preciso.", "Todos nuestros productos tienen garantía oficial."]
 
 
 @pytest.fixture(scope="module")
