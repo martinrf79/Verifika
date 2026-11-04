@@ -306,10 +306,22 @@ def _parte_cumple(o, p, sin_cantidad=False):
             return False
         if o["medio"] and not _cumple(o["medio"], _medio(p)):
             return False
-    for k in ("porcentaje", "monto") + (() if sin_cantidad else ("cantidad",)):
-        if o.get(k) is not None and _num(p.get(k)) != o[k]:
-            return False
+    # lo de forma no se cuenta como error: el porcentaje dicho como fraccion, 0.5 es 50; la cantidad 1 callada
+    if o.get("porcentaje") is not None and _pct(p.get("porcentaje")) != o["porcentaje"]:
+        return False
+    if o.get("monto") is not None and _num(p.get("monto")) != o["monto"]:
+        return False
+    if not sin_cantidad and o.get("cantidad") is not None and (_num(p.get("cantidad")) or 1) != o["cantidad"]:
+        return False
     return True
+
+
+def _pct(x):
+    try:
+        v = float(re.sub(r"[^\d.]", "", str(x)))
+    except ValueError:
+        return None
+    return round(v * 100) if v <= 1 else round(v)
 
 
 def _num(x):
@@ -341,7 +353,11 @@ def notar_turno(oro, partes):
                 faltan.append((o, None))
         else:
             usadas.add(i)
-    demas = [p for i, p in enumerate(partes) if i not in usadas and _n(p.get("accion")) != "charla"]
+    # pedir el precio de lo mismo que compra en ese mensaje no es una parte de mas: no le cambia nada al codigo
+    comprados = {_n(p.get("rubro"))[:5] for p in partes if _n(p.get("accion")) == "agrega" and p.get("rubro")}
+    demas = [p for i, p in enumerate(partes) if i not in usadas and _n(p.get("accion")) != "charla"
+             and not (_n(p.get("accion")) == "pregunta" and p.get("rubro") and _n(p.get("rubro"))[:5] in comprados
+                      and _cumple("precio", p.get("sobre") or "precio"))]
     return faltan, demas
 
 
