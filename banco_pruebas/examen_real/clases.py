@@ -44,16 +44,22 @@ def marcas(charla: dict, tienda_id: str) -> list:
     from app.core.flujo import marcador as MK
     def ws(x) -> list:
         return re.findall(r"[a-z0-9]+", K.n(x))
-    out, dicho, antes = [], set(), ""
+    out, dicho, antes, texto_dicho = [], set(), "", ""
     for i, t in enumerate(charla["turnos"], 1):
         msg = ws(t["cliente"])
         dicho |= set(msg) | (set(ws(antes)) if len(t["cliente"].split()) <= RESPUESTA_CORTA else set())
+        from app.core.flujo.agente import de_la_oferta
+        texto_dicho += " . " + t["cliente"] + " " + " ".join(de_la_oferta(t["cliente"], antes))
         bot, bloques = t["bot"], _bloques(t["bot"])
         for d, _ in bloques:
             if d and not set(ws(d)) <= dicho:
                 out.append((i, "destino", d))
+        # El medio, como lo lee el bot: "mitad Mastercard" dijo la tarjeta Mastercard. 3-nov.
+        from app.core.flujo.agente import menciones
+        dichos = {x for x, neg in menciones(texto_dicho) if not neg}
         for m in re.findall(r"(?m)^- ([a-zA-Z ]+?) \(\d+%\)", bot) + re.findall(r"Para pagar (?:por|con) ([a-zA-Z ]+?):", bot):
-            if K.n(m) != "a definir" and not any(w[:4] == ws(m)[0][:4] for w in dicho):
+            if K.n(m) != "a definir" and not {x for x, _ in menciones(m)} <= dichos | {"tarjeta"} & {
+                    x.split()[0] for x in dichos}:
                 out.append((i, "medio", m))
         if bloques:
             pide = {}

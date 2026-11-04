@@ -14,7 +14,8 @@ from banco_pruebas import clon_produccion as C
 
 MARCAN = {
     "hecho": ["Te armé el presupuesto para que lo veas. Si te sirve, avisame.",
-              "Acá te paso el presupuesto actualizado y los datos para que puedas realizar el pago:"],
+              "Acá te paso el presupuesto actualizado y los datos para que puedas realizar el pago:",
+              "Para avanzar, te paso los datos para que realices la transferencia:"],
     "existencia": ["Si buscás algo similar que sea inalámbrico, por ahora no tengo nada en stock, solo tengo teclados "
                    "con cable USB.", "No tenemos teclados inalámbricos."],
     "compatibilidad": ["La verdad es que la mayoría de los mouses USB funcionan en la Play, pero no tenemos uno que lo "
@@ -25,6 +26,7 @@ MARCAN = {
 }
 NO_MARCAN = ["¿Te gustaría que te arme un presupuesto por uno?", "Si me confirmás, así te armo el presupuesto.",
              "Pasame tu nombre y te paso los datos para la transferencia.", "No tenemos teclados Samsung.",
+             "Te cuento que no tenemos teclados de la marca Samsung en nuestro catálogo.",
              "No tenemos teclados rosas.", "Para saber qué memoria le sirve a tu notebook, pasame el modelo.",
              "Sobre la tarjeta de débito, la aceptamos a través de Mercado Pago.",
              "Aceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express.",

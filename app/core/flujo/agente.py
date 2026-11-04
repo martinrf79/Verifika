@@ -913,7 +913,10 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             # EL CANDADO ES EL VERIFICADOR, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
             pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
             fuente = " ".join(salidas + dichos + [mensaje, contexto, hoja])
-            malos = V.verificar(texto, fuente, tienda_id, pegados)
+            # [[COBRO]] SIN COBRAR, 3-nov, 58b5a1: "te paso los datos" y la linea vacia. Lo escribe el modelo, no el codigo.
+            malos = V.verificar(texto, fuente, tienda_id, pegados) + [("hecho", "escribiste [[COBRO]] y no llamaste a cobrar")
+                                                                      for _ in re.findall(r"\[\[\s*COBRO", m.content or "")
+                                                                      if not _pegado(pasos, "cobrar")][:1]
             faltan = [] if corregido else sin_buscar(mensaje, pasos, tienda_id)
             omite = [] if corregido else omitidos(mensaje, memoria, pasos, tienda_id)
             if (malos or faltan or omite) and not corregido and vuelta < VUELTAS:

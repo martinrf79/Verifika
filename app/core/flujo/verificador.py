@@ -116,6 +116,10 @@ def _reglas(o: str, tienda_id: str) -> list:
         for m in re.finditer(rf"{_NIEGA_REGLA}|{_SOLO}", parte):
             # Lo que niega "no tenemos" va en la parte; lo que restringe "solo", en las cuatro palabras siguientes.
             resto = parte[m.end():] if not re.fullmatch(_SOLO, m.group(0)) else " ".join(parte[m.end():].split()[:4])
+            # LO NEGADO QUE NOMBRA UN RUBRO ES DE PRODUCTOS, 3-nov, badf4f: "no tenemos teclados de la marca samsung" se
+            # tomaba por la regla de marcas originales y la oracion, cierta, no salia.
+            if MK._rubros(re.findall(r"[a-z0-9]+", resto), tienda_id):
+                continue
             nombrados = {t: K.n((faq.get(t) or {}).get("respuesta")) for t, d in temas.items()
                          if any(re.search(rf"\b{re.escape(f)}\b", resto) for f in d.get("frases") or [])}
             # NEGAR OTRA COSA NO CONTRADICE LA REGLA: "no tenemos promo de 50% off" con la promo del 10%.
@@ -132,7 +136,7 @@ def _reglas(o: str, tienda_id: str) -> list:
 _HECHO_PRESUPUESTO = r"(?<!\bque )(?<!\bque te )(?<!\bque lo )\b(?:te\s+)?(?:arme|hice|prepare|actualice)\b[^.]{0,30}\bpresupuesto|\b(?:aca|ahi)\s+te\s+(?:paso|dejo)\s+" \
     r"(?:el\s+)?presupuesto"
 _HECHO_DATOS = r"\b(?:aca|ahi)\s+te\s+(?:paso|dejo|envio|mando)\b[^.]*\bdatos\b|\bestos\s+son\s+los\s+datos\b|" \
-    r"\baca\s+(?:tenes|van)\s+los\s+datos\b"
+    r"\baca\s+(?:tenes|van)\s+los\s+datos\b|\bte\s+(?:paso|dejo)\s+los\s+datos\b[^.:]*:"
 
 
 def _hechos(o: str, respuesta: str) -> list:
