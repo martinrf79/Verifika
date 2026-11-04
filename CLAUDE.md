@@ -53,7 +53,11 @@ de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 
 ### Lo que sigue
 
-Está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con tres corridas `--gratis`. Si
+**Hasta que una sesión logre el avance medido que dice la ficha, toda sesión arranca por la FICHA 87**,
+`arquitectura/FICHA_87_lo_que_se_rompe_despues_del_primer_mensaje.md`: por qué el bot se rompe después del primer mensaje,
+con la lista de fallas de las charlas reales, y las cinco soluciones en orden, una por sesión.
+
+El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con tres corridas `--gratis`. Si
 el código cambia lo que lee el modelo, las charlas afectadas se regraban con `--gratis --regrabar`.
 
 ### Qué es parche, y cómo no se cae en eso
