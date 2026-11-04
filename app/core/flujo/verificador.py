@@ -141,12 +141,9 @@ _HECHO_DATOS = r"\b(?:aca|ahi)\s+te\s+(?:paso|dejo|envio|mando)\b[^.]*\bdatos\b|
 
 def _hechos(o: str, respuesta: str) -> list:
     """Lo que la oracion dice hecho y la respuesta entera no trae: el presupuesto, o los datos para pagar."""
-    out = []
-    if re.search(_HECHO_PRESUPUESTO, o) and "Presupuesto:" not in respuesta:
-        out.append(("hecho", "dice que armo el presupuesto y no esta"))
-    if re.search(_HECHO_DATOS, o) and not _pagos(respuesta):
-        out.append(("hecho", "dice que pasa los datos de pago y no estan: los pega la herramienta cobrar"))
-    return out
+    return [("hecho", "dice que armo el presupuesto y no esta")] * bool(re.search(_HECHO_PRESUPUESTO, o) and (
+        "Presupuesto:" not in respuesta)) + [("hecho", "dice que pasa los datos de pago y no estan: los pega la "
+                                             "herramienta cobrar")] * bool(re.search(_HECHO_DATOS, o) and not _pagos(respuesta))
 
 
 # LO QUE LA TIENDA DICE QUE NO TIENE, O QUE SOLO TIENE, 3-nov: "solo tengo teclados con cable" con el K380 inalambrico

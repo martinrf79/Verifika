@@ -167,3 +167,16 @@ def test_lo_que_el_cliente_no_cambio_queda_y_se_avisa(A):
     assert not avisos("sumame también un Redragon Cobra", [{"producto": "Mouse Logitech M170 Negro"}],
                       [{"producto": "Mouse Logitech M170 Negro"}, {"producto": "Mouse Redragon Cobra M711"}])
     assert not avisos("las menos partes de estados unidos", [], [memoria])
+
+
+def test_el_equipo_nombrado_filtra_y_el_color_dicho_se_usa(A):
+    """La corrida con la gratis del 3-nov. 58b5a1: "auriculares PS5" listaba primero el Zeus X, que no anda con la PS5,
+    y el modelo lo daba por compatible. "notebook asus", "tablets" y "tablet samsung" piden productos, no filtran.
+    b8bb00: "el mas eco en negro" y el Pandora sin color volvia a preguntar el color."""
+    assert "solo los que andan" in A.buscar("auriculares PS5", C.TIENDA)
+    assert "Zeus X" not in A.buscar("auriculares PS5", C.TIENDA).split("\n")[1]
+    for q in ("notebook asus", "tablets", "tablet samsung"):
+        assert "solo los que andan" not in A.buscar(q, C.TIENDA), q
+    a = {"renglones": [{"producto": "Redragon Pandora", "destino": "Posadas"}]}
+    assert "Pandora Negro" in A.presupuesto(a, A.memoria_de({}), C.TIENDA, None, "si el mas eco en negro")[0]
+    assert "¿en qué color" in A.presupuesto(a, A.memoria_de({}), C.TIENDA, None, "uno negro y otro blanco")[0]

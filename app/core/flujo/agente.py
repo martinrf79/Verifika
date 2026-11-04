@@ -292,7 +292,14 @@ def buscar(consulta: str, tienda_id: str) -> str:
     q = K.n(consulta)
     # LA COMPATIBILIDAD QUE PREGUNTA, "auriculares para la PS5": cada producto con lo que dice su ficha, y el estante con
     # los que andan, si hay. Sin esto el modelo la contestaba de memoria.
-    plats = plataformas_del_mensaje(consulta, tienda_id) if _RE_COMPATIBILIDAD.search(q) else []
+    # Sin "anda con", 3-nov, 58b5a1: "auriculares PS5" daba primero el Zeus X, que no anda. Vale el equipo nombrado que
+    # no es el rubro buscado ni una marca de la tienda: "notebook asus" y "tablet samsung" piden productos.
+    voc, marcas = vocabulario(tienda_id)["alias_plataforma"], {K.n(p.get("marca")) for p in todos}
+    del_rubro = {w[:5] for r in rubros(tienda_id) for w in K.n(r).split()}  # por la raiz: "tablets" es el rubro tablet
+    nombra = {x for a, xs in voc.items() if re.search(rf"\b{re.escape(a)}\b", q) and a not in marcas and not {
+        w[:5] for w in a.split()} & del_rubro for x in xs}
+    plats = plataformas_del_mensaje(consulta, tienda_id) if _RE_COMPATIBILIDAD.search(q) else \
+        [x for x in plataformas_del_mensaje(consulta, tienda_id) if x in nombra]
     andan = {str(p["id"]) for p in todos if all(_con(p, [x], tienda_id).endswith(": anda") for x in plats)}
     equipo = {w for a in (vocabulario(tienda_id)["alias_plataforma"] if plats else ())
               if re.search(rf"\b{re.escape(a)}\b", q) for w in a.split()}
@@ -443,18 +450,14 @@ def medios_de_la_tienda(tienda_id: str) -> tuple:
         return None, None
     texto = " ".join(str(t.get(k) or "") for k in ("respuesta", "respuesta_curada"))
     ms = [m for m, _ in menciones(texto)]
-    if not ms:
-        return None, None
-    return {m.split()[0] if m.startswith("tarjeta") else m for m in ms}, {m.split()[1] for m in ms if " " in m and
-                                                                          m.startswith("tarjeta ")}
+    return ({m.split()[0] if m.startswith("tarjeta") else m for m in ms}, {m.split()[1] for m in ms if " " in m and
+            m.startswith("tarjeta ")}) if ms else (None, None)
 
 
 def no_lo_toma(medio: str, tienda_id: str) -> bool:
     bases, marcas = medios_de_la_tienda(tienda_id)
-    if not bases or not medio:
-        return False
     base, _, marca = medio.partition(" ") if medio.startswith("tarjeta") else (medio, "", "")
-    return base not in bases or bool(marca and marcas and marca not in marcas)
+    return bool(bases and medio) and (base not in bases or bool(marca and marcas and marca not in marcas))
 
 
 def de_la_oferta(mensaje: str, ultimo_bot: str) -> list:
@@ -472,12 +475,9 @@ def de_la_oferta(mensaje: str, ultimo_bot: str) -> list:
     ofrecidos = list(dict.fromkeys(m for m, _ in menciones(prosa)))
     negados = {m for m, neg in menciones(mensaje) if neg}
     quedan = [m for m in ofrecidos if m not in negados]
-    if negados & set(ofrecidos) and len(quedan) == 1:
-        return quedan
     ws = palabras(mensaje)
-    if not negados and ws and set(ws) <= _VACIAS and len(ofrecidos) == 1:
-        return ofrecidos
-    return []
+    return quedan if negados & set(ofrecidos) and len(quedan) == 1 else ofrecidos if not negados and ws and set(
+        ws) <= _VACIAS and len(ofrecidos) == 1 else []
 
 
 def _reparto(pago: str, dijo: str = None, tienda_id: str = None) -> list:
@@ -627,6 +627,15 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
         col, suyo = K.n(x.get("color")), K.n((p.get("producto") or {}).get("color"))
         if p["veredicto"] == "exists" and col and suyo and col != suyo:
             x["producto"] = re.sub(rf"(?i)\s*\b{re.escape(p['producto']['color'])}\b", "", p["producto"]["nombre"]).strip()
+    # EL COLOR QUE EL CLIENTE YA DIJO, 3-nov, b8bb00: "el mas eco en negro" y despues el Pandora sin color volvia a
+    # preguntarlo. Un solo color dicho en la charla, que el modelo tiene: ese. Con dos colores dichos, pregunta.
+    todos = K.productos(tienda_id)
+    colores = {K.n(p.get("color")) for p in todos if p.get("color")}
+    dichos = [c for c in colores if re.search(rf"\b{c[:-1]}[oa]s?\b" if c.endswith("o") else rf"\b{c}e?s?\b", dijo or "")]
+    for x in rs if len(dichos) == 1 else []:
+        p = (i := K.identificar(str(x["producto"]), "", tienda_id)).get("producto") or (i.get("opciones") or [{}])[0]
+        if not x.get("color") and dichos[0] in {K.n(v.get("color")) for v in K._colores_de(p, todos)}:
+            x["color"] = dichos[0]
     idts = {str(x["producto"]): K.identificar(str(x["producto"]), "", tienda_id) for x in rs}
     fuera = [p for p, i in idts.items() if i["veredicto"] != "exists"]
     rs = [x for x in rs if str(x["producto"]) not in fuera]
@@ -785,11 +794,9 @@ def _id_de(nombre, tienda_id: str) -> str:
 
 
 def _por_rubro(rs: list, tienda_id: str) -> collections.Counter:
-    hay = collections.Counter()
-    for x in rs:
-        if (i := K.identificar(str(x.get("producto")), "", tienda_id))["veredicto"] == "exists":
-            hay[i["producto"].get("categoria")] += K.entero(x.get("cantidad")) or 1
-    return hay
+    ids = [(K.identificar(str(x.get("producto")), "", tienda_id), K.entero(x.get("cantidad")) or 1) for x in rs]
+    return sum((collections.Counter({i["producto"].get("categoria"): n}) for i, n in ids if i["veredicto"] == "exists"),
+               collections.Counter())
 
 
 def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
