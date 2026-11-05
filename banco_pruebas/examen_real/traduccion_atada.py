@@ -18,6 +18,7 @@ que no le servia al codigo. Aca cambia la forma, no la consigna:
 La nota la pone `traduccion.notar_turno`, la de r1, sin tocar el oro.
 
     python3 banco_pruebas/examen_real/traduccion_atada.py --correr [--etiqueta a1] [--solo-r1] [id ...]   con la gratis
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> ... --correr --embeddings-paga         los embeddings con la paga
     python3 banco_pruebas/examen_real/traduccion_atada.py --nota [--etiqueta a1] [--ver] [--solo-r1]
 """
 import json
@@ -45,6 +46,11 @@ def _tienda():
     if not _T:
         from banco_pruebas import clon_produccion as C
         C.instalar()
+        # LOS EMBEDDINGS CON LA PAGA, 5-nov, orden de Martin en la sesion: con la gratis se cortaban por timeout. Solo los
+        # embeddings: el modelo sigue con la gratis, que `correr` toma de GEMINI_API_KEY directo.
+        if "--embeddings-paga" in ARGS and os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
+            from app.config import get_settings
+            get_settings().GEMINI_API_KEY = os.environ["GEMINI_API_KEY_PROD"]
         from app.core.flujo import agente as A, catalogo as K, tabla as T
         from app.storage.firestore_client import get_all_faq
         db = T.tabla(C.TIENDA)
@@ -108,7 +114,16 @@ def temas_candidatos(mensaje, k=3):
         clave = sorted(((sum(_n(kw) in pn for kw in d.get("keywords") or []), tema) for tema, d in t["faq"].items()),
                        reverse=True)
         out += [tema for s, tema in clave[:2] if s > 0]
-        out += [tema for tema, _ in t["A"]._parecidos(p, "tema", t["tienda"])[:k]]
+        # SIN EMBEDDINGS LA PRUEBA NO VALE: se reintenta, y si no vuelven se corta, no se sigue con menos.
+        for intento in range(5):
+            t["A"]._CAIDOS["hasta"] = 0
+            par = t["A"]._parecidos(p, "tema", t["tienda"])
+            if par:
+                break
+            time.sleep(15 * (intento + 1))
+        else:
+            raise SystemExit("sin embeddings: se corta la corrida")
+        out += [tema for tema, _ in par[:k]]
     return list(dict.fromkeys(out))[:8]
 
 
@@ -269,7 +284,8 @@ def correr(etiqueta, ids, solo_r1):
     from openai import OpenAI
     from app.config import get_settings
     s = get_settings()
-    cli = OpenAI(api_key=os.environ["GEMINI_API_KEY"], base_url=s.GEMINI_BASE_URL)
+    _tienda()
+    cli = OpenAI(api_key=os.environ["GEMINI_API_KEY"], base_url=s.GEMINI_BASE_URL)  # el modelo, siempre con la gratis
     hecho = {(r["etiqueta"], r["id"], r["turno"]) for r in _leer()}
     r1 = _turnos_r1()
     ch, bots = TR._charlas()
