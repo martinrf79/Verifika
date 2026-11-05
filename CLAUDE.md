@@ -53,9 +53,11 @@ de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 
 ### Lo que sigue
 
-**Hasta que una sesión logre el avance medido que dice la ficha, toda sesión arranca por la FICHA 87**,
-`arquitectura/FICHA_87_lo_que_se_rompe_despues_del_primer_mensaje.md`: por qué el bot se rompe después del primer mensaje,
-con la lista de fallas de las charlas reales, y las cinco soluciones en orden, una por sesión.
+**Toda sesión arranca por la FICHA 88**, `arquitectura/FICHA_88_el_bot_robusto.md`, orden de Martín del 5-nov: primero lo
+que quedó de esa sesión —regrabar la vara, la tercera corrida, el push con su ok—, después los cuatro arreglos en orden: el
+modelo solo afirma lo que devolvieron las herramientas, cada parte del mensaje con su búsqueda, la búsqueda por uso al lado
+de SQL y el pedido en el código. Con los cuatro medidos, se mide en WhatsApp. El diagnóstico y lo medido hasta ahí, en la
+FICHA 87.
 
 El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con tres corridas `--gratis`. Si
 el código cambia lo que lee el modelo, las charlas afectadas se regraban con `--gratis --regrabar`.
