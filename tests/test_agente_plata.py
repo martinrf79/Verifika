@@ -180,3 +180,18 @@ def test_el_equipo_nombrado_filtra_y_el_color_dicho_se_usa(A):
     a = {"renglones": [{"producto": "Redragon Pandora", "destino": "Posadas"}]}
     assert "Pandora Negro" in A.presupuesto(a, A.memoria_de({}), C.TIENDA, None, "si el mas eco en negro")[0]
     assert "¿en qué color" in A.presupuesto(a, A.memoria_de({}), C.TIENDA, None, "uno negro y otro blanco")[0]
+
+
+def test_un_lugar_dicho_como_destino_no_es_un_color(A):
+    """6740e0, el examen real, roto desde el 3-nov: "envio de los dos primeros a la plata" le ponia color plata a la
+    notebook HP 245 G9 Gris, y el presupuesto de los siete articulos salia como "¿en qué color: Gris o Plata?". Cuenta
+    la clase: cada lugar con un color en el nombre, dicho como destino, y el color dicho aparte sigue valiendo."""
+    nb = {"renglones": [{"producto": "Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris", "cantidad": 2, "destino": "La Plata"}]}
+    assert "Total: $1.386.000" in A.presupuesto(nb, A.memoria_de({}), C.TIENDA, None,
+                                                "2 notebooks envio de los dos a la plata")[0]
+    pandora = {"renglones": [{"producto": "Redragon Pandora", "destino": "Bahia Blanca"}]}
+    casos = [("mandalo a bahia blanca", "¿en qué color"), ("lo quiero en negro, va para bahia blanca", "Pandora Negro"),
+             ("quiero el negro, va a rio negro", "Pandora Negro")]
+    bien = sum(esperado in A.presupuesto(pandora, A.memoria_de({}), C.TIENDA, None, dijo)[0] for dijo, esperado in casos)
+    print(f"\nLUGAR NO ES COLOR: {bien} de {len(casos)}")
+    assert bien == len(casos)

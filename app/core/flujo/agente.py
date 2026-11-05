@@ -226,6 +226,14 @@ def _lugares(texto) -> list:
     return [x[0] for x in lugares(str(texto or ""))]
 
 
+def destinos_dichos(texto: str) -> list:
+    """Los lugares que el texto nombra como destino, despues de "a", "para", "envio", por oracion: "quiero el negro" no
+    es la localidad El Negro, y "era para Cordoba, no Rosario" no pide Rosario."""
+    return list(dict.fromkeys(x for o in re.split(r"[.!?\n]", texto or "") for x in _lugares(o) for e in [re.escape(K.n(x))]
+                              if not re.search(rf"\b(?:no|ni|sin)\s+(?:\w+\s+)?{e}\b", K.n(o)) and
+                              re.search(rf"\b(?:a|para|hacia|envio|envios|mandar|manda)\s+(?:la\s+|el\s+)?{e}\b", K.n(o))))
+
+
 def _orden_de(texto: str, tienda_id: str) -> str:
     """El orden que dice el texto normalizado: una frase del vocabulario de ordenes de la tienda, o el "mas algo"."""
     voc = MK.vocabulario_respuestas(tienda_id)["ordenes"]
@@ -629,9 +637,12 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
             x["producto"] = re.sub(rf"(?i)\s*\b{re.escape(p['producto']['color'])}\b", "", p["producto"]["nombre"]).strip()
     # EL COLOR QUE EL CLIENTE YA DIJO, 3-nov, b8bb00: "el mas eco en negro" y despues el Pandora sin color volvia a
     # preguntarlo. Un solo color dicho en la charla, que el modelo tiene: ese. Con dos colores dichos, pregunta.
+    # EL LUGAR NO ES UN COLOR, 5-nov, 6740e0: "a La Plata" le ponia color plata a la notebook y el presupuesto de los
+    # siete articulos salia como una pregunta por el color. Lo dicho como destino no cuenta: Bahia Blanca, Rio Negro.
     todos = K.productos(tienda_id)
     colores = {K.n(p.get("color")) for p in todos if p.get("color")}
-    dichos = [c for c in colores if re.search(rf"\b{c[:-1]}[oa]s?\b" if c.endswith("o") else rf"\b{c}e?s?\b", dijo or "")]
+    sin_lugar = re.sub("|".join(rf"\b{re.escape(K.n(x))}\b" for x in destinos_dichos(dijo)) or "(?!)", " ", dijo or "")
+    dichos = [c for c in colores if re.search(rf"\b{c[:-1]}[oa]s?\b" if c.endswith("o") else rf"\b{c}e?s?\b", sin_lugar)]
     for x in rs if len(dichos) == 1 else []:
         p = (i := K.identificar(str(x["producto"]), "", tienda_id)).get("producto") or (i.get("opciones") or [{}])[0]
         if not x.get("color") and dichos[0] in {K.n(v.get("color")) for v in K._colores_de(p, todos)}:
@@ -831,12 +842,7 @@ def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
             "estaba" for r in antes if hay and r not in nombrados and hay.get(r, 0) != antes[r]]
     # UN LUGAR DICHO QUE EL PRESUPUESTO NO TRAE, 6740e0: "2 a villa maria y 3 a toledo" y Toledo se perdia. Por oracion,
     # porque el padron corta en comas; "era para Cordoba, no Rosario" no pide Rosario.
-    destinos = " ".join(K.n(x.get("destino")) for x in rs)
-    lugares = [x for o in re.split(r"[.!?\n]", mensaje) for x in _lugares(o)
-               if not re.search(rf"\b(?:no|ni|sin)\s+(?:\w+\s+)?{re.escape(K.n(x))}\b", K.n(o)) and
-               re.search(rf"\b(?:a|para|hacia|envio|envios|mandar|manda)\s+(?:la\s+|el\s+)?{re.escape(K.n(x))}\b", K.n(o))]
-    out += [f"el cliente dijo {x} y ningun renglon va ahi" for x in dict.fromkeys(lugares)
-            if destinos.strip() and K.n(x) not in destinos]
+    out += [f"el cliente dijo {x} y ningun renglon va ahi" for d in [" ".join(K.n(y.get("destino")) for y in rs)] for x in destinos_dichos(mensaje) if d.strip() and K.n(x) not in d]
     # EL CRITERIO DEL CLIENTE, d29c5a: "el mouse mas liviano" y el presupuesto con el tercero mas liviano. Un rubro solo
     # en el pedido y un orden del vocabulario: el elegido tiene que ser el primero de su rubro con stock.
     clave, sentido = K.ORDEN.get(_orden_de(K.n(mensaje), tienda_id), (None, 0))

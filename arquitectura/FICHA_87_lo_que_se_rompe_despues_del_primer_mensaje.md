@@ -82,3 +82,9 @@ Medido sobre las 42 charlas reales, en tres corridas con el modelo de producció
 ## Lo que hizo cada sesión
 
 - 4-nov: el diagnóstico, la lista de fallas y la medición que descarta la traducción. Ningún cambio en el bot.
+- 5-nov: la solución 1, el candado, `tests/test_candado_examen.py` con `banco_pruebas/examen_real/candado.py`. Cuida 79
+  turnos, no 80: la corrida tiene 109, sin los 4 de b8df72a33c. En su primera corrida cazó un turno roto desde el 3-nov,
+  6740e01771 t1: "envío a La Plata" se leía como el color plata y el presupuesto de los siete artículos salía como una
+  pregunta por el color. Arreglado en `agente.destinos_dichos`; con eso los 79 dan el mismo texto que leyó el cliente.
+  Decidido con Martín para lo que sigue: antes de las soluciones 2 a 5, el catálogo consultado con SQL en vez de frases,
+  con el modelo de hoy y la gratis; después, la misma prueba con Gemini Flash con razonamiento bajo.
