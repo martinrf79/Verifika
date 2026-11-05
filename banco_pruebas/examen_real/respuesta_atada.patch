@@ -1,0 +1,405 @@
+diff --git a/app/core/flujo/agente.py b/app/core/flujo/agente.py
+index b679beb..99a3db4 100644
+--- a/app/core/flujo/agente.py
++++ b/app/core/flujo/agente.py
+@@ -10,7 +10,11 @@ reemplaza a la lectura de la FICHA 81 en el bot. Medido en el banco, `banco_prue
+   presupuesto   el pedido entero, renglon por renglon; lo cumple el ejecutor, que pone montos, envios y reparto.
+   cobrar        los datos de cobro del codigo de cobro, y el lead con aviso al dueño.
+   calcular      una calculadora.
+-  el candado    el verificador: cada afirmacion de la respuesta contra la fuente. Lo que marca vuelve una vez al modelo.
++  responder     LA RESPUESTA ATADA A LA API, 5-nov, FICHA 88 arreglo 1: el modelo no escribe datos. Llama a `responder`
++                con los numeros de lo que devolvieron las herramientas en el turno, P1, R1, E1, y que datos mostrar de
++                cada uno, mas un saludo y una pregunta cortos; el codigo arma el mensaje con las filas reales.
++  el candado    el verificador, sobre lo unico que escribe el modelo: el saludo y la pregunta. Lo que marca vuelve una
++                vez al modelo; si sigue, se saca.
+ 
+ LA MEMORIA de la charla: el historial completo y, aparte, el pedido anotado, el ultimo presupuesto mostrado, el pago y
+ el tope. El pedido cambia solo si el cliente compra, confirma o cambia: lo marca `anotar`.
+@@ -58,7 +62,7 @@ CONSIGNA = """Sos vendedor de una tienda online de tecnologia de Argentina que v
+ mensaje del cliente como un buen vendedor: corto, claro, en español rioplatense con voseo, contestando todo lo que
+ pregunto o pidio y llevando a la venta.
+ 
+-Tenes tres herramientas:
++Tenes cuatro herramientas, y contestas siempre con la ultima, responder:
+ - buscar: con un SELECT consultas la tabla productos de la tienda, que esta abajo con sus columnas y sus
+   valores; con texto, el envio a un lugar, "envio a Rosario", o una regla. Una consulta por cosa que pide el cliente,
+   con stock > 0, y en las columnas pedi siempre nombre, precio y stock, y las columnas en que te basas para elegir. El
+@@ -69,14 +73,18 @@ Tenes tres herramientas:
+   del cliente; en false es solo una cotizacion. El pedido actual te llega en el mismo formato: para cambiarlo, mandalo
+   entero corregido con anotar en true; sin renglones, usa el pedido actual tal cual.
+ - calcular: una calculadora, para otra cuenta.
+-
+-Todo producto, precio, stock, dato de ficha, envio o regla que digas tiene que salir de las herramientas, de las reglas
+-de la tienda que van abajo o de lo que ya le mostraste en la charla. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que
+-falte. Antes de elegir un producto, buscalo: no elijas de memoria. Al elegir o recomendar uno, deci el dato de la ficha
+-en que te basas. Si pregunta si anda con un equipo suyo, buscalo con ese equipo; si la ficha no lo dice, no lo afirmes.
++- responder: lo que lee el cliente. Cada fila, regla, envio o "no vendemos" que te devuelve buscar viene con su numero,
++  P1, R1, E1, N1. En bloques pones los numeros que le mostras, en orden, y de cada producto las columnas que hay que
++  mostrarle —las que pidio o en las que te basas— y en por la columna que decide si elegiste o recomendaste uno. El
++  sistema pega cada dato tal cual de la tienda. PRESUPUESTO pega el presupuesto y COBRO los datos de pago. En saludo y
++  pregunta, cortos, solo lo que conecta: nunca un numero, una marca, un modelo, un dato de un producto, una regla ni un
++  envio, que van en bloques. "Hola" solo en el primer mensaje de la charla. Si el cliente pide un dato que la tienda no tiene, ponelo en sin_dato y el sistema le dice que no lo tiene.
++
++Solo podes mostrar lo que te devolvio una herramienta en este turno: lo que ya le mostraste antes, si hace falta, buscalo
++de nuevo. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que falte. Antes de
++elegir un producto, buscalo: no elijas de memoria. Si pregunta si anda con un equipo suyo, buscalo con ese equipo.
+ Si el cliente compra, cambia o confirma algo del pedido, arma el presupuesto con el pedido entero como queda, aunque
+-falte un dato, y pedi lo que falte. Donde va el presupuesto, escribi [[PRESUPUESTO]] y el sistema pega el ultimo que
+-armaste, tal cual: no lo copies ni lo resumas, y no escribas montos del pedido por tu cuenta. Si el cliente pide algo
++falte un dato, pedi lo que falte y mostralo con PRESUPUESTO. Si el cliente pide algo
+ que no eligio todavia y hace falta elegir para seguir, elegi vos con el criterio que dio, o el mas barato con stock, y
+ decile cual elegiste. Si el cliente da un criterio para elegir —el mas barato, el mejor, el mas liviano—, busca con ese
+ criterio aunque ya le hayas mostrado opciones: lo mostrado era una parte. Si el cliente dijo cuantos quiere de cada
+@@ -84,8 +92,7 @@ cosa, revisa que el presupuesto lo respete: la herramienta te devuelve la cuenta
+ 
+ Las reglas de la tienda: para reservar una compra se le pide al cliente solo el nombre. Antes de cobrar, el cliente
+ tiene que haber dicho con que medio paga cada parte: si no lo dijo, preguntaselo, y no lo des por acordado. Los datos
+-para pagar —CBU, alias, links— salen solo de la herramienta cobrar: donde van, escribi [[COBRO]] y el sistema los pega;
+-nunca los escribas por tu cuenta. Si la tienda no tiene algo, decilo claro: "no vendemos eso", y ofrece lo que si hay."""
++para pagar —CBU, alias, links— salen solo de la herramienta cobrar, y se muestran con COBRO. Si la tienda no tiene algo, decilo claro: "no vendemos eso", y ofrece lo que si hay."""
+ 
+ HERRAMIENTAS = [
+     {"type": "function", "function": {
+@@ -214,12 +221,35 @@ def _tema_por_clave(q: str, tienda_id: str) -> str:
+ _NO_PEDIBLES = set("nombre modelo descripcion descripcion_rica precio_ars marca color tags id categoria stock compat".split())
+ 
+ 
+-def buscar(consulta: str, tienda_id: str) -> str:
++class Citas:
++    """LO QUE EL MODELO PUEDE CITAR EN EL TURNO, 5-nov, FICHA 88 arreglo 1: cada fila, regla, envio y "no vendemos" que
++    devolvio una herramienta lleva un numero, P1, R1, E1, N1, y la respuesta solo cita esos numeros. Lo que no vino de
++    una herramienta en este turno no tiene numero, y no se puede decir."""
++    LETRA = {"producto": "P", "regla": "R", "envio": "E", "no_vendemos": "N"}
++
++    def __init__(self):
++        self.items: dict = {}
++
++    def __call__(self, tipo: str, clave: str, texto: str = "") -> str:
++        for k, (t, c, _) in self.items.items():
++            if (t, c) == (tipo, clave):
++                return k
++        k = f"{self.LETRA[tipo]}{sum(1 for x in self.items if x[0] == self.LETRA[tipo]) + 1}"
++        self.items[k] = (tipo, clave, texto)
++        return k
++
++    def producto(self, pid: str) -> str:
++        return self("producto", pid)
++
++
++def buscar(consulta: str, tienda_id: str, citas: Citas = None) -> str:
+     """Con un SELECT, las filas reales de la tabla de la tienda, `tabla.consultar`. Con texto, lo que no esta en la tabla:
+     las reglas de la FAQ, el envio a cada lugar y lo que la tienda no vende. LOS PRODUCTOS SE CONSULTAN EN LA TABLA desde el
+-    5-nov: la frase la reinterpretaba el codigo con reglas de palabras y se perdian el equipo, la marca y el origen."""
++    5-nov: la frase la reinterpretaba el codigo con reglas de palabras y se perdian el equipo, la marca y el origen.
++    Con `citas`, cada cosa devuelta lleva su numero."""
++    num = (lambda tipo, clave, texto: f"{citas(tipo, clave, texto)}: ") if citas is not None else (lambda *_: "")
+     if T.es_consulta(consulta):
+-        return T.consultar(consulta, tienda_id)
++        return T.consultar(consulta, tienda_id, citas.producto if citas is not None else None)
+     q, out = K.n(consulta), []
+     tcands = _parecidos(consulta, "tema", tienda_id)
+     temas = list(dict.fromkeys([_tema_por_clave(q, tienda_id)] + [k for k, s in tcands[:2] if s >= UMBRAL_TEMA]))
+@@ -227,13 +257,16 @@ def buscar(consulta: str, tienda_id: str) -> str:
+         temas = [t for t in temas if t not in ("envios", "costo_envio", "plazo_envio")]  # va el envio al lugar
+     for tm in [t for t in temas if t][:2]:
+         t = ejecutar(_agenda([{"n": 1, "accion": "politica", "tema": tm}]), E.leer({}), tienda_id)
+-        out.append(f"REGLA {tm.replace('_', ' ')}: " + " ".join(h.get("texto") or "" for h in t.hechos))
++        texto = " ".join(h.get("texto") or "" for h in t.hechos)
++        out.append(num("regla", tm, texto) + f"REGLA {tm.replace('_', ' ')}: " + texto)
+     for d in _lugares(consulta):
+         t = ejecutar(_agenda([{"n": 1, "accion": "envio", "destino": d}]), E.leer({}), tienda_id)
+-        out.append("ENVIO: " + redaccion.texto(t.hechos, t.preguntas, False).replace("\n", " "))
++        texto = redaccion.texto(t.hechos, t.preguntas, False).replace("\n", " ")
++        out.append(num("envio", K.n(d), texto) + "ENVIO: " + texto)
+     # LO QUE LA TIENDA NO VENDE lo dice su fuente, `no_vendidas.json`, con su alternativa real si la hay.
+     for c, alt in [x for x in [categoria_no_vendida(consulta, tienda_id)] if x]:
+-        out.insert(0, f"NO VENDEMOS {c.upper()}." + (f" Lo que si vendemos parecido: {alt}." if alt else ""))
++        texto = f"No vendemos {c}." + (f" Lo que sí vendemos parecido: {alt}." if alt else "")
++        out.insert(0, num("no_vendemos", K.n(c), texto) + f"NO VENDEMOS {c.upper()}." + (f" Lo que si vendemos parecido: {alt}." if alt else ""))
+     return "\n".join(out) or "Los productos se consultan en la tabla, con un SELECT. Con texto, solo el envio a un " \
+         "lugar, \"envio a Rosario\", o una regla de la tienda."
+ 
+@@ -640,6 +673,117 @@ def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
+         texto + (f"\n\n{cobro}" if cobro and cobro not in texto else "")
+ 
+ 
++# ══ LA RESPUESTA ATADA A LA API, 5-nov, FICHA 88 arreglo 1 ══
++# UMBRAL, 5-nov: el largo de lo unico que escribe el modelo. Con 240 entra un saludo con una frase de venta; con 160, una
++# pregunta. Lo demas lo pega el codigo.
++LARGO_SALUDO, LARGO_PREGUNTA, LARGO_SIN_DATO = 240, 160, 60
++_FIJAS = ("PRESUPUESTO", "COBRO")
++
++
++def herramienta_responder(citas: Citas, tienda_id: str) -> dict:
++    """La herramienta con que el modelo contesta, armada en cada vuelta: los numeros son solo los de este turno, y las
++    columnas, las de la tabla. Lo que no esta en las listas, la API no lo deja escribir."""
++    cols = [c for c in T.columnas(tienda_id) if c not in ("id", "nombre")]
++    nums = list(citas.items) + list(_FIJAS)
++    return {"type": "function", "function": {
++        "name": "responder", "description": "Lo que lee el cliente: los numeros de lo que le mostras y que datos de cada "
++                                            "uno; el sistema pega los datos. Saludo y pregunta, cortos y sin datos.",
++        "parameters": {"type": "object", "properties": {
++            "saludo": {"type": "string", "maxLength": LARGO_SALUDO},
++            "bloques": {"type": "array", "items": {"type": "object", "properties": {
++                "cita": {"type": "string", "enum": nums},
++                "mostrar": {"type": "array", "items": {"type": "string", "enum": cols}},
++                "por": {"type": "string", "enum": [""] + cols}}, "required": ["cita", "mostrar", "por"]}},
++            "sin_dato": {"type": "string", "maxLength": LARGO_SIN_DATO,
++                         "description": "solo si pidio un dato que la tienda no tiene: el nombre del dato, una o dos "
++                                        "palabras, como \"temperatura\". Si no, no lo pongas."},
++            "pregunta": {"type": "string", "maxLength": LARGO_PREGUNTA}},
++            "required": ["saludo", "bloques", "pregunta"]}}}
++
++
++_VOCES: dict = {}
++
++
++def _voces(tienda_id: str) -> tuple:
++    """(palabras de dato, palabras de regla): lo que no puede ir en el saludo ni en la pregunta, sacado de la tienda.
++    De dato: marcas, las palabras distintivas de cada modelo y los valores de las columnas cerradas de la ficha, sin color
++    ni material. De regla: los medios de pago, que el saludo no puede afirmar; las reglas con datos llevan un numero, que
++    ya se caza. No es una lista a mano: sale del catalogo y de los medios del codigo de cobro."""
++    if tienda_id not in _VOCES:
++        db, dato = T.tabla(tienda_id), set()
++        for c in [c for c in T.columnas(tienda_id) if c not in ("id", "nombre", "rubro", "precio", "stock", "peso_g", "color",
++                                                                "material")]:
++            vals = [str(v) for (v,) in db.execute(f"SELECT DISTINCT {c} FROM productos") if v not in (None, "")]
++            if c in ("marca", "modelo"):
++                dato |= {w for v in vals for w in re.findall(r"[a-z0-9]+", K.n(v)) if len(w) >= 4 or re.search(r"\d", w)}
++            elif len(vals) <= T.VALORES_MAX and not c.startswith("con_"):
++                dato |= {K.n(v) for v in vals if len(K.n(v)) >= 4 and not K.n(v).startswith(("si", "no"))}
++        regla = {K.n(m) for m in list(MEDIOS) + list(MARCAS_TARJETA) if len(m) >= 4}
++        rubros = {K.n(v) for (v,) in db.execute("SELECT DISTINCT rubro FROM productos") if v}
++        _VOCES[tienda_id] = (dato - rubros, regla - rubros)
++    return _VOCES[tienda_id]
++
++
++def datos_en_libre(a: dict, tienda_id: str) -> list:
++    """Lo que el modelo escribio en el saludo o la pregunta y es un dato: un numero, una marca o modelo, un valor de la
++    ficha o un medio de pago. Los medios se pueden nombrar en la pregunta: preguntar con que paga no afirma nada."""
++    dato, regla = _voces(tienda_id)
++    medios = {K.n(m) for m in list(MEDIOS) + list(MARCAS_TARJETA)} | {"mercadopago", "tarjeta", "tarjetas"}
++    out = []
++    for campo in ("saludo", "pregunta"):
++        t = f" {K.n(a.get(campo) or '')} "
++        hall = re.findall(r"\d+", t) + [w for w in dato if f" {w} " in t] + \
++            [w for w in regla if f" {w} " in t and not (campo == "pregunta" and w in medios)]
++        if hall:
++            out.append((campo, ", ".join(dict.fromkeys(hall))))
++    return out
++
++
++def _valor(col: str, v) -> str:
++    if col == "precio":
++        return f"${int(v):,}".replace(",", ".")
++    if col == "stock":
++        return "sin stock" if not v else f"stock {v}"
++    if col.startswith("con_"):
++        return f"con {col[4:].replace('_', ' ')}: {v}"
++    return f"{col.replace('_', ' ')}: {v}"
++
++
++def armar(a: dict, citas: Citas, pasos: list, memoria: dict, tienda_id: str) -> tuple:
++    """(texto para el cliente, lo que pego el codigo): el saludo y la pregunta del modelo, y entre medio cada numero
++    citado con sus datos sacados de la tienda. Un numero que no es de este turno no se pega."""
++    pegado, vistos = [], set()
++    for b in a.get("bloques") or []:
++        c = str(b.get("cita") or "")
++        if c in vistos:
++            continue
++        vistos.add(c)
++        if c == "PRESUPUESTO":
++            pres = _pegado(pasos) or (presupuesto({}, memoria, tienda_id)[0] if memoria["pedido"] or memoria.get("mostrado") else "")
++            pegado += [pres] if pres else []
++        elif c == "COBRO":
++            pegado += [x for x in [_pegado(pasos, "cobrar")] if x]
++        elif c in citas.items:
++            tipo, clave, texto = citas.items[c]
++            if tipo != "producto":
++                pegado.append(texto)
++                continue
++            f = T.ficha(clave, tienda_id)
++            if not f:
++                continue
++            cols = list(dict.fromkeys([x for x in [b.get("por")] if x] + ["precio"] + list(b.get("mostrar") or [])))
++            datos = [_valor(x, f[x]) for x in cols if x in f and x not in ("nombre", "id")]
++            pegado.append(f"• {f['nombre']}: " + ", ".join(datos))
++    # EL PEDIDO Y EL COBRO DEL TURNO SALEN AUNQUE NO LOS CITE: el pedido anotado, FICHA 86, y los datos de pago.
++    for extra in (_pegado(pasos, "pedido"), _pegado(pasos, "cobrar")):
++        if extra and extra not in pegado:
++            pegado.append(extra)
++    sin = str(a.get("sin_dato") or "").strip()[:LARGO_SIN_DATO]
++    partes = [str(a.get("saludo") or "").strip()[:LARGO_SALUDO]] + ["\n".join(x for x in pegado if x)] \
++        + ([f"Ese dato, {sin.rstrip('.').lower()}, no lo tengo en la ficha."] if sin and len(sin.split()) <= 4 else []) + [str(a.get("pregunta") or "").strip()[:LARGO_PREGUNTA]]
++    return "\n\n".join(x for x in partes if x), pegado
++
++
+ # ══ EL TURNO DEL AGENTE ══
+ 
+ def sin_buscar(mensaje: str, pasos: list, tienda_id: str) -> list:
+@@ -736,12 +880,13 @@ def memoria_texto(memoria: dict) -> str:
+             + (f"\nEL PAGO QUE DIJO: {m['pago']}" if m.get("pago") else "") + (f"\nEL TOPE QUE DIJO: {m['tope']}" if m.get("tope") else ""))
+ 
+ 
+-async def _llamar(msgs: list, herramientas: bool, trace_id: str):
++async def _llamar(msgs: list, herramientas: list, trace_id: str):
++    """Siempre con herramientas y obligado a llamar una: la respuesta al cliente es la herramienta responder."""
+     from app.core.llm_reintento import _cliente, _modelo, llamar_con_reintento
+     cli = _cliente()
+     if cli is None:
+         raise RuntimeError("sin clave del modelo")
+-    kw = {"tools": HERRAMIENTAS} if herramientas else {}
++    kw = {"tools": herramientas, "tool_choice": "required"}
+     return await llamar_con_reintento(
+         lambda: cli.chat.completions.create(model=_modelo(), temperature=0, messages=msgs, **kw),
+         timeout_s=float(get_settings().LLM_TIMEOUT_SECONDS), trace_id=trace_id)
+@@ -762,26 +907,36 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+     dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
+                         + de_la_oferta(mensaje, ultimo_bot)))
+     memoria.pop("_ultimo", None)
+-    pasos, salidas, entrada, salida, corregido, avisos = [], [], 0, 0, False, []
++    pasos, salidas, entrada, salida, corregido, avisos, citas = [], [], 0, 0, False, [], Citas()
+     t0 = time.time()
+     for vuelta in range(VUELTAS + 1):
+         try:
+-            r = await _llamar(msgs, vuelta < VUELTAS, trace_id)
++            # EN LA ULTIMA VUELTA, SOLO RESPONDER: con lo que ya devolvieron las herramientas.
++            r = await _llamar(msgs, (HERRAMIENTAS if vuelta < VUELTAS else []) + [herramienta_responder(citas, tienda_id)], trace_id)
+         except Exception as e:  # noqa: BLE001 — sin modelo no se inventa una respuesta
+             log.warning("agente_modelo_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:160]}")
+             return {"error": f"{type(e).__name__}", "pasos": pasos}
+         if getattr(r, "usage", None):
+             entrada, salida = entrada + (r.usage.prompt_tokens or 0), salida + (r.usage.completion_tokens or 0)
+         m = r.choices[0].message
+-        if not m.tool_calls:
+-            texto = pegar(m.content or "", pasos, memoria, tienda_id)
+-            # EL CANDADO ES EL VERIFICADOR, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
+-            pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
+-            fuente = " ".join(salidas + dichos + [mensaje, contexto, hoja])
+-            # [[COBRO]] SIN COBRAR, 3-nov, 58b5a1: "te paso los datos" y la linea vacia. Lo escribe el modelo, no el codigo.
+-            malos = V.verificar(texto, fuente, tienda_id, pegados) + [("hecho", "escribiste [[COBRO]] y no llamaste a cobrar")
+-                                                                      for _ in re.findall(r"\[\[\s*COBRO", m.content or "")
+-                                                                      if not _pegado(pasos, "cobrar")][:1]
++        final = next((c for c in m.tool_calls or [] if c.function.name == "responder"), None)
++        if not m.tool_calls:  # obligado a llamar una herramienta, contesto texto: se le pide de nuevo, una vez
++            msgs.append(m.model_dump(exclude_none=True))
++            msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA: contesta con la herramienta responder."})
++            continue
++        if final and len(m.tool_calls) == 1:
++            try:
++                a = json.loads(final.function.arguments or "{}")
++            except ValueError:
++                a = {}
++            texto, pegado = armar(a, citas, pasos, memoria, tienda_id)
++            # EL CANDADO MIRA LO QUE ESCRIBIO EL MODELO: lo pegado por el codigo sale de la tienda tal cual. La fuente
++            # es lo que devolvieron las herramientas, lo que dijo el cliente y la memoria del codigo: lo que dijo el bot
++            # antes ya no cuenta, FICHA 87 causa 3, un dato inventado se repetia en los turnos siguientes.
++            pegados = pegado + [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
++            fuente = " ".join(salidas + [x for h, x in zip(historial, dichos) if h.get("role") == "user"] + [mensaje, contexto, hoja])
++            libres = datos_en_libre(a, tienda_id)
++            malos = V.verificar(texto, fuente, tienda_id, pegados) + [(c, f"escribiste un dato: {d}") for c, d in libres]
+             faltan = [] if corregido else sin_buscar(mensaje, pasos, tienda_id)
+             omite = [] if corregido else omitidos(mensaje, memoria, pasos, tienda_id)
+             if (malos or faltan or omite) and not corregido and vuelta < VUELTAS:
+@@ -789,19 +944,23 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+                 # LA BUSQUEDA QUE FALTA LA HACE EL CODIGO, 1-nov: con solo el aviso, el modelo lo ignoraba en el
+                 # examen. Cada busqueda del turno, de nuevo con las palabras del cliente alrededor del criterio.
+                 frase = " ".join(dict.fromkeys(x for w in faltan for i, y in enumerate(ws) if K.n(w) in y for x in ws[max(0, i - 3):i + 1]))
+-                salidas += (extra := [buscar(f"{p['pide']['consulta']} {frase}", tienda_id) for p in pasos if faltan and p["herramienta"] == "buscar"
++                salidas += (extra := [buscar(f"{p['pide']['consulta']} {frase}", tienda_id, citas) for p in pasos if faltan and p["herramienta"] == "buscar"
+                                       and p["pide"].get("consulta") and not T.es_consulta(p["pide"]["consulta"])][:3])
+                 msgs.append(m.model_dump(exclude_none=True))
+                 # LA REVISION ES INTERNA: el cliente no la ve ni la dijo. Sin esto el modelo le pedia disculpas.
+-                msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: " + (
+-                    "tu borrador dice cosas que no respaldan las herramientas ni la charla: " + "; ".join(
+-                        f"{c}: {d}" for c, d in malos) + ". Corregilas con las herramientas o sacalas. " if malos else "")
++                msgs.append({"role": "tool", "tool_call_id": final.id, "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: " + (
++                    "el saludo o la pregunta dicen cosas que no respaldan las herramientas: " + "; ".join(
++                        f"{c}: {d}" for c, d in malos) + ". Sacalas, o mostralas con su numero en bloques. " if malos else "")
+                     + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo: consultalo en la tabla con ese criterio. "
+                        + ("El buscador con eso da:\n" + "\n".join(extra) + "\n" if extra else "") if faltan else "")
+                     + (f"el cliente pidio {'; '.join(omite)}: arma el presupuesto con el pedido entero, o preguntale si "
+                        "es lo que quiso decir. " if omite else "")
+-                    + "Escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta revision ni pedir disculpas."})
++                    + "Llama de nuevo a responder con la respuesta completa, sin mencionar esta revision ni pedir disculpas."})
+                 continue
++            if libres:  # EL SALUDO O LA PREGUNTA CON UN DATO, DESPUES DE CORREGIR: ese campo no sale
++                a = {**a, **{c: "" for c, _ in libres}}
++                texto, pegado = armar(a, citas, pasos, memoria, tienda_id)
++                malos = V.verificar(texto, fuente, tienda_id, pegado + pegados)
+             if malos:  # LO QUE SIGUE MARCADO DESPUES DE CORREGIR NO SALE: se saca la oracion entera.
+                 from app.core.guia_venta_prosa import mensaje as prosa
+                 texto = V.sin_marcadas(texto, fuente, tienda_id, pegados) or prosa(
+@@ -817,13 +976,18 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+                 memoria.update(memoria.pop("_ultimo"))
+             ultimo = _pegado(pasos)
+             log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos], sin_buscar=faltan,
+-                     omitidos=avisos,
++                     omitidos=avisos, responde=json.dumps(a, ensure_ascii=False)[:2000],
+                      pide=json.dumps([p["pide"] for p in pasos], ensure_ascii=False)[:3000], hallazgos=malos,
+                      corregido=corregido, entrada=entrada, salida=salida, seg=round(time.time() - t0, 1))
+-            return {"respuesta": texto, "pasos": pasos, "hallazgos": malos, "presupuesto": ultimo, "omitidos": avisos}
++            return {"respuesta": texto, "responde": a, "pasos": pasos, "hallazgos": malos, "presupuesto": ultimo,
++                    "omitidos": avisos}
+         # El mensaje del modelo vuelve entero, con lo que agrega el proveedor: sin eso, la segunda vuelta da 400.
+         msgs.append(m.model_dump(exclude_none=True))
+         for c in m.tool_calls:
++            if c.function.name == "responder":  # junto con otras: primero lo que devuelven las otras
++                msgs.append({"role": "tool", "tool_call_id": c.id, "content": "Primero mira lo que devolvieron las otras "
++                             "herramientas, y despues llama a responder con sus numeros."})
++                continue
+             try:
+                 a = json.loads(c.function.arguments or "{}")
+             except ValueError:
+@@ -833,7 +997,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+             cliente = ""
+             try:
+                 # LO QUE BLOQUEA —Firestore, los embeddings— corre en un hilo: el servidor sigue con las otras charlas.
+-                res = await asyncio.to_thread(buscar, str(a.get("consulta") or ""), tienda_id) if nombre == "buscar" \
++                res = await asyncio.to_thread(buscar, str(a.get("consulta") or ""), tienda_id, citas) if nombre == "buscar" \
+                     else await asyncio.to_thread(presupuesto, a, memoria, tienda_id, visto, dijo) if nombre == "presupuesto" \
+                     else await cobrar(a, memoria, user_id, canal, tienda_id, trace_id, dijo) if nombre == "cobrar" \
+                     else calcular(str(a.get("cuenta") or ""))
+diff --git a/app/core/flujo/tabla.py b/app/core/flujo/tabla.py
+index 757661f..ec80526 100644
+--- a/app/core/flujo/tabla.py
++++ b/app/core/flujo/tabla.py
+@@ -82,8 +82,20 @@ def es_consulta(texto: str) -> bool:
+     return bool(re.match(r"(?is)^\s*(select|with)\b", texto or ""))
+ 
+ 
+-def consultar(sql: str, tienda_id: str) -> str:
+-    """Un SELECT sobre la tabla, de solo lectura: las filas en texto, cada una con sus columnas, el precio en pesos."""
++def columnas(tienda_id: str) -> list:
++    return [x[1] for x in tabla(tienda_id).execute("PRAGMA table_info(productos)")]
++
++
++def ficha(pid: str, tienda_id: str) -> dict:
++    """La fila entera de un producto, {columna: valor} sin vacios: lo que el codigo pega cuando el modelo lo cita."""
++    cur = tabla(tienda_id).execute("SELECT * FROM productos WHERE id = ?", (pid,))
++    f = cur.fetchone()
++    return {d[0]: v for d, v in zip(cur.description, f) if v is not None} if f else {}
++
++
++def consultar(sql: str, tienda_id: str, numero=None) -> str:
++    """Un SELECT sobre la tabla, de solo lectura: las filas en texto, cada una con sus columnas, el precio en pesos. Con
++    `numero`, cada fila lleva adelante el numero con que el modelo la cita, "P3", que da el que llama por su id."""
+     q = sql.strip().rstrip(";")
+     if not es_consulta(q) or ";" in q:
+         return "Solo una consulta SELECT sobre la tabla productos."
+@@ -107,6 +119,14 @@ def consultar(sql: str, tienda_id: str) -> str:
+         return "Ninguna fila cumple esa consulta."
+     # EL PRECIO EN PESOS, "$70.000", como lo controla el verificador: con "70000" borraba la lista.
+     plata = lambda c, v: f"${int(v):,}".replace(",", ".") if c.lower() == "precio" and isinstance(v, (int, float)) else v  # noqa: E731
++
++    def num(f):  # EL NUMERO SALE DEL ID; sin el id en la consulta, del nombre, que es unico por producto y color
++        if numero is None:
++            return ""
++        d = dict(zip([c.lower() for c in cols], f))
++        pid = d.get("id") or (db.execute("SELECT id FROM productos WHERE nombre = ?", (d["nombre"],)).fetchone() or [None])[0] \
++            if d.get("id") or d.get("nombre") else None
++        return f"{numero(str(pid))}: " if pid else ""
+     return f"{min(len(filas), FILAS_MAX)} filas" + (", hay mas: afina la consulta" if len(filas) > FILAS_MAX else "") + \
+-        ":\n" + "\n".join("  " + "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
++        ":\n" + "\n".join("  " + num(f) + "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
+                           for f in filas[:FILAS_MAX])
