@@ -88,3 +88,16 @@ Medido sobre las 42 charlas reales, en tres corridas con el modelo de producció
   pregunta por el color. Arreglado en `agente.destinos_dichos`; con eso los 79 dan el mismo texto que leyó el cliente.
   Decidido con Martín para lo que sigue: antes de las soluciones 2 a 5, el catálogo consultado con SQL en vez de frases,
   con el modelo de hoy y la gratis; después, la misma prueba con Gemini Flash con razonamiento bajo.
+- 5-nov, SQL, una corrida con la gratis, `banco_pruebas/examen_real/sql.py`, `corrida_sql_r1.jsonl`, calificada a mano:
+  - De los 25 turnos mal, 10 pasan a bien y 1 a dudoso. Son todos de la clase que SQL ataca: la compatibilidad con la
+    PS5 en b8bb001ee8 y 58b5a11775, el mouse para la Play, la Tarjeta Naranja, el teclado sin datos inventados, Samsung,
+    y los datos de pago que ahora llegan.
+  - En las 10 del mensaje de los siete artículos, el origen sale bien, sin "global" y con marcas no chinas, pero el
+    pedido pierde una memoria. Siguen mal, junto con 854f1bea2c t1, 781919fa60 t2, fe67b477ec t6 y 33dbb56c1b t4.
+  - De los 79 que andaban, 13 se rompen. Ocho vienen de esa memoria perdida, que arrastra la charla; los demás son el
+    envío a Posadas consultado con SQL en vez de con texto, un "silencioso" inventado en 8e13ecbb7c, dos pagos dados
+    por elegidos en fe67b477ec, y un error de plata del código, no de SQL.
+  - El error de plata: si el modelo anota el pedido y cobra en el mismo turno, el cobro usaba el pedido del turno
+    anterior. En 96b39fa8fd t5, total final $1.541.940 y a transferir $918.855. Arreglado en `agente.cobrar`.
+  - Neto, 76 bien contra 79: SQL arregla la búsqueda de datos y el pedido armado por el modelo sigue siendo lo que
+    falla y varía de una corrida a otra. Lo que sigue es la solución 2, el pedido como estado del código, con SQL.

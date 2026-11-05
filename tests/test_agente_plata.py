@@ -7,6 +7,7 @@
   "no tengo MP"            el cobro salia con el link de Mercado Pago por defecto y no habia como cambiarlo.
 """
 import asyncio
+import re
 
 import pytest
 
@@ -195,3 +196,15 @@ def test_un_lugar_dicho_como_destino_no_es_un_color(A):
     bien = sum(esperado in A.presupuesto(pandora, A.memoria_de({}), C.TIENDA, None, dijo)[0] for dijo, esperado in casos)
     print(f"\nLUGAR NO ES COLOR: {bien} de {len(casos)}")
     assert bien == len(casos)
+
+
+def test_el_cobro_usa_el_pedido_anotado_en_el_mismo_turno(A):
+    """96b39f, la corrida con SQL del 5-nov: el modelo anoto el pedido nuevo con presupuesto y cobro en el mismo turno, y
+    el cobro salia con el monto del pedido del turno anterior. Se cobra lo que el cliente acaba de leer."""
+    m = A.memoria_de({})
+    m["pedido"], m["pago"] = PEDIDO[:1], "100 transferencia"
+    nuevo = {"renglones": PEDIDO, "pago": "100 transferencia", "anotar": True}
+    leido, _ = A.presupuesto(nuevo, m, C.TIENDA, None, "pago por transferencia")
+    cliente, _ = asyncio.run(A.cobrar({"nombre": "Joaquin"}, m, "u", "telegram", C.TIENDA, "t", "pago por transferencia"))
+    final = re.search(r"Total final: (\$[\d.]+)", leido).group(1)
+    assert f"Monto: {final}" in cliente, (final, cliente)

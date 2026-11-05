@@ -713,12 +713,14 @@ async def cobrar(a: dict, memoria: dict, user_id: str, canal: str, tienda_id: st
     "no tengo MP" el modelo no tenia como cambiarlo."""
     from app.core import leads
     from app.core.pago import instruccion_cobro
-    pedido = memoria.get("pedido") or []
+    # EL PEDIDO Y EL PAGO DE ESTE TURNO, 5-nov, 96b39f: el presupuesto anotado en el mismo turno queda en `_ultimo` hasta
+    # que sale la respuesta, y el cobro usaba el del turno anterior: total final $1.541.940 y a transferir $918.855.
+    pedido = (memoria.get("_ultimo") or {}).get("pedido") or memoria.get("pedido") or []
     if not pedido:
         return "", "No hay pedido anotado todavia: arma el presupuesto con anotar en true."
     if a.get("pago"):
         memoria["pago"] = ", ".join(f"{x['porcentaje']} {x['medio']}".strip() for x in _reparto(a["pago"], dijo, tienda_id))
-    pago = memoria.get("pago") or ""
+    pago = memoria["pago"] if a.get("pago") else (memoria.get("_ultimo") or {}).get("pago") or memoria.get("pago") or ""
     if no_toma := medios_rechazados(a.get("pago"), tienda_id):
         return "", f"La tienda no toma {', '.join(no_toma)}: decíselo al cliente y preguntale con cual de los que toma paga."
     if not _reparto(pago) or any(not x["medio"] for x in _reparto(pago)):
