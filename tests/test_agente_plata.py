@@ -208,3 +208,16 @@ def test_el_cobro_usa_el_pedido_anotado_en_el_mismo_turno(A):
     cliente, _ = asyncio.run(A.cobrar({"nombre": "Joaquin"}, m, "u", "telegram", C.TIENDA, "t", "pago por transferencia"))
     final = re.search(r"Total final: (\$[\d.]+)", leido).group(1)
     assert f"Monto: {final}" in cliente, (final, cliente)
+
+
+def test_el_medio_dicho_para_una_parte_no_vale_para_otra_ni_la_pregunta_elige(A):
+    """La corrida con SQL del 5-nov. fe67b4 t8: "70 por ciento transferencia" y el 30 tambien salia por transferencia,
+    con descuento. 781919 t2: "tenes descuento con tarjeta o transferencia, que me conviene" se tomaba como elegido."""
+    casos = [("70 transferencia, 30 transferencia", "color indistinto 70 por ciento transferencia. blancos", ["transferencia", ""]),
+             ("70 transferencia, 30 transferencia", "decime si tenes descuento con tarjeta o transferencia", ["", ""]),
+             ("100 transferencia", "no me preguntaste, era por transferencia", ["transferencia"]),
+             ("50 transferencia, 50 tarjeta mastercard", "mitad con transferencia y mitad con mastercard",
+              ["transferencia", "tarjeta mastercard"])]
+    bien = sum([x["medio"] for x in A._reparto(p, d, C.TIENDA)] == esperado for p, d, esperado in casos)
+    print(f"\nMEDIO POR PARTE: {bien} de {len(casos)}")
+    assert bien == len(casos)

@@ -66,7 +66,14 @@ class Grabado:
         self.cola, self.final = list(g.get("pasos") or []), g.get("respuesta") or ""
 
     def _crear(self, **k):
-        return _respuesta(self.cola.pop(0)) if self.cola else _respuesta(texto=self.final)
+        """TODAS LAS LLAMADAS GRABADAS EN UNA SOLA RESPUESTA, como las manda el modelo de verdad, 5-nov: de a una, un
+        turno con muchas llamadas pasaba las vueltas del agente y salia sin respuesta, K20 t1 regrabado."""
+        if not self.cola:
+            return _respuesta(texto=self.final)
+        r = _respuesta(self.cola[0])
+        r.choices[0].message.tool_calls = [_respuesta(p).choices[0].message.tool_calls[0] for p in self.cola]
+        self.cola = []
+        return r
 
 
 def _paga(gratis: bool = False):

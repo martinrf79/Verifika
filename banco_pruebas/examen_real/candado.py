@@ -50,17 +50,7 @@ def _instalar(vivo: bool):
     from banco_pruebas import clon_produccion as C
     from app.core.flujo import agente
     parecidos = agente._parecidos
-    falso, vistos = R.instalar()
-
-    # TODAS LAS LLAMADAS GRABADAS EN UNA SOLA RESPUESTA, como las mando el modelo de verdad: de a una, el mensaje de los
-    # siete articulos pasaba las vueltas del agente, el turno salia sin respuesta y la charla seguia sin pedido.
-    def _crear(**k):
-        r = R._respuesta(falso.cola[0]) if falso.cola else R._respuesta(texto=falso.final)
-        if falso.cola:
-            r.choices[0].message.tool_calls = [R._respuesta(p).choices[0].message.tool_calls[0] for p in falso.cola]
-            falso.cola = []
-        return r
-    falso.chat.completions.create = _crear
+    falso, vistos = R.instalar()  # el modelo falso devuelve juntas las llamadas grabadas del turno
     anotados, faltan = {}, []
     if vivo:
         R._precargar(agente, C.TIENDA)

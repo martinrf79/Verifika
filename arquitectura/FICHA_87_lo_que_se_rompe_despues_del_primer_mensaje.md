@@ -101,3 +101,15 @@ Medido sobre las 42 charlas reales, en tres corridas con el modelo de producció
     anterior. En 96b39fa8fd t5, total final $1.541.940 y a transferir $918.855. Arreglado en `agente.cobrar`.
   - Neto, 76 bien contra 79: SQL arregla la búsqueda de datos y el pedido armado por el modelo sigue siendo lo que
     falla y varía de una corrida a otra. Lo que sigue es la solución 2, el pedido como estado del código, con SQL.
+- 5-nov, SQL con dos arreglos del código, `corrida_sql_r2.jsonl`, una corrida con la gratis, calificada a mano: la cuenta
+  que sigue sin cerrar después de corregir la pregunta el código al cliente, y el medio que el cliente no dijo se le avisa
+  al modelo en la nota del presupuesto.
+  - El mensaje de los siete artículos sale bien en las 11 charlas: dos memorias, marcas no chinas, sin "global".
+  - Unos 94 de 109 turnos bien, contra 79 del 3-nov. Charlas de dos mensajes o más sin error: 25 de 30, o 23 si los
+    dudosos cuentan como error; el 3-nov eran 14. Plata calculada, sin errores.
+  - Quedan con error 33dbb56c1b, 7f8cd4a5ca, 781919fa60, fe67b477ec y b8df72a33c. Después de la corrida se arreglaron en
+    el código tres causas: el medio dicho con su porcentaje vale solo para esa parte y dos medios unidos por "o" no
+    eligen, en `agente._reparto`; "Y 1 teclado" con uno ya en el pedido pregunta si es otro, y el envío consultado con
+    SQL vuelve a pedirse en castellano. Falta medirlo con el modelo: la cuota gratis del día se gastó.
+  - Lo que el modelo inventa en prosa, "silencioso", "todos son con cable", "la RTX 4060 calienta menos", sigue: es la
+    solución 4, las etiquetas.

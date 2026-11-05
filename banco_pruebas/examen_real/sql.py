@@ -92,6 +92,9 @@ def consultar(sql: str, tienda_id: str) -> str:
     q = sql.strip().rstrip(";")
     if not re.match(r"(?is)^\s*(select|with)\b", q) or ";" in q:
         return "Solo una consulta SELECT sobre la tabla productos."
+    # EL ENVIO NO ESTA EN LA TABLA, c48ed9: "envio a Posadas" consultado con LIKE daba nada y el modelo contestaba un rango.
+    if re.search(r"(?i)env[ií]o", q):
+        return "El envio no esta en la tabla: buscalo en castellano, \"envio a <lugar>\", y te da el costo exacto."
     db = tabla(tienda_id)
     pasos = [0]
 

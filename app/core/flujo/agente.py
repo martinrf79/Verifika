@@ -494,20 +494,24 @@ def _reparto(pago: str, dijo: str = None, tienda_id: str = None) -> list:
     eligio. Sin medio, el ejecutor pregunta con cual paga cada parte. `dijo` es lo que dijo el cliente, con lo que eligio
     de la oferta del bot, `de_la_oferta`; el medio vale si el cliente nombro ese mismo medio sin negarlo. UN MEDIO QUE LA
     TIENDA NO TOMA TAMPOCO SE ANOTA, 3-nov: "tarjeta naranja" se cobraba y la tienda toma Visa, Mastercard y Amex."""
+    # DOS MEDIOS UNIDOS POR "O" SON UNA PREGUNTA, no una eleccion, 5-nov, 781919 t2: "tenes descuento con tarjeta o
+    # transferencia, que me conviene" anotaba la transferencia.
+    # Con uno descartado sí elige: "no tengo mp, ¿transferencia o mercado pago?" es transferencia.
+    dijo = re.sub(r"\b(?:{0})\s+o\s+(?:{0})\b".format("|".join([*MEDIOS.values(), *MARCAS_TARJETA, "mercado pago", r"tarjeta \w+"])), lambda g: g.group(0) if {x for x, _ in menciones(g.group(0))} & {x for x, n in menciones(dijo) if n} else " ", dijo) if dijo else dijo
+    rx = r"(?<![a-z\d])(\d{1,3})\s*%?\s*(?:por ciento\s*)?(?:en|por|con)?\s*([a-z ]*?)\s*(?=[,.;:!?\n]|\by\b|$|\d)"
+    canon_de = lambda t: next((x for x, _ in menciones(t)), t)  # noqa: E731
+    # EL MEDIO DICHO CON SU PORCENTAJE VALE PARA ESA PARTE, 5-nov, fe67b4 t8: "70 por ciento transferencia" y el modelo
+    # puso tambien el 30 por transferencia, con descuento. Si el medio se dijo tambien sin porcentaje, vale para todas.
+    pares = [(int(m.group(1)), x[0][0]) for m in re.finditer(rx, dijo or "") if (x := menciones(" ".join(m.group(2).split()[:2])))]
     dichos = {m for m, neg in menciones(dijo or "") if not neg}
     out = []
-    for m in re.finditer(r"(\d{1,3})\s*%?\s*(?:por ciento\s*)?(?:en|por|con)?\s*([a-z ]*?)\s*(?=,|\by\b|$|\d)",
-                         K.n(pago or "")):
-        medio = m.group(2)
-        nombrado = [x for x, _ in menciones(medio)]
-        canon = nombrado[0] if nombrado else medio
+    for m in re.finditer(rx, K.n(pago or "")):
+        canon, pct = canon_de(m.group(2)), int(m.group(1))
+        sus = [p for p, x in pares if x == canon]
         # "tarjeta" vale si dijo una tarjeta de cualquier marca, "visa"; la marca vale solo si la dijo.
-        if dijo is not None and canon not in dichos and not (canon == "tarjeta" and any(
-                d.startswith("tarjeta") for d in dichos)):
-            canon = ""
-        if canon and tienda_id and no_lo_toma(canon, tienda_id):
-            canon = ""
-        out.append({"medio": canon, "porcentaje": int(m.group(1))})
+        mal = dijo is not None and (canon not in dichos and not (canon == "tarjeta" and any(d.startswith("tarjeta") for d in dichos))
+                                    or bool(sus) and len(sus) == sum(x == canon for x, n in menciones(dijo) if not n) and pct not in sus)
+        out.append({"medio": "" if mal or (canon and tienda_id and no_lo_toma(canon, tienda_id)) else canon, "porcentaje": pct})
     return [] if len(out) == 1 and not out[0]["medio"] else out  # un solo pago sin medio no es un reparto
 
 
@@ -678,6 +682,9 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
                if v} for x in rs]
     reparto = _reparto(a.get("pago"), dijo, tienda_id)
     no_toma = medios_rechazados(a.get("pago"), tienda_id)
+    # EL MEDIO QUE EL CLIENTE NO DIJO SE LE AVISA AL MODELO, 5-nov, fe67b4 t6 y t7: quedaba a definir sin decirlo, y el
+    # modelo le escribia al cliente "dejamos el 30% por Mercado Pago". Es la misma nota que da `procedencia`.
+    no_dijo = [x["medio"] for x, y in zip(_reparto(a.get("pago")), reparto or [{"medio": ""}] * 9) if x["medio"] and not y["medio"] and x["medio"] not in no_toma]
     a["pago"] = ", ".join(f"{x['porcentaje']} {x['medio']}".strip() for x in reparto)
     tope = K.entero(a.get("tope"))
     ps = [{"n": 1, "cita": "el pedido", "accion": "comprar", "agrega": agrega, "reemplaza": True},
@@ -691,6 +698,8 @@ def presupuesto(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo:
     cuenta = "En el pedido, por clase: " + ", ".join(f"{v} {k}" for k, v in clases.items()) + "." + afuera
     if no_toma:
         cuenta += f" La tienda no toma {', '.join(no_toma)}: decíselo al cliente y preguntale con cual de los que toma paga."
+    cuenta += "".join(f" El medio {m} no lo dijo el cliente: queda a definir; no digas que lo anotaste, preguntaselo."
+                      for m in no_dijo)
     if any(not x.get("destino") for x in rs):
         cuenta += " Hay renglones sin destino: su envio no esta sumado. Si el cliente dijo a donde va, ponelo en cada renglon."
     # LA MEMORIA GUARDA LAS DOS COSAS: el ultimo presupuesto que vio el cliente, siempre, y el pedido, solo si compra,
@@ -868,22 +877,16 @@ def hoja_reglas(tienda_id: str) -> str:
 
 
 def charla(historial: list) -> str:
-    if not historial:
-        return "Charla nueva."
-    return "LA CHARLA HASTA ACA:\n" + "\n".join(
-        f"{'Cliente' if m.get('role') == 'user' else 'Vos'}: {m.get('content') or ''}" for m in historial)
+    return "LA CHARLA HASTA ACA:\n" + "\n".join(f"{'Cliente' if m.get('role') == 'user' else 'Vos'}: {m.get('content') or ''}"
+                                                for m in historial) if historial else "Charla nueva."
 
 
 def memoria_texto(memoria: dict) -> str:
     """Lo que el agente recuerda de la charla: el pedido tal como quedo, renglon por renglon, y el pago y el tope."""
-    t = "EL PEDIDO ANOTADO, en el formato del presupuesto: " + json.dumps(memoria["pedido"], ensure_ascii=False)
-    if memoria.get("mostrado") and memoria["mostrado"] != memoria["pedido"]:
-        t += "\nEL ULTIMO PRESUPUESTO QUE LE MOSTRASTE, sin anotar: " + json.dumps(memoria["mostrado"], ensure_ascii=False)
-    if memoria.get("pago"):
-        t += f"\nEL PAGO QUE DIJO: {memoria['pago']}"
-    if memoria.get("tope"):
-        t += f"\nEL TOPE QUE DIJO: {memoria['tope']}"
-    return t
+    m, js = memoria, lambda x: json.dumps(x, ensure_ascii=False)
+    return ("EL PEDIDO ANOTADO, en el formato del presupuesto: " + js(m["pedido"])
+            + ("\nEL ULTIMO PRESUPUESTO QUE LE MOSTRASTE, sin anotar: " + js(m["mostrado"]) if m.get("mostrado") and m["mostrado"] != m["pedido"] else "")
+            + (f"\nEL PAGO QUE DIJO: {m['pago']}" if m.get("pago") else "") + (f"\nEL TOPE QUE DIJO: {m['tope']}" if m.get("tope") else ""))
 
 
 async def _llamar(msgs: list, herramientas: bool, trace_id: str):
@@ -956,6 +959,13 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                 from app.core.guia_venta_prosa import mensaje as prosa
                 texto = V.sin_marcadas(texto, fuente, tienda_id, pegados) or prosa(
                     "sin_respaldo", "Eso prefiero confirmarlo antes de decírtelo. ¿Te ayudo con algo más mientras?")
+            # LA CUENTA QUE SIGUE MAL DESPUES DE CORREGIR LA PREGUNTA EL CODIGO, 5-nov, las del mensaje de los siete
+            # articulos: el modelo sumo el teclado que faltaba y saco una memoria, y salia sin aviso.
+            # Y LO SUMADO A LO QUE YA ESTABA, b8df72 t3: "Y 1 teclado" con el teclado en el pedido salia con dos.
+            sigue = omitidos(mensaje, memoria, pasos, tienda_id) if corregido else []
+            texto += "".join("\n\nMe pediste " + x.replace(" y el presupuesto trae ", " y en el presupuesto van ") + ".\n¿Cómo lo repartimos?"
+                             if " y el presupuesto" in x else f"\n\n¿El {x.split(', y ya')[0].split(' ', 1)[1]} es otro más o el que ya estaba?"
+                             if ", y ya habia" in x else "" for x in sigue)
             if memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
             ultimo = _pegado(pasos)
