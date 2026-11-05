@@ -22,24 +22,47 @@ WhatsApp con charlas reales. No se abre otra línea de trabajo antes.
 
 ## Los cuatro arreglos
 
-El bot ya trabaja en dos pasos: el modelo planifica con herramientas, el código busca y el modelo responde con los
-datos. Estos cuatro son lo que le falta a ese ciclo para no inventar ni perder nada.
+El bot es un agente, la opción A: el modelo planifica con herramientas, el código busca y el mismo modelo responde con
+los datos, en la misma charla. Estos cuatro son lo que le falta a ese ciclo para no inventar ni perder nada. El primero es
+el que define si el bot alucina o no.
 
-### 1. El modelo solo afirma lo que devolvieron las herramientas
+### 1. LO MÁS IMPORTANTE: la respuesta atada a la API
 
-**Falla de hoy:** al responder, el modelo ve todo el historial y escribe datos que ninguna herramienta trajo:
-"silencioso" en 8e13ecbb7c, "todos son con cable" en 33dbb56c1b t4, "la RTX 4060 calienta menos" en 7f8cd4a5ca t3.
+**Por qué es lo primero:** que el bot no alucine es el objetivo, y todavía no está resuelto. Corregir al modelo después
+de que escribe libre se probó durante meses —el juez con DeepSeek en agosto, el verificador de hoy— y no alcanza: se
+corrige una forma de decir algo y aparece otra. Fallas de hoy: "silencioso" en 8e13ecbb7c, "todos son con cable" en
+33dbb56c1b t4, "la RTX 4060 calienta menos" en 7f8cd4a5ca t3, y un dato inventado en un turno se repite en los
+siguientes porque queda en la charla.
 
-**Dónde vive:** `agente.responder`, el texto final del modelo, y el verificador, cuya fuente incluye lo que el mismo bot
-dijo antes, en `agente.py`, la variable `fuente`.
+**El cambio de fondo:** el modelo no puede escribir el dato. En la llamada final no devuelve texto, devuelve un JSON con
+un esquema que el código arma en cada turno, y la API lo impone al generar:
 
-**El arreglo:** las etiquetas. Cada fila que devuelve una herramienta lleva un número, P1, R1, E1, y el modelo las cita.
-El código pega la línea real. La prosa del modelo lleva solo nombre, recomendación y la pregunta de venta. Un atributo de
-producto fuera de una etiqueta vuelve una vez al modelo, y si sigue, se saca. La fuente del verificador deja de incluir
-lo que dijo el bot antes.
+- los productos, reglas y envíos solo se citan por su número —P2, R1, E1—, y la lista de números permitidos es
+  exactamente lo que devolvieron las herramientas en ese turno: no puede citar algo que no vino;
+- no hay campo para precio, stock, ficha, compatibilidad ni origen: esas líneas las pega el código desde la fila real,
+  con los campos que pidió el cliente;
+- fuera de los números, solo dos campos de texto cortos, el saludo y la pregunta de venta, con largo máximo; un atributo
+  de producto en esos campos vuelve una vez al modelo, y si sigue, se saca;
+- el código arma el mensaje entero. Es lo que ya hacen `[[PRESUPUESTO]]` y `[[COBRO]]`, que no fallaron nunca en
+  ninguna corrida, llevado a todo el mensaje y forzado por la API en vez de pedido en la consigna.
 
-**Hecho cuando:** en las 42 charlas, cero datos de producto que no estén en lo que devolvió una herramienta, y el
-candado igual.
+La fuente del verificador deja de incluir lo que dijo el bot antes: solo lo que devolvieron las herramientas en el turno
+y la memoria guardada por el código.
+
+**Dónde vive:** `agente.responder`, la llamada final y `pegar`; `agente._llamar`, que pasa a pedir el esquema con
+`response_format`; y las salidas de `tabla.consultar` y `buscar`, que numeran cada fila.
+
+**Costo:** no suma llamadas. La última cambia de texto libre a JSON; los tokens son parecidos o menos, porque el modelo
+ya no copia las fichas.
+
+**Medido:** todavía no. Lo único medido es la parte que pega el código, presupuesto y cobro: cero errores. Primero se
+prueba en el banco, como SQL: que el modelo de producción, `gemini-3.1-flash-lite`, respete el esquema por la puerta
+compatible de OpenAI; después las 42 charlas reales con la gratis. Las pruebas no van a dar lo mismo que hoy, porque
+cambia lo que escribe el modelo: se regraba la vara y se vuelve a calificar. El riesgo a medir es que suene menos
+natural o que conteste menos de lo que preguntaron.
+
+**Hecho cuando:** en las 42 charlas, cero datos de producto, regla o envío que no estén en lo que devolvió una
+herramienta en ese turno; la venta sigue sonando como un vendedor, revisado a mano; y el candado igual.
 
 ### 2. Cada parte del mensaje tiene su búsqueda
 
@@ -96,4 +119,5 @@ corridas, y la plata sin errores. La última medida, r2 del 5-nov, dio 25.
 
 ## Lo que hizo cada sesión
 
-- 5-nov: la ficha, con Martín.
+- 5-nov: la ficha, con Martín. El arreglo 1 pasó a ser la respuesta atada a la API, por pedido de Martín: es lo más
+  importante y todavía no hay nada resuelto del todo.

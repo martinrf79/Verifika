@@ -54,8 +54,8 @@ de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 ### Lo que sigue
 
 **Toda sesión arranca por la FICHA 88**, `arquitectura/FICHA_88_el_bot_robusto.md`, orden de Martín del 5-nov: primero lo
-que quedó de esa sesión —regrabar la vara, la tercera corrida, el push con su ok—, después los cuatro arreglos en orden: el
-modelo solo afirma lo que devolvieron las herramientas, cada parte del mensaje con su búsqueda, la búsqueda por uso al lado
+que quedó de esa sesión —regrabar la vara, la tercera corrida, el push con su ok—, después los cuatro arreglos en orden: lo
+más importante, la respuesta atada a la API para que el modelo no pueda escribir un dato, cada parte del mensaje con su búsqueda, la búsqueda por uso al lado
 de SQL y el pedido en el código. Con los cuatro medidos, se mide en WhatsApp. El diagnóstico y lo medido hasta ahí, en la
 FICHA 87.
 
