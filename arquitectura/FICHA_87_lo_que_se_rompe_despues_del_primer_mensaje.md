@@ -113,3 +113,7 @@ Medido sobre las 42 charlas reales, en tres corridas con el modelo de producció
     SQL vuelve a pedirse en castellano. Falta medirlo con el modelo: la cuota gratis del día se gastó.
   - Lo que el modelo inventa en prosa, "silencioso", "todos son con cable", "la RTX 4060 calienta menos", sigue: es la
     solución 4, las etiquetas.
+- 5-nov, SQL pasa al bot, por orden de Martín: `app/core/flujo/tabla.py` y el `buscar` de `agente.py`, que con un SELECT
+  consulta la tabla y con texto da solo reglas, envío y lo que no se vende. La búsqueda de productos por frases se borró.
+  El candado pasa a la corrida con SQL: con el bot integrado, los 100 turnos bien de r2 dan el mismo texto que leyó el
+  cliente. Falta regrabar la vara de las 26 charlas, grabada con frases, y la tercera corrida: esperan la cuota gratis.

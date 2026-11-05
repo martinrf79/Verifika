@@ -24,8 +24,7 @@ import re
 import time
 
 from app.config import get_settings
-from app.core.compatibilidad import etiqueta_plataforma, evaluar, plataformas_del_mensaje, vocabulario
-from app.core.guia_compra import _RE_COMPATIBILIDAD, categoria_no_vendida
+from app.core.guia_compra import categoria_no_vendida
 from app.core.pago_split import descuento_de
 from app.logger import get_logger
 
@@ -34,14 +33,14 @@ from . import catalogo as K
 from . import estado as E
 from . import marcador as MK
 from . import redaccion
+from . import tabla as T
 from . import verificador as V
 from .ejecutor import ejecutar
-from .interprete import datos
 
 log = get_logger(__name__)
 VUELTAS = 6
 # UMBRALES de los embeddings, medidos en el banco el 29-oct: el rubro correcto da cerca de 0,78 y el ruido de 0,65 a 0,74.
-UMBRAL_RUBRO, UMBRAL_TEMA = 0.75, 0.70
+UMBRAL_TEMA = 0.70
 # "estado" es el estado entero del ejecutor, con el borrador de la FICHA 71: lo que dijo el cliente, entre turnos. FICHA 86.
 MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": ""}
 # UMBRAL, 30-oct: hasta cuantas palabras la respuesta del cliente elige el medio que le ofrecio el bot. "Joaquin no tengo
@@ -60,9 +59,11 @@ mensaje del cliente como un buen vendedor: corto, claro, en español rioplatense
 pregunto o pidio y llevando a la venta.
 
 Tenes tres herramientas:
-- buscar: el buscador de la tienda. Buscas con tus palabras, una cosa por busqueda: un producto, una clase de
-  productos con el criterio del cliente, una regla de la tienda, el envio a un lugar. Devuelve lo que la tienda tiene
-  de verdad: productos con precio, stock, colores y ficha; reglas; envios.
+- buscar: con un SELECT consultas la tabla productos de la tienda, que esta abajo con sus columnas y sus
+  valores; con texto, el envio a un lugar, "envio a Rosario", o una regla. Una consulta por cosa que pide el cliente,
+  con stock > 0, y en las columnas pedi siempre nombre, precio y stock, y las columnas en que te basas para elegir. El
+  criterio del cliente va en el WHERE y en el ORDER BY: un equipo suyo, en la columna con_ de ese equipo = 'anda'; lo
+  mas barato, ORDER BY precio; lo menos chino, por fabricado_en y pais_marca. Para un texto libre, LIKE '%palabra%'.
 - presupuesto: armas el pedido entero, renglon por renglon, con producto, cantidad y destino, y el pago dividido y el
   tope si los dijo. Devuelve los precios, los envios, el total y el reparto. Con anotar en true queda como el pedido
   del cliente; en false es solo una cotizacion. El pedido actual te llega en el mismo formato: para cambiarlo, mandalo
@@ -88,8 +89,8 @@ nunca los escribas por tu cuenta. Si la tienda no tiene algo, decilo claro: "no 
 
 HERRAMIENTAS = [
     {"type": "function", "function": {
-        "name": "buscar", "description": "El buscador de la tienda, en castellano libre, una cosa por busqueda: un "
-                                         "producto, una clase de productos con su criterio, una regla, el envio a un lugar.",
+        "name": "buscar", "description": "Un SELECT sobre la tabla productos, o en castellano el envio a un lugar o "
+                                         "una regla.",
         "parameters": {"type": "object", "properties": {"consulta": {"type": "string"}}, "required": ["consulta"]}}},
     {"type": "function", "function": {
         "name": "presupuesto", "description": "El generador de presupuesto: el pedido entero, cada renglon con producto, "
@@ -118,7 +119,7 @@ def _agenda(preguntas: list) -> dict:
     return {"preguntas": preguntas, "cliente": {}, "responde": "", "respuesta": "", "dudas": []}
 
 
-# ══ LOS EMBEDDINGS DE RUBROS Y TEMAS: el rubro o la regla mas parecida por significado ══
+# ══ LOS EMBEDDINGS DE TEMAS: la regla mas parecida por significado ══
 
 _VEC: dict = {}
 _BASES: dict = {}
@@ -151,15 +152,11 @@ def _vectores(textos: list, tarea: str) -> list:
 
 
 def _base(tienda_id: str) -> list:
-    """[(texto, (tipo, clave))]: cada rubro con sus alias, y cada tema de la FAQ con sus palabras."""
+    """[(texto, (tipo, clave))]: cada tema de la FAQ con sus palabras. Los rubros ya no: los elige el modelo en la tabla."""
     if tienda_id not in _BASES:
-        from app.core import agente
         from app.storage.firestore_client import get_all_faq
-        alias = agente._alias(tienda_id).get("rubros") or {}
-        base = [(r, ("rubro", r)) for r in rubros(tienda_id)] + \
-            [(f, ("rubro", r)) for r, fs in alias.items() for f in fs]
         faq = get_all_faq(tienda_id=tienda_id) or {}
-        base += [(f"{t.replace('_', ' ')}: {', '.join((d or {}).get('keywords') or [])}", ("tema", t))
+        base = [(f"{t.replace('_', ' ')}: {', '.join((d or {}).get('keywords') or [])}", ("tema", t))
                  for t, d in (faq.items() if isinstance(faq, dict) else []) if isinstance(d, dict)]
         _BASES[tienda_id] = base
     return _BASES[tienda_id]
@@ -182,44 +179,7 @@ def _parecidos(consulta: str, tipo: str, tienda_id: str) -> list:
     return sorted(mejor.items(), key=lambda x: -x[1])
 
 
-# ══ EL BUSCADOR: castellano libre, filas reales de la tienda ══
-
-def rubros(tienda_id: str) -> list:
-    from app.core import agente
-    return sorted(agente.indice(tienda_id)["rubros"])
-
-
-def familia(p: dict) -> str:
-    """El rubro, la marca y la linea del modelo: la Fury Beast de 32 es de la familia de la de 16. Sin el rubro, el teclado
-    ROG Strix tapaba a la placa ROG Strix."""
-    return " ".join([K.n(p.get("categoria")), K.n(p.get("marca"))] + K.n(p.get("modelo")).split()[:2]).strip()
-
-
-def _plata(x) -> str:
-    return f"${K.entero(x):,}".replace(",", ".")
-
-
-def _estante(ps: list, con_marcas: bool = True) -> str:
-    """Cuantos modelos con stock hay, uno por modelo como los cuenta `catalogo.buscar`, sus marcas y de cuanto a cuanto.
-    El 30-oct contaba familias: la tienda decia 325 y el modelo le dijo al cliente "mas de 300 productos"."""
-    ps = [p for p in ps if K.con_stock(p)]
-    if not ps:
-        return "0 modelos con stock"
-    marcas = collections.Counter(p.get("marca") for p in {(p.get("marca"), p.get("modelo") or p["id"]): p
-                                                          for p in ps}.values() if p.get("marca"))
-    precios = [K.entero(p.get("precio_ars")) for p in ps]
-    return (f"{len({(p.get('marca'), p.get('modelo') or p['id']) for p in ps})} modelos con stock"
-            + (f", marcas {', '.join(m for m, _ in marcas.most_common())}" if con_marcas else "")
-            + f", de {_plata(min(precios))} a {_plata(max(precios))}")
-
-
-def panorama(tienda_id: str) -> str:
-    """La tienda entera, rubro por rubro: lo que contesta "pasame el catalogo". El 30-oct el buscador daba diez filas y
-    el modelo no sabia que mas habia."""
-    todos = K.productos(tienda_id)
-    return f"LA TIENDA ENTERA, {_estante(todos, False)}. Por rubro:\n  " + "\n  ".join(
-        f"{r}: {_estante([p for p in todos if p.get('categoria') == r])}" for r in rubros(tienda_id))
-
+# ══ EL BUSCADOR: un SELECT sobre la tabla, o en castellano el envio y las reglas ══
 
 def _lugares(texto) -> list:
     from .normal import lugares
@@ -241,13 +201,6 @@ def _orden_de(texto: str, tienda_id: str) -> str:
                 f"mas {m.group(1)}" if (m := re.search(r"\bmas\s+(?!de\b|que\b|del\b)([a-z]+)", texto)) else "")
 
 
-def _atable(cond: str, rubro: str, tienda_id: str) -> bool:
-    """Lo que queda de la consulta es condicion solo si el catalogo lo ata a un campo o a un tope del rubro."""
-    universo = [p for p in K.productos(tienda_id) if not rubro or p.get("categoria") == rubro]
-    f = K.atar(cond, universo, tienda_id)
-    return bool(cond) and ("campo" in f or "tope" in f)
-
-
 def _tema_por_clave(q: str, tienda_id: str) -> str:
     """La frase de la FAQ que el cliente dice tal cual, la mas larga: "precio por cantidad" es mayoristas."""
     from app.core import agente
@@ -261,104 +214,13 @@ def _tema_por_clave(q: str, tienda_id: str) -> str:
 _NO_PEDIBLES = set("nombre modelo descripcion descripcion_rica precio_ars marca color tags id categoria stock compat".split())
 
 
-def _campos(q: str, conds: list, orden: str, tienda_id: str) -> list:
-    """LOS CAMPOS QUE PIDE LA CONSULTA, 31-oct, el examen real: 13 de las 16 fallas de dato eran un campo que la ficha
-    tiene y la fila no mostraba —el origen, el peso—. Lo nombra la consulta por el nombre del campo, por una clave de
-    `specs_preguntables`, por la etiqueta de un derivado —"fabricado" es el origen—, por el orden que pide o por la
-    condicion que ata."""
-    from app.core.fuente_producto import specs_config
-    ws, universo = q.split(), K.productos(tienda_id)
-    out = [c for c in dict.fromkeys([*K.vocabulario(tienda_id), *(k for p in universo[:50] for k in p)])
-           for w in ws for parte in c.split("_")
-           if len(parte) > 2 and (w == parte or (len(parte) > 4 and w[:5] == parte[:5]))]
-    out += [s["id"] for s in specs_config(tienda_id) if s["rx_pregunta"].search(q)] + list(K._pistas_derivadas(ws).values())
-    out += ([K.ORDEN[orden][0]] if orden in K.ORDEN else []) + [
-        f["campo"] for c in conds for f in [K.atar(c, universo, tienda_id)] if "campo" in f]
-    # El pais de la marca o de fabricacion se lee en el origen, que dice los dos.
-    return [c for c in dict.fromkeys("origen" if c in K.DERIVADOS else c for c in out) if c not in _NO_PEDIBLES]
-
-
-def _fila(p: dict, todos: list, campos: list = (), ya: str = None) -> str:
-    """El producto en una linea: lo primero de su ficha y, enteros, los campos que pide la consulta. Con `ya`, solo
-    los campos pedidos que esa linea no trae."""
-    et = {c: "peso" if c == "peso_gramos" else c.replace("_", " ") for c in campos}
-    base = [x for x in datos(p, todos).split("; ")[:6] if x.split(":")[0] not in et.values()] if ya is None else []
-    return "; ".join(base + [f"{e}: {v}" + " g" * (c == "peso_gramos") for c, e in et.items()
-                             if (v := K._valor_crudo(p, c)) not in (None, "", []) and f"{e}:" not in (ya or "")])
-
-
-def _con(p: dict, plats: list, tienda_id: str) -> str:
-    """Con cada equipo que pregunta la consulta, lo que dice la ficha de compatibilidad del producto."""
-    dice = {"compatible": "anda", "incompatible": "no anda", "sin_dato": "la ficha no lo dice"}
-    return "".join(f"; con {etiqueta_plataforma(x, tienda_id)}: {dice[evaluar(p, x, tienda_id)[0]]}" for x in plats)
-
-
 def buscar(consulta: str, tienda_id: str) -> str:
-    """Lo que la tienda tiene para la consulta, en texto: una cosa por busqueda, pocos resultados, con stock, filtrados
-    por lo que dice la consulta y en el orden que pide."""
-    todos = K.productos(tienda_id)
-    q = K.n(consulta)
-    # LA COMPATIBILIDAD QUE PREGUNTA, "auriculares para la PS5": cada producto con lo que dice su ficha, y el estante con
-    # los que andan, si hay. Sin esto el modelo la contestaba de memoria.
-    # Sin "anda con", 3-nov, 58b5a1: "auriculares PS5" daba primero el Zeus X, que no anda. Vale el equipo nombrado que
-    # no es el rubro buscado ni una marca de la tienda: "notebook asus" y "tablet samsung" piden productos.
-    voc, marcas = vocabulario(tienda_id)["alias_plataforma"], {K.n(p.get("marca")) for p in todos}
-    del_rubro = {w[:5] for r in rubros(tienda_id) for w in K.n(r).split()}  # por la raiz: "tablets" es el rubro tablet
-    nombra = {x for a, xs in voc.items() if re.search(rf"\b{re.escape(a)}\b", q) and a not in marcas and not {
-        w[:5] for w in a.split()} & del_rubro for x in xs}
-    plats = plataformas_del_mensaje(consulta, tienda_id) if _RE_COMPATIBILIDAD.search(q) else \
-        [x for x in plataformas_del_mensaje(consulta, tienda_id) if x in nombra]
-    andan = {str(p["id"]) for p in todos if all(_con(p, [x], tienda_id).endswith(": anda") for x in plats)}
-    equipo = {w for a in (vocabulario(tienda_id)["alias_plataforma"] if plats else ())
-              if re.search(rf"\b{re.escape(a)}\b", q) for w in a.split()}
-    ws = [w for w in re.findall(r"[a-z0-9]+", q) if w not in K._RELLENO]
-    out, vistos = [], set()
-    pide = _campos(q, [], "", tienda_id)
-    for tramo, _ in MK._productos(ws, tienda_id):
-        idt = K.identificar(tramo, "", tienda_id)
-        for p in [idt["producto"]] if idt["veredicto"] == "exists" else idt.get("opciones") or []:
-            if familia(p) not in vistos:
-                vistos.add(familia(p))
-                d = datos(p, todos)
-                out.append("PRODUCTO: " + "; ".join(x for x in (d, _fila(p, todos, pide, d)) if x) + _con(p, plats, tienda_id))
-    cands = _parecidos(consulta, "rubro", tienda_id)
-    por_sentido = [k for k, s in cands[:1] if s >= UMBRAL_RUBRO] if not vistos else []
-    por_nombre = MK._rubros(q.split(), tienda_id)
-    rs = list(dict.fromkeys([r for _, r in por_nombre] + por_sentido))
-    # El orden tambien dicho sin "mas": "mouse liviano" es el mas liviano.
-    orden = _orden_de(q, tienda_id) or next((o for w in q.split() if (o := _orden_de(f"mas {w}", tienda_id))
-                                             and K.n(o) in K.ORDEN), "") or "nada"
-    toda = not rs and not vistos and re.search(r"\b(tienda|todo|todos|articulos?|productos?)\b", q)
-    resto = [w for w in q.split() if w not in K._RELLENO and _atable(w, "", tienda_id)]
-    if toda and orden == "nada":
-        if not resto:
-            out.append(panorama(tienda_id))
-        rs, ordenes = ["", ""], ["mas barato", "mas caro"]
-    elif toda:
-        rs, ordenes = [""], [orden]
-    else:
-        ordenes = [orden] * len(rs)
-    for r, orden in list(zip(rs, ordenes))[:3]:
-        fuera = set(K.n(r).split()) | {w for w, _ in por_nombre} | set(K.n(orden).split()) | K._RELLENO | equipo
-        ws_r = [w for w in q.split() if w not in fuera and not _lugares(w)]
-        # Cada palabra filtra por su lado; la negacion va con lo que niega, "no sea redragon".
-        i_neg = next((i for i, w in enumerate(ws_r) if w in ("no", "sin", "excepto", "menos")), len(ws_r))
-        # Lo negado, con las palabras que el catalogo ata: "sin componentes chinos" es "sin chinos", 31-oct.
-        negada = " ".join(ws_r[i_neg:i_neg + 1] + ata) if (ata := [w for w in ws_r[i_neg + 1:i_neg + 4]
-                                                                    if _atable(w, r, tienda_id)]) else ""
-        conds = [w for w in ws_r[:i_neg] if _atable(w, r, tienda_id)] + \
-            ([negada] if negada and _atable(negada, r, tienda_id) else [])
-        entre = andan if plats and any(p.get("categoria") == r and str(p["id"]) in andan for p in todos) else None
-        res = K.buscar(r, conds, orden if orden != "nada" else "mas barato", 5, tienda_id, entre)
-        titulo = (r.upper() or "TODA LA TIENDA") + \
-            (f", {_estante([p for p in todos if p.get('categoria') == r])}" if r else "") + \
-            (f", filtrado por \"{' '.join(conds)}\"" if conds and not res["vacio_por"] else "") + \
-            (", solo los que andan con lo que pregunta" if entre else "") + \
-            f", los primeros por {'precio de menor a mayor' if orden == 'nada' else orden}"
-        campos = _campos(q, conds, orden, tienda_id)
-        filas = [_fila(p, todos, campos) + _con(p, plats, tienda_id) for p in res["filas"]]
-        avisos = [f"ninguno cumple \"{c}\", van sin ese filtro" for c in res["vacio_por"]]
-        out.append(f"{titulo}:\n  " + "\n  ".join(filas + avisos))
+    """Con un SELECT, las filas reales de la tabla de la tienda, `tabla.consultar`. Con texto, lo que no esta en la tabla:
+    las reglas de la FAQ, el envio a cada lugar y lo que la tienda no vende. LOS PRODUCTOS SE CONSULTAN EN LA TABLA desde el
+    5-nov: la frase la reinterpretaba el codigo con reglas de palabras y se perdian el equipo, la marca y el origen."""
+    if T.es_consulta(consulta):
+        return T.consultar(consulta, tienda_id)
+    q, out = K.n(consulta), []
     tcands = _parecidos(consulta, "tema", tienda_id)
     temas = list(dict.fromkeys([_tema_por_clave(q, tienda_id)] + [k for k, s in tcands[:2] if s >= UMBRAL_TEMA]))
     if _lugares(consulta):
@@ -369,26 +231,11 @@ def buscar(consulta: str, tienda_id: str) -> str:
     for d in _lugares(consulta):
         t = ejecutar(_agenda([{"n": 1, "accion": "envio", "destino": d}]), E.leer({}), tienda_id)
         out.append("ENVIO: " + redaccion.texto(t.hechos, t.preguntas, False).replace("\n", " "))
-    # LO QUE LA TIENDA NO VENDE lo dice su fuente, `no_vendidas.json`, con su alternativa real si la hay. "Sirve para la
-    # PS5" no pide una PS5: lo decide `categoria_no_vendida`, la misma de todo el bot.
+    # LO QUE LA TIENDA NO VENDE lo dice su fuente, `no_vendidas.json`, con su alternativa real si la hay.
     for c, alt in [x for x in [categoria_no_vendida(consulta, tienda_id)] if x]:
         out.insert(0, f"NO VENDEMOS {c.upper()}." + (f" Lo que si vendemos parecido: {alt}." if alt else ""))
-        if alt and alt not in rs:
-            res = K.buscar(alt, [], "mas barato", 5, tienda_id)
-            out.append(f"{alt.upper()}, los primeros por precio de menor a mayor:\n  "
-                       + "\n  ".join(_fila(p, todos, pide) for p in res["filas"]))
-    if not out:
-        # NI PRODUCTO NI RUBRO NI REGLA: lo que el resto ata en toda la tienda, "que tenes de Logitech", y la tienda
-        # entera. "Pasame el catalogo" o "que venden" no son algo que la tienda no tenga: el 30-oct daba "no tiene eso".
-        res = K.buscar("", resto, "mas barato", 5, tienda_id) if resto else {"filas": []}
-        if res["filas"] and not res["vacio_por"]:
-            out.append(f"TODA LA TIENDA, filtrado por \"{' '.join(resto)}\", los primeros por precio de menor a "
-                       "mayor:\n  " + "\n  ".join(_fila(p, todos, pide) for p in res["filas"]))
-        else:
-            out.append("No hay un producto ni un rubro con ese nombre. " + panorama(tienda_id)
-                       + "".join(f"\nEl rubro mas parecido por sentido, que puede no ser lo que busca: {r}."
-                                 for r, _ in cands[:1]))
-    return "\n".join(out)
+    return "\n".join(out) or "Los productos se consultan en la tabla, con un SELECT. Con texto, solo el envio a un " \
+        "lugar, \"envio a Rosario\", o una regla de la tienda."
 
 
 # ══ EL PRESUPUESTO, EL COBRO Y LA CALCULADORA ══
@@ -905,7 +752,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     """Un turno: {"respuesta", "pasos", "hallazgos", "presupuesto"}, o {"error"} si el modelo no contesto. La memoria se
     actualiza solo si hay respuesta."""
     contexto = memoria_texto(memoria)
-    hoja = hoja_reglas(tienda_id)
+    hoja = f"{hoja_reglas(tienda_id)}\n\n{T.mapa(tienda_id)}".strip()  # las reglas y la tabla, siempre a la vista
     msgs = [{"role": "system", "content": f"{CONSIGNA}\n\n{hoja}".strip()},
             {"role": "user", "content": f"{charla(historial)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
     dichos = [str(m.get("content") or "") for m in historial]
@@ -943,14 +790,14 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                 # examen. Cada busqueda del turno, de nuevo con las palabras del cliente alrededor del criterio.
                 frase = " ".join(dict.fromkeys(x for w in faltan for i, y in enumerate(ws) if K.n(w) in y for x in ws[max(0, i - 3):i + 1]))
                 salidas += (extra := [buscar(f"{p['pide']['consulta']} {frase}", tienda_id) for p in pasos if faltan and p["herramienta"] == "buscar"
-                                      and p["pide"].get("consulta")][:3])
+                                      and p["pide"].get("consulta") and not T.es_consulta(p["pide"]["consulta"])][:3])
                 msgs.append(m.model_dump(exclude_none=True))
                 # LA REVISION ES INTERNA: el cliente no la ve ni la dijo. Sin esto el modelo le pedia disculpas.
                 msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: " + (
                     "tu borrador dice cosas que no respaldan las herramientas ni la charla: " + "; ".join(
                         f"{c}: {d}" for c, d in malos) + ". Corregilas con las herramientas o sacalas. " if malos else "")
-                    + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo. El buscador con eso da:\n" + "\n".join(extra)
-                       + "\n" if faltan else "")
+                    + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo: consultalo en la tabla con ese criterio. "
+                       + ("El buscador con eso da:\n" + "\n".join(extra) + "\n" if extra else "") if faltan else "")
                     + (f"el cliente pidio {'; '.join(omite)}: arma el presupuesto con el pedido entero, o preguntale si "
                        "es lo que quiso decir. " if omite else "")
                     + "Escribi de nuevo la respuesta para el cliente, completa, sin mencionar esta revision ni pedir disculpas."})

@@ -1,16 +1,17 @@
 """EL CANDADO DE LO QUE YA ANDA — FICHA 87, solucion 1, 5-nov-2026, con Martin.
 
-Las 41 charlas reales grabadas el 3-nov, `corrida_3nov.jsonl`, pasan por el codigo de hoy SIN MODELO: un modelo falso
-repite lo que pidio y escribio el modelo ese dia, y las herramientas, el pegado y el verificador corren de nuevo. De cada
+Las 42 charlas reales grabadas con el catalogo en SQL, `corrida_sql_r2.jsonl`, pasan por el codigo de hoy SIN MODELO: un
+modelo falso repite lo que pidio y escribio el modelo ese dia, y las herramientas, el pegado y el verificador corren de
+nuevo. Hasta el 5-nov se hacia con `corrida_3nov.jsonl`, grabada con la busqueda por frases, que ya no esta. De cada
 turno se guarda lo que pone el codigo: los presupuestos y el cobro que lee el cliente, lo que marca el verificador y el
 texto final, que cambia si el verificador borra una oracion.
 
-La foto de hoy queda en `candado_3nov.json`. `tests/test_candado_examen.py` vuelve a correr y compara los turnos que
-estaban bien el 3-nov, los que no figuran en `fallas_3nov.md` como mal, dudosos o sin correr. Si un cambio altera uno,
+La foto de hoy queda en `candado_sql_r2.json`. `tests/test_candado_examen.py` vuelve a correr y compara los turnos que
+estaban bien en esa corrida, calificada a mano en la FICHA 87: los que no figuran abajo como mal o dudosos. Si un cambio altera uno,
 el test falla y se mira el turno antes de seguir: o el cambio lo rompio, o lo mejoro y se vuelve a sacar la foto en el
 mismo commit, diciendo cual turno y por que.
 
-Los embeddings no se piden: los rubros y temas parecidos de cada consulta estan en `parecidos_3nov.json`, sacados una
+Los embeddings no se piden: los temas parecidos de cada consulta en castellano estan en `parecidos_sql_r2.json`, sacados una
 vez con la clave gratis. Una consulta que no esta en la tabla da ninguno, y el test lo cuenta.
 
     python3 banco_pruebas/examen_real/candado.py --parecidos   la tabla de parecidos, con la clave gratis
@@ -26,21 +27,19 @@ import sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(AQUI))
 sys.path.insert(0, REPO)
-GRABADA = os.path.join(AQUI, "corrida_3nov.jsonl")
-PARECIDOS = os.path.join(AQUI, "parecidos_3nov.json")
-FOTO = os.path.join(AQUI, "candado_3nov.json")
+GRABADA = os.path.join(AQUI, "corrida_sql_r2.jsonl")
+PARECIDOS = os.path.join(AQUI, "parecidos_sql_r2.json")
+FOTO = os.path.join(AQUI, "candado_sql_r2.json")
 
-# LOS TURNOS QUE NO ESTABAN BIEN EL 3-nov, de `fallas_3nov.md`: 25 mal y 5 dudosos. Los 3 sin correr, de b8df72a33c,
-# no estan en la corrida. El resto, 80 turnos, es lo que el candado cuida.
-MAL = {"7f8cd4a5ca": [3, 6], "bf4a05c745": [2], "b8bb001ee8": [1, 2, 3, 4], "58b5a11775": [1, 4], "c3391deb1a": [1],
-       "33dbb56c1b": [4], "854f1bea2c": [1], "781919fa60": [1, 2], "fe67b477ec": [1, 6], "badf4f114b": [2],
-       "d0c439c575": [1], "b5ddaad494": [1], "83e58acb78": [1], "386b8a84eb": [1], "6344deed8c": [1],
-       "08e6c44238": [1], "157b658bc8": [1], "96b39fa8fd": [1]}
-DUDOSOS = {"7f8cd4a5ca": [2], "06d02631b7": [1], "e105d5a00b": [1], "a96e63a0cb": [1], "815c0c9b65": [4]}
+# LOS TURNOS QUE NO ESTABAN BIEN EN LA CORRIDA CON SQL, calificada a mano el 5-nov, FICHA 87: 10 mal y 3 dudosos.
+# El resto, 100 de 113, es lo que el candado cuida.
+MAL = {"33dbb56c1b": [4], "7f8cd4a5ca": [3], "781919fa60": [2], "fe67b477ec": [4, 6, 8], "854f1bea2c": [1],
+       "c48ed9921d": [1], "8e13ecbb7c": [1], "b8df72a33c": [3]}
+DUDOSOS = {"6740e01771": [1], "815c0c9b65": [4], "7f8cd4a5ca": [2]}
 
 
 def cuidado(charla: str, turno: int) -> bool:
-    """El turno, contado desde 1, estaba bien el 3-nov."""
+    """El turno, contado desde 1, estaba bien en la corrida grabada."""
     return turno not in MAL.get(charla, []) + DUDOSOS.get(charla, [])
 
 
@@ -77,7 +76,7 @@ def _instalar(vivo: bool):
 # de hoy no se veia. Un bloque de presupuesto son las lineas seguidas con la forma que escribe el ejecutor.
 _LINEA_PRESUPUESTO = re.compile(
     r"^(Presupuesto:|- \d+x .+: |Subtotal: |Total( final| general)?: |Envio a .+: |Pago dividido:|- [^:]+ \(\d+%\): |"
-    r"La parte con .+ descuento|¿Con qué medio pagás |El pedido esta vacio)")
+    r"La parte con .+ descuento|¿Con qué medio pagás |El pedido esta vacio|Te alcanza: |El total pasa tu tope)")
 
 
 def a_etiquetas(bot: str, pasos: list) -> str:

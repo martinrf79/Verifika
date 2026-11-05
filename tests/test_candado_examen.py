@@ -1,15 +1,16 @@
 """EL CANDADO DE LO QUE YA ANDA — FICHA 87, solucion 1, 5-nov-2026.
 
-Las 41 charlas reales del 3-nov pasan por el codigo de hoy sin modelo, `banco_pruebas/examen_real/candado.py`, y en los
-79 turnos que ese dia estaban bien se compara lo que pone el codigo —presupuestos, cobro, lo que marca el verificador y
-el texto final— contra la foto `candado_3nov.json`. Un cambio que altera uno hace fallar el test: se mira el turno, y si
+Las 42 charlas reales grabadas con el catalogo en SQL pasan por el codigo de hoy sin modelo,
+`banco_pruebas/examen_real/candado.py`, y en los 100 turnos que esa corrida tenia bien se compara lo que pone el codigo
+—presupuestos, cobro, lo que marca el verificador y el texto final— contra la foto `candado_sql_r2.json`. Hasta el 5-nov
+cuidaba 79 turnos de la corrida del 3-nov, grabada con la busqueda por frases, que se borro. Un cambio que altera uno hace fallar el test: se mira el turno, y si
 el cambio lo mejoro se saca la foto de nuevo en el mismo commit, diciendo que turno y por que.
 """
 import pytest
 
 from banco_pruebas.examen_real import candado as CA
 
-CUIDADOS = 79
+CUIDADOS = 100
 
 
 @pytest.fixture(scope="module")

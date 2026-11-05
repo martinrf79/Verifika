@@ -11,7 +11,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 
 **Arranque corto:**
 
-1. El camino vivo es `orchestrator` → `flujo.turno.procesar_turno` → `flujo.agente.responder`: buscador, ejecutor, verificador.
+1. El camino vivo es `orchestrator` → `flujo.turno.procesar_turno` → `flujo.agente.responder`: la tabla con SQL, ejecutor, verificador.
    El motor busca. Lo viejo está en `archivo/` y NO se reenchufa.
 2. Se lee entera la ficha abierta que nombra `PENDIENTE.md` antes de tocar una mejora.
 3. No se crea una función sin mirar si ya existe. La identidad la certifica
@@ -36,6 +36,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Lo que dijo el modelo, llevado a la forma que cumple el ejecutor: la forma normal | `app/core/flujo/normal.py` |
 | Cada pregunta de la agenda, cumplida con las herramientas, y el candado | `app/core/flujo/ejecutor.py` |
 | Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |
+| El catálogo como tabla: el modelo consulta los productos con SQL, de solo lectura, con el mapa de columnas a la vista | `app/core/flujo/tabla.py` |
 | La respuesta al cliente, escrita por el código | `app/core/flujo/redaccion.py` |
 | El estado único de la charla | `app/core/flujo/estado.py` |
 | Índice de la tienda, rubro, cuenta, envío, compatibilidad | `app/core/agente.py` |
@@ -61,7 +62,7 @@ permiso.
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
 | Las 26 charlas grabadas por el agente vivo, sin modelo: la vara del bot | `banco_pruebas/agente_replay.py`, `tests/test_agente.py` |
-| El candado: las charlas reales del 3-nov sin modelo, los turnos que andaban no cambian | `banco_pruebas/examen_real/candado.py`, `tests/test_candado_examen.py` |
+| El candado: las charlas reales grabadas con SQL, sin modelo, los turnos que andaban no cambian | `banco_pruebas/examen_real/candado.py`, `tests/test_candado_examen.py` |
 | Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
 | La multipregunta de los siete artículos miles de veces, con el cliente y el modelo simulados | `banco_pruebas/simulador.py` |
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |
