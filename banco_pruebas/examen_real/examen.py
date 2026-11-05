@@ -65,7 +65,8 @@ def correr(salida: str, ids: list, paga: bool = False) -> None:
             v = vistos[-1] if vistos else {}
             turnos.append({"cliente": m, "bot": texto, "en_banco": en_banco, "error": v.get("error"),
                            "pasos": [{"h": p["herramienta"], "pide": p["pide"], "devuelve": p["devuelve"][:1500]}
-                                     for p in v.get("pasos") or []], "hallazgos": v.get("hallazgos")})
+                                     for p in v.get("pasos") or []], "hallazgos": v.get("hallazgos"),
+                           "responde": v.get("responde")})
         if any(t["error"] for t in turnos):
             print(e["id"], "sin respuesta del modelo en algun turno: no se guarda", flush=True)
             continue
@@ -92,14 +93,14 @@ def codigo(grabada: str, salida: str) -> None:
             turnos = []
             for t in c["turnos"]:
                 falso.turno({"pasos": [{"herramienta": p["h"], "pide": p["pide"]} for p in t["pasos"]],
-                             "respuesta": t["bot"]})
+                             "respuesta": t["bot"], "responde": t.get("responde")})
                 vistos.clear()
                 texto = "\n".join(asyncio.run(C.turno(uid, t["cliente"])))
                 v = vistos[-1] if vistos else {}
                 turnos.append({"cliente": t["cliente"], "bot": texto, "en_banco": t["en_banco"], "error": v.get("error"),
                                "pasos": [{"h": p["herramienta"], "pide": p["pide"], "devuelve": p["devuelve"][:1500]}
                                          for p in v.get("pasos") or []], "hallazgos": v.get("hallazgos"),
-                               "omitidos": v.get("omitidos")})
+                               "omitidos": v.get("omitidos"), "responde": v.get("responde")})
             fh.write(json.dumps({"id": c["id"], "turnos": turnos}, ensure_ascii=False) + "\n")
 
 

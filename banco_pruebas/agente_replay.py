@@ -59,17 +59,19 @@ def _respuesta(paso: dict = None, texto: str = ""):
 class Grabado:
     """El modelo falso: por turno, las llamadas grabadas en orden y despues la respuesta, las veces que la pidan."""
     def __init__(self):
-        self.cola, self.final = [], ""
+        self.cola, self.final, self.responde = [], "", None
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._crear))
 
     def turno(self, g: dict) -> None:
-        self.cola, self.final = list(g.get("pasos") or []), g.get("respuesta") or ""
+        # LA RESPUESTA ES UNA HERRAMIENTA desde el 5-nov, FICHA 88: lo grabado trae lo que pidio el modelo a responder.
+        self.cola, self.final, self.responde = list(g.get("pasos") or []), g.get("respuesta") or "", g.get("responde")
 
     def _crear(self, **k):
         """TODAS LAS LLAMADAS GRABADAS EN UNA SOLA RESPUESTA, como las manda el modelo de verdad, 5-nov: de a una, un
         turno con muchas llamadas pasaba las vueltas del agente y salia sin respuesta, K20 t1 regrabado."""
         if not self.cola:
-            return _respuesta(texto=self.final)
+            return _respuesta({"herramienta": "responder", "pide": self.responde}) if self.responde is not None \
+                else _respuesta(texto=self.final)
         r = _respuesta(self.cola[0])
         r.choices[0].message.tool_calls = [_respuesta(p).choices[0].message.tool_calls[0] for p in self.cola]
         self.cola = []
@@ -186,7 +188,8 @@ def _una(ch: str, grabados: list, falso, vistos, vara: dict, pausa: float) -> li
         distintas = [p["herramienta"] for p, v in zip(g.get("pasos") or [], vivos) if p["devuelve"] != v["devuelve"]]
         filas.append({"id": ch, "turno": g["turno"], "malas": malas, "distintas": distintas,
                       "texto": texto, "pasos_vivos": vivos, "pasos": g.get("pasos") or [],
-                      "mensaje": g["mensaje"], "respuesta": vistos[-1].get("respuesta") if vistos else None})
+                      "mensaje": g["mensaje"], "respuesta": vistos[-1].get("respuesta") if vistos else None,
+                      "responde": vistos[-1].get("responde") if vistos else None})
     return filas
 
 
@@ -225,7 +228,7 @@ def correr(ids: list = None, vivo: bool = False, gratis: bool = False, etiqueta:
             with open(VIVO, "a", encoding="utf-8") as fh:
                 for f in filas:
                     fh.write(json.dumps({**{k: f[k] for k in ("id", "turno", "malas", "texto", "pasos_vivos",
-                                                              "mensaje", "respuesta")},
+                                                              "mensaje", "respuesta", "responde")},
                                          "clave": "gratis" if gratis else "paga", "etiqueta": etiqueta,
                                          "parecidos": dict(VISTOS_PARECIDOS)}, ensure_ascii=False) + "\n")
             print(f"{ch}: guardada, {sum(not f['malas'] for f in filas)} de {len(filas)} turnos bien", flush=True)
@@ -245,6 +248,7 @@ def regrabar(filas: list) -> None:
     viejas = [r for r in map(json.loads, open(GRABADO, encoding="utf-8")) if r["id"] not in nuevas]
     with open(GRABADO, "w", encoding="utf-8") as fh:
         for r in viejas + [{"id": f["id"], "turno": f["turno"], "mensaje": f["mensaje"], "respuesta": f["respuesta"],
+                            "responde": f.get("responde"),
                             "pasos": [{k: p[k] for k in ("herramienta", "pide", "devuelve")} for p in f["pasos_vivos"]],
                             "regrabado": f.get("etiqueta") or "30-oct"} for f in filas]:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")

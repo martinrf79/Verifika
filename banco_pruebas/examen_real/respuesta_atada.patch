@@ -1,5 +1,5 @@
 diff --git a/app/core/flujo/agente.py b/app/core/flujo/agente.py
-index b679beb..99a3db4 100644
+index b679beb..69da898 100644
 --- a/app/core/flujo/agente.py
 +++ b/app/core/flujo/agente.py
 @@ -10,7 +10,11 @@ reemplaza a la lectura de la FICHA 81 en el bot. Medido en el banco, `banco_prue
@@ -34,11 +34,11 @@ index b679beb..99a3db4 100644
 -falte. Antes de elegir un producto, buscalo: no elijas de memoria. Al elegir o recomendar uno, deci el dato de la ficha
 -en que te basas. Si pregunta si anda con un equipo suyo, buscalo con ese equipo; si la ficha no lo dice, no lo afirmes.
 +- responder: lo que lee el cliente. Cada fila, regla, envio o "no vendemos" que te devuelve buscar viene con su numero,
-+  P1, R1, E1, N1. En bloques pones los numeros que le mostras, en orden, y de cada producto las columnas que hay que
++  P1, R1, E1, N1, y las reglas de la tienda de abajo traen el suyo, R1, R2. En bloques pones los numeros que le mostras, en orden, y de cada producto las columnas que hay que
 +  mostrarle —las que pidio o en las que te basas— y en por la columna que decide si elegiste o recomendaste uno. El
 +  sistema pega cada dato tal cual de la tienda. PRESUPUESTO pega el presupuesto y COBRO los datos de pago. En saludo y
 +  pregunta, cortos, solo lo que conecta: nunca un numero, una marca, un modelo, un dato de un producto, una regla ni un
-+  envio, que van en bloques. "Hola" solo en el primer mensaje de la charla. Si el cliente pide un dato que la tienda no tiene, ponelo en sin_dato y el sistema le dice que no lo tiene.
++  envio, que van en bloques: si contestas una regla, cita su numero. El sistema ya saluda: no digas "hola". Si el cliente pide un dato que la tienda no tiene, ponelo en sin_dato y el sistema le dice que no lo tiene.
 +
 +Solo podes mostrar lo que te devolvio una herramienta en este turno: lo que ya le mostraste antes, si hace falta, buscalo
 +de nuevo. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que falte. Antes de
@@ -119,10 +119,25 @@ index b679beb..99a3db4 100644
      return "\n".join(out) or "Los productos se consultan en la tabla, con un SELECT. Con texto, solo el envio a un " \
          "lugar, \"envio a Rosario\", o una regla de la tienda."
  
-@@ -640,6 +673,117 @@ def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
-         texto + (f"\n\n{cobro}" if cobro and cobro not in texto else "")
+@@ -623,21 +656,133 @@ def _pegado(pasos: list, herramienta: str = "presupuesto") -> str:
+     return next((p.get("al_cliente", "") for p in reversed(pasos) if p["herramienta"] == herramienta), "")
  
  
+-def pegar(texto: str, pasos: list, memoria: dict, tienda_id: str) -> str:
+-    """[[PRESUPUESTO]] se cambia por el ultimo presupuesto que armo el modelo, tal cual lo dio el ejecutor, sin la nota
+-    para el modelo. Si no armo ninguno en este turno, o el ultimo no salio, el del pedido anotado."""
+-    ultimo = _pegado(pasos)
+-    if not ultimo and re.search(r"\[\[\s*PRESUPUESTO\s*\]\]", texto) and (memoria["pedido"] or memoria.get("mostrado")):
+-        ultimo = presupuesto({}, memoria, tienda_id)[0]
+-    texto = re.sub(r"\[\[\s*PRESUPUESTO\s*\]\]", lambda _: ultimo, texto)
+-    # EL PEDIDO LO PEGA EL CODIGO, FICHA 86: donde dice [[PEDIDO]], o al final si hubo `pedido` y no lo escribio, K21.
+-    hecho = _pegado(pasos, "pedido")
+-    texto = re.sub(r"\[\[\s*PEDIDO\s*\]\]", lambda _: hecho, texto) if re.search(r"\[\[\s*PEDIDO", texto) else \
+-        texto + (f"\n\n{hecho}" if hecho and hecho not in texto else "")
+-    # LOS DATOS DE PAGO LOS PEGA EL CODIGO, donde dice [[COBRO]] o al final: el modelo los reescribia y salian rotos.
+-    cobro = _pegado(pasos, "cobrar")
+-    return re.sub(r"\[\[\s*COBRO\s*\]\]", lambda _: cobro, texto) if re.search(r"\[\[\s*COBRO", texto) else \
+-        texto + (f"\n\n{cobro}" if cobro and cobro not in texto else "")
 +# ══ LA RESPUESTA ATADA A LA API, 5-nov, FICHA 88 arreglo 1 ══
 +# UMBRAL, 5-nov: el largo de lo unico que escribe el modelo. Con 240 entra un saludo con una frase de venta; con 160, una
 +# pregunta. Lo demas lo pega el codigo.
@@ -133,7 +148,7 @@ index b679beb..99a3db4 100644
 +def herramienta_responder(citas: Citas, tienda_id: str) -> dict:
 +    """La herramienta con que el modelo contesta, armada en cada vuelta: los numeros son solo los de este turno, y las
 +    columnas, las de la tabla. Lo que no esta en las listas, la API no lo deja escribir."""
-+    cols = [c for c in T.columnas(tienda_id) if c not in ("id", "nombre")]
++    cols = [c for c in T.columnas(tienda_id) if c not in ("id", "nombre", "rubro", "modelo")]  # van en el nombre
 +    nums = list(citas.items) + list(_FIJAS)
 +    return {"type": "function", "function": {
 +        "name": "responder", "description": "Lo que lee el cliente: los numeros de lo que le mostras y que datos de cada "
@@ -176,14 +191,17 @@ index b679beb..99a3db4 100644
 +
 +def datos_en_libre(a: dict, tienda_id: str) -> list:
 +    """Lo que el modelo escribio en el saludo o la pregunta y es un dato: un numero, una marca o modelo, un valor de la
-+    ficha o un medio de pago. Los medios se pueden nombrar en la pregunta: preguntar con que paga no afirma nada."""
++    ficha o un medio de pago. Los medios se pueden nombrar en una oracion que pregunta: preguntar con que paga no afirma
++    nada; "aceptamos transferencia" si afirma, aunque vaya en la pregunta."""
 +    dato, regla = _voces(tienda_id)
 +    medios = {K.n(m) for m in list(MEDIOS) + list(MARCAS_TARJETA)} | {"mercadopago", "tarjeta", "tarjetas"}
 +    out = []
 +    for campo in ("saludo", "pregunta"):
-+        t = f" {K.n(a.get(campo) or '')} "
-+        hall = re.findall(r"\d+", t) + [w for w in dato if f" {w} " in t] + \
-+            [w for w in regla if f" {w} " in t and not (campo == "pregunta" and w in medios)]
++        hall = []
++        for o in re.findall(r"[^.!?]+[.!?]?", str(a.get(campo) or "")):
++            t, pregunta = f" {K.n(o)} ", o.strip().endswith("?")
++            hall += re.findall(r"\d+", t) + [w for w in dato if f" {w} " in t] + \
++                [w for w in regla if f" {w} " in t and not (pregunta and w in medios)]
 +        if hall:
 +            out.append((campo, ", ".join(dict.fromkeys(hall))))
 +    return out
@@ -197,6 +215,20 @@ index b679beb..99a3db4 100644
 +    if col.startswith("con_"):
 +        return f"con {col[4:].replace('_', ' ')}: {v}"
 +    return f"{col.replace('_', ' ')}: {v}"
++
++
++def _corto(texto, largo: int) -> str:
++    """Hasta el largo, cortado en el final de una oracion: una oracion a medias no sale."""
++    t = " ".join(str(texto or "").split())
++    if len(t) <= largo:
++        return t
++    fin = max(t.rfind(x, 0, largo + 1) for x in ".!?")
++    return t[:fin + 1] if fin > 0 else ""
++
++
++def _sin_hola(texto) -> str:
++    """EL SALUDO LO PONE EL CODIGO, que se presenta en el primer mensaje: el "hola" del modelo salia en cada turno."""
++    return re.sub(r"(?i)^\W*hola\b[^\w¿]*", "", str(texto or "").strip())
 +
 +
 +def armar(a: dict, citas: Citas, pasos: list, memoria: dict, tienda_id: str) -> tuple:
@@ -228,16 +260,36 @@ index b679beb..99a3db4 100644
 +    for extra in (_pegado(pasos, "pedido"), _pegado(pasos, "cobrar")):
 +        if extra and extra not in pegado:
 +            pegado.append(extra)
-+    sin = str(a.get("sin_dato") or "").strip()[:LARGO_SIN_DATO]
-+    partes = [str(a.get("saludo") or "").strip()[:LARGO_SALUDO]] + ["\n".join(x for x in pegado if x)] \
-+        + ([f"Ese dato, {sin.rstrip('.').lower()}, no lo tengo en la ficha."] if sin and len(sin.split()) <= 4 else []) + [str(a.get("pregunta") or "").strip()[:LARGO_PREGUNTA]]
++    sin = str(a.get("sin_dato") or "").strip()
++    partes = [_corto(_sin_hola(a.get("saludo")), LARGO_SALUDO)] + ["\n".join(x for x in pegado if x)] \
++        + ([f"Ese dato, {sin.rstrip('.').lower()}, no lo tengo en la ficha."] if sin and len(sin.split()) <= 4 else []) \
++        + [_corto(_sin_hola(a.get("pregunta")), LARGO_PREGUNTA)]
 +    return "\n\n".join(x for x in partes if x), pegado
-+
-+
- # ══ EL TURNO DEL AGENTE ══
  
- def sin_buscar(mensaje: str, pasos: list, tienda_id: str) -> list:
-@@ -736,12 +880,13 @@ def memoria_texto(memoria: dict) -> str:
+ 
+ # ══ EL TURNO DEL AGENTE ══
+@@ -714,12 +859,16 @@ def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
+     return out
+ 
+ 
+-def hoja_reglas(tienda_id: str) -> str:
++def hoja_reglas(tienda_id: str, citas: Citas = None) -> str:
+     """LAS REGLAS DE LA TIENDA SIEMPRE A LA VISTA, 31-oct, orden de Martin: una linea por tema, de la FAQ de la tienda,
+     tal como esta hoy. Llegaban solo si el modelo las buscaba, y en el examen real dijo que no habia descuento por
+-    cantidad, con mayoristas y 10% por transferencia en la FAQ. Sale de la FAQ en cada turno: si cambia, cambia."""
+-    lineas = [f"- {(d.get('tema') or t).replace('_', ' ')}: {' '.join(str(d.get('respuesta') or '').split())}"
+-              for t, d in sorted((K.fc.get_all_faq(tienda_id=tienda_id) or {}).items()) if isinstance(d, dict) and d.get("respuesta")]
++    cantidad, con mayoristas y 10% por transferencia en la FAQ. Sale de la FAQ en cada turno: si cambia, cambia.
++    CON SU NUMERO, 5-nov: el modelo las contestaba de la hoja sin buscarlas, y sin numero no las podia citar."""
++    def linea(t, d):
++        texto = " ".join(str(d.get("respuesta") or "").split())
++        return (f"{citas('regla', t, texto)}: " if citas is not None else "- ") + f"{(d.get('tema') or t).replace('_', ' ')}: {texto}"
++    lineas = [linea(t, d) for t, d in sorted((K.fc.get_all_faq(tienda_id=tienda_id) or {}).items())
++              if isinstance(d, dict) and d.get("respuesta")]
+     return "LAS REGLAS DE LA TIENDA, de su FAQ, valen siempre:\n" + "\n".join(lineas) if lineas else ""
+ 
+ 
+@@ -736,12 +885,13 @@ def memoria_texto(memoria: dict) -> str:
              + (f"\nEL PAGO QUE DIJO: {m['pago']}" if m.get("pago") else "") + (f"\nEL TOPE QUE DIJO: {m['tope']}" if m.get("tope") else ""))
  
  
@@ -253,12 +305,18 @@ index b679beb..99a3db4 100644
      return await llamar_con_reintento(
          lambda: cli.chat.completions.create(model=_modelo(), temperature=0, messages=msgs, **kw),
          timeout_s=float(get_settings().LLM_TIMEOUT_SECONDS), trace_id=trace_id)
-@@ -762,26 +907,36 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
-     dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
-                         + de_la_oferta(mensaje, ultimo_bot)))
-     memoria.pop("_ultimo", None)
--    pasos, salidas, entrada, salida, corregido, avisos = [], [], 0, 0, False, []
-+    pasos, salidas, entrada, salida, corregido, avisos, citas = [], [], 0, 0, False, [], Citas()
+@@ -751,8 +901,8 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+                     trace_id: str = "") -> dict:
+     """Un turno: {"respuesta", "pasos", "hallazgos", "presupuesto"}, o {"error"} si el modelo no contesto. La memoria se
+     actualiza solo si hay respuesta."""
+-    contexto = memoria_texto(memoria)
+-    hoja = f"{hoja_reglas(tienda_id)}\n\n{T.mapa(tienda_id)}".strip()  # las reglas y la tabla, siempre a la vista
++    contexto, citas = memoria_texto(memoria), Citas()
++    hoja = f"{hoja_reglas(tienda_id, citas)}\n\n{T.mapa(tienda_id)}".strip()  # las reglas y la tabla, siempre a la vista
+     msgs = [{"role": "system", "content": f"{CONSIGNA}\n\n{hoja}".strip()},
+             {"role": "user", "content": f"{charla(historial)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
+     dichos = [str(m.get("content") or "") for m in historial]
+@@ -766,22 +916,32 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
      t0 = time.time()
      for vuelta in range(VUELTAS + 1):
          try:
@@ -301,7 +359,7 @@ index b679beb..99a3db4 100644
              faltan = [] if corregido else sin_buscar(mensaje, pasos, tienda_id)
              omite = [] if corregido else omitidos(mensaje, memoria, pasos, tienda_id)
              if (malos or faltan or omite) and not corregido and vuelta < VUELTAS:
-@@ -789,19 +944,23 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+@@ -789,19 +949,23 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
                  # LA BUSQUEDA QUE FALTA LA HACE EL CODIGO, 1-nov: con solo el aviso, el modelo lo ignoraba en el
                  # examen. Cada busqueda del turno, de nuevo con las palabras del cliente alrededor del criterio.
                  frase = " ".join(dict.fromkeys(x for w in faltan for i, y in enumerate(ws) if K.n(w) in y for x in ws[max(0, i - 3):i + 1]))
@@ -330,7 +388,7 @@ index b679beb..99a3db4 100644
              if malos:  # LO QUE SIGUE MARCADO DESPUES DE CORREGIR NO SALE: se saca la oracion entera.
                  from app.core.guia_venta_prosa import mensaje as prosa
                  texto = V.sin_marcadas(texto, fuente, tienda_id, pegados) or prosa(
-@@ -817,13 +976,18 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+@@ -817,13 +981,18 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
                  memoria.update(memoria.pop("_ultimo"))
              ultimo = _pegado(pasos)
              log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos], sin_buscar=faltan,
@@ -351,7 +409,7 @@ index b679beb..99a3db4 100644
              try:
                  a = json.loads(c.function.arguments or "{}")
              except ValueError:
-@@ -833,7 +997,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
+@@ -833,7 +1002,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str,
              cliente = ""
              try:
                  # LO QUE BLOQUEA —Firestore, los embeddings— corre en un hilo: el servidor sigue con las otras charlas.
@@ -403,3 +461,40 @@ index 757661f..ec80526 100644
 -        ":\n" + "\n".join("  " + "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
 +        ":\n" + "\n".join("  " + num(f) + "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
                            for f in filas[:FILAS_MAX])
+diff --git a/tests/test_agente_pedido.py b/tests/test_agente_pedido.py
+index 2b23e52..2d744c1 100644
+--- a/tests/test_agente_pedido.py
++++ b/tests/test_agente_pedido.py
+@@ -160,12 +160,13 @@ def test_dos_llamadas_en_el_mismo_turno_se_suman(A):
+ 
+ 
+ def test_el_pedido_lo_pega_el_codigo(A):
+-    """K21: el modelo no escribio el presupuesto porque creyo que no cambio nada. Si hubo `pedido`, va igual."""
++    """K21: el modelo no escribio el presupuesto porque creyo que no cambio nada. Si hubo `pedido`, va igual. Desde el
++    5-nov la respuesta la arma el codigo con la herramienta responder, FICHA 88: ya no hay marca [[PEDIDO]] que poner."""
+     pasos = [{"herramienta": "pedido", "pide": {}, "devuelve": "", "al_cliente": "Presupuesto: 1x Mouse"}]
+     m = A.memoria_de({})
+-    assert A.pegar("Listo, te lo sumo.", pasos, m, C.TIENDA).endswith("Presupuesto: 1x Mouse")
+-    assert A.pegar("Asi queda:\n[[PEDIDO]]\nTe sirve?", pasos, m, C.TIENDA) == "Asi queda:\nPresupuesto: 1x Mouse\nTe sirve?"
+-    assert A.pegar("Hola", [], m, C.TIENDA) == "Hola"
++    texto, _ = A.armar({"saludo": "Listo, te lo sumo.", "bloques": [], "pregunta": "¿Te sirve?"}, A.Citas(), pasos, m, C.TIENDA)
++    assert texto == "Listo, te lo sumo.\n\nPresupuesto: 1x Mouse\n\n¿Te sirve?"
++    assert A.armar({"saludo": "Listo.", "bloques": [], "pregunta": ""}, A.Citas(), [], m, C.TIENDA)[0] == "Listo."
+ 
+ 
+ # ══ PROCEDENCIA SOLA: el paso 3, sin el ejecutor ══
+diff --git a/tests/test_agente_plata.py b/tests/test_agente_plata.py
+index 16dbaf0..4e21a67 100644
+--- a/tests/test_agente_plata.py
++++ b/tests/test_agente_plata.py
+@@ -64,8 +64,8 @@ def test_sin_medio_no_se_cobra_y_el_medio_dicho_si(A):
+     cliente, _ = asyncio.run(A.cobrar({"nombre": "Joaquin", "pago": "100 transferencia"}, m, "u", "telegram", C.TIENDA,
+                                       "t", "no tengo mp, pago por transferencia"))
+     assert "transferencia" in cliente.lower() and m["pago"] == "100 transferencia"
+-    pegado = A.pegar("Listo Joaquin.", [{"herramienta": "cobrar", "devuelve": cliente, "al_cliente": cliente}], m,
+-                     C.TIENDA)
++    pegado, _ = A.armar({"saludo": "Listo Joaquin.", "bloques": [], "pregunta": ""},
++                        A.Citas(), [{"herramienta": "cobrar", "devuelve": cliente, "al_cliente": cliente}], m, C.TIENDA)
+     assert cliente in pegado
+ 
+ 
