@@ -49,7 +49,7 @@ def test_lo_que_el_presupuesto_le_dice_al_modelo_no_llega_al_cliente(corrida):
             if any(p["herramienta"] == "presupuesto" for p in g.get("pasos") or []):
                 falso.turno({**g, "respuesta": "[[PRESUPUESTO]]"})
                 r = asyncio.run(agente.responder(g["mensaje"], historial, memoria, f"notas_{ch}", "telegram", C.TIENDA))
-                propias = [x for p in r.get("pasos") or [] if p["herramienta"] == "presupuesto"
+                propias = [x for p in r.get("pasos") or [] if p["herramienta"] in ("pedido", "cotizar")
                            for x in p["devuelve"].splitlines() if x.strip() and x not in p["al_cliente"].splitlines()]
                 turnos += 1
                 notas += len(propias)

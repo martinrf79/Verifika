@@ -65,9 +65,9 @@ def test_un_producto_que_solo_nombro_el_bot_no_entra_sin_buscarlo(A):
     historial = [{"role": "user", "content": "quiero un mouse inalambrico"},
                  {"role": "assistant", "content": f"Te recomiendo el {G305}."}]
     r, _ = _turno(A, historial, "dale, ese a Rosario",
-                  [("presupuesto", {"renglones": [{"producto": G305, "destino": "Rosario"}], "anotar": True})],
-                  "Listo.\n[[PRESUPUESTO]]")
-    paso = next(p for p in r["pasos"] if p["herramienta"] == "presupuesto")
+                  [("pedido", {"agrega": [{"producto": G305, "destino": "Rosario", "cita": "dale, ese a Rosario"}]})],
+                  "Listo.\n[[PEDIDO]]")
+    paso = next(p for p in r["pasos"] if p["herramienta"] == "pedido")
     assert "Primero busca" in paso["devuelve"] and not paso["al_cliente"]
 
 
@@ -79,7 +79,7 @@ def test_el_mismo_producto_devuelto_por_el_buscador_antes_entra(A):
     historial = [{"role": "user", "content": "quiero un mouse inalambrico"},
                  {"role": "assistant", "content": r1["respuesta"]}]
     r2, _ = _turno(A, historial, "dale, ese a Rosario",
-                   [("presupuesto", {"renglones": [{"producto": G305, "destino": "Rosario"}], "anotar": True})],
-                   "Listo.\n[[PRESUPUESTO]]", memoria)
-    paso = next(p for p in r2["pasos"] if p["herramienta"] == "presupuesto")
+                   [("pedido", {"agrega": [{"producto": G305, "destino": "Rosario", "cita": "dale, ese a Rosario"}]})],
+                   "Listo.\n[[PEDIDO]]", memoria)
+    paso = next(p for p in r2["pasos"] if p["herramienta"] == "pedido")
     assert "Total" in paso["al_cliente"], paso["devuelve"]

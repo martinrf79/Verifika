@@ -138,7 +138,7 @@ def test_el_criterio_del_cliente_se_controla_en_el_presupuesto(A):
     def aviso(producto, mensaje):
         m = A.memoria_de({})
         m["_ultimo"] = {"mostrado": [{"producto": producto}]}
-        return A.omitidos(mensaje, m, [{"herramienta": "presupuesto"}], C.TIENDA)
+        return A.omitidos(mensaje, m, [{"herramienta": "cotizar"}], C.TIENDA)
     assert aviso("Mouse Logitech G502 X Negro", "dame el mouse más liviano")
     assert not aviso("Mouse Logitech G Pro Wireless Blanco", "dame el mouse más liviano")
     assert not aviso("Mouse Logitech G502 X Negro", "de esos, el más liviano")
@@ -159,7 +159,7 @@ def test_lo_que_el_cliente_no_cambio_queda_y_se_avisa(A):
     def avisos(mensaje, antes, ahora):
         mm = A.memoria_de({})
         mm["mostrado"], mm["_ultimo"] = antes, {"mostrado": ahora}
-        return " ".join(A.omitidos(mensaje, mm, [{"herramienta": "presupuesto"}], C.TIENDA))
+        return " ".join(A.omitidos(mensaje, mm, [{"herramienta": "cotizar"}], C.TIENDA))
     teclado = {"producto": "Teclado Logitech K120 Negro", "cantidad": 1, "destino": "Concordia"}
     memoria = {"producto": "Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro", "cantidad": 2, "destino": "Posadas"}
     assert "toledo" in avisos("2 a villa maria y 3 a toledo", [], [{**memoria, "destino": "Villa Maria"}])
@@ -198,8 +198,8 @@ def test_el_cobro_usa_el_pedido_anotado_en_el_mismo_turno(A):
     el cobro salia con el monto del pedido del turno anterior. Se cobra lo que el cliente acaba de leer."""
     m = A.memoria_de({})
     m["pedido"], m["pago"] = PEDIDO[:1], "100 transferencia"
-    nuevo = {"renglones": PEDIDO, "pago": "100 transferencia", "anotar": True}
-    leido, _ = A.presupuesto(nuevo, m, C.TIENDA, None, "pago por transferencia")
+    nuevo = {"agrega": [{**PEDIDO[1], "cantidad": 1, "cita": "sumame los hyperx a posadas"}], "pago": "100 transferencia"}
+    leido, _ = A.pedido(nuevo, m, C.TIENDA, None, "sumame los hyperx a posadas pago por transferencia")
     cliente, _ = asyncio.run(A.cobrar({"nombre": "Joaquin"}, m, "u", "telegram", C.TIENDA, "t", "pago por transferencia"))
     final = re.search(r"Total final: (\$[\d.]+)", leido).group(1)
     assert f"Monto: {final}" in cliente, (final, cliente)
