@@ -63,6 +63,11 @@ class Settings(BaseModel):
 
     # Historial de conversación: 10 turnos = 20 entradas
     HISTORY_LIMIT: int = int(os.getenv("HISTORY_LIMIT", "10"))
+    # LA MEMORIA LARGA, 6-nov, Martin: cuantos mensajes del cliente guarda el codigo, fuera de la ventana de arriba.
+    # Cuentas: el mensaje del cliente mide 51 caracteres de media y 400 el mas largo, en las charlas grabadas. Con 100,
+    # el peor caso suma 40 KB al documento, contra 1 MiB de Firestore, y unos 1.300 tokens de media a lo que lee el
+    # modelo, contra unos 6.500 fijos por turno. La medicion, en tests/test_memoria_larga.py.
+    MEMORIA_TURNOS: int = int(os.getenv("MEMORIA_TURNOS", "100"))
 
     # Búsqueda: cuántos productos devolver al LLM por consulta
     SEARCH_TOP_N: int = int(os.getenv("SEARCH_TOP_N", "10"))
