@@ -42,7 +42,9 @@ VUELTAS = 6
 # UMBRALES de los embeddings, medidos en el banco el 29-oct: el rubro correcto da cerca de 0,78 y el ruido de 0,65 a 0,74.
 UMBRAL_TEMA = 0.70
 # "estado" es el estado entero del ejecutor, con el borrador de la FICHA 71: lo que dijo el cliente, entre turnos. FICHA 86.
-MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": ""}
+# "fuente" es lo que devolvieron las herramientas en cada turno anterior, uno por turno, la misma ventana que el historial:
+# lo que dijo el bot no es fuente, auditoria del 6-nov.
+MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": "", "fuente": []}
 # UMBRAL, 30-oct: hasta cuantas palabras la respuesta del cliente elige el medio que le ofrecio el bot. "Joaquin no tengo
 # mp" son 4; con 6, "si, el teclado era una memoria" anotaba transferencia en K20 y "color indistinto 70 por ciento
 # transferencia" anotaba Mercado Pago al 30% en K21, sin que el cliente lo dijera.
@@ -762,6 +764,11 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
                         + de_la_oferta(mensaje, ultimo_bot)))
     memoria.pop("_ultimo", None)
+    # LO QUE DIJO EL BOT NO ES FUENTE, 6-nov, auditoria de las 12 capas, FICHA 87 causa 3: un dato inventado en un turno
+    # pasaba los controles en los siguientes porque su texto estaba en la charla. Vale lo que devolvieron las
+    # herramientas, en este turno y en los anteriores, y lo que dijo el cliente.
+    antes = list(memoria.get("fuente") or [])
+    del_cliente = [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
     pasos, salidas, entrada, salida, corregido, avisos = [], [], 0, 0, False, []
     t0 = time.time()
     for vuelta in range(VUELTAS + 1):
@@ -777,7 +784,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             texto = pegar(m.content or "", pasos, memoria, tienda_id)
             # EL CANDADO ES EL VERIFICADOR, sin lo que el codigo pego tal cual. Lo que marca vuelve una vez al modelo.
             pegados = [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("presupuesto", "cobrar")]
-            fuente = " ".join(salidas + dichos + [mensaje, contexto, hoja])
+            fuente = " ".join(salidas + antes + del_cliente + [mensaje, contexto, hoja])
             # [[COBRO]] SIN COBRAR, 3-nov, 58b5a1: "te paso los datos" y la linea vacia. Lo escribe el modelo, no el codigo.
             malos = V.verificar(texto, fuente, tienda_id, pegados) + [("hecho", "escribiste [[COBRO]] y no llamaste a cobrar")
                                                                       for _ in re.findall(r"\[\[\s*COBRO", m.content or "")
@@ -815,6 +822,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                              if ", y ya habia" in x else "" for x in sigue)
             if memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
+            memoria["fuente"] = (antes + ["\n".join(salidas)])[-get_settings().HISTORY_LIMIT:]
             ultimo = _pegado(pasos)
             log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos], sin_buscar=faltan,
                      omitidos=avisos,
@@ -828,7 +836,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
                 a = json.loads(c.function.arguments or "{}")
             except ValueError:
                 a = {}
-            visto = K.n(" ".join(salidas + dichos + [contexto]))
+            visto = K.n(" ".join(salidas + antes + del_cliente + [mensaje, contexto]))
             nombre = c.function.name
             cliente = ""
             try:
