@@ -117,7 +117,7 @@ def correr(vivo: bool = False) -> dict:
             v = vistos[-1] if vistos else {}
             pasos = v.get("pasos") or []
             out[f"{c['id']} t{i}"] = {
-                "presupuestos": [p.get("al_cliente", "") for p in pasos if p["herramienta"] == "presupuesto"],
+                "presupuestos": [p.get("al_cliente", "") for p in pasos if p["herramienta"] in ("pedido", "cotizar")],
                 "cobros": [p.get("al_cliente", "") for p in pasos if p["herramienta"] == "cobrar"],
                 "verificador": [list(x) for x in v.get("hallazgos") or []],
                 "texto": texto, "error": v.get("error") or ""}

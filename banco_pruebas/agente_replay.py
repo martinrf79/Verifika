@@ -56,22 +56,79 @@ def _respuesta(paso: dict = None, texto: str = ""):
                            usage=SimpleNamespace(prompt_tokens=0, completion_tokens=0))
 
 
+def traducir(pasos: list, memoria: dict, mensaje: str) -> list:
+    """EL MODELO SIMULADO DEL PASO 2, FICHA 89, 6-nov, orden de Martin: las charlas se grabaron cuando el modelo mandaba
+    el pedido entero a `presupuesto`. Cada llamada vieja pasa a la herramienta de hoy: sin anotar, `cotizar` con lo
+    mismo; anotada, `pedido` con solo la diferencia contra la libreta guardada, y las palabras del cliente como cita,
+    sin numeros para que la cantidad sea la que mando el modelo. Mide el codigo del paso 2, no al modelo: eso lo
+    confirma una regrabacion con el modelo."""
+    import re
+    from app.core.flujo import agente as A
+    from app.core.flujo import catalogo as K
+    ultima = max([i for i, p in enumerate(pasos) if p["herramienta"] == "presupuesto" and p["pide"].get("anotar")],
+                 default=-1)
+    cita = " ".join(w for w in mensaje.split() if not re.search(r"\d", w) and K.n(w) not in A._CUANTOS)
+    out = []
+    for i, p in enumerate(pasos):
+        a = dict(p["pide"])
+        if p["herramienta"] != "presupuesto":
+            out.append(p)
+            continue
+        extra = {k: a[k] for k in ("pago", "tope") if a.get(k)}
+        if i != ultima:
+            out.append({**p, "herramienta": "cotizar", "pide": {**extra, "renglones": a.get("renglones") or []},
+                        "traducida": True})
+            continue
+        hay = [dict(r) for r in A.estado_de(memoria)["borrador"].get("renglones") or []]
+        cmd = {**extra}
+        for r in [r for r in a.get("renglones") or [] if isinstance(r, dict) and r.get("producto")]:
+            idr, dr, nr = A._id_de(r["producto"], C_TIENDA), K.n(r.get("destino")), K.entero(r.get("cantidad")) or 1
+            igual = [h for h in hay if A._id_de(h["que"], C_TIENDA) == idr and K.n(h["destino"]) == dr]
+            mismo = igual or [h for h in hay if A._id_de(h["que"], C_TIENDA) == idr]
+            if mismo:
+                h = mismo[0]
+                hay.remove(h)
+                cambio = {k: v for k, v in {"cantidad": nr if nr != (K.entero(h["cantidad"]) or 1) else None,
+                                            "destino": r.get("destino") if not igual and r.get("destino") else None}.items() if v}
+                if cambio:
+                    cmd.setdefault("cambia", []).append({"es": h["L"], **cambio, "cita": cita})
+                continue
+            cmd.setdefault("agrega", []).append({k: v for k, v in {
+                "producto": r["producto"], "cantidad": nr, "destino": r.get("destino"), "color": r.get("color"),
+                "cita": cita}.items() if v})
+        if a.get("renglones"):
+            cmd["saca"] = [h["L"] for h in hay] or None
+        cmd = {k: v for k, v in cmd.items() if v}
+        out.append({**p, "herramienta": "pedido", "pide": cmd or {"confirma": [
+            h["L"] for h in A.estado_de(memoria)["borrador"].get("renglones") or []]}, "traducida": True})
+    return out
+
+
+C_TIENDA = "verifika_prod"
+
+
 class Grabado:
     """El modelo falso: por turno, las llamadas grabadas en orden y despues la respuesta, las veces que la pidan."""
     def __init__(self):
-        self.cola, self.final = [], ""
+        self.cola, self.final, self.mensaje, self.memoria, self.pidio = [], "", "", None, False
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._crear))
 
     def turno(self, g: dict) -> None:
-        self.cola, self.final = list(g.get("pasos") or []), g.get("respuesta") or ""
+        self.cola, self.final, self.mensaje = list(g.get("pasos") or []), g.get("respuesta") or "", g.get("mensaje") or ""
+        self.memoria = None
+
+    def _traducidas(self) -> list:
+        return traducir(self.cola, self.memoria, self.mensaje) if self.memoria is not None else self.cola
 
     def _crear(self, **k):
         """TODAS LAS LLAMADAS GRABADAS EN UNA SOLA RESPUESTA, como las manda el modelo de verdad, 5-nov: de a una, un
         turno con muchas llamadas pasaba las vueltas del agente y salia sin respuesta, K20 t1 regrabado."""
         if not self.cola:
-            return _respuesta(texto=self.final)
-        r = _respuesta(self.cola[0])
-        r.choices[0].message.tool_calls = [_respuesta(p).choices[0].message.tool_calls[0] for p in self.cola]
+            return _respuesta(texto=self.final.replace("[[PRESUPUESTO]]", "[[PEDIDO]]") if self.pidio else self.final)
+        cola = self._traducidas()
+        self.pidio = any(p["herramienta"] == "pedido" for p in cola)
+        r = _respuesta(cola[0])
+        r.choices[0].message.tool_calls = [_respuesta(p).choices[0].message.tool_calls[0] for p in cola]
         self.cola = []
         return r
 
@@ -143,6 +200,9 @@ def instalar(vivo: bool = False, gratis: bool = False):
     responder = agente.responder
 
     async def _espia(*a, **k):
+        falso.memoria = a[2] if len(a) > 2 else k.get("memoria")  # el modelo simulado traduce contra esta libreta
+        falso.mensaje = a[0] if a else k.get("mensaje") or ""
+        falso.pidio = False
         r = await responder(*a, **k)
         vistos.append(r)
         return r
@@ -183,8 +243,11 @@ def _una(ch: str, grabados: list, falso, vistos, vara: dict, pausa: float) -> li
         casillas = vara[ch]["turnos"][g["turno"]]["casillas"]
         malas = [k["n"] for k in casillas if nota_casilla(k, [], texto, respuestas) is not True]
         vivos = (vistos[-1].get("pasos") if vistos else None) or []
-        distintas = [p["herramienta"] for p, v in zip(g.get("pasos") or [], vivos) if p["devuelve"] != v["devuelve"]]
-        filas.append({"id": ch, "turno": g["turno"], "malas": malas, "distintas": distintas,
+        # LO TRADUCIDO NO SE COMPARA, paso 2: es otra herramienta, y lo que devuelve es lo que se mide en las casillas.
+        distintas = [p["herramienta"] for p, v in zip(g.get("pasos") or [], vivos)
+                     if p["herramienta"] == v["herramienta"] and p["devuelve"] != v["devuelve"]]
+        traducidas = sum(p["herramienta"] != v["herramienta"] for p, v in zip(g.get("pasos") or [], vivos))
+        filas.append({"id": ch, "turno": g["turno"], "malas": malas, "distintas": distintas, "traducidas": traducidas,
                       "texto": texto, "pasos_vivos": vivos, "pasos": g.get("pasos") or [],
                       "mensaje": g["mensaje"], "respuesta": vistos[-1].get("respuesta") if vistos else None})
     return filas
@@ -215,11 +278,11 @@ def correr(ids: list = None, vivo: bool = False, gratis: bool = False, etiqueta:
             out["cortada"] = True
             break
         for f in filas:
-            n = len(f["pasos"])
+            n = len(f["pasos"]) - f["traducidas"]
             out["turnos"] += 1
             out["bien"] += not f["malas"]
             out["llamadas"] += n
-            out["iguales"] += n - len(f["distintas"]) - max(0, n - len(f["pasos_vivos"]))
+            out["iguales"] += n - len(f["distintas"]) - max(0, n - len(f["pasos_vivos"]) + f["traducidas"])
         out["filas"] += filas
         if etiqueta:
             with open(VIVO, "a", encoding="utf-8") as fh:
