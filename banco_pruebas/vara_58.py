@@ -391,7 +391,9 @@ COMPLEJAS = [
     k(18, "toda la tienda: el mas caro y el mas barato, y sumarlos con envio",
       t("cual es el articulo mas caro que vendes?", dice("rog strix"), plata(3100500)),
       t("y el mas barato?", dice("dx-110"), plata(8500)),
-      t("sumame uno de cada uno con envio a Posadas", plata(3109000), SIN_JERGA)),
+      # 6-nov, decidido por Martin: la ROG Strix viene en dos colores, y preguntar cual vale como el total.
+      t("sumame uno de cada uno con envio a Posadas", alguna(plata(3109000), pregunta(), n="el total, o pregunta el color"),
+        SIN_JERGA)),
     k(20, "real, la version original: nombra un teclado que no estaba en la lista. Desde el 1-oct el bot "
           "confirma lo que entendio antes de calcular, y con el si arma los tres presupuestos",
       t("Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que "

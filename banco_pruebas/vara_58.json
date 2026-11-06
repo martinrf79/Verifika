@@ -2839,9 +2839,19 @@
      "texto": "sumame uno de cada uno con envio a Posadas",
      "casillas": [
       {
-       "tipo": "plata",
-       "monto": 3109000,
-       "n": "el monto 3109000"
+       "tipo": "alguna",
+       "opciones": [
+        {
+         "tipo": "plata",
+         "monto": 3109000,
+         "n": "el monto 3109000"
+        },
+        {
+         "tipo": "pregunta",
+         "n": "repregunta"
+        }
+       ],
+       "n": "el total, o pregunta el color"
       },
       {
        "tipo": "no_patron",
