@@ -53,11 +53,10 @@ de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 
 ### Lo que sigue
 
-**Toda sesión arranca por la FICHA 88**, `arquitectura/FICHA_88_el_bot_robusto.md`, orden de Martín del 5-nov: primero lo
-que quedó de esa sesión —regrabar la vara, la tercera corrida, el push con su ok—, después los cuatro arreglos en orden: lo
-más importante, la respuesta atada a la API para que el modelo no pueda escribir un dato, cada parte del mensaje con su búsqueda, la búsqueda por uso al lado
-de SQL y el pedido en el código. Con los cuatro medidos, se mide en WhatsApp. El diagnóstico y lo medido hasta ahí, en la
-FICHA 87.
+**Toda sesión arranca por la FICHA 89**, `arquitectura/FICHA_89_el_motor_y_la_auditoria.md`, orden de Martín del 6-nov:
+primero C55 t3, el único turno mal de la vara; después el motor con una sola memoria, paso por paso, según la auditoría de
+las 12 capas. Cada paso con sus pruebas escritas antes, con las habilidades de `.claude/skills/`. Con el plan medido, se
+mide en WhatsApp. La respuesta atada de la FICHA 88 quedó descartada por medición. El diagnóstico, en la FICHA 87.
 
 El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con tres corridas `--gratis`. Si
 el código cambia lo que lee el modelo, las charlas afectadas se regraban con `--gratis --regrabar`.
