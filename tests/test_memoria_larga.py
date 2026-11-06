@@ -101,3 +101,23 @@ def test_cuantos_turnos_entran_sin_conflicto_ni_latencia(falso):
     assert all(d <= tope for _, d, *_ in filas) and filas[-1][1] == tope
     assert all(b < 1024 * 1024 // 4 for _, _, b, *_ in filas)
     assert filas[-1][4] < 2 * max(filas[0][4], 0.5), "el tiempo del codigo crece con la charla"
+
+
+def test_el_nombre_para_reservar_una_vez_por_pedido(falso):
+    """LO OBLIGATORIO EN CODIGO, FICHA 89 hallazgo 3, C55 t3: el cliente compra y el bot pide el nombre aunque el modelo
+    no lo escriba; no lo repite mientras el pedido no cambie, y lo vuelve a pedir si cambia lo que compra."""
+    from app.core.flujo import redaccion
+    sql = "SELECT nombre, precio, stock FROM productos WHERE nombre LIKE '%{}%' AND stock > 0"
+    def compra(producto, cantidad=1):
+        return {"pasos": [{"herramienta": "buscar", "pide": {"consulta": sql.format(producto.split()[2])}},
+                          {"herramienta": "presupuesto", "pide": {"renglones": [
+                              {"producto": producto, "cantidad": cantidad}], "anotar": True}}],
+                "respuesta": "Anotado.\n[[PRESUPUESTO]]\n¿A dónde lo enviamos?"}
+    C.reiniciar_cliente("nombre_una_vez")
+    textos = []
+    for m, g in [("me llevo el m220", compra(M220)), ("y el envio?", compra(M220)),
+                 ("mejor dos", compra(M220, 2))]:
+        falso.turno(g)
+        textos.append("\n".join(asyncio.run(C.turno("nombre_una_vez", m))))
+    pide = [redaccion.pedir_nombre() in t for t in textos]
+    assert pide == [True, False, True], pide

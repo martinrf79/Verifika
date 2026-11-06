@@ -46,7 +46,9 @@ UMBRAL_TEMA = 0.70
 # "fuente" es lo que devolvieron las herramientas en cada turno anterior, uno por turno, la misma ventana que el historial:
 # lo que dijo el bot no es fuente, auditoria del 6-nov.
 # "dicho" es cada mensaje del cliente, hasta MEMORIA_TURNOS: lo que dijo no se pierde cuando sale de la ventana, 6-nov.
-MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": "", "fuente": [], "dicho": []}
+# "nombre_para" es lo que compraba cuando se le pidio el nombre para reservar: no se repite para el mismo pedido.
+MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": "", "fuente": [], "dicho": [],
+           "nombre_para": []}
 # UMBRAL, 30-oct: hasta cuantas palabras la respuesta del cliente elige el medio que le ofrecio el bot. "Joaquin no tengo
 # mp" son 4; con 6, "si, el teclado era una memoria" anotaba transferencia en K20 y "color indistinto 70 por ciento
 # transferencia" anotaba Mercado Pago al 30% en K21, sin que el cliente lo dijera.
@@ -828,8 +830,20 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             texto += "".join("\n\nMe pediste " + x.replace(" y el presupuesto trae ", " y en el presupuesto van ") + ".\n¿Cómo lo repartimos?"
                              if " y el presupuesto" in x else f"\n\n¿El {x.split(', y ya')[0].split(' ', 1)[1]} es otro más o el que ya estaba?"
                              if ", y ya habia" in x else "" for x in sigue)
+            # LO OBLIGATORIO EN CODIGO, FICHA 89 hallazgo 3, C55 t3: el cliente compra, el pedido se anota, y para reservar
+            # se pide el nombre. Estaba solo en la consigna, y "ese me lo llevo" salia preguntando solo el envio.
+            # UNA VEZ POR PEDIDO: se vuelve a pedir solo si cambio lo que compra, no el envio ni el pago. Cuenta tambien
+            # cuando lo pidio el modelo: K21 t4, "Mi nombre es Julio", y K10, que lo pedia en cinco turnos seguidos.
             if memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
+            compra = sorted(f"{K.entero(x.get('cantidad')) or 1} {_id_de(x.get('producto'), tienda_id)}" for x in memoria["pedido"])
+            pidio = re.search(r"\bnombre\b|reserv", K.n(texto))
+            # UNA PREGUNTA DEL CODIGO POR VEZ, e105d5a00b t2: si el presupuesto ya pregunta algo, el tope, eso va primero.
+            if any(p["herramienta"] == "presupuesto" and p["pide"].get("anotar") and p.get("al_cliente") for p in pasos) \
+                    and "?" not in _pegado(pasos) \
+                    and not memoria.get("lead") and not pidio and compra != memoria.get("nombre_para"):
+                texto, pidio = texto + "\n\n" + redaccion.pedir_nombre(), True
+            memoria["nombre_para"] = compra if pidio and compra else memoria.get("nombre_para") or []
             memoria["fuente"] = (antes + ["\n".join(salidas)])[-get_settings().HISTORY_LIMIT:]
             memoria["dicho"] = (del_cliente + [mensaje])[-get_settings().MEMORIA_TURNOS:]
             ultimo = _pegado(pasos)
