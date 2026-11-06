@@ -12,8 +12,9 @@ reemplaza a la lectura de la FICHA 81 en el bot. Medido en el banco, `banco_prue
   calcular      una calculadora.
   el candado    el verificador: cada afirmacion de la respuesta contra la fuente. Lo que marca vuelve una vez al modelo.
 
-LA MEMORIA de la charla: el historial completo y, aparte, el pedido anotado, el ultimo presupuesto mostrado, el pago y
-el tope. El pedido cambia solo si el cliente compra, confirma o cambia: lo marca `anotar`.
+LA MEMORIA de la charla: el historial, que es una ventana, y aparte, en el codigo, todo lo que dijo el cliente, el pedido
+anotado, el ultimo presupuesto mostrado, el pago y el tope. El pedido cambia solo si el cliente compra, confirma o
+cambia: lo marca `anotar`.
 """
 import asyncio
 import collections
@@ -44,7 +45,8 @@ UMBRAL_TEMA = 0.70
 # "estado" es el estado entero del ejecutor, con el borrador de la FICHA 71: lo que dijo el cliente, entre turnos. FICHA 86.
 # "fuente" es lo que devolvieron las herramientas en cada turno anterior, uno por turno, la misma ventana que el historial:
 # lo que dijo el bot no es fuente, auditoria del 6-nov.
-MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": "", "fuente": []}
+# "dicho" es cada mensaje del cliente, hasta MEMORIA_TURNOS: lo que dijo no se pierde cuando sale de la ventana, 6-nov.
+MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": "", "fuente": [], "dicho": []}
 # UMBRAL, 30-oct: hasta cuantas palabras la respuesta del cliente elige el medio que le ofrecio el bot. "Joaquin no tengo
 # mp" son 4; con 6, "si, el teclado era una memoria" anotaba transferencia en K20 y "color indistinto 70 por ciento
 # transferencia" anotaba Mercado Pago al 30% en K21, sin que el cliente lo dijera.
@@ -725,9 +727,14 @@ def hoja_reglas(tienda_id: str) -> str:
     return "LAS REGLAS DE LA TIENDA, de su FAQ, valen siempre:\n" + "\n".join(lineas) if lineas else ""
 
 
-def charla(historial: list) -> str:
-    return "LA CHARLA HASTA ACA:\n" + "\n".join(f"{'Cliente' if m.get('role') == 'user' else 'Vos'}: {m.get('content') or ''}"
-                                                for m in historial) if historial else "Charla nueva."
+def charla(historial: list, dicho: list = ()) -> str:
+    """LA MEMORIA LARGA, 6-nov, orden de Martin: lo que el cliente dijo antes de la ventana del historial va arriba, solo
+    sus lineas. Medido con la gratis: con 20 turnos o mas el modelo ya no recordaba el nombre ni la ciudad del primero."""
+    antes = list(dicho)[:max(0, len(dicho) - sum(m.get("role") == "user" for m in historial))]
+    return ("LO QUE DIJO EL CLIENTE ANTES DE LA CHARLA DE ABAJO:\n" + "\n".join(f"Cliente: {x}" for x in antes) + "\n\n"
+            if antes else "") + ("LA CHARLA HASTA ACA:\n" + "\n".join(
+                f"{'Cliente' if m.get('role') == 'user' else 'Vos'}: {m.get('content') or ''}" for m in historial)
+                if historial else "Charla nueva.")
 
 
 def memoria_texto(memoria: dict) -> str:
@@ -755,20 +762,21 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     actualiza solo si hay respuesta."""
     contexto = memoria_texto(memoria)
     hoja = f"{hoja_reglas(tienda_id)}\n\n{T.mapa(tienda_id)}".strip()  # las reglas y la tabla, siempre a la vista
-    msgs = [{"role": "system", "content": f"{CONSIGNA}\n\n{hoja}".strip()},
-            {"role": "user", "content": f"{charla(historial)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
     dichos = [str(m.get("content") or "") for m in historial]
+    # LO QUE DIJO EL CLIENTE VIVE EN EL CODIGO, 6-nov: la charla entera, no la ventana. Una charla de antes del 6-nov
+    # arranca con lo que quedo en su historial.
+    del_cliente = list(memoria.get("dicho") or []) or [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
+    msgs = [{"role": "system", "content": f"{CONSIGNA}\n\n{hoja}".strip()},
+            {"role": "user", "content": f"{charla(historial, del_cliente)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
     # LO QUE DIJO EL CLIENTE, y lo que le ofrecio el ultimo mensaje del bot si contesta corto: a "¿transferencia o Mercado
     # Pago?", "no tengo MP" es transferencia; un mensaje largo de otra cosa no elige medio. Decision de Martin, 30-oct.
     ultimo_bot = next((x for m, x in zip(reversed(historial), reversed(dichos)) if m.get("role") == "assistant"), "")
-    dijo = K.n(" ".join([mensaje] + [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
-                        + de_la_oferta(mensaje, ultimo_bot)))
+    dijo = K.n(" ".join([mensaje] + del_cliente + de_la_oferta(mensaje, ultimo_bot)))
     memoria.pop("_ultimo", None)
     # LO QUE DIJO EL BOT NO ES FUENTE, 6-nov, auditoria de las 12 capas, FICHA 87 causa 3: un dato inventado en un turno
     # pasaba los controles en los siguientes porque su texto estaba en la charla. Vale lo que devolvieron las
     # herramientas, en este turno y en los anteriores, y lo que dijo el cliente.
     antes = list(memoria.get("fuente") or [])
-    del_cliente = [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
     pasos, salidas, entrada, salida, corregido, avisos = [], [], 0, 0, False, []
     t0 = time.time()
     for vuelta in range(VUELTAS + 1):
@@ -823,6 +831,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             if memoria.get("_ultimo"):
                 memoria.update(memoria.pop("_ultimo"))
             memoria["fuente"] = (antes + ["\n".join(salidas)])[-get_settings().HISTORY_LIMIT:]
+            memoria["dicho"] = (del_cliente + [mensaje])[-get_settings().MEMORIA_TURNOS:]
             ultimo = _pegado(pasos)
             log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos], sin_buscar=faltan,
                      omitidos=avisos,
