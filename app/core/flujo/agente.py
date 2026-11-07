@@ -459,6 +459,13 @@ def pedido(a: dict, memoria: dict, tienda_id: str, visto: str = None, dijo: str 
         a[clave] = [x for x in a.get(clave) or [] if x not in dobles]
         fuera += [f"No apliqué \"{x.get('cita')}\": va a más de un lugar, {x['destino']}. Mandá un renglón por destino, "
                   "con la cantidad que va a cada uno." for x in dobles]
+    # EL MISMO COMANDO DOS VECES EN UN TURNO SE APLICA UNA, 7-nov: el modelo gratis mandaba el mismo agrega tres veces y
+    # "dos memorias" quedaban en seis.
+    hechos = memoria.setdefault("_cmds", [])
+    for clave in ("agrega", "cambia"):
+        claves = [json.dumps(x, sort_keys=True, ensure_ascii=False) for x in a.get(clave) or []]
+        fuera += [f"Ya apliqué \"{x.get('cita')}\" en este turno." for k, x in zip(claves, a.get(clave) or []) if k in hechos]
+        a[clave], hechos[:] = [x for k, x in zip(claves, a.get(clave) or []) if k not in hechos], hechos + claves
     items = a.get("agrega", []) + a.get("cambia", [])
     # EL CANDADO DE PRODUCTOS, el de `presupuesto`: lo que no salio del buscador ni de la charla se busca primero.
     nombres = [str(n) for x in items for n in (x.get("entre") or [x.get("producto")]) if n]
@@ -817,7 +824,7 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     # Pago?", "no tengo MP" es transferencia; un mensaje largo de otra cosa no elige medio. Decision de Martin, 30-oct.
     ultimo_bot = next((x for m, x in zip(reversed(historial), reversed(dichos)) if m.get("role") == "assistant"), "")
     dijo = K.n(" ".join([mensaje] + del_cliente + de_la_oferta(mensaje, ultimo_bot)))
-    memoria.pop("_ultimo", None)
+    memoria.pop("_ultimo", None), memoria.pop("_cmds", None)
     # LO QUE DIJO EL BOT NO ES FUENTE, 6-nov, auditoria de las 12 capas, FICHA 87 causa 3: un dato inventado en un turno
     # pasaba los controles en los siguientes porque su texto estaba en la charla. Vale lo que devolvieron las
     # herramientas, en este turno y en los anteriores, y lo que dijo el cliente.
@@ -894,8 +901,8 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
             # se pide el nombre. Estaba solo en la consigna, y "ese me lo llevo" salia preguntando solo el envio.
             # UNA VEZ POR PEDIDO: se vuelve a pedir solo si cambio lo que compra, no el envio ni el pago. Cuenta tambien
             # cuando lo pidio el modelo: K21 t4, "Mi nombre es Julio", y K10, que lo pedia en cinco turnos seguidos.
-            if memoria.get("_ultimo"):
-                memoria.update(memoria.pop("_ultimo"))
+            memoria.pop("_cmds", None)
+            memoria.update(memoria.pop("_ultimo", None) or {})
             compra = sorted(f"{K.entero(x.get('cantidad')) or 1} {_id_de(x.get('producto'), tienda_id)}" for x in memoria["pedido"])
             pidio = re.search(r"\bnombre\b|reserv", K.n(texto))
             # UNA PREGUNTA DEL CODIGO POR VEZ, e105d5a00b t2: si el presupuesto ya pregunta algo, el tope, eso va primero.

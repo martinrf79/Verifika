@@ -122,3 +122,12 @@ def test_una_lista_larga_se_corta_en_pocos_productos(A):
     r, _ = turno(A, "que mouse tenes?", [("buscar", {"consulta": consulta})],
                  dice("", [{"cita": f"P{i}", "mostrar": ["conexion", "peso_g", "uso", "garantia_meses"], "por": ""} for i in range(1, 16)], ""))
     assert r["respuesta"].count("•") == RE.MAX_PRODUCTOS, r["respuesta"]
+
+
+def test_el_mismo_comando_tres_veces_en_un_turno_se_aplica_una(A):
+    """El modelo gratis mandaba el mismo agrega tres veces y dos memorias quedaban en seis, 7-nov."""
+    cmd = {"agrega": [{"producto": M220, "cantidad": 2, "destino": "Concordia", "cita": "dos m220 a concordia"}]}
+    pasos = [("buscar", {"consulta": SQL}), ("pedido", cmd), ("pedido", cmd), ("pedido", cmd)]
+    r, memoria = turno(A, "dos m220 a concordia", pasos, dice("Listo.", [], ""))
+    assert "2x Mouse Logitech M220" in r["respuesta"] and "6x" not in r["respuesta"], r["respuesta"]
+    assert "_cmds" not in memoria
