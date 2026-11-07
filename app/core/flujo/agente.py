@@ -76,8 +76,7 @@ Tenes cinco herramientas, y contestas siempre con la ultima, responder:
   con stock > 0, y en las columnas pedi siempre nombre, precio y stock, y las columnas en que te basas para elegir. El
   criterio del cliente va en el WHERE y en el ORDER BY: un equipo suyo, en la columna con_ de ese equipo = 'anda'; lo
   mas barato, ORDER BY precio; lo menos chino, por fabricado_en y pais_marca. Para un texto libre, LIKE '%palabra%'.
-  Para contar, COUNT(*) AS y en el alias lo que se cuenta, modelos_y_colores_con_stock: nunca escribas una cantidad
-  de la tienda, citala.
+  Cuantos productos o rubros tiene la tienda, y cuantos por rubro: citalo de LA TIENDA EN NUMEROS, no lo cuentes.
 - pedido: cambia el pedido del cliente cuando compra, cambia, saca o confirma algo. Manda solo ese cambio, nunca el
   pedido entero, con las palabras del cliente en cita: lo nuevo en agrega; para cambiar o sacar un renglon que ya esta,
   su numero de la libreta, L-1. Si el cliente no eligio entre opciones, manda las opciones en entre: el sistema le
@@ -810,6 +809,8 @@ async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, 
     contexto, citas = memoria_texto(memoria, tienda_id), Citas()
     hoja = f"{hoja_reglas(tienda_id, citas)}\n\n{T.mapa(tienda_id)}".strip()  # las reglas y la tabla, siempre a la vista
     orden = orden_del_cliente(mensaje, tienda_id)
+    contexto += "\nLA TIENDA EN NUMEROS, para cuando pregunta cuantos hay; citalo con su numero:\n" + "\n".join(
+        f"{citas('dato', t, t)}: {t}" for t in T.resumen(tienda_id))
     # LO QUE LA TIENDA NO VENDE LO DETECTA EL CODIGO EN EL MENSAJE, 7-nov, K12: "tenes celulares" buscado por SQL con una
     # marca daba monitores, y el modelo no tenia como decir "no vendemos". Va con su numero, para citarlo.
     if (nv := categoria_no_vendida(mensaje, tienda_id)):

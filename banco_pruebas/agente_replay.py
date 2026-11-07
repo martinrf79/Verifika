@@ -130,6 +130,7 @@ def final_atada(texto: str, k: dict) -> dict:
     n = K.n(texto)
     tool = "\n".join(str(m.get("content") or "") for m in msgs if m.get("role") in ("tool", "user"))
     hoja = str(msgs[0].get("content") or "") if msgs else ""
+    tool = re.sub(r"(?m)^\s*D\d+: (La tienda tiene|Con stock hoy).*$", "", tool)  # la tienda en numeros esta siempre
     bloques = []
     for cita, fila in re.findall(r"(?m)^\s*(P\d+): (.*)$", tool):
         nombre = re.search(r"nombre: ([^;]+)", fila)

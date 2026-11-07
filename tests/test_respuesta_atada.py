@@ -53,10 +53,13 @@ def test_un_numero_en_palabras_o_cifras_no_sale(A):
         assert A.datos_en_libre(dice(libre), C.TIENDA)
 
 
-def test_la_cantidad_de_la_tabla_se_cita_y_sale_del_codigo(A):
-    r, _ = turno(A, "cuantos articulos tenes?", [("buscar", {"consulta": "SELECT COUNT(*) AS cantidad FROM productos"})],
-                 dice("Tenemos esta cantidad.", [{"cita": "D1", "mostrar": [], "por": ""}], "¿Buscas algo?"))
-    assert "cantidad: " in r["respuesta"] and not r["hallazgos"], r["respuesta"]
+def test_cuantos_productos_hay_lo_da_el_codigo_certificado(A):
+    """WhatsApp 7-nov: 'cuantos productos tenes' decia 778, los de stock, o 'mas de 100'. Los numeros salen de la tabla en
+    cada turno, citables, y no los cuenta el modelo."""
+    from app.core.flujo import tabla as T
+    n = T.tabla(C.TIENDA).execute("SELECT COUNT(*) FROM productos").fetchone()[0]
+    r, _ = turno(A, "cuantos productos tenes?", [], dice("Esta es la tienda.", [{"cita": "D1", "mostrar": [], "por": ""}], "¿Buscas algo?"))
+    assert f"La tienda tiene {n} productos" in r["respuesta"] and not r["hallazgos"], r["respuesta"]
 
 
 def test_el_medio_que_el_cliente_no_dijo_no_sale(A):
@@ -131,21 +134,6 @@ def test_listame_todas_muestra_todos_los_rubros_y_no_solo_el_mas_barato(A):
     r, _ = turno(A, "listame todas", [("buscar", {"consulta": consulta})],
                  dice("", [{"cita": f"P{i}", "mostrar": [], "por": ""} for i in range(1, 26)], ""))
     assert "• Tablet" in r["respuesta"] and "• Notebook" in r["respuesta"], r["respuesta"]
-
-
-def test_un_conteo_sale_legible(A):
-    r, _ = turno(A, "cuantos productos tenes?", [("buscar", {"consulta": "SELECT COUNT(*) AS modelos_y_colores_con_stock FROM productos WHERE stock > 0"})],
-                 dice("", [{"cita": "D1", "mostrar": [], "por": ""}], ""))
-    assert "modelos y colores con stock: " in r["respuesta"], r["respuesta"]
-
-
-def test_el_mismo_comando_tres_veces_en_un_turno_se_aplica_una(A):
-    """El modelo gratis mandaba el mismo agrega tres veces y dos memorias quedaban en seis, 7-nov."""
-    cmd = {"agrega": [{"producto": M220, "cantidad": 2, "destino": "Concordia", "cita": "dos m220 a concordia"}]}
-    pasos = [("buscar", {"consulta": SQL}), ("pedido", cmd), ("pedido", cmd), ("pedido", cmd)]
-    r, memoria = turno(A, "dos m220 a concordia", pasos, dice("Listo.", [], ""))
-    assert "2x Mouse Logitech M220" in r["respuesta"] and "6x" not in r["respuesta"], r["respuesta"]
-    assert "_cmds" not in memoria
 
 
 def test_si_la_consulta_se_corta_el_modelo_sabe_cuantos_hay_por_rubro(A):

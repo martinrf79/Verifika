@@ -93,6 +93,17 @@ def ficha(pid: str, tienda_id: str) -> dict:
     return {d[0]: v for d, v in zip(cur.description, f) if v is not None} if f else {}
 
 
+def resumen(tienda_id: str) -> list:
+    """LA TIENDA EN NUMEROS, 7-nov: cuantos productos tiene y cuantos con stock, y por rubro. Los cuenta el codigo de la
+    tabla, no el modelo: el modelo contaba 'con stock' porque la consigna lo pide en toda consulta, y contestaba 778 donde
+    el cliente preguntaba por el catalogo. Nada de esto se escribe en un documento: sale de la tabla en cada turno."""
+    db = tabla(tienda_id)
+    n, s, r = db.execute("SELECT COUNT(*), SUM(stock > 0), COUNT(DISTINCT rubro) FROM productos").fetchone()
+    por = db.execute("SELECT rubro, COUNT(*) FROM productos WHERE stock > 0 GROUP BY rubro ORDER BY 2 DESC").fetchall()
+    return [f"La tienda tiene {n} productos en {r} rubros, {s} con stock hoy.",
+            "Con stock hoy, por rubro: " + ", ".join(f"{a} {b}" for a, b in por) + "."]
+
+
 def con_orden(sql: str, terminos: list) -> str:
     """EL CRITERIO DEL CLIENTE LO ORDENA EL CODIGO, 7-nov: "lo menos chino" escrito por el modelo como ORDER BY pais
     dejaba a China primera. Los terminos van antes del orden que escribio el modelo, que queda de desempate."""
@@ -138,7 +149,6 @@ def consultar(sql: str, tienda_id: str, citas=None, orden: list = ()) -> str:
 
     def linea(f):
         d, texto = dict(zip([c.lower() for c in cols], f)), "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
-        texto = texto if "nombre" in d or "id" in d else texto.replace("_", " ")  # un conteo: el alias dice que se cuenta
         if citas is None:
             return texto
         pid = d.get("id") or ((db.execute("SELECT id FROM productos WHERE nombre = ?", (d["nombre"],)).fetchone() or [None])[0]
