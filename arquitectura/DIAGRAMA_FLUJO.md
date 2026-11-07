@@ -210,7 +210,7 @@ La llamada al modelo, el despacho de sus herramientas y el armado final del turn
 
 ### 6 BUSCAR
 
-El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad, los embeddings de temas. 142 funciones, 2758 lineas.
+El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad, los embeddings de temas. 142 funciones, 2765 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -320,7 +320,7 @@ El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad
 | core.flujo.tabla | `columnas` | 2 | 4,9 | si |
 | core.flujo.tabla | `ficha` | 5 | 9 | si |
 | core.flujo.tabla | `con_orden` | 7 | · | si |
-| core.flujo.tabla | `consultar` | 44 | · | si |
+| core.flujo.tabla | `consultar` | 51 | · | si |
 | core.fuente_producto | `_norm` | 3 | · | si |
 | core.fuente_producto | `_patron_clave` | 7 | · | si |
 | core.fuente_producto | `_ruta_config` | 15 | · | si |

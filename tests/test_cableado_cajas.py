@@ -4,7 +4,7 @@
 salida de cada caja. Si el modelo es siempre el mismo y la regla falla, la falla es del codigo, y la regla dice de que caja.
 
   el instrumento   las reglas de frontera de la caja 6 se cumplen cuando la salida es buena: sin falsas alarmas.
-  PLAN             las dos fallas de WhatsApp del 7-nov que son de la caja 6 BUSCAR, escritas como tests que fallan: "notebooks y
+  ARREGLADAS      las dos fallas de WhatsApp del 7-nov que son de la caja 6 BUSCAR, arregladas en `tabla.consultar` el 7-nov, FICHA 91: "notebooks y
                    tablets" dejaba las 25 filas en notebooks, y "mouse g203" por LIKE volvia vacio con el producto en la tabla.
 """
 import asyncio
@@ -43,15 +43,11 @@ def test_una_busqueda_buena_no_dispara_ninguna_regla(A):
     assert violaciones(A, "tenes el m220?", sql) == []
 
 
-@pytest.mark.xfail(strict=True, reason="PLAN: caja 6 BUSCAR, el corte de 25 filas depende del ORDER BY del modelo: con ORDER BY rubro todo "
-                                       "es notebook y las tablets no llegan, WhatsApp 7-nov. Se arregla en `tabla.consultar`.")
 def test_notebooks_y_tablets_llegan_las_dos(A):
     sql = "SELECT nombre, precio, stock, rubro FROM productos WHERE (rubro = 'notebook' OR rubro = 'tablet') AND stock > 0 ORDER BY rubro, precio"
     assert violaciones(A, "Pasame todas las notebooks y tablets", sql) == []
 
 
-@pytest.mark.xfail(strict=True, reason="PLAN: caja 6 BUSCAR, 'mouse g203' por LIKE de la frase entera vuelve vacio y el modelo dice que no "
-                                       "hay stock, WhatsApp 7-nov. Se arregla donde la consulta resuelve el producto, no en la consigna.")
 def test_un_producto_que_existe_no_vuelve_vacio(A):
     sql = "SELECT nombre, precio, stock FROM productos WHERE nombre LIKE '%mouse g203%' AND color = 'Negro' AND stock > 0 ORDER BY precio ASC"
     assert violaciones(A, "tenes un mouse g203 negro", sql) == []

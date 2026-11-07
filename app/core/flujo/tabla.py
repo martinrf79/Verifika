@@ -12,6 +12,7 @@ mensajes sin error, contra 14 con la busqueda por frases.
   el mapa    las columnas con sus valores, que el modelo tiene a la vista: elige mirando la lista, no de memoria.
 """
 import collections
+import itertools
 import re
 import sqlite3
 
@@ -131,16 +132,23 @@ def consultar(sql: str, tienda_id: str, citas=None, orden: list = ()) -> str:
     db.set_progress_handler(corta, 1000)
     try:
         cur = db.execute(con_orden(q, list(orden)))
-        cols, filas = [d[0] for d in cur.description], cur.fetchmany(FILAS_MAX + 1)
-        total = db.execute(f"SELECT COUNT(*) FROM ({q})").fetchone()[0] if len(filas) > FILAS_MAX else len(filas)
-        # CUANTOS HAY POR RUBRO CUANDO SE CORTA, 7-nov: 'listame todas' trajo 24 tablets y 1 de 148 notebooks, y el modelo
-        # no sabia que faltaban. Con los totales, consulta cada rubro.
-        por = db.execute(f"SELECT rubro, COUNT(*) FROM productos WHERE nombre IN (SELECT nombre FROM ({q})) GROUP BY rubro"
-                         ).fetchall() if total > FILAS_MAX and "nombre" in [d[0].lower() for d in cur.description] else []
+        cols, todas = [d[0] for d in cur.description], cur.fetchall()
+        # EL CORTE LO REPARTE EL CODIGO ENTRE RUBROS, 7-nov, FICHA 91: con ORDER BY rubro las 25 filas eran notebooks y las
+        # tablets no llegaban. Una fila por rubro a la vez; las que entran se ven en el orden del modelo, que no decide cuales entran.
+        rubro, grupos, total = dict(db.execute("SELECT id, rubro FROM productos UNION SELECT nombre, rubro FROM productos UNION SELECT rubro, rubro FROM productos")), {}, len(todas)
+        for i, f in enumerate(todas):
+            grupos.setdefault(next((rubro[v] for v in f if v in rubro), None), []).append(i)
+        entran = [i for t in itertools.zip_longest(*grupos.values()) for i in t if i is not None] if total > FILAS_MAX else range(total)
+        filas = [todas[i] for i in sorted(entran[:FILAS_MAX])]  # entran las que reparte cada rubro, se ven en el orden del modelo
+        por = [(r, len(v)) for r, v in grupos.items() if r] if total > FILAS_MAX and "nombre" in [c.lower() for c in cols] else []
     except sqlite3.Error as e:
         return f"La consulta fallo: {e}. Revisa las columnas y valores del mapa."
     finally:
         db.set_progress_handler(None, 0)
+    if not filas:  # UNA FRASE QUE NO ESTA ENTERA SE BUSCA PALABRA POR PALABRA, 7-nov, FICHA 91: "mouse g203" no es "Mouse Logitech G203"
+        q2 = re.sub(r"(?i)nombre\s+like\s+'%([^%']+ [^%']+)%'", lambda m: "(" + " AND ".join(f"nombre LIKE '%{w}%'" for w in m.group(1).split()) + ")", q)
+        if q2 != q:
+            return consultar(q2, tienda_id, citas, orden)
     if not filas:  # UNA BUSQUEDA VACIA SE PUEDE CITAR, 7-nov: sin esto el modelo no tenia como decir "no tenemos"
         vacio = "No tenemos productos que cumplan lo que buscaste."
         return (f"{citas('dato', 'vacio', vacio)}: " if citas is not None else "") + "Ninguna fila cumple esa consulta. " + vacio
