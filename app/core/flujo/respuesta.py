@@ -5,6 +5,7 @@ El modelo contesta con la herramienta `responder`: los numeros de lo que devolvi
 E1, N1, D1, y que datos mostrar de cada uno. El codigo arma el mensaje con las filas reales de la tienda, y el candado
 mira lo unico que escribio el modelo. Ademas, el criterio del cliente —lo mas barato, lo menos chino— lo ordena el codigo.
 """
+import itertools
 import re
 
 from . import catalogo as K
@@ -12,10 +13,10 @@ from . import marcador as MK
 from . import tabla as T
 
 _S = {"type": "string"}
-# UMBRALES, 7-nov, de lo visto en WhatsApp con el modelo real: citaba 15 productos con 6 columnas cada uno. Con 6 entra una
-# lista corta de opciones; con 3 columnas, el dato en que se basa mas el precio y el stock. La marca y el color ya van en el
-# nombre.
-MAX_PRODUCTOS, MAX_COLUMNAS = 6, 3
+# UMBRALES, 7-nov, de lo visto en WhatsApp: el modelo citaba 15 productos con 6 columnas cada uno. Con 3 columnas entra el
+# dato en que se basa mas el precio y el stock; la marca y el color ya van en el nombre. Con 12 productos entra un listado
+# de dos rubros, y los que no entran se dicen: con 6 y sin decirlo, "listame todas" mostraba solo tablets.
+MAX_PRODUCTOS, MAX_COLUMNAS = 12, 3
 
 
 def _A():
@@ -162,13 +163,25 @@ def _sin_hola(texto) -> str:
     return re.sub(r"(?i)^\W*hola\b[^\w¿]*", "", str(texto or "").strip())
 
 
+def _elegir_productos(a: dict, citas: Citas, tienda_id: str) -> tuple:
+    """(las citas que entran, cuantas quedan afuera). Hasta MAX_PRODUCTOS, repartidos entre los rubros del listado: ordenados
+    por precio, los de un solo rubro llenaban el mensaje y el cliente no veia los otros, 7-nov."""
+    grupos: dict = {}
+    for c in dict.fromkeys(str(b.get("cita")) for b in a.get("bloques") or []):
+        if c in citas.items and citas.items[c][0] == "producto":
+            grupos.setdefault(T.ficha(citas.items[c][1], tienda_id).get("rubro"), []).append(c)
+    todos = [c for tanda in itertools.zip_longest(*grupos.values()) for c in tanda if c]
+    return set(todos[:MAX_PRODUCTOS]), max(0, len(todos) - MAX_PRODUCTOS)
+
+
 def armar(a: dict, citas: Citas, pasos: list, memoria: dict, tienda_id: str) -> tuple:
     """(texto para el cliente, lo que pego el codigo): el saludo y la pregunta del modelo, y entre medio cada numero
     citado con sus datos sacados de la tienda. Un numero que no es de este turno no se pega. El pedido del turno, o la
     cotizacion, y el cobro salen aunque no los cite, y una sola vez: el modelo no puede repetir un presupuesto."""
     pedido_, cobro = _A()._pegado(pasos, "pedido"), _A()._pegado(pasos, "cobrar")
     hecho = pedido_ or _A()._pegado(pasos, "cotizar")
-    pegado, vistos, productos = [], set(), 0
+    pegado, vistos = [], set()
+    elegidos, cortados = _elegir_productos(a, citas, tienda_id)
     for b in a.get("bloques") or []:
         c = str(b.get("cita") or "")
         if c in vistos:
@@ -185,14 +198,14 @@ def armar(a: dict, citas: Citas, pasos: list, memoria: dict, tienda_id: str) -> 
                 pegado.append(texto)
                 continue
             f = T.ficha(clave, tienda_id)
-            if not f or productos >= MAX_PRODUCTOS:
+            if not f or c not in elegidos:
                 continue
-            productos += 1
             cols = list(dict.fromkeys([x for x in [b.get("por")] if x] + ["precio"] + [
                 x for x in b.get("mostrar") or [] if x not in ("marca", "color")][:MAX_COLUMNAS]))
             datos = [_valor(x, f[x]) for x in cols if x in f and x not in ("nombre", "id")]
             pegado.append(f"• {f['nombre']}: " + ", ".join(datos))
     pegado += [x for x in (hecho, cobro) if x and x not in pegado]
+    pegado += [f"Hay {cortados} más. Decime cuál te interesa o qué querés ver y te lo muestro."] if cortados else []
     sin = str(a.get("sin_dato") or "").strip()
     # UNA PREGUNTA DEL CODIGO POR VEZ: si lo pegado ya pregunta, lo que falta del pedido, la del modelo se calla.
     pregunta = "" if "?" in (hecho or "") else _corto(_sin_hola(a.get("pregunta")), LARGO_PREGUNTA)

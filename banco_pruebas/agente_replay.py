@@ -111,7 +111,7 @@ def _sin_numeros(texto: str) -> str:
     """Lo que devuelve una herramienta sin los numeros de cita, P1, R1, y sin el total que se suma a "hay mas": lo
     grabado es de antes de la respuesta atada, 7-nov."""
     import re
-    t = re.sub(r" de \d+, hay mas", ", hay mas", re.sub(r"(?m)^(\s*)[PRENDS]\d+: ", r"\1", str(texto or "")))
+    t = re.sub(r" de \d+(?: \([^)]*\))?, hay mas", ", hay mas", re.sub(r"(?m)^(\s*)[PRENDS]\d+: ", r"\1", str(texto or "")))
     return t.replace(" No tenemos productos que cumplan lo que buscaste.", "").replace("D1: ", "")
 
 

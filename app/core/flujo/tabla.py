@@ -122,6 +122,10 @@ def consultar(sql: str, tienda_id: str, citas=None, orden: list = ()) -> str:
         cur = db.execute(con_orden(q, list(orden)))
         cols, filas = [d[0] for d in cur.description], cur.fetchmany(FILAS_MAX + 1)
         total = db.execute(f"SELECT COUNT(*) FROM ({q})").fetchone()[0] if len(filas) > FILAS_MAX else len(filas)
+        # CUANTOS HAY POR RUBRO CUANDO SE CORTA, 7-nov: 'listame todas' trajo 24 tablets y 1 de 148 notebooks, y el modelo
+        # no sabia que faltaban. Con los totales, consulta cada rubro.
+        por = db.execute(f"SELECT rubro, COUNT(*) FROM productos WHERE nombre IN (SELECT nombre FROM ({q})) GROUP BY rubro"
+                         ).fetchall() if total > FILAS_MAX and "nombre" in [d[0].lower() for d in cur.description] else []
     except sqlite3.Error as e:
         return f"La consulta fallo: {e}. Revisa las columnas y valores del mapa."
     finally:
@@ -134,10 +138,12 @@ def consultar(sql: str, tienda_id: str, citas=None, orden: list = ()) -> str:
 
     def linea(f):
         d, texto = dict(zip([c.lower() for c in cols], f)), "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
+        texto = texto if "nombre" in d or "id" in d else texto.replace("_", " ")  # un conteo: el alias dice que se cuenta
         if citas is None:
             return texto
         pid = d.get("id") or ((db.execute("SELECT id FROM productos WHERE nombre = ?", (d["nombre"],)).fetchone() or [None])[0]
                               if d.get("nombre") else None)
         return (f"{citas.producto(str(pid))}: " if pid else f"{citas('dato', texto, texto)}: ") + texto
-    return f"{min(len(filas), FILAS_MAX)} filas" + (f" de {total}, hay mas: afina la consulta" if total > FILAS_MAX else "") \
+    return f"{min(len(filas), FILAS_MAX)} filas" + (f" de {total}" + (f" ({', '.join(f'{r} {n}' for r, n in por)})" if por else "") + ", hay mas: afina la consulta"
+                                          if total > FILAS_MAX else "") \
         + ":\n" + "\n".join("  " + linea(f) for f in filas[:FILAS_MAX])

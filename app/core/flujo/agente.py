@@ -76,7 +76,8 @@ Tenes cinco herramientas, y contestas siempre con la ultima, responder:
   con stock > 0, y en las columnas pedi siempre nombre, precio y stock, y las columnas en que te basas para elegir. El
   criterio del cliente va en el WHERE y en el ORDER BY: un equipo suyo, en la columna con_ de ese equipo = 'anda'; lo
   mas barato, ORDER BY precio; lo menos chino, por fabricado_en y pais_marca. Para un texto libre, LIKE '%palabra%'.
-  Para contar, COUNT(*) AS cantidad: nunca escribas una cantidad de la tienda, citala.
+  Para contar, COUNT(*) AS y en el alias lo que se cuenta, modelos_y_colores_con_stock: nunca escribas una cantidad
+  de la tienda, citala.
 - pedido: cambia el pedido del cliente cuando compra, cambia, saca o confirma algo. Manda solo ese cambio, nunca el
   pedido entero, con las palabras del cliente en cita: lo nuevo en agrega; para cambiar o sacar un renglon que ya esta,
   su numero de la libreta, L-1. Si el cliente no eligio entre opciones, manda las opciones en entre: el sistema le

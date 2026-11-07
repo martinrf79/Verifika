@@ -116,12 +116,27 @@ def test_el_criterio_del_cliente_lo_ordena_el_codigo(A):
     assert A.orden_del_cliente("el mas barato y el mas caro", C.TIENDA) == []
 
 
-def test_una_lista_larga_se_corta_en_pocos_productos(A):
+def test_una_lista_larga_se_corta_pero_se_dice_y_entran_todos_los_rubros(A):
     from app.core.flujo import respuesta as RE
     consulta = "SELECT id, nombre, precio, stock FROM productos WHERE rubro = 'mouse' AND stock > 0"
     r, _ = turno(A, "que mouse tenes?", [("buscar", {"consulta": consulta})],
                  dice("", [{"cita": f"P{i}", "mostrar": ["conexion", "peso_g", "uso", "garantia_meses"], "por": ""} for i in range(1, 16)], ""))
-    assert r["respuesta"].count("•") == RE.MAX_PRODUCTOS, r["respuesta"]
+    assert r["respuesta"].count("•") == RE.MAX_PRODUCTOS and "Hay 3 más" in r["respuesta"], r["respuesta"]
+
+
+def test_listame_todas_muestra_todos_los_rubros_y_no_solo_el_mas_barato(A):
+    """WhatsApp 7-nov: 'Listame todas' de notebooks y tablets ordenadas por precio mostraba 6 tablets y ninguna notebook."""
+    consulta = ("SELECT id, nombre, precio, stock FROM productos WHERE rubro IN ('notebook', 'tablet') AND stock > 0 "
+                "ORDER BY precio ASC")
+    r, _ = turno(A, "listame todas", [("buscar", {"consulta": consulta})],
+                 dice("", [{"cita": f"P{i}", "mostrar": [], "por": ""} for i in range(1, 26)], ""))
+    assert "• Tablet" in r["respuesta"] and "• Notebook" in r["respuesta"], r["respuesta"]
+
+
+def test_un_conteo_sale_legible(A):
+    r, _ = turno(A, "cuantos productos tenes?", [("buscar", {"consulta": "SELECT COUNT(*) AS modelos_y_colores_con_stock FROM productos WHERE stock > 0"})],
+                 dice("", [{"cita": "D1", "mostrar": [], "por": ""}], ""))
+    assert "modelos y colores con stock: " in r["respuesta"], r["respuesta"]
 
 
 def test_el_mismo_comando_tres_veces_en_un_turno_se_aplica_una(A):
@@ -131,3 +146,12 @@ def test_el_mismo_comando_tres_veces_en_un_turno_se_aplica_una(A):
     r, memoria = turno(A, "dos m220 a concordia", pasos, dice("Listo.", [], ""))
     assert "2x Mouse Logitech M220" in r["respuesta"] and "6x" not in r["respuesta"], r["respuesta"]
     assert "_cmds" not in memoria
+
+
+def test_si_la_consulta_se_corta_el_modelo_sabe_cuantos_hay_por_rubro(A):
+    """'Listame todas': 24 tablets y 148 notebooks, y las 25 mas baratas eran tablets. Sin los totales el modelo no sabia
+    que faltaban notebooks."""
+    from app.core.flujo import tabla as T
+    texto = T.consultar("SELECT nombre, precio, stock, rubro FROM productos WHERE (rubro = 'notebook' OR rubro = 'tablet') "
+                        "AND stock > 0 ORDER BY precio ASC", C.TIENDA).splitlines()[0]
+    assert "hay mas" in texto and "notebook" in texto and "tablet" in texto, texto
