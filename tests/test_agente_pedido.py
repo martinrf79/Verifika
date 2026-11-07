@@ -160,12 +160,13 @@ def test_dos_llamadas_en_el_mismo_turno_se_suman(A):
 
 
 def test_el_pedido_lo_pega_el_codigo(A):
-    """K21: el modelo no escribio el presupuesto porque creyo que no cambio nada. Si hubo `pedido`, va igual."""
+    """K21: el modelo no escribio el presupuesto porque creyo que no cambio nada. Si hubo `pedido`, va igual. Desde el
+    7-nov la respuesta la arma el codigo con la herramienta responder, FICHA 90: ya no hay marca [[PEDIDO]] que poner."""
     pasos = [{"herramienta": "pedido", "pide": {}, "devuelve": "", "al_cliente": "Presupuesto: 1x Mouse"}]
     m = A.memoria_de({})
-    assert A.pegar("Listo, te lo sumo.", pasos, m, C.TIENDA).endswith("Presupuesto: 1x Mouse")
-    assert A.pegar("Asi queda:\n[[PEDIDO]]\nTe sirve?", pasos, m, C.TIENDA) == "Asi queda:\nPresupuesto: 1x Mouse\nTe sirve?"
-    assert A.pegar("Hola", [], m, C.TIENDA) == "Hola"
+    texto, _ = A.armar({"saludo": "Listo, te lo sumo.", "bloques": [], "pregunta": "¿Te sirve?"}, A.Citas(), pasos, m, C.TIENDA)
+    assert texto == "Listo, te lo sumo.\n\nPresupuesto: 1x Mouse\n\n¿Te sirve?"
+    assert A.armar({"saludo": "Listo.", "bloques": [], "pregunta": ""}, A.Citas(), [], m, C.TIENDA)[0] == "Listo."
 
 
 # ══ PROCEDENCIA SOLA: el paso 3, sin el ejecutor ══

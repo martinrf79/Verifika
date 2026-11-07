@@ -82,8 +82,30 @@ def es_consulta(texto: str) -> bool:
     return bool(re.match(r"(?is)^\s*(select|with)\b", texto or ""))
 
 
-def consultar(sql: str, tienda_id: str) -> str:
-    """Un SELECT sobre la tabla, de solo lectura: las filas en texto, cada una con sus columnas, el precio en pesos."""
+def columnas(tienda_id: str) -> list:
+    return [x[1] for x in tabla(tienda_id).execute("PRAGMA table_info(productos)")]
+
+
+def ficha(pid: str, tienda_id: str) -> dict:
+    """La fila entera de un producto, {columna: valor} sin vacios: lo que el codigo pega cuando el modelo lo cita."""
+    cur = tabla(tienda_id).execute("SELECT * FROM productos WHERE id = ?", (pid,))
+    f = cur.fetchone()
+    return {d[0]: v for d, v in zip(cur.description, f) if v is not None} if f else {}
+
+
+def con_orden(sql: str, terminos: list) -> str:
+    """EL CRITERIO DEL CLIENTE LO ORDENA EL CODIGO, 7-nov: "lo menos chino" escrito por el modelo como ORDER BY pais
+    dejaba a China primera. Los terminos van antes del orden que escribio el modelo, que queda de desempate."""
+    m = re.search(r"(?is)(?:\border\s+by\s+(.+?))?(\s+limit\s+\d+(?:\s+offset\s+\d+)?)?\s*$", sql)
+    if not terminos or re.search(r"(?i)\b(group\s+by|union|having)\b", sql) or not re.match(r"(?is)\s*select\b", sql):
+        return sql
+    return sql[:m.start()] + " ORDER BY " + ", ".join(terminos + ([m.group(1)] if m.group(1) else [])) + (m.group(2) or "")
+
+
+def consultar(sql: str, tienda_id: str, citas=None, orden: list = ()) -> str:
+    """Un SELECT sobre la tabla, de solo lectura: las filas en texto, cada una con sus columnas, el precio en pesos. Con
+    `citas`, cada fila lleva el numero con que el modelo la cita, "P3"; un resultado sin producto, un COUNT, lleva el
+    suyo, "D1". Con `orden`, el criterio del cliente va primero en el orden."""
     q = sql.strip().rstrip(";")
     if not es_consulta(q) or ";" in q:
         return "Solo una consulta SELECT sobre la tabla productos."
@@ -97,16 +119,25 @@ def consultar(sql: str, tienda_id: str) -> str:
         return pasos[0] > 2000
     db.set_progress_handler(corta, 1000)
     try:
-        cur = db.execute(q)
+        cur = db.execute(con_orden(q, list(orden)))
         cols, filas = [d[0] for d in cur.description], cur.fetchmany(FILAS_MAX + 1)
+        total = db.execute(f"SELECT COUNT(*) FROM ({q})").fetchone()[0] if len(filas) > FILAS_MAX else len(filas)
     except sqlite3.Error as e:
         return f"La consulta fallo: {e}. Revisa las columnas y valores del mapa."
     finally:
         db.set_progress_handler(None, 0)
-    if not filas:
-        return "Ninguna fila cumple esa consulta."
+    if not filas:  # UNA BUSQUEDA VACIA SE PUEDE CITAR, 7-nov: sin esto el modelo no tenia como decir "no tenemos"
+        vacio = "No tenemos productos que cumplan lo que buscaste."
+        return (f"{citas('dato', 'vacio', vacio)}: " if citas is not None else "") + "Ninguna fila cumple esa consulta. " + vacio
     # EL PRECIO EN PESOS, "$70.000", como lo controla el verificador: con "70000" borraba la lista.
     plata = lambda c, v: f"${int(v):,}".replace(",", ".") if c.lower() == "precio" and isinstance(v, (int, float)) else v  # noqa: E731
-    return f"{min(len(filas), FILAS_MAX)} filas" + (", hay mas: afina la consulta" if len(filas) > FILAS_MAX else "") + \
-        ":\n" + "\n".join("  " + "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
-                          for f in filas[:FILAS_MAX])
+
+    def linea(f):
+        d, texto = dict(zip([c.lower() for c in cols], f)), "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
+        if citas is None:
+            return texto
+        pid = d.get("id") or ((db.execute("SELECT id FROM productos WHERE nombre = ?", (d["nombre"],)).fetchone() or [None])[0]
+                              if d.get("nombre") else None)
+        return (f"{citas.producto(str(pid))}: " if pid else f"{citas('dato', texto, texto)}: ") + texto
+    return f"{min(len(filas), FILAS_MAX)} filas" + (f" de {total}, hay mas: afina la consulta" if total > FILAS_MAX else "") \
+        + ":\n" + "\n".join("  " + linea(f) for f in filas[:FILAS_MAX])

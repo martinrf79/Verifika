@@ -45,9 +45,12 @@ def _turno(A, historial, mensaje, pasos, respuesta, memoria=None):
 def test_un_monto_que_solo_dijo_el_bot_no_vale_como_fuente(A):
     historial = [{"role": "user", "content": "cuanto sale el envio a Posadas"},
                  {"role": "assistant", "content": "El envio a Posadas sale $99.999."}]
-    r, _ = _turno(A, historial, "ok gracias", [], "Perfecto, el envio a Posadas era $99.999. ¿Algo mas?")
-    assert ("dato", "99999") in r["hallazgos"]
-    assert "99.999" not in r["respuesta"]
+    # Desde el 7-nov el modelo escribe un saludo y una pregunta, y un numero ahi no sale, FICHA 90: se le devuelve una vez, y
+    # si lo repite, ese campo se saca.
+    dicho = {"saludo": "Perfecto, el envio a Posadas era $99.999.", "bloques": [], "pregunta": "¿Algo mas?"}
+    r, _ = _turno(A, historial, "ok gracias", [], dicho)
+    assert A.datos_en_libre(dicho, C.TIENDA)
+    assert "99.999" not in r["respuesta"] and "99999" not in r["respuesta"]
 
 
 def test_un_monto_que_dio_una_herramienta_antes_sigue_valiendo(A):

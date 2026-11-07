@@ -64,8 +64,8 @@ def test_sin_medio_no_se_cobra_y_el_medio_dicho_si(A):
     cliente, _ = asyncio.run(A.cobrar({"nombre": "Joaquin", "pago": "100 transferencia"}, m, "u", "telegram", C.TIENDA,
                                       "t", "no tengo mp, pago por transferencia"))
     assert "transferencia" in cliente.lower() and m["pago"] == "100 transferencia"
-    pegado = A.pegar("Listo Joaquin.", [{"herramienta": "cobrar", "devuelve": cliente, "al_cliente": cliente}], m,
-                     C.TIENDA)
+    pegado, _ = A.armar({"saludo": "Listo Joaquin.", "bloques": [], "pregunta": ""}, A.Citas(),
+                        [{"herramienta": "cobrar", "devuelve": cliente, "al_cliente": cliente}], m, C.TIENDA)
     assert cliente in pegado
 
 
