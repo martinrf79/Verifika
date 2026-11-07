@@ -10,7 +10,7 @@ su regla: si el modelo repite lo mismo y el turno sale mal, la falla es del codi
         ...correr el turno...
     for violacion in t.violaciones(): ...
 
-Limites: usa `sys.monitoring` y mira el marco del que llama, asi que ve las llamadas de funciones comunes y las que corren en
+Limites: usa `sys.setprofile` y mira el marco del que llama, asi que ve las llamadas de funciones comunes y las que corren en
 hilos, pero no los saltos entre corrutinas (un `await` de una corrutina de otra caja se anota desde el bucle de eventos). Una
 regla solo juzga lo que sabe leer: las que no pueden decidir, no dicen nada."""
 import collections
@@ -49,48 +49,44 @@ class Traza:
         return None
 
     def __enter__(self):
-        mon = sys.monitoring
-        self.T = mon.PROFILER_ID
-        mon.use_tool_id(self.T, "traza_cajas")
-        ev = mon.events
+        """`sys.setprofile` y `threading.setprofile`, no `sys.monitoring`: este existe desde Python 3.12 y el CI corre 3.11."""
+        import threading
 
-        def llama(code, off):
-            callee = self._nodo(code)
-            if not callee:
-                return
-            marco = sys._getframe(1)
-            caller = self._nodo(marco.f_back.f_code) if marco.f_back else None
-            if caller is None and marco.f_back and marco.f_back.f_code.co_filename.endswith(("thread.py", "threading.py")) is False:
-                return  # lo llama codigo ajeno a app/ que no es un hilo: libreria, pytest, el arnes
-            # Una funcion que corre en un hilo (`asyncio.to_thread`) no tiene al que llama en su pila: se anota con "hilo".
-            if caller is None:
-                caller = ("hilo", "hilo")
-            if caller[1] == callee[1] or callee[1] not in self.solo or (caller[1] != "hilo" and caller[1] not in self.solo):
-                return
-            clave = (caller[1], callee[1], callee[0])
-            self.vistos[clave] += 1
-            if self.vistos[clave] > 2:  # las dos primeras llamadas de cada par, para que la traza se lea
-                return
-            crudo = dict(list(marco.f_locals.items())[: code.co_argcount])
-            self.eventos.append({"seq": len(self.eventos) + 1, "de": caller[1], "a": callee[1], "funcion": callee[0],
-                                 "args": {k: _recorte(v) for k, v in crudo.items()}, "crudo": crudo, "devuelve": None,
-                                 "_marco": id(marco)})
-
-        def vuelve(code, off, ret):
-            marco = sys._getframe(1)
-            for e in reversed(self.eventos):
-                if e["_marco"] == id(marco) and e["devuelve"] is None:
-                    e["devuelve"] = ret
+        def perfil(marco, evento, arg):
+            if evento == "call":
+                callee = self._nodo(marco.f_code)
+                if not callee:
                     return
+                caller = self._nodo(marco.f_back.f_code) if marco.f_back else None
+                # Una funcion que corre en un hilo (`asyncio.to_thread`) no tiene al que llama en su pila: se anota con "hilo".
+                if caller is None:
+                    if marco.f_back and not marco.f_back.f_code.co_filename.endswith(("thread.py", "threading.py")):
+                        return  # la llama codigo ajeno a app/ que no es un hilo: libreria, pytest, el arnes
+                    caller = ("hilo", "hilo")
+                if caller[1] == callee[1] or callee[1] not in self.solo or (caller[1] != "hilo" and caller[1] not in self.solo):
+                    return
+                clave = (caller[1], callee[1], callee[0])
+                self.vistos[clave] += 1
+                if self.vistos[clave] > 2:  # las dos primeras llamadas de cada par, para que la traza se lea
+                    return
+                crudo = dict(list(marco.f_locals.items())[: marco.f_code.co_argcount])
+                self.eventos.append({"seq": len(self.eventos) + 1, "de": caller[1], "a": callee[1], "funcion": callee[0],
+                                     "args": {k: _recorte(v) for k, v in crudo.items()}, "crudo": crudo, "devuelve": None,
+                                     "_marco": id(marco)})
+            elif evento == "return":
+                for e in reversed(self.eventos):
+                    if e["_marco"] == id(marco) and e["devuelve"] is None:
+                        e["devuelve"] = arg
+                        return
 
-        mon.register_callback(self.T, ev.PY_START, llama)
-        mon.register_callback(self.T, ev.PY_RETURN, vuelve)
-        mon.set_events(self.T, ev.PY_START | ev.PY_RETURN)
+        self._perfil, self._hilos = perfil, threading
+        threading.setprofile(perfil)
+        sys.setprofile(perfil)
         return self
 
     def __exit__(self, *a):
-        sys.monitoring.set_events(self.T, 0)
-        sys.monitoring.free_tool_id(self.T)
+        sys.setprofile(None)
+        self._hilos.setprofile(None)
 
     def texto(self) -> str:
         L = []
