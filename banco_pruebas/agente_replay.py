@@ -107,10 +107,69 @@ def traducir(pasos: list, memoria: dict, mensaje: str) -> list:
 C_TIENDA = "verifika_prod"
 
 
+def _sin_numeros(texto: str) -> str:
+    """Lo que devuelve una herramienta sin los numeros de cita, P1, R1, y sin el total que se suma a "hay mas": lo
+    grabado es de antes de la respuesta atada, 7-nov."""
+    import re
+    t = re.sub(r" de \d+, hay mas", ", hay mas", re.sub(r"(?m)^(\s*)[PRENDS]\d+: ", r"\1", str(texto or "")))
+    return t.replace(" No tenemos productos que cumplan lo que buscaste.", "").replace("D1: ", "")
+
+
+def final_atada(texto: str, k: dict) -> dict:
+    """LA RESPUESTA ATADA SIMULADA, 7-nov, FICHA 90: el texto grabado del modelo pasa a una llamada a `responder`. Cita los
+    productos que el texto nombra, con las columnas que el texto dice; las reglas, envios y cantidades que devolvieron las
+    herramientas del turno; el presupuesto y el cobro si estaban pegados. El saludo y la pregunta son las oraciones del
+    texto que no traen un dato. Mide lo que hace el codigo con una redaccion razonable, no lo que escribe el modelo."""
+    import re
+    from app.core.flujo import agente as A
+    from app.core.flujo import catalogo as K
+    from app.core.flujo import tabla as T
+    msgs = k.get("messages") or []
+    cols = next((t["function"]["parameters"]["properties"]["bloques"]["items"]["properties"]["mostrar"]["items"]["enum"]
+                 for t in k.get("tools") or [] if t["function"]["name"] == "responder"), [])
+    n = K.n(texto)
+    tool = "\n".join(str(m.get("content") or "") for m in msgs if m.get("role") in ("tool", "user"))
+    hoja = str(msgs[0].get("content") or "") if msgs else ""
+    bloques = []
+    for cita, fila in re.findall(r"(?m)^\s*(P\d+): (.*)$", tool):
+        nombre = re.search(r"nombre: ([^;]+)", fila)
+        pid = re.search(r"(?:^|; )id: ([^;]+)", fila)
+        if not (nombre or pid):
+            continue
+        f = T.ficha(pid.group(1), C_TIENDA) if pid else {}
+        if not f:
+            f = T.ficha((T.tabla(C_TIENDA).execute("SELECT id FROM productos WHERE nombre = ?", (nombre.group(1),)).fetchone() or [""])[0], C_TIENDA)
+        # El texto nombra el producto sin el color, o con parte del nombre: el 80% de sus palabras.
+        ws = [w for w in K.n(f.get("nombre") or "").split() if w != K.n(f.get("color"))]
+        precio = f"${int(f['precio']):,}".replace(",", ".") if f.get("precio") else "-"
+        if not f or (sum(w in set(re.findall(r"[a-z0-9]+", n)) for w in ws) < 0.8 * len(ws) and precio not in texto):
+            continue
+        mostrar = [c for c in cols if c in f and c not in ("precio", "stock") and len(str(f[c])) > 2 and K.n(str(f[c])) in n]
+        bloques.append({"cita": cita, "mostrar": mostrar, "por": ""})
+    for cita in dict.fromkeys(re.findall(r"(?m)^\s*([RENDS]\d+): ", tool)):
+        if cita[0] != "P":
+            bloques.append({"cita": cita, "mostrar": [], "por": ""})
+    for cita, linea in re.findall(r"(?m)^(R\d+): (.*)$", hoja):
+        ws = {w for w in re.findall(r"[a-z0-9]+", K.n(linea)) if len(w) > 4}
+        if ws and len(ws & set(re.findall(r"[a-z0-9]+", n))) >= 0.5 * len(ws) and not any(b["cita"] == cita for b in bloques):
+            bloques.append({"cita": cita, "mostrar": [], "por": ""})
+    if "presupuesto" in n or "[[presupuesto" in n:
+        bloques.append({"cita": "PRESUPUESTO", "mostrar": [], "por": ""})
+    if "para pagar por" in n or "[[cobro" in n:
+        bloques.append({"cita": "COBRO", "mostrar": [], "por": ""})
+    oraciones = [o.strip() for linea in texto.split("\n") if not re.match(r"\s*([-*•]|\d+x |Presupuesto|Subtotal|Total|Envio|Pago dividido|\[\[)", linea)
+                 for o in re.findall(r"[^.!?]+[.!?]?", re.sub(r"\s*\([^)]*\)", "", linea)) if o.strip()]
+    limpias = [o for o in oraciones if not A.datos_en_libre({"saludo": o}, C_TIENDA)]
+    dicen = [o for o in limpias if not o.endswith("?")]
+    preguntas = [o for o in limpias if o.endswith("?")]
+    pregunta = next((o for o in preguntas if re.search(r"transfer|mercado ?pago|pag", K.n(o))), preguntas[-1] if preguntas else "")
+    return {"saludo": " ".join(dicen[:2]), "bloques": bloques, "pregunta": pregunta}
+
+
 class Grabado:
     """El modelo falso: por turno, las llamadas grabadas en orden y despues la respuesta, las veces que la pidan."""
     def __init__(self):
-        self.cola, self.final, self.mensaje, self.memoria, self.pidio = [], "", "", None, False
+        self.cola, self.final, self.mensaje, self.memoria = [], "", "", None
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._crear))
 
     def turno(self, g: dict) -> None:
@@ -124,9 +183,10 @@ class Grabado:
         """TODAS LAS LLAMADAS GRABADAS EN UNA SOLA RESPUESTA, como las manda el modelo de verdad, 5-nov: de a una, un
         turno con muchas llamadas pasaba las vueltas del agente y salia sin respuesta, K20 t1 regrabado."""
         if not self.cola:
-            return _respuesta(texto=self.final.replace("[[PRESUPUESTO]]", "[[PEDIDO]]") if self.pidio else self.final)
+            # Un dict es lo que el modelo manda a responder, tal cual; un texto, lo que dijo el modelo antes de la atada.
+            return _respuesta({"herramienta": "responder",
+                               "pide": self.final if isinstance(self.final, dict) else final_atada(self.final, k)})
         cola = self._traducidas()
-        self.pidio = any(p["herramienta"] == "pedido" for p in cola)
         r = _respuesta(cola[0])
         r.choices[0].message.tool_calls = [_respuesta(p).choices[0].message.tool_calls[0] for p in cola]
         self.cola = []
@@ -180,7 +240,19 @@ def instalar(vivo: bool = False, gratis: bool = False):
     from app.core import llm_reintento
     from app.core.flujo import agente
     falso = Grabado()
-    if vivo:
+    if vivo and os.environ.get("REPLAY_OPENROUTER"):
+        # OPENROUTER CON UN MODELO GRATIS, CLAUDE.md seccion 4: para medir el codigo y lo que recibe el modelo cuando la
+        # cuota de Gemini se agoto. Los embeddings, con la paga, 7-nov, orden de Martin: son centavos.
+        from openai import OpenAI
+        from app.config import get_settings
+        cli = OpenAI(api_key=os.environ["OPENROUTER_API_KEY"].split()[0], base_url="https://openrouter.ai/api/v1")
+        llm_reintento._cliente = lambda: cli
+        llm_reintento._modelo = lambda: os.environ["REPLAY_OPENROUTER"]
+        if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
+            raise SystemExit("los embeddings van con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
+        get_settings().GEMINI_API_KEY = os.environ["GEMINI_API_KEY_PROD"]
+        _precargar(agente, C.TIENDA)
+    elif vivo:
         cli = _paga(gratis)
         llm_reintento._cliente = lambda: cli
         _precargar(agente, C.TIENDA)
@@ -202,7 +274,6 @@ def instalar(vivo: bool = False, gratis: bool = False):
     async def _espia(*a, **k):
         falso.memoria = a[2] if len(a) > 2 else k.get("memoria")  # el modelo simulado traduce contra esta libreta
         falso.mensaje = a[0] if a else k.get("mensaje") or ""
-        falso.pidio = False
         r = await responder(*a, **k)
         vistos.append(r)
         return r
@@ -245,7 +316,7 @@ def _una(ch: str, grabados: list, falso, vistos, vara: dict, pausa: float) -> li
         vivos = (vistos[-1].get("pasos") if vistos else None) or []
         # LO TRADUCIDO NO SE COMPARA, paso 2: es otra herramienta, y lo que devuelve es lo que se mide en las casillas.
         distintas = [p["herramienta"] for p, v in zip(g.get("pasos") or [], vivos)
-                     if p["herramienta"] == v["herramienta"] and p["devuelve"] != v["devuelve"]]
+                     if p["herramienta"] == v["herramienta"] and _sin_numeros(p["devuelve"]) != _sin_numeros(v["devuelve"])]
         traducidas = sum(p["herramienta"] != v["herramienta"] for p, v in zip(g.get("pasos") or [], vivos))
         filas.append({"id": ch, "turno": g["turno"], "malas": malas, "distintas": distintas, "traducidas": traducidas,
                       "texto": texto, "pasos_vivos": vivos, "pasos": g.get("pasos") or [],
