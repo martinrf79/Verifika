@@ -1,0 +1,937 @@
+{
+ "_que_es": "Funciones y clases de app/ que ninguna de las pruebas corridas ejecuto. Candidatas a archivar, no sentencias.",
+ "commit": "515888a",
+ "pruebas": [
+  "tests/test_agente.py",
+  "tests/test_candado_examen.py",
+  "tests/test_respuesta_atada.py"
+ ],
+ "pytest_rc": 0,
+ "total": 487,
+ "ejecutadas": 285,
+ "nunca": 202,
+ "dobles_no_juzgadas": 49,
+ "candidatas": 153,
+ "lineas_candidatas": 2389,
+ "lista": [
+  {
+   "id": "app.core.agente.h_envio",
+   "caja": 6,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.agente.h_compatibilidad",
+   "caja": 6,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.calculadora._efecto_porcentaje",
+   "caja": 7,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.calculadora._subtotales_por_grupo",
+   "caja": 7,
+   "lineas": 39,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos._ruta",
+   "caja": 6,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos._filas",
+   "caja": 6,
+   "lineas": 6,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos._clave",
+   "caja": 6,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos._choca",
+   "caja": 6,
+   "lineas": 11,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos.modelo_contra_planilla",
+   "caja": 6,
+   "lineas": 15,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos.prosa_despues_de_ingerir",
+   "caja": 6,
+   "lineas": 15,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos.compat_fuera_de_vocabulario",
+   "caja": 6,
+   "lineas": 19,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos.compat_contra_specs",
+   "caja": 6,
+   "lineas": 22,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos._modelos_del_catalogo",
+   "caja": 6,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos.filas_huerfanas",
+   "caja": 6,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos.columnas_no_declaradas",
+   "caja": 6,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.coherencia_datos.revisar_todo",
+   "caja": 6,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.compatibilidad.va_adentro",
+   "caja": 6,
+   "lineas": 6,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.compatibilidad.plataformas_del_mensaje",
+   "caja": 6,
+   "lineas": 17,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.compatibilidad.conectores_del_mensaje",
+   "caja": 6,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.compatibilidad.por_conector",
+   "caja": 6,
+   "lineas": 18,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.compatibilidad.choca_con_lo_dicho",
+   "caja": 6,
+   "lineas": 16,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.compatibilidad.evaluar_par",
+   "caja": 6,
+   "lineas": 58,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.curadas._fmt_valor",
+   "caja": 6,
+   "lineas": 22,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.curadas.estampar_valores",
+   "caja": 6,
+   "lineas": 21,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.envio._zona_por_4digitos",
+   "caja": 7,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.envio._provincia_por_cp4",
+   "caja": 7,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.estado_venta.set_current_estado",
+   "caja": 3,
+   "lineas": 7,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.estado_venta.get_ids_certificados",
+   "caja": 3,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.condicion_sin_vocabulario",
+   "caja": 6,
+   "lineas": 16,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.limpiar_cache",
+   "caja": 6,
+   "lineas": 11,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._a_numero",
+   "caja": 6,
+   "lineas": 7,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._raices",
+   "caja": 6,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.evaluar",
+   "caja": 6,
+   "lineas": 29,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._pega_por_raiz",
+   "caja": 6,
+   "lineas": 6,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._preferencia_numerica",
+   "caja": 6,
+   "lineas": 21,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._ordenar_por_preferencia",
+   "caja": 6,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.campos_con_el_valor",
+   "caja": 6,
+   "lineas": 10,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._donde_si_vive",
+   "caja": 6,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.aplicar",
+   "caja": 6,
+   "lineas": 110,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._texto_del_producto",
+   "caja": 6,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.relevancia",
+   "caja": 6,
+   "lineas": 15,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo._frase_corta",
+   "caja": 6,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.pesos_por_rareza",
+   "caja": 6,
+   "lineas": 18,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.lo_nombra",
+   "caja": 6,
+   "lineas": 13,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.alguno_lo_nombra",
+   "caja": 6,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.clave_de_orden",
+   "caja": 6,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.orden_tiene_sentido",
+   "caja": 6,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.ordenar",
+   "caja": 6,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.cuantos_cumple",
+   "caja": 6,
+   "lineas": 13,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.rankear_por_cercania",
+   "caja": 6,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.filtros_catalogo.dato_que_falla",
+   "caja": 6,
+   "lineas": 24,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.agente._vectores",
+   "caja": 6,
+   "lineas": 20,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.agente._base",
+   "caja": 6,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.agente._parecidos",
+   "caja": 6,
+   "lineas": 15,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.agente._tema_por_clave",
+   "caja": 6,
+   "lineas": 7,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.agente.calcular",
+   "caja": 7,
+   "lineas": 10,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador.anotar_busqueda",
+   "caja": 7,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador.base",
+   "caja": 7,
+   "lineas": 5,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador._ejes",
+   "caja": 7,
+   "lineas": 18,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador._leer",
+   "caja": 7,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador.en_palabras",
+   "caja": 7,
+   "lineas": 10,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador._y",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador.todas",
+   "caja": 7,
+   "lineas": 18,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador._cierra",
+   "caja": 7,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador._proponer",
+   "caja": 7,
+   "lineas": 42,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador._combo",
+   "caja": 7,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador.aceptar",
+   "caja": 7,
+   "lineas": 7,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.borrador._que",
+   "caja": 7,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.catalogo._monto",
+   "caja": 6,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.catalogo.cumple",
+   "caja": 6,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.catalogo.buscar",
+   "caja": 6,
+   "lineas": 30,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._si",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._modelo_de",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._no_achica",
+   "caja": 7,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._valor_de",
+   "caja": 7,
+   "lineas": 6,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._campo_de",
+   "caja": 7,
+   "lineas": 22,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._frases_de_campos",
+   "caja": 7,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._oracion",
+   "caja": 7,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._perdidos",
+   "caja": 7,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._sin_n",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._producto",
+   "caja": 7,
+   "lineas": 10,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._buscar",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._compatibilidad",
+   "caja": 7,
+   "lineas": 42,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._veredicto",
+   "caja": 7,
+   "lineas": 5,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._politica",
+   "caja": 7,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._cambia",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._el_que_cumple",
+   "caja": 7,
+   "lineas": 24,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._envio",
+   "caja": 7,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._explicar",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._otro",
+   "caja": 7,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._palabras_de",
+   "caja": 7,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._llenar",
+   "caja": 7,
+   "lineas": 7,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._atar_respuesta",
+   "caja": 7,
+   "lineas": 29,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.ejecutor._atar_equipo",
+   "caja": 7,
+   "lineas": 42,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.estado._de_antes",
+   "caja": 3,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.interprete.datos",
+   "caja": 7,
+   "lineas": 10,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.flujo.marcador._numero",
+   "caja": 4,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.marcador._temas",
+   "caja": 4,
+   "lineas": 28,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.marcador.marcar",
+   "caja": 4,
+   "lineas": 22,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.marcador._sacar",
+   "caja": 4,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.marcador._mismo",
+   "caja": 4,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.marcador.respuesta",
+   "caja": 4,
+   "lineas": 37,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.normal._campo",
+   "caja": 7,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.redaccion._fila",
+   "caja": 7,
+   "lineas": 2,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.redaccion._etiqueta",
+   "caja": 7,
+   "lineas": 6,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.redaccion._lista",
+   "caja": 7,
+   "lineas": 19,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.redaccion._envio",
+   "caja": 7,
+   "lineas": 7,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.flujo.verificador.sin_marcadas",
+   "caja": 9,
+   "lineas": 6,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._norm",
+   "caja": 4,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente.temas_consultables",
+   "caja": 4,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._fichas",
+   "caja": 4,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._senas_por_tema",
+   "caja": 4,
+   "lineas": 16,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente.certificar_tema",
+   "caja": 4,
+   "lineas": 39,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente.certificar_temas",
+   "caja": 4,
+   "lineas": 21,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._campos_prosa",
+   "caja": 4,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._ficha_corta",
+   "caja": 4,
+   "lineas": 44,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._texto_del_tema",
+   "caja": 4,
+   "lineas": 8,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._criterio_del_tema",
+   "caja": 4,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._de_la_casa",
+   "caja": 4,
+   "lineas": 24,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente.criterio_de",
+   "caja": 4,
+   "lineas": 13,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente.politicas_de",
+   "caja": 4,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente.inventario",
+   "caja": 4,
+   "lineas": 8,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.fuente._destino_estable",
+   "caja": 4,
+   "lineas": 7,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._tabla_interior",
+   "caja": 4,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente._tarifas",
+   "caja": 4,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente_producto.valor_numerico",
+   "caja": 6,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente_producto.derivar_tags",
+   "caja": 6,
+   "lineas": 10,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.fuente_producto.enriquecer",
+   "caja": 6,
+   "lineas": 32,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.geo_cp.es_lugar_conocido",
+   "caja": 7,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.guardas_salida._norm",
+   "caja": 10,
+   "lineas": 3,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.guia_venta_prosa.temas",
+   "caja": 10,
+   "lineas": 3,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.guia_venta_prosa.disparadores_de",
+   "caja": 10,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.guia_venta_prosa.identidad",
+   "caja": 10,
+   "lineas": 6,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.guia_venta_prosa._resultado",
+   "caja": 10,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.guia_venta_prosa.consultar_guia_venta",
+   "caja": 10,
+   "lineas": 22,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.guia_venta_prosa.texto_de",
+   "caja": 10,
+   "lineas": 4,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.huecos.anotar",
+   "caja": 6,
+   "lineas": 7,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.llm_reintento.anotar_llamada_negada",
+   "caja": 5,
+   "lineas": 4,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.llm_reintento.sin_cupo",
+   "caja": 5,
+   "lineas": 3,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.llm_reintento.reiniciar_cupo",
+   "caja": 5,
+   "lineas": 2,
+   "sin_alcance_estatico": true
+  },
+  {
+   "id": "app.core.llm_reintento.es_transitorio",
+   "caja": 5,
+   "lineas": 5,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.llm_reintento.espera_sugerida",
+   "caja": 5,
+   "lineas": 9,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.llm_reintento._cliente",
+   "caja": 5,
+   "lineas": 14,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._equipos",
+   "caja": 6,
+   "lineas": 12,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._universo",
+   "caja": 6,
+   "lineas": 10,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._por_ids",
+   "caja": 6,
+   "lineas": 6,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._con_la_cuenta",
+   "caja": 6,
+   "lineas": 29,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._certificar_id",
+   "caja": 6,
+   "lineas": 36,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._no_vendemos",
+   "caja": 6,
+   "lineas": 20,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._una",
+   "caja": 6,
+   "lineas": 248,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._una_afirmacion",
+   "caja": 6,
+   "lineas": 67,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._un_compat",
+   "caja": 6,
+   "lineas": 64,
+   "sin_alcance_estatico": false
+  },
+  {
+   "id": "app.core.motor._evaluar",
+   "caja": 6,
+   "lineas": 42,
+   "sin_alcance_estatico": false
+  }
+ ],
+ "nota": "Medicion completa del 7-nov con las tres pruebas de charlas, al commit 515888a; app/ es identico en fef875e y 25f0132."
+}

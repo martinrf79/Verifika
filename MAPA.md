@@ -63,6 +63,9 @@ permiso.
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
 | Las 26 charlas grabadas por el agente vivo, sin modelo: la vara del bot | `banco_pruebas/agente_replay.py`, `tests/test_agente.py` |
 | El candado: las charlas reales grabadas con SQL, sin modelo, los turnos que andaban no cambian | `banco_pruebas/examen_real/candado.py`, `tests/test_candado_examen.py` |
+| El diagrama del flujo: las funciones de `app/` en cajas numeradas, el cableado real entre cajas y la memoria; lo genera el código y un test lo cuida | `banco_pruebas/diagrama.py`, `arquitectura/DIAGRAMA_FLUJO.md`, `tests/test_diagrama.py` |
+| En qué caja del flujo se rompe un turno, sin modelo: la traza por cajas y una regla por frontera | `banco_pruebas/traza_cajas.py`, `tests/test_cableado_cajas.py` |
+| Qué funciones de `app/` se ejecutan de verdad en las charlas, y las candidatas a archivar | `banco_pruebas/funciones_ejecutadas.py`, `banco_pruebas/funciones_nunca_ejecutadas.json` |
 | Las 58 por el flujo nuevo, sin modelo: el instrumento del cableado | `banco_pruebas/cableado58.py` |
 | La multipregunta de los siete artículos miles de veces, con el cliente y el modelo simulados | `banco_pruebas/simulador.py` |
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |

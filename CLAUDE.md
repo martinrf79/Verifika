@@ -53,10 +53,12 @@ de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 
 ### Lo que sigue
 
-**Toda sesión arranca por la FICHA 89**, `arquitectura/FICHA_89_el_motor_y_la_auditoria.md`, orden de Martín del 6-nov:
-primero C55 t3, el único turno mal de la vara; después el motor con una sola memoria, paso por paso, según la auditoría de
-las 12 capas. Cada paso con sus pruebas escritas antes, con las habilidades de `.claude/skills/`. Con el plan medido, se
-mide en WhatsApp. La respuesta atada de la FICHA 88 quedó descartada por medición. El diagnóstico, en la FICHA 87.
+**Toda sesión arranca por la FICHA 91**, `arquitectura/FICHA_91_donde_se_rompe_el_flujo_y_la_caja_buscar.md`, orden de Martín
+del 7-nov: la consulta tipada de `buscar`, caja 6, con la traza por cajas y el diagrama generado, `arquitectura/DIAGRAMA_FLUJO.md`,
+como instrumentos. Después, la FICHA 89, orden de Martín del 6-nov: primero C55 t3, el único turno mal de la vara; después el motor
+con una sola memoria, paso por paso, según la auditoría de las 12 capas. Cada paso con sus pruebas escritas antes, con las habilidades de `.claude/skills/`. Con el plan medido, se
+mide en WhatsApp. La respuesta atada de la FICHA 88 se descartó por medición el 5-nov, y está en el bot desde el 7-nov, FICHA 90, por
+orden de Martín: el modelo cita por número y el código escribe los datos, `app/core/flujo/respuesta.py`. El diagnóstico, en la FICHA 87.
 
 El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con tres corridas `--gratis`. Si
 el código cambia lo que lee el modelo, las charlas afectadas se regraban con `--gratis --regrabar`.

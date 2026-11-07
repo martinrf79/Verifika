@@ -39,14 +39,18 @@ class Traza:
             ruta = os.path.join(REPO, n["modulo"].replace(".", os.sep) + ".py")
             self.caja_de.setdefault(ruta, []).append((n["linea"], n["linea"] + n["lineas"] - 1, n["nombre"], n["caja"]))
         self.solo = set(solo_cajas)
-        self.eventos, self.vistos = [], collections.Counter()
+        self.eventos, self.vistos, self._memo = [], collections.Counter(), {}
 
     def _nodo(self, code):
-        for a, b, nombre, caja in self.caja_de.get(code.co_filename, ()):
-            # un decorador adelanta el primer numero de linea: se acepta hasta 6 lineas antes de `def`
-            if a - 6 <= code.co_firstlineno <= b:
-                return nombre, caja
-        return None
+        """(nombre, caja) de la funcion o clase de `app/` a la que pertenece un objeto de codigo, o None. Con memoria: se llama en cada llamada."""
+        if code not in self._memo:
+            self._memo[code] = None
+            for a, b, nombre, caja in self.caja_de.get(code.co_filename, ()):
+                # un decorador adelanta el primer numero de linea: se acepta hasta 6 lineas antes de `def`
+                if a - 6 <= code.co_firstlineno <= b:
+                    self._memo[code] = (nombre, caja)
+                    break
+        return self._memo[code]
 
     def __enter__(self):
         """`sys.setprofile` y `threading.setprofile`, no `sys.monitoring`: este existe desde Python 3.12 y el CI corre 3.11."""
