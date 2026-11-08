@@ -2,6 +2,25 @@
 
 7-nov-2026, con Martín. **La sesión siguiente arranca por acá**, antes de la FICHA 89 y la 90.
 
+## Cómo está el bot hoy, 8-nov, para que ninguna sesión lo discuta otra vez
+
+- **El agente NO redacta libre.** `agente._llamar` obliga a llamar una herramienta, `tool_choice: required`, y la única de respuesta
+  es `responder` (`respuesta.herramienta_responder`): cita por número productos, reglas y envíos, y elige columnas de la tabla, todo
+  con enumeraciones cerradas por la API. Lo único libre es el saludo, la pregunta y el nombre de un dato que falta, cortos y con
+  largo máximo; el control mira ahí números, marcas, valores y medios de pago. Los datos los pega el código con las filas reales.
+- **Las fichas 88 y 89 que la daban por descartada están corregidas:** vale la 90 y el código.
+- **Hecho el 8-nov (7-nov por fecha de commit), en `tabla.consultar`:** el corte de 25 filas lo reparte el código entre rubros, una
+  fila por rubro a la vez y a la vista en el orden del modelo, y una frase del nombre que vuelve vacía se repite palabra por palabra.
+  Los dos `xfail` de `tests/test_cableado_cajas.py` pasan y se sacaron. Batería: 522 pruebas. Regrabadas con el modelo gratis C38,
+  C43, C52 y K12. La foto del candado cambió en un turno, `7f8cd4a5ca t1`: la lista de gaming ahora reparte los rubros y el Kumara
+  K552 que citaba el modelo grabado ya no entra entre las 25. El techo de `app/` subió de 8768 a 8776, decisión marcada a Martín.
+- **Falta:** terminar la corrida `--gratis` de las 26 charlas, cortada por la cuota en K13 con 46 de 49 turnos bien, y las otras dos
+  corridas. Y medir en WhatsApp con las dos frases que fallaron.
+- **Lo que Martín pidió ver el 8-nov** y esta ficha deja asentado: la vara que de verdad importa es el examen real, las 42 charlas
+  reales con lo correcto verificado contra el catálogo, 80 de 113 turnos bien el 3-nov, 71%. El 74 de 75 de las 26 grabadas no predice
+  WhatsApp. Un cambio entra solo si no rompe un turno que ya andaba. Si en dos sesiones con esa vara el número no sube, se decide con
+  Martín entre seguir o un bot más angosto: catálogo, precio, stock, envío y cierre.
+
 ## El problema, en palabras de Martín
 
 Meses con el mismo cuello: el bot responde bien un caso y falla otro, se arregla una cosa y se rompe otra, y no hay forma de confiar

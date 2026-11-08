@@ -5,7 +5,9 @@ reordenados por lo que midió esta sesión.
 
 ## Lo que se decidió
 
-- **La respuesta atada a la API queda descartada:** medida el 5-nov, salió peor que r2. No se vuelve a proponer.
+- **CORREGIDO EL 8-NOV: esta línea quedó vieja y no manda.** El 6-nov se descartó la respuesta atada, y el 7-nov Martín ordenó
+  ponerla en el bot (FICHA 90) una vez que su causa de falla, el orden por país, pasó al código. **Hoy está en el bot y en `main`:**
+  el modelo contesta solo con la herramienta `responder`, atada por la API, y cita por número. Lo que manda es la FICHA 91.
 - **El camino es un motor con una sola memoria:** la libreta numerada, con el pedido, lo mostrado y lo que quedó
   preguntado, vive en el código. El modelo toca sólo dos puntos: lee el mensaje y redacta. Lo del medio es código.
 - **Ante la duda se repregunta.** Repreguntar vale como acertar; errar no.

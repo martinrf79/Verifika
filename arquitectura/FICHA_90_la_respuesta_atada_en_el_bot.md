@@ -1,6 +1,7 @@
 # FICHA 90 — La respuesta atada en el bot
 
-7-nov-2026, con Martín. **La sesión siguiente arranca por acá**, junto con la FICHA 89.
+7-nov-2026, con Martín. **Está en el bot y en `main`.** Desde el 8-nov la sesión arranca por la FICHA 91; esta ficha es el
+estado de la respuesta, y vale sobre la FICHA 88 y la 89, que la daban por descartada.
 
 ## Por qué
 
