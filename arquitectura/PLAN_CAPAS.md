@@ -42,7 +42,7 @@ verificador. Lo que sale cuando el camino nuevo supere al agente en las mismas c
 | 7 | envío | — |
 | 8 | compatibilidad | — |
 | 9 | explicar | — |
-| — | la llamada 1, su consigna | **sigue**: la intención de comprar y el producto del envío; recuperar la consigna del intérprete, git `53a1a90^` |
+| — | la llamada 1, su consigna | la intención de compra medida: B2 pasa su corte, una corrida; falta repetirla y llevar la llamada al bot; recuperar la consigna del intérprete, git `53a1a90^` |
 | — | memoria: un solo número para lo mostrado y lo pedido | medido el 9-nov en 15 turnos, 3 corridas: arregla los 3 de "rubro en vez de número", no rompe los 18 de control |
 
 ## Capa 1, buscar — 9-nov
@@ -82,3 +82,15 @@ Corte, escrito antes: Gemini 257 de 270 o más, sin romper ningún caso de ning�
 - Resultado: **Gemini 237 de 270, no pasa el corte.** Arregla 27, rompe 0.
 - Lo que queda es de la llamada 1, no del código: "quiero un K120 y el G305 blanco" y "me llevo el G305 si anda con Mac"
   llegan como preguntas, no como compras. Leer la intención sin listas de palabras es trabajo de la consigna.
+
+## La llamada 1, la intención de compra — 9-nov
+
+`banco_pruebas/llamada1/`, con su corte escrito antes en `CORTE.md`. La consigna del intérprete del 21-oct, la que grabó
+`traduccion58`, contra la misma con un párrafo de LA INTENCION DE COMPRA. 120 primeros mensajes, clave gratis, una vez cada uno.
+
+- B, comprar es "lo quiere, lo lleva, se lo mandan": gana 7 y pierde 2. **No pasa.** "Quiero un mouse inalámbrico" y
+  "cuánto sale mandar un G203" pasaban a compra.
+- B2, comprar es de un modelo concreto o de algo de la libreta; un rubro sin modelo busca; preguntar cuánto sale algo o
+  mandarlo es producto y envío: **comprar 85 de 90 contra 79, buscar 50 de 50 contra 47, producto igual. Gana 7, pierde 0.
+  Pasa.**
+- Falta: dos corridas más, por la variación entre corridas, y llevar la llamada 1 al bot por camino fijo.
