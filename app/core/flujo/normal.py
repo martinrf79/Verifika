@@ -15,6 +15,7 @@ Lo que hace cada regla:
 `normalizar` es pura: devuelve una agenda nueva y los nombres de las reglas que aplico, para el log del turno.
 """
 import copy
+import json
 import re
 
 from . import agenda as A
@@ -207,8 +208,9 @@ def cuenta_de_lo_nombrado(c: _Ctx) -> bool:
     if not c.acciones("cuenta") or c.acciones("comprar") or c.b["renglones"] or c.estado.get("pedido"):
         return False
     prods = c.acciones("producto")
-    cant = {id(p): K.entero(p.get("cantidad")) or (K.entero(p.get("afirma")) if re.fullmatch(r"\s*\d+\s*",
-            str(p.get("afirma") or "")) else 0) for p in prods}
+    # La cantidad en su campo, o en lo que afirma si es solo eso: "2", o "cantidad 2", 9-nov, C25.
+    cant = {id(p): K.entero(p.get("cantidad")) or (K.entero(m.group(1)) if (m := re.fullmatch(
+            r"\s*(?:cantidad\s*:?\s*)?(\d+)\s*", K.n(p.get("afirma") or ""))) else 0) for p in prods}
     if not prods or not any(v > 1 for v in cant.values()) or any(isinstance(p.get("producto"), list) for p in prods):
         return False
     agrega = [{"producto": p["producto"], "cantidad": cant[id(p)] or 1, **({"color": p["color"]} if p.get("color")
@@ -402,8 +404,173 @@ def un_medio_es_todo(c: _Ctx) -> bool:
     return hizo
 
 
+# ══ LA CAPA BUSCAR, 9-nov, `arquitectura/PLAN_CAPAS.md`: medidas con `banco_pruebas/capa_buscar.py` ══
+
+def _casi(a: str, b: str) -> bool:
+    """Iguales, o a una letra sobrante, faltante o dos vecinas cruzadas: la errata de un mensaje. Una letra cambiada no:
+    "menor" no es "mejor", es otra palabra."""
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1 or min(len(a), len(b)) < 4:
+        return False
+    if len(a) == len(b):
+        d = [i for i in range(len(a)) if a[i] != b[i]]
+        return len(d) == 2 and d[1] == d[0] + 1 and a[d[0]] == b[d[1]] and a[d[1]] == b[d[0]]
+    corto, largo = sorted((a, b), key=len)
+    return any(largo[:i] + largo[i + 1:] == corto for i in range(len(largo)))
+
+
+def _frase_en(frase: list, palabras: list) -> bool:
+    """La frase, palabra por palabra seguidas, en lo dicho; la ultima palabra de la frase vale como comienzo, "mas barat"
+    es "mas baratos", y cada palabra admite una errata."""
+    for i in range(len(palabras) - len(frase) + 1):
+        if all(_casi(f, palabras[i + j]) or (j == len(frase) - 1 and len(f) >= 4 and
+               (palabras[i + j].startswith(f) or _casi(f, palabras[i + j][:len(f)]) or _casi(f, palabras[i + j][:len(f) + 1])))
+               for j, f in enumerate(frase)):
+            return True
+    return False
+
+
+def orden_que_no_dijo(c: _Ctx) -> bool:
+    """UN ORDEN QUE EL CLIENTE NO DIJO NO ORDENA: "el precio no es tan importante" o "si es Logitech, mejor" llegaban
+    como "mas caro", y la busqueda mostraba lo mas caro de la tienda. Vale el orden que la cita nombra, por su nombre o
+    por una frase del vocabulario de la tienda. Se mira todo lo que dijo el cliente en el mensaje, las citas juntas: "dos
+    mouse y dos teclados, los mas baratos" ordena las dos busquedas. Si la agenda trae el mensaje, `mensaje`, se mira el
+    mensaje: hay modelos que cortan la cita y dejan el orden solo en su campo. Una errata de una letra vale, "baartos".
+    Si no nombra ninguno, no hay orden. No interpreta: solo comprueba que lo dicho este en lo que dijo."""
+    from . import marcador as MK
+    voc = MK.vocabulario_respuestas(c.tienda)["ordenes"]
+    frases = {o: [K.n(o)] + [K.n(f) for f in voc.get(o) or []] for o in K.ORDEN}
+    dicho = K.n(c.agenda.get("mensaje") or " ".join(str(p.get("cita") or "") for p in c.ps)).split()
+    hizo = False
+    for p in c.acciones("buscar"):
+        orden = K.n(p.get("orden"))
+        if orden not in frases or not dicho:
+            continue  # sin orden, o uno que el codigo no sabe ordenar: lo dice el ejecutor
+        dichos = [o for o, fs in frases.items() if any(_frase_en(f.split(), dicho) for f in fs)]
+        if orden in dichos:
+            continue
+        p["orden"] = dichos[0] if len(dichos) == 1 else "nada"
+        hizo = True
+    return hizo
+
+
+def lo_corregido(c: _Ctx) -> bool:
+    """LO QUE EL CLIENTE CORRIGE NO SE BUSCA: "un teclado redragon, ah no, mejor logitech" llegaba como dos busquedas y
+    la corrección en el medio. La busqueda de un rubro antes de la correccion sale si despues hay otra del mismo rubro."""
+    ps = c.ps
+    corr = [i for i, p in enumerate(ps) if p.get("accion") == "otro" and K.n(p.get("que")) == "corrige"]
+    if not corr:
+        return False
+    fuera = [p for i, p in enumerate(ps) if p.get("accion") == "buscar" and i < corr[-1]
+             and any(q.get("accion") == "buscar" and K.n(q.get("rubro")) == K.n(p.get("rubro")) for q in ps[corr[-1]:])]
+    if not fuera:
+        return False
+    c.agenda["preguntas"] = [p for p in ps if p not in fuera]
+    return True
+
+
+def rubro_con_marca(c: _Ctx) -> bool:
+    """UN RUBRO CON UNA MARCA NO ES UN PRODUCTO: "tenes auriculares jbl?" llegaba como el producto "auriculares jbl", que
+    nombra a varios, y el cliente recibia "cual de estos decis". Si lo que sobra del rubro lo ata el catalogo a un campo
+    —la marca, la conexion—, es una busqueda del rubro con esa condicion."""
+    hizo = False
+    for p in c.acciones("producto"):
+        nombre = str(p.get("producto") or "")
+        if K.identificar(nombre, "", c.tienda).get("veredicto") != "ambiguous":
+            continue
+        ws = K.n(nombre).split()
+        rub, resto = next(((K.solo_rubro(" ".join(ws[:i]), c.tienda), " ".join(ws[i:])) for i in range(len(ws) - 1, 0, -1)
+                           if K.solo_rubro(" ".join(ws[:i]), c.tienda)), ("", ""))
+        if not rub:
+            continue
+        universo = [x for x in K.productos(c.tienda) if x.get("categoria") == rub]
+        if "campo" not in K.atar(resto, universo, c.tienda):
+            continue
+        quiere = K.n(p.get("quiere_saber"))
+        for k in ("producto", "quiere_saber", "color", "afirma"):
+            p.pop(k, None)
+        p.update(accion="buscar", rubro=rub, cantidad=1, orden="nada", condiciones=[resto]
+                 + ([] if quiere in _PRECIO else [quiere]))
+        hizo = True
+    return hizo
+
+
+def alternativa_compatible(c: _Ctx) -> bool:
+    """"SI NO VA, QUE OTRA HAY": la busqueda que depende de una compatibilidad que da que no busca la que si va con ese
+    equipo. Llegaba sin condicion y mostraba las mismas memorias DDR4 que no entraban. El equipo de la compatibilidad
+    pasa a ser la condicion de la busqueda: lo que el catalogo ata a un dato de la ficha —"placa DDR5" es la
+    ram DDR5—, sin las palabras sueltas que solo ata a etiquetas, "pc", "escritorio"."""
+    por_n = {K.entero(p.get("n")): p for p in c.ps}
+    hizo = False
+    for p in c.acciones("buscar"):
+        si = p.get("si") if isinstance(p.get("si"), dict) else {}
+        q = por_n.get(K.entero(si.get("de")))
+        if not q or q.get("accion") != "compatibilidad" or K.n(si.get("da")) != "no" or _lista(p.get("condiciones")) \
+                or not q.get("con"):
+            continue
+        f = K.atar(str(q["con"]), K.productos(c.tienda), c.tienda)
+        datos = [str(x["valor"]) for x in (f.get("todas") or [f]) if x.get("campo") not in (None, "tags") and not x.get("niega")]
+        p["condiciones"] = [" ".join(datos) if datos else str(q["con"])]
+        hizo = True
+    return hizo
+
+
+def producto_del_envio(c: _Ctx) -> bool:
+    """"CUANTO SALE MANDAR UN G203 A ROSARIO" pregunta el envio y el producto: el modelo dejaba solo el envio, y el cliente
+    no sabia el precio de lo que mandaba. Un producto que la tienda certifica en la cita de un envio, y que ninguna otra
+    pregunta nombra, se pregunta tambien: su precio."""
+    nombrados = " ".join(K.n(" ".join(str(x) for x in _lista(p.get("producto")))) + " " + K.n(json.dumps(p.get("agrega") or []))
+                         for p in c.ps)
+    if len(c.acciones("envio")) != 1:
+        return False  # "un G203 a Rosario y otro a Mendoza" manda unidades a cada lugar: es una compra, no el precio
+    hizo = False
+    for p in c.acciones("envio"):
+        ws = K.n(p.get("cita")).split()
+        for largo in (3, 2, 1):
+            # Un numero solo es una cantidad, una altura o un precio, no un producto: "Sabatini 2000" no es la FaceCam 2000X.
+            hallado = next((" ".join(ws[i:i + largo]) for i in range(len(ws) - largo + 1)
+                            if not all(w.isdigit() for w in ws[i:i + largo])
+                            and K.identificar(" ".join(ws[i:i + largo]), "", c.tienda).get("veredicto") == "exists"), "")
+            if hallado:
+                break
+        if hallado and K.n(hallado) not in nombrados:
+            c.agenda["preguntas"] = _numerar(c.ps + [{"n": None, "cita": p.get("cita"), "accion": "producto",
+                                                      "producto": hallado, "quiere_saber": "precio"}])
+            nombrados += " " + K.n(hallado)
+            hizo = True
+    return hizo
+
+
+def compra_si_sale(c: _Ctx) -> bool:
+    """"SI EL K120 NEGRO SALE MENOS DE 10 MIL, LLEVO DOS": la compra depende de un dato del producto, su precio. Llegaba
+    como una compra atada a otra pregunta, o sin condicion, y se anotaba sin mirar el precio. Si la cita de una compra de
+    un solo producto trae un tope de plata que el catalogo ata, se pregunta el producto con esa condicion y la compra
+    depende de que de que si: el codigo mira el precio real."""
+    hizo = False
+    for p in list(c.acciones("comprar")):
+        ag = [a for a in _lista(p.get("agrega")) if isinstance(a, dict) and a.get("producto")]
+        if len(ag) != 1 or "tope" not in K.atar(str(p.get("cita") or ""), [], c.tienda):
+            continue
+        si = p.get("si") if isinstance(p.get("si"), dict) else {}
+        previa = next((q for q in c.ps if K.entero(q.get("n")) == K.entero(si.get("de"))), None)
+        if previa and previa.get("accion") == "producto" and K.n(previa.get("producto")) == K.n(ag[0]["producto"]):
+            continue  # ya depende de la pregunta por ese producto
+        nueva = {"n": c.nuevo_n(), "cita": p.get("cita"), "accion": "producto", "producto": ag[0]["producto"],
+                 "quiere_saber": str(p.get("cita")), **({"color": ag[0]["color"]} if ag[0].get("color") else {})}
+        ps = c.ps
+        ps.insert(ps.index(p), nueva)
+        p["si"] = {"de": nueva["n"], "da": "si"}
+        p.pop("condicion", None)
+        c.agenda["preguntas"] = ps
+        hizo = True
+    return hizo
+
+
 REGLAS = (referencias_cruzadas, color_ajeno, si_sin_efecto, politica_de_envio_con_lugar, envio_a_varios,
           dato_del_producto, compatibilidad_de_un_rubro, el_pedido_sin_pedido, lista_con_dato, rubro_inventado,
+          # las capas del 9-nov, `arquitectura/PLAN_CAPAS.md`
+          compra_si_sale, producto_del_envio, orden_que_no_dijo, lo_corregido, rubro_con_marca, alternativa_compatible,
           cuenta_de_lo_nombrado, cuenta_de_lo_buscado,
           un_destino_para_el_pedido, precio_con_envio, un_medio_es_todo)
 

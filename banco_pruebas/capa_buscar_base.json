@@ -1,0 +1,7113 @@
+{
+"prod|C27|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"prod|C27|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"prod|C27|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"prod|C27|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"prod|C27|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"prod|C27|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"prod|C27|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"prod|C27|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"prod|C27|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"prod|C27|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"prod|C02|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"prod|C02|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"prod|C05|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"prod|C07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"prod|C02|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"prod|C07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"prod|C02|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"prod|C08|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"prod|C02|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"prod|C09|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"prod|C06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"prod|C08|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"prod|C05|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"prod|C05|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"prod|C05|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"prod|C06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"prod|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"prod|C05|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"prod|C06|redactada|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 1,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"prod|C06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"prod|C06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"prod|C07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"prod|C07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"prod|C08|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"prod|C07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"prod|C09|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"prod|C08|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"prod|C08|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"prod|C09|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"prod|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"prod|C09|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"prod|C18|plano|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"prod|C09|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"prod|C18|original|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"prod|C24|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"prod|C24|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"prod|C24|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"prod|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"prod|C18|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"prod|C18|coloquial|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar",
+"precio_con_envio"
+],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"prod|C30|coloquial|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"prod|C30|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"prod|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"prod|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"prod|C30|redactada|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"prod|C18|redactada|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"prod|C33|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"prod|C33|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"prod|C33|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"prod|C35|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"prod|C35|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"prod|C24|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"prod|C24|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"prod|C30|plano|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 4,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"prod|C35|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"prod|C33|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"prod|C33|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"prod|C35|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"prod|C30|whatsapp|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"prod|C42|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"prod|C35|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"prod|C45|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"prod|C42|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"prod|C42|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"prod|C46|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"prod|C42|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"prod|C46|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"prod|C42|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"prod|C45|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"prod|C45|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"prod|C46|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"prod|C45|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"prod|C45|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"prod|C46|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"prod|C46|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"prod|C52|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"prod|C54|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"prod|C54|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"prod|C52|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"prod|C52|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"prod|C52|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"prod|C52|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"prod|C54|plano|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"prod|C54|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"prod|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"prod|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"prod|C54|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"prod|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"prod|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"prod|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"prod|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"prod|K10|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"prod|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"prod|K10|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"prod|K10|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"prod|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"prod|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"prod|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"prod|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K11|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"prod|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"prod|K10|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"prod|K11|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"prod|K10|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"prod|K11|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, ando viendo mouse y teclado para la oficina"
+},
+"prod|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K11|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"prod|K20|redactada|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K11|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy buscando mouse y teclado para la oficina."
+},
+"prod|K20|coloquial|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K21|redactada|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K21|coloquial|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K20|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|C02|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"prod|C05|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"prod|C07|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"prod|C02|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"prod|C07|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"prod|C02|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"prod|C08|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"prod|C09|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"prod|C02|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"prod|C02|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"prod|C05|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"prod|C05|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"prod|C05|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"prod|C06|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"prod|C17|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"prod|C05|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"prod|C06|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"prod|C17|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"prod|C06|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"prod|C07|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"prod|C18|plano|1": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"prod|C06|redactada|1": {
+"bien": false,
+"faltan": 1,
+"sobran": 1,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"prod|C08|whatsapp|1": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"prod|C07|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"prod|C08|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"prod|C07|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"prod|C09|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"prod|C08|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"prod|C09|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"prod|C09|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"prod|C09|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"prod|C06|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"prod|C08|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"prod|C24|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"prod|C18|original|1": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"prod|C17|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"prod|C18|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"prod|C18|coloquial|1": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar",
+"precio_con_envio"
+],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"prod|C17|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"prod|C17|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"prod|C18|redactada|1": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"prod|C30|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"prod|C24|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"prod|C24|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"prod|C30|redactada|1": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"prod|C24|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"prod|C24|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"prod|C33|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"prod|C33|redactada|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"prod|C33|plano|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"prod|C35|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"prod|C30|plano|1": {
+"bien": false,
+"faltan": 3,
+"sobran": 4,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"prod|C35|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"prod|C30|whatsapp|1": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"prod|C30|coloquial|1": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"prod|C35|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"prod|C33|whatsapp|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"prod|C33|coloquial|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"prod|C35|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"prod|C35|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"prod|C42|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"prod|C42|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"prod|C46|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"prod|C42|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"prod|C42|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"prod|C46|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"prod|C45|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"prod|C45|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"prod|C45|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"prod|C45|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"prod|C42|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"prod|C46|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"prod|C45|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"prod|C46|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"prod|C46|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"prod|C52|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"prod|C54|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"prod|C52|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"prod|C52|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"prod|C52|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"prod|K03|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"prod|K03|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"prod|C54|plano|1": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"prod|K06|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|C54|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"prod|K03|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"prod|K06|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"prod|K06|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K06|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"prod|K07|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|C52|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"prod|K07|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"prod|K07|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"prod|K10|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"prod|K10|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"prod|K10|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"prod|C54|whatsapp|1": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"prod|K03|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"prod|C54|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"prod|K03|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"prod|K06|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"prod|K11|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"prod|K11|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"prod|K11|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"prod|K11|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy buscando mouse y teclado para la oficina."
+},
+"prod|K07|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"prod|K07|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K11|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, ando viendo mouse y teclado para la oficina"
+},
+"prod|K10|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"prod|K20|plano|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K10|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"prod|K21|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K20|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K20|coloquial|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K21|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K21|coloquial|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K20|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|C02|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"prod|C05|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"prod|C06|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"prod|C07|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"prod|C08|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"prod|C07|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"prod|C08|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"prod|K20|redactada|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|C09|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"prod|C02|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"prod|C02|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"prod|K21|plano|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|C17|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"prod|C18|original|2": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"prod|C17|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"prod|C18|plano|2": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"prod|K21|redactada|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|C05|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"prod|C05|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"prod|C06|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"prod|C06|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"prod|C07|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"prod|C08|whatsapp|2": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"prod|C08|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"prod|C09|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"prod|C24|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"prod|C02|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"prod|C24|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"prod|C02|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"prod|C24|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"prod|C05|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"prod|C05|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"prod|C06|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"prod|C27|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"prod|C06|redactada|2": {
+"bien": false,
+"faltan": 1,
+"sobran": 1,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"prod|C07|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"prod|C07|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"prod|C27|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"prod|C08|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"prod|C27|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"prod|C09|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"prod|C09|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"prod|C09|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"prod|C17|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"prod|C30|coloquial|2": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"prod|C18|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"prod|C18|coloquial|2": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar",
+"precio_con_envio"
+],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"prod|C30|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"prod|C30|redactada|2": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"prod|C33|whatsapp|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"prod|C33|coloquial|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"prod|C24|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"prod|C24|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"prod|C35|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"prod|C35|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"prod|C33|redactada|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"prod|C17|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"prod|C17|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"prod|C18|redactada|2": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"prod|C35|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"prod|C35|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"prod|C33|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"prod|C33|plano|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"prod|C42|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"prod|C27|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"prod|C27|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"prod|C45|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"prod|C42|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"prod|C30|plano|2": {
+"bien": false,
+"faltan": 3,
+"sobran": 4,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"prod|C46|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"prod|C42|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"prod|C46|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"prod|C30|whatsapp|2": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"prod|C46|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"prod|C35|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"prod|C46|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"prod|C45|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"prod|C45|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"prod|C46|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"prod|C42|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"prod|C42|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"prod|C52|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"prod|C45|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"prod|C45|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"prod|C54|whatsapp|2": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"prod|C54|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"prod|C52|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"prod|C52|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"prod|C54|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"prod|C54|plano|2": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"prod|C54|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"prod|K07|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"prod|C52|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"prod|C52|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"prod|K03|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"prod|K07|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K06|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K03|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"prod|K10|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"prod|K06|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"prod|K03|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"prod|K10|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"prod|K06|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"prod|K07|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K07|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"prod|K10|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"prod|K10|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"prod|K03|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"prod|K03|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"prod|K06|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K06|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"prod|K07|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"prod|K10|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"prod|K11|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"prod|K11|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy buscando mouse y teclado para la oficina."
+},
+"prod|K11|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, ando viendo mouse y teclado para la oficina"
+},
+"prod|K20|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K20|redactada|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K11|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"prod|K20|plano|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K20|coloquial|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K11|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"prod|K21|plano|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K20|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K21|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K21|coloquial|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K21|redactada|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K21|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"deepseek|C02|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"deepseek|C02|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"haiku|C02|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"deepseek|C02|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"haiku|C02|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"deepseek|C02|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"haiku|C02|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"deepseek|C02|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"deepseek|C05|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"haiku|C05|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"deepseek|C06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"deepseek|C05|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"deepseek|C07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"haiku|C02|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"deepseek|C09|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"deepseek|C06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"deepseek|C07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"haiku|C05|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"deepseek|C06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"haiku|C02|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"deepseek|C07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"deepseek|C07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"deepseek|C08|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"deepseek|C05|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"deepseek|C08|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"haiku|C06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"deepseek|C08|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"deepseek|C05|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"deepseek|C08|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"haiku|C09|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"deepseek|C05|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"deepseek|C08|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"haiku|C07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"deepseek|C09|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"deepseek|C06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"deepseek|C09|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"deepseek|C06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"deepseek|C09|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"haiku|C08|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"deepseek|C07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"deepseek|C09|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"haiku|C05|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"haiku|C05|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"haiku|C06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"haiku|C05|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"deepseek|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"haiku|C07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"haiku|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"deepseek|C18|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"haiku|C06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"haiku|C07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"deepseek|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"deepseek|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"haiku|C06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"deepseek|C18|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"haiku|C07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"haiku|C18|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"deepseek|C24|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"deepseek|C18|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"deepseek|C24|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"deepseek|C18|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"haiku|C08|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"deepseek|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"haiku|C06|redactada|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 3,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"deepseek|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"deepseek|C27|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"haiku|C07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"deepseek|C18|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"haiku|C08|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"deepseek|C24|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"haiku|C08|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"haiku|C08|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"deepseek|C24|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"haiku|C09|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"haiku|C09|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"haiku|C09|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"deepseek|C30|plano|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"haiku|C09|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"deepseek|C24|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"deepseek|C27|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"deepseek|C27|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"deepseek|C27|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"deepseek|C33|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"deepseek|C27|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"deepseek|C33|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"deepseek|C35|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"deepseek|C30|original|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"deepseek|C35|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"deepseek|C33|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"deepseek|C30|redactada|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"haiku|C24|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"deepseek|C30|whatsapp|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"deepseek|C33|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"deepseek|C33|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"deepseek|C30|coloquial|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"haiku|C24|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"deepseek|C35|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"haiku|C24|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"deepseek|C35|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"deepseek|C35|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"haiku|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"haiku|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"haiku|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"haiku|C27|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"haiku|C18|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"haiku|C27|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"deepseek|C42|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"haiku|C27|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"deepseek|C42|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"haiku|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"haiku|C18|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"deepseek|C42|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"deepseek|C42|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"haiku|C18|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"haiku|C18|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"deepseek|C42|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"deepseek|C46|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"deepseek|C46|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"deepseek|C45|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"deepseek|C46|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"deepseek|C46|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"deepseek|C45|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"deepseek|C45|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"deepseek|C45|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"deepseek|C45|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"haiku|C27|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"deepseek|C46|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"deepseek|C52|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"deepseek|C52|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"haiku|C24|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"haiku|C30|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"haiku|C24|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"haiku|C27|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"deepseek|C52|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"deepseek|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"deepseek|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"deepseek|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"haiku|C30|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"deepseek|C54|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"deepseek|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"deepseek|C52|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"deepseek|C52|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"deepseek|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"haiku|C30|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"deepseek|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"deepseek|C54|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"haiku|C30|plano|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"deepseek|C54|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"deepseek|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"deepseek|C54|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"deepseek|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"deepseek|C54|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"deepseek|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"deepseek|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"deepseek|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"deepseek|K10|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"haiku|C33|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"deepseek|K11|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, ando viendo mouse y teclado para la oficina"
+},
+"deepseek|K11|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"deepseek|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"deepseek|K11|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy buscando mouse y teclado para la oficina."
+},
+"deepseek|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"haiku|C30|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"haiku|C33|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"deepseek|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"deepseek|K10|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"deepseek|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"deepseek|K10|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"deepseek|K10|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"deepseek|K10|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"haiku|C33|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"haiku|C35|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"haiku|C33|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"haiku|C33|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"haiku|C35|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"haiku|C35|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"haiku|C35|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"deepseek|K11|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"haiku|C35|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"deepseek|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"deepseek|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"deepseek|K11|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"deepseek|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"deepseek|K20|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"deepseek|K20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"deepseek|K21|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"deepseek|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"deepseek|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"deepseek|K21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"deepseek|K21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"haiku|C42|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"haiku|C42|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"haiku|C42|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"haiku|C42|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"haiku|C42|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"haiku|C45|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"haiku|C46|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"haiku|C45|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"haiku|C46|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"haiku|C45|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"haiku|C45|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"haiku|C46|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"haiku|C46|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"haiku|C45|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"haiku|C46|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"haiku|C52|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"haiku|C52|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"haiku|C52|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"haiku|C52|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"haiku|C52|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"haiku|C54|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"haiku|C54|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"haiku|C54|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"haiku|C54|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"haiku|C54|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"haiku|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"haiku|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"haiku|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"haiku|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"haiku|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"haiku|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"haiku|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"haiku|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"haiku|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"haiku|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"haiku|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"haiku|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"haiku|K10|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"haiku|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"haiku|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"haiku|K10|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"haiku|K10|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"haiku|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"haiku|K10|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"haiku|K10|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"haiku|K11|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"haiku|K11|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, ando viendo mouse y teclado para la oficina"
+},
+"haiku|K11|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy buscando mouse y teclado para la oficina."
+},
+"haiku|K11|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"haiku|K11|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"haiku|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"haiku|K20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"haiku|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"haiku|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"haiku|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"haiku|K20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"haiku|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"haiku|K21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"haiku|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"haiku|K21|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 1,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"luna|C02|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"terra|C02|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"mini54|C02|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"terra|C02|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"terra|C02|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"mini54|C02|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"mini54|C02|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"terra|C02|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"terra|C02|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"mini54|C02|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q parlantes hay"
+},
+"luna|C02|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes?"
+},
+"mini54|C02|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"luna|C02|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que parlantes tenes"
+},
+"luna|C02|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q palrantes tenes"
+},
+"luna|C02|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué parlantes venden?"
+},
+"luna|C05|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"terra|C05|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"luna|C05|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"terra|C05|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"mini54|C05|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "busco una notebook con 16 GB de RAM"
+},
+"luna|C05|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"terra|C05|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"terra|C05|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"mini54|C05|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 5,
+"reglas": [],
+"texto": "busco una noetbook con 16 gb de ram"
+},
+"mini54|C05|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"terra|C06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"luna|C06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"terra|C05|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"mini54|C05|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"luna|C05|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco una notebook con 16 gb de ram"
+},
+"terra|C06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"mini54|C05|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "necesito una notebook de 16 gigas de ram"
+},
+"mini54|C06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"terra|C06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"luna|C06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"luna|C05|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando una notebook que tenga 16 GB de RAM."
+},
+"terra|C07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"mini54|C06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"mini54|C06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico, preferentemente Logitech"
+},
+"terra|C06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"luna|C06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse sin cable, de ser posible logitech"
+},
+"luna|C06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un mouse inalambrico preferentemente logitech"
+},
+"terra|C07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"mini54|C06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un mouse inalambrico preferentemente logitech"
+},
+"mini54|C07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"terra|C06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"luna|C07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea Genius"
+},
+"luna|C06|redactada|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 3,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"terra|C07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"mini54|C07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"terra|C07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"mini54|C06|redactada|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 3,
+"reglas": [],
+"texto": "Quiero un mouse inalámbrico; si es Logitech, mejor."
+},
+"luna|C07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"luna|C07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"mini54|C07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"terra|C08|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"mini54|C07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse que no sea genius"
+},
+"luna|C07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius"
+},
+"terra|C07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"luna|C08|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"mini54|C08|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"mini54|C07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un mouse de cualquier marca menos Genius."
+},
+"terra|C08|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"luna|C07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un mouse q no sea genius porfa"
+},
+"terra|C08|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"luna|C08|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"mini54|C08|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"terra|C08|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"mini54|C08|original|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet, lo menos china posible"
+},
+"luna|C08|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "una tablet lo menos china posible"
+},
+"terra|C08|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"mini54|C09|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"luna|C08|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"terra|C09|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"mini54|C08|whatsapp|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "una talbet lo menos china posible"
+},
+"luna|C08|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero una tablet que tenga lo menos posible de fabricación china."
+},
+"terra|C09|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"mini54|C09|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"luna|C09|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato?"
+},
+"terra|C09|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"luna|C09|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"mini54|C08|coloquial|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "busco tablet lo menos chino posible"
+},
+"terra|C09|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"mini54|C09|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuál es el monitor más económico que tienen?"
+},
+"luna|C09|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"mini54|C09|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato"
+},
+"terra|C09|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"luna|C09|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el mointor mas barato"
+},
+"mini54|C09|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"luna|C09|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cual es el monitor mas barato q tenes"
+},
+"luna|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"luna|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"mini54|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"luna|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"luna|C18|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"mini54|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"luna|C18|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"mini54|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"luna|C17|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"terra|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"luna|C18|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"mini54|C18|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"terra|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"luna|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"mini54|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"terra|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"luna|C18|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"mini54|C18|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"mini54|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"terra|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"luna|C18|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"terra|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"mini54|C18|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"terra|C18|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba"
+},
+"mini54|C18|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"terra|C18|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?"
+},
+"terra|C18|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes auris jbl y cunato sale mandarlos a cordoba"
+},
+"mini54|C18|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"terra|C18|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "auris jbl tenes? y cuanto sale el envio a cordoba"
+},
+"terra|C18|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?"
+},
+"luna|C24|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"luna|C24|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"luna|C24|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"luna|C24|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"mini54|C24|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"mini54|C24|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"mini54|C24|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"terra|C24|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse, los dos lo mas baratos posible"
+},
+"mini54|C24|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"terra|C24|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"mini54|C24|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"terra|C24|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "teclado y mouse los dos lo mas baratos posible"
+},
+"terra|C24|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "telcado y mouse los dos lo mas baratos posible"
+},
+"terra|C24|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mouse y teclado, lo mas barato de los dos"
+},
+"mini54|C27|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"luna|C24|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito un teclado y un mouse, ambos lo más económicos posible."
+},
+"mini54|C27|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"mini54|C27|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"luna|C27|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"mini54|C27|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"luna|C27|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"terra|C27|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse Logitech"
+},
+"mini54|C27|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"luna|C27|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"terra|C27|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mostrame mouse logitech"
+},
+"luna|C27|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"terra|C27|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q mouse logitech tenes"
+},
+"terra|C27|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "motsrame mouse logitech"
+},
+"luna|C27|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"terra|C27|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mostrame los mouse de Logitech."
+},
+"mini54|C30|redactada|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 6,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"mini54|C30|original|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"luna|C30|redactada|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"mini54|C30|plano|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"terra|C30|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"terra|C30|original|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"terra|C30|plano|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"terra|C30|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 2,
+"reglas": [],
+"texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?"
+},
+"mini54|C30|whatsapp|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 4,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"luna|C30|original|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 6,
+"reglas": [],
+"texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?"
+},
+"terra|C30|coloquial|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"mini54|C30|coloquial|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"luna|C30|plano|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay"
+},
+"luna|C30|whatsapp|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay"
+},
+"luna|C33|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"luna|C30|coloquial|0": {
+"bien": false,
+"faltan": 3,
+"sobran": 3,
+"reglas": [],
+"texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay"
+},
+"mini54|C33|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"mini54|C33|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"terra|C33|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"mini54|C33|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 2,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"mini54|C33|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"mini54|C33|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"terra|C33|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"terra|C33|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"terra|C33|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"terra|C33|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech."
+},
+"luna|C35|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"luna|C35|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"mini54|C35|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"luna|C35|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"mini54|C35|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"mini54|C35|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"terra|C35|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer Logitech"
+},
+"luna|C35|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"terra|C35|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"mini54|C35|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"terra|C35|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse gamer logitech"
+},
+"mini54|C35|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"terra|C35|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"terra|C35|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse gamer de la marca Logitech."
+},
+"luna|C33|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado Redragon, ah no, mejor Logitech"
+},
+"luna|C33|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un teclado redragon ah no mejor logitech"
+},
+"luna|C33|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un teclado redragon ah no mejor logitech"
+},
+"luna|C33|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero teclado redragon, ah no mejor logitech"
+},
+"luna|C35|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse gamer logitech"
+},
+"mini54|C42|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"luna|C42|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"luna|C42|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"mini54|C42|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"mini54|C42|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 6,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"terra|C42|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"terra|C42|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"mini54|C42|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"terra|C42|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"mini54|C42|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"terra|C42|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero una notebook con 64 gb de ram por menos de 200 mil"
+},
+"terra|C42|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "notebook de 64 gb de ram por menos de 200 mil"
+},
+"mini54|C45|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"luna|C45|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"mini54|C45|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"luna|C45|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"mini54|C45|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"luna|C45|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"mini54|C45|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"luna|C45|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"mini54|C46|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"luna|C42|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil"
+},
+"luna|C42|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "queiro una notebook con 64 gb de ram x menos de 200 mil"
+},
+"mini54|C45|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"terra|C45|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"terra|C45|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse Logitech con cable"
+},
+"luna|C42|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil."
+},
+"terra|C45|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco mouse logitech con cable"
+},
+"terra|C45|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un mouse logitech con cable"
+},
+"luna|C46|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"terra|C45|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"luna|C46|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"luna|C46|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"mini54|C46|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"terra|C46|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"luna|C46|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"terra|C46|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"mini54|C46|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea redragon"
+},
+"terra|C46|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un teclado que no sea Redragon"
+},
+"mini54|C46|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco un telcado q no sea redragon"
+},
+"terra|C46|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"terra|C46|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "busco teclado q no sea redragon"
+},
+"mini54|C46|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"luna|C45|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy buscando un mouse Logitech que sea con cable."
+},
+"luna|C46|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Busco un teclado de cualquier marca menos Redragon."
+},
+"terra|C52|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"mini54|C52|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"terra|C52|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"terra|C52|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"mini54|C52|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"luna|C52|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?"
+},
+"mini54|C52|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"mini54|C52|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"mini54|C52|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"terra|C52|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"terra|C52|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"mini54|C54|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"terra|C54|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"terra|C54|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"luna|C54|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"luna|C54|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"mini54|C54|original|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?"
+},
+"luna|C52|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?"
+},
+"luna|C54|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"mini54|C54|plano|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"luna|C52|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "que tenes en mouse logitech teclados logitech y auriculares jbl"
+},
+"luna|C54|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"terra|C54|plano|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante"
+},
+"luna|C52|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q tenes en mouse logitech telcados logitech y auris jbl"
+},
+"terra|C54|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"luna|C52|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "q hay en mouse logitech, teclados logitech y auris jbl"
+},
+"terra|C54|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"compatibilidad_de_un_rubro"
+],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"mini54|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"mini54|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"mini54|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"terra|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"mini54|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"terra|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"mini54|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"luna|C54|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca"
+},
+"terra|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"terra|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"terra|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"mini54|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"terra|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"mini54|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"terra|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"luna|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"terra|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"luna|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"terra|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"mini54|K10|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"luna|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"terra|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"mini54|K10|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"luna|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"mini54|K10|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"luna|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"terra|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"luna|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"terra|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"terra|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"mini54|C54|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 1,
+"reglas": [],
+"texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante"
+},
+"luna|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"mini54|C54|redactada|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 0,
+"reglas": [],
+"texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?"
+},
+"luna|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"terra|K10|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"terra|K10|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"luna|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"luna|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"luna|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"luna|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"luna|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"luna|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"luna|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"luna|K10|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?"
+},
+"mini54|K11|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"luna|K10|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"mini54|K11|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy buscando mouse y teclado para la oficina."
+},
+"luna|K10|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"luna|K10|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy aramndo un setup tenes mouse y auris"
+},
+"luna|K10|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"mini54|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"mini54|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"mini54|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"mini54|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"mini54|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"mini54|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"mini54|K20|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"luna|K11|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"mini54|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"luna|K11|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, estoy buscando mouse y teclado para la oficina."
+},
+"terra|K11|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando viendo mouse y teclado para la oficina"
+},
+"terra|K11|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"mini54|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"terra|K11|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"mini54|K10|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"mini54|K10|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"mini54|K21|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"luna|K11|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, ando viendo mouse y teclado para la oficina"
+},
+"luna|K11|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"luna|K11|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"terra|K20|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"terra|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"terra|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"luna|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"luna|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"mini54|K11|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, ando viendo mouse y teclado para la oficina"
+},
+"luna|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"mini54|K11|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola ando vinedo mouse y teclado para la oficina"
+},
+"mini54|K11|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola busco mouse y teclado para la ofi"
+},
+"luna|K20|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"terra|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"luna|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"terra|K21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"luna|K20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"luna|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"mini54|K20|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"luna|K21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"luna|K21|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"luna|K21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"terra|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"terra|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"mini54|K20|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"terra|K10|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola, estoy armando un setup, tenes mouse y auriculares?"
+},
+"terra|K10|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola estoy armando un setup tenes mouse y auriculares"
+},
+"terra|K10|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola armando setup, hay mouse y auris?"
+},
+"mini54|K20|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"mini54|K20|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"mini54|K21|redactada|0": {
+"bien": false,
+"faltan": 13,
+"sobran": 4,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"mini54|K21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"mini54|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"mini54|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+}
+}

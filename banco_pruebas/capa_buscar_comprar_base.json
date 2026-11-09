@@ -1,0 +1,5246 @@
+{
+"prod|C15|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"prod|C16|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"prod|C20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"prod|C20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"prod|C21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"prod|C21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"prod|C20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"prod|C21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"prod|C21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"prod|C23|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"prod|C23|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"prod|C15|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 negros"
+},
+"prod|C23|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"prod|C25|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"prod|C25|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"prod|C25|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"prod|C25|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"prod|C26|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"prod|C26|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"prod|C26|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"prod|C26|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"prod|C15|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame 2 g305 negros"
+},
+"prod|C15|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos G305 negros"
+},
+"prod|C16|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"prod|C15|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"prod|C16|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"prod|C29|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"prod|C29|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"prod|C31|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"prod|C29|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"prod|C16|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"prod|C31|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"prod|C29|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"prod|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"prod|C16|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"prod|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"prod|C31|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"prod|C31|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"prod|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"prod|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"prod|C20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"prod|C20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"prod|C21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"prod|C23|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"prod|C25|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"prod|C23|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"prod|C29|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"prod|C26|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"prod|C31|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"prod|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"prod|C48|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"prod|C48|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"prod|C48|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"prod|C48|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"prod|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"prod|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"prod|C48|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"prod|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"prod|C56|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"prod|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"prod|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"prod|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"prod|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"prod|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"prod|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"prod|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"prod|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"prod|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"prod|C56|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"prod|C56|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"prod|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"prod|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"prod|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K20|redactada|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K20|coloquial|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K21|redactada|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K21|coloquial|0": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K20|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|C15|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"prod|C20|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"prod|C20|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"prod|C21|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"prod|C21|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"prod|C23|redactada|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"prod|C15|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 negros"
+},
+"prod|C15|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame 2 g305 negros"
+},
+"prod|C25|whatsapp|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"prod|C15|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos G305 negros"
+},
+"prod|C16|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"prod|C16|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"prod|C25|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"prod|C16|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"prod|C15|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"prod|C26|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"prod|C16|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"prod|C20|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"prod|C16|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"prod|C26|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"prod|C21|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"prod|C21|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"prod|C29|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"prod|C21|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"prod|C29|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"prod|C29|redactada|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"prod|C23|original|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"prod|C23|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"prod|C23|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"prod|C23|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"prod|C20|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"prod|C20|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"prod|C26|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"prod|C31|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"prod|C25|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"prod|C31|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"prod|C25|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"prod|C32|whatsapp|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"prod|C31|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"prod|C26|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"prod|C25|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"prod|C32|redactada|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"prod|C26|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"prod|C29|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"prod|C29|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"prod|C32|original|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"prod|C31|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"prod|C31|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"prod|C32|plano|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"prod|C32|coloquial|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"prod|C48|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"prod|C48|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"prod|C51|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C51|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C48|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"prod|C48|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"prod|C51|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"prod|C48|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"prod|C56|plano|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|whatsapp|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|K03|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"prod|K03|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"prod|K06|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K03|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"prod|K06|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"prod|K06|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|C51|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"prod|K06|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"prod|C51|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"prod|K07|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K07|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"prod|C56|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"prod|K07|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"prod|K03|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"prod|K03|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"prod|K06|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"prod|C56|original|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"prod|K07|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"prod|K07|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K20|plano|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K21|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K20|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K20|coloquial|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K21|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K21|coloquial|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K20|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K20|redactada|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K21|plano|1": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|C15|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"prod|C16|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"prod|C20|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"prod|K21|redactada|1": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|C21|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"prod|C21|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"prod|C20|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"prod|C20|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"prod|C21|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"prod|C21|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"prod|C23|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"prod|C23|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"prod|C23|redactada|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"prod|C25|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"prod|C25|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"prod|C25|whatsapp|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"prod|C26|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"prod|C25|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"prod|C26|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"prod|C26|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"prod|C15|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 negros"
+},
+"prod|C26|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"prod|C15|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame 2 g305 negros"
+},
+"prod|C16|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"prod|C29|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"prod|C16|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"prod|C29|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"prod|C29|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"prod|C31|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"prod|C29|redactada|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"prod|C31|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"prod|C21|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"prod|C32|plano|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"prod|C32|coloquial|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"prod|C23|original|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"prod|C23|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"prod|C31|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"prod|C15|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos G305 negros"
+},
+"prod|C31|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"prod|C15|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"prod|C32|whatsapp|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"prod|C16|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"prod|C26|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"prod|C32|redactada|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"prod|C16|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"prod|C31|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"prod|C20|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"prod|C20|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"prod|C25|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"prod|C29|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"prod|C32|original|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"prod|C48|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"prod|C48|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"prod|C48|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"prod|C48|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"prod|C48|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"prod|C51|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"prod|C51|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"prod|C51|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C51|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C51|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"prod|C56|original|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"prod|C56|plano|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|whatsapp|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"prod|K07|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"prod|K03|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"prod|K07|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K06|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K03|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"prod|K06|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"prod|K03|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"prod|K06|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"prod|K07|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"prod|K07|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"prod|K03|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"prod|K03|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"prod|K06|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"prod|K06|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"prod|K07|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"prod|K20|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K20|redactada|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K20|plano|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K20|coloquial|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K21|plano|2": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"prod|K20|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"prod|K21|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"prod|K21|coloquial|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"prod|K21|redactada|2": {
+"bien": false,
+"faltan": 14,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"prod|K21|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"deepseek|C16|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"deepseek|C16|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"deepseek|C16|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"deepseek|C15|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos G305 negros"
+},
+"deepseek|C15|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"deepseek|C15|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame 2 g305 negros"
+},
+"deepseek|C20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"haiku|C15|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 negros"
+},
+"deepseek|C20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"deepseek|C16|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"deepseek|C21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"haiku|C15|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame 2 g305 negros"
+},
+"deepseek|C20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"deepseek|C15|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 negros"
+},
+"deepseek|C20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"deepseek|C23|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"deepseek|C15|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"deepseek|C21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"haiku|C16|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"deepseek|C16|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"haiku|C20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"deepseek|C25|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"deepseek|C23|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"deepseek|C23|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"deepseek|C21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"haiku|C20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"deepseek|C23|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"haiku|C20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"deepseek|C21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"deepseek|C20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"haiku|C21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"deepseek|C21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"haiku|C21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"deepseek|C29|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"deepseek|C25|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"deepseek|C26|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"haiku|C21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"deepseek|C23|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"deepseek|C31|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"deepseek|C26|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"deepseek|C26|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"deepseek|C31|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"deepseek|C25|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"deepseek|C26|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"deepseek|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"deepseek|C25|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"deepseek|C26|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"deepseek|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"deepseek|C25|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"deepseek|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"deepseek|C29|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"haiku|C23|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"haiku|C23|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"deepseek|C29|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"deepseek|C29|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"deepseek|C29|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"haiku|C23|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"deepseek|C31|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"haiku|C23|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"haiku|C15|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"deepseek|C31|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"haiku|C15|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos G305 negros"
+},
+"deepseek|C31|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"deepseek|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"haiku|C15|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"deepseek|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"haiku|C16|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"haiku|C25|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"haiku|C16|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"haiku|C25|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"haiku|C16|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"haiku|C26|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"haiku|C25|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"haiku|C16|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"haiku|C26|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"haiku|C26|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"haiku|C20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"haiku|C21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"deepseek|C48|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"haiku|C26|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"deepseek|C48|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"haiku|C20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"deepseek|C48|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"deepseek|C48|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"haiku|C21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"deepseek|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"haiku|C29|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"deepseek|C48|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"haiku|C29|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"haiku|C23|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"deepseek|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"haiku|C25|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"haiku|C29|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"deepseek|C56|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"deepseek|C56|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|C29|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"deepseek|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"haiku|C25|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"haiku|C31|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"deepseek|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"deepseek|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"deepseek|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"deepseek|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"haiku|C26|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"deepseek|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"haiku|C31|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"deepseek|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"deepseek|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"deepseek|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"haiku|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"deepseek|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"haiku|C29|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"deepseek|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"un_destino_para_el_pedido"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"haiku|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"deepseek|C56|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"deepseek|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"haiku|C31|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"deepseek|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"haiku|C31|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"deepseek|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"deepseek|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"deepseek|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"haiku|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"deepseek|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"haiku|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"deepseek|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"deepseek|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"haiku|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"deepseek|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"haiku|C31|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"deepseek|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"deepseek|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"deepseek|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"deepseek|K20|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"deepseek|K20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"deepseek|K21|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"deepseek|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"deepseek|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"deepseek|K21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"deepseek|K21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"haiku|C48|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"haiku|C48|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"haiku|C48|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"haiku|C48|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"haiku|C48|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"haiku|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"haiku|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"haiku|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"haiku|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"haiku|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"haiku|C56|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"haiku|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|C56|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"haiku|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"haiku|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"haiku|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"haiku|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"haiku|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"haiku|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"haiku|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"haiku|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"haiku|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"haiku|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"haiku|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"haiku|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"haiku|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"haiku|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"haiku|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"haiku|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"haiku|K20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"haiku|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"haiku|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"haiku|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"haiku|K20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"haiku|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"haiku|K21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"haiku|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"haiku|K21|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 1,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"luna|C15|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos G305 negros"
+},
+"luna|C15|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 negros"
+},
+"luna|C15|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"mini54|C15|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos G305 negros"
+},
+"luna|C15|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"mini54|C15|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"terra|C15|original|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [
+"color_ajeno"
+],
+"texto": "me llevo dos G305 negros"
+},
+"luna|C15|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 1,
+"reglas": [],
+"texto": "dame 2 g305 negros"
+},
+"mini54|C15|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 1,
+"reglas": [],
+"texto": "dame 2 g305 negros"
+},
+"luna|C16|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"terra|C15|plano|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [
+"color_ajeno"
+],
+"texto": "me llevo dos g305 negros"
+},
+"terra|C15|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 nergos"
+},
+"mini54|C15|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo dos g305 negros"
+},
+"luna|C16|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"luna|C16|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"mini54|C16|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"terra|C15|coloquial|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [
+"color_ajeno"
+],
+"texto": "dame 2 g305 negros"
+},
+"terra|C15|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"mini54|C15|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero llevar dos G305 en color negro."
+},
+"luna|C16|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"mini54|C16|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"terra|C16|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago"
+},
+"luna|C16|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"mini54|C16|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"terra|C16|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago"
+},
+"terra|C16|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"mini54|C16|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago"
+},
+"terra|C16|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago."
+},
+"terra|C16|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"mini54|C16|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago"
+},
+"luna|C20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"mini54|C20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"luna|C20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"mini54|C20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"luna|C20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"luna|C20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"mini54|C20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"mini54|C20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"terra|C20|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme dos k120 negros y un g203 negro"
+},
+"luna|C21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"mini54|C20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"luna|C20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"mini54|C21|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"terra|C20|original|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [
+"color_ajeno"
+],
+"texto": "sumame dos K120 negros y un G203 negro"
+},
+"mini54|C21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"mini54|C21|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"luna|C21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"terra|C20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame dos k120 negros y un g203 negro"
+},
+"terra|C20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 2 k120 negros y 1 g203 negro"
+},
+"mini54|C21|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"luna|C21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"terra|C20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos K120 negros y un G203 negro."
+},
+"mini54|C21|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"terra|C21|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un g305 negro y un k120 negro"
+},
+"luna|C21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"luna|C23|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"terra|C21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero un G305 negro y un K120 negro"
+},
+"terra|C21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro un g305 negro y un k120 negro"
+},
+"luna|C23|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"terra|C21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero g305 negro y k120 negro"
+},
+"luna|C21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"terra|C21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 negro y un G305 negro."
+},
+"mini54|C23|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"mini54|C23|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"mini54|C23|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"mini54|C23|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"mini54|C23|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 3,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"terra|C23|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"mini54|C25|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"luna|C25|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"terra|C23|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el g305 en blanco y un k120"
+},
+"terra|C23|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame el g305 blanco y un k120"
+},
+"mini54|C25|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"terra|C23|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"luna|C25|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"mini54|C25|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [
+"cuenta_de_lo_nombrado"
+],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"terra|C23|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"luna|C23|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "quiero el G305 en blanco y un K120"
+},
+"luna|C25|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"mini54|C25|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [
+"cuenta_de_lo_nombrado"
+],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"terra|C25|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos G305 negros y tres K120 blancos, cuanto es?"
+},
+"luna|C23|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "queiro el g305 en blanco y un k120"
+},
+"terra|C25|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"mini54|C25|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [
+"cuenta_de_lo_nombrado"
+],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"luna|C26|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"mini54|C26|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"luna|C23|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 1,
+"reglas": [],
+"texto": "Quiero un K120 y el G305 en color blanco."
+},
+"mini54|C26|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"terra|C25|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "2 g305 negros y 3 k120 blancos cuanto seria"
+},
+"luna|C26|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"terra|C25|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dos g305 nergos y tres k120 blancos cuanto es"
+},
+"mini54|C26|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"luna|C26|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"luna|C25|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 2,
+"reglas": [],
+"texto": "dos g305 negros y tres k120 blancos cuanto es"
+},
+"terra|C26|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?"
+},
+"mini54|C26|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"terra|C25|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"luna|C25|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos."
+},
+"terra|C26|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"mini54|C26|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"terra|C26|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"terra|C26|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"luna|C26|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio"
+},
+"mini54|C29|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"terra|C26|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"politica_de_envio_con_lugar"
+],
+"texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio"
+},
+"mini54|C29|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"luna|C26|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"envio_a_varios"
+],
+"texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?"
+},
+"mini54|C29|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"mini54|C29|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"luna|C29|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"terra|C29|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el G305 anda con Mac, me lo llevo"
+},
+"mini54|C29|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"luna|C29|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"terra|C29|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"luna|C29|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"terra|C29|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"mini54|C31|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"terra|C29|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"luna|C29|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 anda con mac me lo llevo"
+},
+"terra|C29|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo el G305 si es compatible con Mac."
+},
+"luna|C29|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si el g305 funciona con mac lo compro"
+},
+"mini54|C31|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"luna|C31|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"luna|C31|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"mini54|C31|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"terra|C31|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"luna|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"terra|C31|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"terra|C31|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"mini54|C31|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"luna|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"mini54|C31|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"terra|C31|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"mini54|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"terra|C31|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX."
+},
+"mini54|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"terra|C32|whatsapp|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"mini54|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"terra|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"terra|C32|redactada|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"luna|C31|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX"
+},
+"terra|C32|plano|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"mini54|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"mini54|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"terra|C32|coloquial|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"luna|C31|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx"
+},
+"luna|C31|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx"
+},
+"luna|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"luna|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"luna|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"mini54|C48|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"terra|C48|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"terra|C48|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"mini54|C48|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"mini54|C48|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"terra|C48|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"luna|C48|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Me llevo un G305 en color negro."
+},
+"terra|C48|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"mini54|C48|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"mini54|C48|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"terra|C48|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"luna|C48|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un G305 negro"
+},
+"luna|C48|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"luna|C48|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo un g305 negro"
+},
+"luna|C48|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "me llevo 1 g305 negro"
+},
+"mini54|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"mini54|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"terra|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"mini54|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"terra|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"mini54|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"mini54|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"luna|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"terra|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"terra|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"terra|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"luna|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"luna|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"luna|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"luna|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"mini54|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"terra|C56|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"terra|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"mini54|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"mini54|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"luna|C56|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"mini54|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"terra|C56|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"luna|C56|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"terra|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"mini54|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"luna|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"terra|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"mini54|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"terra|C56|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"terra|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"terra|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"terra|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"terra|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"mini54|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"terra|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"mini54|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"terra|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"luna|K03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital"
+},
+"terra|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"luna|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"terra|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"luna|K06|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia"
+},
+"terra|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado",
+"un_medio_es_todo"
+],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"luna|K06|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"luna|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"luna|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"terra|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"luna|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"luna|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"terra|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"terra|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"luna|K07|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"luna|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"luna|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"luna|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"luna|K03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital."
+},
+"luna|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"luna|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"mini54|C56|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"mini54|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"luna|K06|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia."
+},
+"mini54|C56|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"luna|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"mini54|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"mini54|K03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital"
+},
+"mini54|K03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital"
+},
+"mini54|K03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital"
+},
+"mini54|K06|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia"
+},
+"mini54|K06|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia"
+},
+"mini54|K07|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos"
+},
+"mini54|K20|coloquial|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"mini54|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"mini54|K07|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar"
+},
+"mini54|K21|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"terra|K20|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"terra|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"terra|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"luna|K20|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"luna|K20|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"luna|K20|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"luna|K20|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"terra|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"luna|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+},
+"terra|K21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"luna|K20|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"luna|K21|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"mini54|K20|original|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos"
+},
+"luna|K21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"luna|K21|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"luna|K21|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"terra|K07|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos"
+},
+"terra|K07|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen."
+},
+"mini54|K20|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 5,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"mini54|K20|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"mini54|K20|redactada|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"mini54|K21|redactada|0": {
+"bien": false,
+"faltan": 13,
+"sobran": 4,
+"reglas": [
+"cuenta_de_lo_buscado"
+],
+"texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos."
+},
+"mini54|K21|plano|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 15,
+"reglas": [],
+"texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos"
+},
+"mini54|K21|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos"
+},
+"mini54|K21|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue"
+}
+}

@@ -4,7 +4,7 @@ Lo escribe `python3 banco_pruebas/diagrama.py` leyendo `app/`. `tests/test_diagr
 
 Limites: analisis estatico. Una referencia es un nombre que aparece en el codigo, no una llamada probada. Lo que se llama por `getattr`, o por texto, no se ve. Columna ALCANCE: `si` = alguna entrada la alcanza; `?` = ninguna la alcanza pero su nombre aparece escrito en otra parte de `app/`, hay que mirarla; `-` = ninguna la alcanza y su nombre no aparece en ningun otro lado de `app/`. Un `-` no prueba que sobre: puede usarla un script o un test.
 
-Funciones y clases de nivel superior: 487. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
+Funciones y clases de nivel superior: 495. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
 
 ## Nivel 1 — el turno
 
@@ -16,7 +16,7 @@ flowchart LR
   C4["4 CONTEXTO<br/>46 funciones"]
   C5["5 BUCLE<br/>11 funciones"]
   C6["6 BUSCAR<br/>142 funciones"]
-  C7["7 PEDIDO Y CUENTA<br/>150 funciones"]
+  C7["7 PEDIDO Y CUENTA<br/>158 funciones"]
   C8["8 COBRO<br/>20 funciones"]
   C9["9 RESPUESTA Y CONTROL<br/>28 funciones"]
   C10["10 TEXTOS Y GUARDAS<br/>17 funciones"]
@@ -55,7 +55,7 @@ Cada celda cuenta cuantas funciones de la caja de la fila nombran a una funcion 
 | **4** CONTEXTO | 2 |  |  | 9 | · |  | 26 | 10 |  |  | 3 |
 | **5** BUCLE | 4 |  |  |  | 8 | · | 4 | 7 | 1 | 7 | 1 |
 | **6** BUSCAR | 1 |  |  | 23 | 8 |  | · | 7 |  |  | 6 |
-| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 4 |  | 130 | · |  | 1 | 4 |
+| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 5 |  | 147 | · |  | 1 | 4 |
 | **8** COBRO | 2 |  |  | 6 |  |  |  | 4 | · |  | 3 |
 | **9** RESPUESTA Y CONTROL |  |  |  |  | 10 |  | 41 | 4 |  | · |  |
 | **10** TEXTOS Y GUARDAS |  |  |  | 2 |  |  |  |  |  |  | · |
@@ -359,7 +359,7 @@ El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad
 
 ### 7 PEDIDO Y CUENTA
 
-El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 150 funciones, 3257 lineas.
+El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3403 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -479,7 +479,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.normal | `envio_a_varios` | 13 | · | si |
 | core.flujo.normal | `un_destino_para_el_pedido` | 22 | · | si |
 | core.flujo.normal | `cuenta_de_lo_buscado` | 19 | · | si |
-| core.flujo.normal | `cuenta_de_lo_nombrado` | 17 | · | si |
+| core.flujo.normal | `cuenta_de_lo_nombrado` | 18 | · | si |
 | core.flujo.normal | `lista_con_dato` | 33 | · | si |
 | core.flujo.normal | `rubro_inventado` | 11 | · | si |
 | core.flujo.normal | `dato_del_producto` | 18 | · | si |
@@ -489,6 +489,14 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.normal | `color_ajeno` | 26 | · | si |
 | core.flujo.normal | `compatibilidad_de_un_rubro` | 18 | · | si |
 | core.flujo.normal | `un_medio_es_todo` | 9 | · | si |
+| core.flujo.normal | `_casi` | 12 | · | si |
+| core.flujo.normal | `_frase_en` | 9 | · | si |
+| core.flujo.normal | `orden_que_no_dijo` | 22 | · | si |
+| core.flujo.normal | `lo_corregido` | 13 | · | si |
+| core.flujo.normal | `rubro_con_marca` | 24 | · | si |
+| core.flujo.normal | `alternativa_compatible` | 18 | · | si |
+| core.flujo.normal | `producto_del_envio` | 24 | · | si |
+| core.flujo.normal | `compra_si_sale` | 23 | · | si |
 | core.flujo.normal | `_numerar` | 8 | · | si |
 | core.flujo.normal | `normalizar` | 12 | · | si |
 | core.flujo.redaccion | `_otros_colores` | 6 | · | si |

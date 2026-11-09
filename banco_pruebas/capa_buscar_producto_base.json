@@ -1,0 +1,5868 @@
+{
+"prod|C01|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"prod|C01|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"prod|C01|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"prod|C03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"prod|C01|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"prod|C03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"prod|C04|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"prod|C04|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"prod|C01|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"prod|C03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"prod|C03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"prod|C03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"prod|C04|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"prod|C04|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"prod|C04|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"prod|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"prod|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"prod|C19|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"prod|C22|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"prod|C22|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"prod|C22|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"prod|C22|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"prod|C28|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"prod|C28|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"prod|C28|coloquial|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"prod|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"prod|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"prod|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"prod|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"prod|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"prod|C19|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"prod|C19|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"prod|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"prod|C19|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"prod|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"prod|C19|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"prod|C34|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"prod|C34|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"prod|C22|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"prod|C34|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"prod|C28|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"prod|C28|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"prod|C38|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"prod|C38|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"prod|C39|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"prod|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"prod|C34|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"prod|C34|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"prod|C38|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"prod|C43|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"prod|C39|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"prod|C43|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"prod|C39|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"prod|C44|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"prod|C39|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"prod|C38|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"prod|C44|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"prod|C38|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"prod|C43|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"prod|C43|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"prod|C39|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"prod|C44|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"prod|C44|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"prod|C43|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"prod|C44|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"prod|C49|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"prod|C50|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"prod|C50|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"prod|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"prod|C49|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"prod|C49|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"prod|C49|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"prod|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"prod|C53|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"prod|C49|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"prod|C50|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"prod|C53|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"prod|C50|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"prod|C50|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"prod|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"prod|C55|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"prod|C53|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"prod|C53|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"prod|C56|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C55|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"prod|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"prod|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C55|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"prod|C55|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"prod|C58|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"prod|C58|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"prod|C55|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"prod|C53|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"prod|C58|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+},
+"prod|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"prod|C58|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"prod|C56|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C58|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"prod|C01|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"prod|C01|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"prod|C01|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"prod|C03|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"prod|C01|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"prod|C03|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"prod|C04|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"prod|C04|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"prod|C03|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"prod|C04|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"prod|C17|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"prod|C17|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"prod|C19|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"prod|C01|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"prod|C03|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"prod|C03|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"prod|C04|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"prod|C04|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"prod|C22|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"prod|C22|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"prod|C17|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"prod|C17|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"prod|C19|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"prod|C28|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"prod|C17|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"prod|C22|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"prod|C19|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"prod|C22|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"prod|C19|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"prod|C19|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"prod|C28|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"prod|C22|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"prod|C32|whatsapp|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"prod|C32|redactada|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"prod|C28|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"prod|C28|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"prod|C34|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"prod|C34|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"prod|C28|coloquial|1": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"prod|C34|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"prod|C32|original|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"prod|C38|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"prod|C32|plano|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"prod|C32|coloquial|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"prod|C38|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"prod|C43|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"prod|C39|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"prod|C38|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"prod|C39|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"prod|C34|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"prod|C44|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"prod|C34|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"prod|C39|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"prod|C39|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"prod|C43|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"prod|C38|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"prod|C43|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"prod|C38|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"prod|C39|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"prod|C44|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"prod|C44|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"prod|C49|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"prod|C43|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"prod|C43|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"prod|C44|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"prod|C44|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"prod|C49|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"prod|C51|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C51|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C49|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"prod|C49|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"prod|C50|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"prod|C53|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"prod|C50|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"prod|C50|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"prod|C51|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"prod|C49|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"prod|C55|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"prod|C55|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"prod|C53|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"prod|C56|plano|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|whatsapp|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C53|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"prod|C58|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"prod|C50|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"prod|C50|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"prod|C55|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"prod|C51|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"prod|C55|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"prod|C51|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"prod|C56|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"prod|C53|whatsapp|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"prod|C53|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"prod|C58|coloquial|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"prod|C55|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"prod|C56|original|1": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"prod|C58|original|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"prod|C58|plano|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"prod|C58|redactada|1": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+},
+"prod|C01|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"prod|C03|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"prod|C03|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"prod|C04|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"prod|C04|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"prod|C01|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"prod|C01|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"prod|C03|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"prod|C17|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"prod|C03|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"prod|C17|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"prod|C04|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"prod|C04|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"prod|C19|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"prod|C22|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"prod|C22|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"prod|C01|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"prod|C22|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"prod|C01|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"prod|C22|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"prod|C03|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"prod|C04|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"prod|C28|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"prod|C28|coloquial|2": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"prod|C28|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"prod|C17|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"prod|C19|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"prod|C32|plano|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"prod|C32|coloquial|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"prod|C34|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"prod|C34|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"prod|C32|whatsapp|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"prod|C32|redactada|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"prod|C17|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"prod|C34|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"prod|C17|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"prod|C28|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"prod|C19|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"prod|C38|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"prod|C19|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"prod|C38|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"prod|C19|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"prod|C39|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"prod|C34|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"prod|C34|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"prod|C38|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"prod|C43|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"prod|C22|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"prod|C43|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"prod|C39|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"prod|C38|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"prod|C39|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"prod|C44|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"prod|C39|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"prod|C44|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"prod|C28|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"prod|C43|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"prod|C44|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"prod|C43|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"prod|C43|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"prod|C32|original|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"prod|C44|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"prod|C44|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"prod|C49|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"prod|C38|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"prod|C49|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"prod|C50|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"prod|C39|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"prod|C50|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"prod|C49|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"prod|C51|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"prod|C49|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"prod|C51|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"prod|C53|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"prod|C50|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"prod|C51|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C53|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"prod|C50|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"prod|C51|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"prod|C51|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"prod|C55|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"prod|C53|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"prod|C53|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"prod|C53|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"prod|C56|original|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C49|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"prod|C56|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"prod|C55|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"prod|C58|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"prod|C55|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"prod|C58|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"prod|C50|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"prod|C56|plano|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C58|redactada|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+},
+"prod|C56|whatsapp|2": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"prod|C56|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"prod|C58|whatsapp|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"prod|C58|coloquial|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"prod|C55|original|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"prod|C55|plano|2": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"deepseek|C01|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"deepseek|C01|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"haiku|C01|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"haiku|C01|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"deepseek|C01|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"haiku|C01|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"haiku|C01|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"deepseek|C01|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"deepseek|C03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"deepseek|C04|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"haiku|C03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"deepseek|C01|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"deepseek|C03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"haiku|C01|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"deepseek|C04|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"deepseek|C03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"deepseek|C04|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"deepseek|C03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"haiku|C04|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"deepseek|C03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"haiku|C03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"deepseek|C04|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"haiku|C04|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"deepseek|C04|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"haiku|C03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"haiku|C03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"haiku|C04|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"haiku|C03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"haiku|C04|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"haiku|C04|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"deepseek|C19|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"deepseek|C19|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"deepseek|C19|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"deepseek|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"haiku|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"deepseek|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"deepseek|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"deepseek|C22|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"deepseek|C22|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"haiku|C19|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"deepseek|C19|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"deepseek|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"deepseek|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"deepseek|C19|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"deepseek|C28|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"deepseek|C28|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"deepseek|C22|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"deepseek|C22|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"deepseek|C22|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"haiku|C22|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"haiku|C22|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"deepseek|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"haiku|C22|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"haiku|C22|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"deepseek|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"deepseek|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"deepseek|C28|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"deepseek|C28|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"deepseek|C28|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"deepseek|C34|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"deepseek|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"deepseek|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"deepseek|C34|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"deepseek|C34|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"deepseek|C34|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"deepseek|C34|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"deepseek|C38|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"haiku|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"deepseek|C39|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"deepseek|C38|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"haiku|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"deepseek|C39|whatsapp|0": {
+"bien": false,
+"faltan": 0,
+"sobran": 4,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"deepseek|C38|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"deepseek|C38|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"haiku|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"deepseek|C38|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"deepseek|C39|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"deepseek|C39|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"deepseek|C43|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"deepseek|C39|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"haiku|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"deepseek|C43|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"deepseek|C44|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"deepseek|C43|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"deepseek|C44|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"deepseek|C44|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"haiku|C19|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"deepseek|C44|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"haiku|C19|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"deepseek|C43|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"deepseek|C43|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"haiku|C28|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"haiku|C19|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"deepseek|C44|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"haiku|C19|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"haiku|C28|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"deepseek|C49|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"deepseek|C49|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"deepseek|C49|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"deepseek|C49|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"deepseek|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"haiku|C28|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"deepseek|C49|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"haiku|C28|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"haiku|C22|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"deepseek|C53|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"deepseek|C55|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"deepseek|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"deepseek|C50|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"deepseek|C53|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"deepseek|C53|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"deepseek|C50|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"deepseek|C53|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"deepseek|C56|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"deepseek|C50|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"deepseek|C56|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"deepseek|C50|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"deepseek|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"deepseek|C50|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"deepseek|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"deepseek|C58|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"deepseek|C55|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"haiku|C28|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"deepseek|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"deepseek|C55|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"deepseek|C58|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"deepseek|C55|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"deepseek|C58|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"deepseek|C58|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"deepseek|C53|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"haiku|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"deepseek|C58|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+},
+"haiku|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"deepseek|C56|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"deepseek|C55|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"deepseek|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"deepseek|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"haiku|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"haiku|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"haiku|C34|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"haiku|C34|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"haiku|C34|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"haiku|C34|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"haiku|C34|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"haiku|C38|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"haiku|C39|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"haiku|C38|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"haiku|C39|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"haiku|C38|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"haiku|C38|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"haiku|C39|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"haiku|C38|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"haiku|C43|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"haiku|C39|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"haiku|C43|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"haiku|C43|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"haiku|C39|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"haiku|C44|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"haiku|C43|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"haiku|C43|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"haiku|C44|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"haiku|C44|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"haiku|C44|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"haiku|C44|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"haiku|C49|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"haiku|C49|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"haiku|C49|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"haiku|C49|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"haiku|C50|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"haiku|C49|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"haiku|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"haiku|C50|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"haiku|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"haiku|C50|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"haiku|C50|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"haiku|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"haiku|C50|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"haiku|C53|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"haiku|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"haiku|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"haiku|C53|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"haiku|C53|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"haiku|C53|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"haiku|C53|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"haiku|C55|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"haiku|C55|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"haiku|C56|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|C55|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"haiku|C55|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"haiku|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"haiku|C55|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"haiku|C58|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"haiku|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|C58|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"haiku|C56|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"haiku|C58|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+},
+"haiku|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"haiku|C58|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"haiku|C58|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"terra|C01|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"terra|C01|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"mini54|C01|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"mini54|C01|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"luna|C01|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el G305?"
+},
+"luna|C01|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"terra|C01|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"terra|C01|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"luna|C01|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"mini54|C01|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"mini54|C01|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"terra|C01|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "che el g305 lo tenes?"
+},
+"mini54|C01|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"luna|C01|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tenes el g305"
+},
+"luna|C03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"luna|C01|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Tienen disponible el G305?"
+},
+"luna|C03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"terra|C03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"luna|C04|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"terra|C03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"mini54|C03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"luna|C04|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"terra|C03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"terra|C03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"mini54|C03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"mini54|C03|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el g502 hero"
+},
+"luna|C04|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"mini54|C03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"terra|C03|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g502 hero cuantos dpi tiene"
+},
+"terra|C04|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"mini54|C03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"luna|C04|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"luna|C03|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuantos dpi tiene el G502 Hero?"
+},
+"mini54|C04|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"terra|C04|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 que es inalambrico cuanto sale"
+},
+"terra|C04|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"mini54|C04|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el K120, que es inalambrico, cuanto sale?"
+},
+"luna|C03|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunatos dpi tiene el g502 hero"
+},
+"mini54|C04|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"terra|C04|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"mini54|C04|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el k120 q es inlaambrico cuanto sale"
+},
+"luna|C03|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuántos DPI tiene el mouse G502 Hero?"
+},
+"terra|C04|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"mini54|C04|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120 que es inalambrico"
+},
+"luna|C04|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?"
+},
+"luna|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"luna|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"mini54|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"luna|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"mini54|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"mini54|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"luna|C17|whatsapp|0": {
+"bien": false,
+"faltan": 5,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"terra|C17|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 y que teclados mecanicos tenes?"
+},
+"terra|C17|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 y q teclados mecanicos tenes"
+},
+"luna|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"mini54|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"terra|C17|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 y que teclados mecanicos tenes"
+},
+"mini54|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"terra|C17|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 y q teclados mecanicos hay"
+},
+"terra|C17|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?"
+},
+"luna|C19|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"mini54|C19|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"luna|C19|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"mini54|C19|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"luna|C19|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"luna|C19|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"mini54|C19|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"luna|C19|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"mini54|C19|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"terra|C19|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 tiene stock? y hacen factura A?"
+},
+"terra|C19|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen fatcura a"
+},
+"terra|C19|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 tiene stock y hacen factura a"
+},
+"mini54|C19|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"terra|C19|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "hay g203? y hacen factura a?"
+},
+"terra|C19|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Hay stock del G203? Además, ¿emiten factura A?"
+},
+"luna|C22|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"mini54|C22|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"mini54|C22|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"mini54|C22|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"terra|C22|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"mini54|C22|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"mini54|C22|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"terra|C22|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"terra|C22|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"luna|C22|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G305 sirve para jugar? cuanto sale?"
+},
+"terra|C22|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"terra|C22|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 es para jugar? cuanto esta"
+},
+"luna|C22|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cuanto sale"
+},
+"luna|C22|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g305 sirve para jugar cunato sale"
+},
+"luna|C22|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?"
+},
+"mini54|C28|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"mini54|C28|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"terra|C28|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"mini54|C28|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"luna|C28|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"luna|C28|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro pasame el g305"
+},
+"mini54|C28|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"luna|C28|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"terra|C28|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay G502 Hero en negro, pasame el G305"
+},
+"terra|C28|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no hay g502 hero en negro paasme el g305"
+},
+"luna|C28|coloquial|0": {
+"bien": false,
+"faltan": 1,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"terra|C28|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "si no tenes el g502 hero negro dame el g305"
+},
+"mini54|C28|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"luna|C28|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"terra|C28|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "Pasame el G305 en caso de que no haya G502 Hero en negro."
+},
+"luna|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"luna|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"mini54|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"mini54|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"terra|C32|whatsapp|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"mini54|C32|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"terra|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"luna|C34|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"terra|C32|redactada|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"terra|C32|plano|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "entre el g305 y el g203 dame el que sea inalambrico"
+},
+"mini54|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"luna|C34|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"mini54|C32|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "De estos dos, el G203 y el G305, dame el inalámbrico."
+},
+"luna|C34|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"terra|C32|coloquial|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"mini54|C34|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"mini54|C34|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"mini54|C34|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"terra|C34|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"mini54|C34|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"terra|C34|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale mandar un g203 a rosario"
+},
+"terra|C34|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un G203 a Rosario?"
+},
+"mini54|C34|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"terra|C34|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"terra|C34|redactada|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta enviar un G203 a Rosario?"
+},
+"luna|C32|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el G305 y el G203, dame el que sea inalambrico"
+},
+"luna|C32|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre el g305 y el g203 dame el q sea inlaambrico"
+},
+"luna|C32|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "entre g305 y g203 dame el q sea inalambrico"
+},
+"luna|C34|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"precio_con_envio"
+],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"luna|C34|coloquial|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale mandar un g203 a rosario"
+},
+"mini54|C38|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"mini54|C38|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"mini54|C38|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"mini54|C38|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"mini54|C38|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"terra|C38|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"terra|C38|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"terra|C38|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"luna|C38|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"terra|C38|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta la kingston fury beast ddr4 16gb"
+},
+"mini54|C39|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"terra|C38|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"mini54|C39|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"mini54|C39|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"luna|C39|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"mini54|C39|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"luna|C39|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"luna|C38|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?"
+},
+"mini54|C39|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"terra|C39|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"luna|C38|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale la kingston fury beast ddr4 16gb"
+},
+"luna|C38|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale la kingston fury beast ddr4 16gb"
+},
+"terra|C39|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"terra|C39|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"luna|C38|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?"
+},
+"terra|C39|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no lo quiero para viajar"
+},
+"mini54|C43|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"terra|C39|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inalambrico no? es para viajar"
+},
+"mini54|C43|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"mini54|C43|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"luna|C43|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"mini54|C43|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"luna|C39|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el G203 es inalambrico, no? lo quiero para viajar"
+},
+"luna|C44|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"mini54|C44|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"luna|C44|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"luna|C39|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "el g203 es inlaambrico no lo quiero para viajar"
+},
+"terra|C43|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"luna|C44|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"terra|C43|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"luna|C39|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?"
+},
+"mini54|C43|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"terra|C43|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el k120"
+},
+"terra|C43|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"terra|C43|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"terra|C44|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"mini54|C44|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"terra|C44|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"mini54|C44|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"terra|C44|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 y el G203?"
+},
+"terra|C44|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"mini54|C44|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 y el g203"
+},
+"terra|C44|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"mini54|C44|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 y el g203"
+},
+"luna|C43|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el K120?"
+},
+"luna|C43|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el k120"
+},
+"luna|C43|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el k120"
+},
+"luna|C43|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el K120?"
+},
+"luna|C44|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 y el g203"
+},
+"luna|C44|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "¿Cuánto cuestan el G203 y el G305?"
+},
+"mini54|C49|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"mini54|C49|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"mini54|C49|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"terra|C49|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"mini54|C49|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"terra|C49|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"luna|C49|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado logitech k120 negro"
+},
+"terra|C49|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"luna|C49|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"mini54|C49|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"terra|C49|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"mini54|C50|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"terra|C49|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?"
+},
+"terra|C50|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"terra|C50|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"terra|C50|redactada|0": {
+"bien": false,
+"faltan": 4,
+"sobran": 0,
+"reglas": [],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"mini54|C50|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"luna|C50|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"mini54|C50|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"mini54|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"luna|C49|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el teclado Logitech K120 negro?"
+},
+"mini54|C50|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"luna|C50|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"luna|C49|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el teclado logitech k120 negro"
+},
+"terra|C50|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"mini54|C50|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "Estoy dudando entre el G203 y el G305."
+},
+"mini54|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"terra|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"luna|C49|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el teclado logitech k120 negro"
+},
+"terra|C50|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"mini54|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"terra|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"mini54|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"mini54|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"luna|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"luna|C50|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el G203 y el G305"
+},
+"terra|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"luna|C50|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre el g203 y el g305"
+},
+"mini54|C53|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"luna|C50|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "estoy entre g203 y g305"
+},
+"terra|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"mini54|C53|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"terra|C51|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba."
+},
+"luna|C53|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"terra|C53|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"mini54|C53|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"luna|C53|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"terra|C53|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"mini54|C53|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"mini54|C53|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"luna|C51|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G305 negro? y mandame ese a Cordoba"
+},
+"mini54|C55|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"luna|C51|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g305 negro y mandame ese a cordoba"
+},
+"terra|C53|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el g502 hero"
+},
+"mini54|C55|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"terra|C53|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"luna|C51|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g305 negro y mandame ese a cordoba"
+},
+"mini54|C55|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"terra|C55|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"terra|C53|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuesta el G502 Hero?"
+},
+"luna|C51|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g305 negro? mandamelo a cordoba"
+},
+"terra|C55|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"mini54|C55|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"terra|C55|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"luna|C55|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el G305 negro y el G203 negro?"
+},
+"mini54|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"luna|C55|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"terra|C56|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"terra|C55|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato salen el g305 negro y el g203 negro"
+},
+"luna|C55|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"lista_con_dato"
+],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"terra|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"terra|C55|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"luna|C53|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto sale el G502 Hero?"
+},
+"mini54|C58|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"luna|C53|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cunato sale el g502 hero"
+},
+"luna|C53|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto esta el g502 hero"
+},
+"terra|C58|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"terra|C58|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"luna|C56|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"terra|C58|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+},
+"terra|C56|plano|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"luna|C56|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"luna|C56|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos."
+},
+"terra|C56|whatsapp|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"terra|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"luna|C55|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto salen el g305 negro y el g203 negro"
+},
+"terra|C58|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"luna|C55|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "cuanto estan el g305 negro y el g203 negro"
+},
+"luna|C58|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"terra|C58|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"luna|C58|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jajaja genial gracias capo, che el g305 tiene garantia?"
+},
+"luna|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"luna|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"luna|C58|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"luna|C58|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"luna|C58|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+},
+"mini54|C55|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "¿Cuánto cuestan el G203 negro y el G305 negro?"
+},
+"mini54|C56|original|0": {
+"bien": false,
+"faltan": 2,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos"
+},
+"mini54|C56|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"mini54|C56|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos"
+},
+"mini54|C56|coloquial|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2"
+},
+"mini54|C58|original|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [],
+"texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?"
+},
+"mini54|C58|plano|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buenisimo gracias crack che y el g305 tiene garantia"
+},
+"mini54|C58|whatsapp|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "jaja buneisimo gracias crack che y el g305 tiene garantia"
+},
+"mini54|C58|redactada|0": {
+"bien": true,
+"faltan": 0,
+"sobran": 0,
+"reglas": [
+"dato_del_producto"
+],
+"texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?"
+}
+}

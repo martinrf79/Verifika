@@ -1,0 +1,4 @@
+{"_que_es": "Fallas por capa y por modelo, banco_pruebas/capa_buscar.py, 9-nov-2026, arquitectura/PLAN_CAPAS.md. Solo bajan.",
+ "buscar": {"prod": 12, "deepseek": 2, "haiku": 4, "luna": 15, "mini54": 26, "terra": 2},
+ "producto": {"prod": 18, "deepseek": 10, "haiku": 10, "luna": 11, "mini54": 9, "terra": 11},
+ "comprar": {"prod": 33, "deepseek": 15, "haiku": 6, "luna": 12, "mini54": 29, "terra": 10}}
