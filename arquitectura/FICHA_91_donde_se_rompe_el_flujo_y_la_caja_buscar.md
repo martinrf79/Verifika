@@ -18,8 +18,7 @@
   corridas. Y medir en WhatsApp con las dos frases que fallaron.
 - **Lo que Martín pidió ver el 8-nov** y esta ficha deja asentado: la vara que de verdad importa es el examen real, las 42 charlas
   reales con lo correcto verificado contra el catálogo, 80 de 113 turnos bien el 3-nov, 71%. El 74 de 75 de las 26 grabadas no predice
-  WhatsApp. Un cambio entra solo si no rompe un turno que ya andaba. Si en dos sesiones con esa vara el número no sube, se decide con
-  Martín entre seguir o un bot más angosto: catálogo, precio, stock, envío y cierre.
+  WhatsApp. Un cambio entra solo si no rompe un turno que ya andaba.
 
 ## El problema, en palabras de Martín
 

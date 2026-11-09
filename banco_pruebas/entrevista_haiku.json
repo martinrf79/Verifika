@@ -1,0 +1,63 @@
+[
+ {
+  "corrida": "low",
+  "id": "K15",
+  "turno": 0,
+  "mensaje": "tengo 30 lucas para un mouse y un teclado, los mas baratos, con envio a Rosario, me alcanza?",
+  "malas": [
+   "el monto 27500",
+   "dice alcanza|te sobra|entra|llegas|si,"
+  ],
+  "falta": "llamar a cotizar con el mouse y el teclado mas baratos a Rosario y el tope de 30 mil, para que el sistema diga el total, 27.500, y si alcanza",
+  "responde": "**1. Por qué no lo hice:** B) La consigna me llevó a otra cosa, o no lo pide de forma explícita.\n\nEl cliente preguntó si le alcanza con un tope de presupuesto, y ese criterio no quedó asociado a `cotizar` en la consigna. El tope aparece bajo `pedido` (\"El pago y el tope, como los dijo\"). En la descripción de `cotizar` solo dice \"renglones con producto, cantidad y destino\". Además, busqué el mouse y el teclado y el envío, pero no llamé a ninguna herramienta para sumar el total ni comparar contra el tope. Eso también se explica porque la consigna dice que solo puedo mostrar datos que devolvió una herramienta en este turno, y yo tomé el total como algo que podía deducir por mi cuenta.\n\n**2. Frase que me llevó a no hacerlo:** \"cotizar: cuanto sale algo, sin tocar el pedido: renglones con producto, cantidad y destino.\" Faltó una frase que dijera que, si el cliente da un tope, cotizar lo compara y dice si alcanza. La única mención del tope estaba en `pedido`, que no sirve para una consulta sin compra.\n\n**3. Cambio mínimo:** agregar a la consigna, en la línea de `cotizar`:\n\n> cotizar: cuanto sale algo, sin tocar el pedido: renglones con producto, cantidad y destino. Si el cliente pregunta si le alcanza con un monto (\"me alcanza con 30 lucas\", \"tengo X\"), pasa ese monto como tope y el sistema devuelve el total y si alcanza.\n\nY un ejemplo: \"tengo 30 lucas para un mouse y un teclado con envio a Rosario, me alcanza?\" → cotizar con el mouse y el teclado elegidos, cantidad 1 de cada uno, destino Rosario, tope 30000.\n\n**4. Si el sistema lo detectara solo:** buscaría en el mensaje del cliente un monto de dinero junto con una pregunta de suficiencia (\"me alcanza\", \"llego\", \"entra\", \"me sobra\") o una frase de tope (\"hasta X\", \"tengo X\"). Con esa combinación, dispararía `cotizar` automáticamente con los productos ya elegidos en la conversación, el destino y el tope, sin depender de que yo reconozca la intención. La regla sería: monto + pregunta de alcance = cotizar con tope."
+ },
+ {
+  "corrida": "low",
+  "id": "K03",
+  "turno": 0,
+  "mensaje": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital",
+  "malas": [
+   "el total"
+  ],
+  "falta": "llamar a cotizar con dos auriculares y dos mouse, los mas baratos, a Cordoba, para que el sistema pegue el total con el envio",
+  "responde": "**1. Por qué no lo hice:** Elegí **C**, con parte de **D**. Creí que con los `buscar` de auriculares, mouse y envío ya tenía lo necesario para sumar. No llamé a `cotizar`, que es la herramienta que calcula cuánto sale un pedido con cantidades y destino. Además, no elegí un producto concreto por renglón, y eso también es parte de lo que `cotizar` necesita.\n\n**2. Frase que me llevó a fallar:** \"Devuelve el pedido con precios, envios, total y reparto, y lo que falta.\" Es la descripción de `pedido`, y me hizo pensar que el total salía de ahí o que podía armarlo a mano. Pero el cliente no confirmó ni compró nada, así que `pedido` no correspondía. Lo que faltó en la consigna fue la frase que conecta \"sumame todo\" con `cotizar`: \"cuanto sale algo, sin tocar el pedido: renglones con producto, cantidad y destino\". No la relacioné con el pedido de \"sumame\".\n\n**3. Cambio mínimo:** agregar a la consigna esta línea:\n\"Si el cliente pide un total o cuánto sale ('sumame', 'cuánto me queda', 'cuánto es'), usá cotizar con cada renglón (producto, cantidad y destino) aunque no haya confirmado nada. Usá pedido solo si compra, cambia, saca o confirma algo. Si pide 'los más baratos' y varias cantidades, elegí un producto concreto por renglón a partir del buscar antes de cotizar.\"\n\nY en la descripción de la herramienta `cotizar`, agregar: \"también para sumar el total de lo que pide el cliente, con envío al destino\".\n\n**4. Si el sistema lo hiciera solo:** Detectaría con seguridad un patrón en el mensaje del cliente: verbos o frases de cotización (\"sumame\", \"cuánto sale\", \"cuánto me queda\", \"total\") sin verbos de compra (\"agregame\", \"lo quiero\", \"confirmo\", \"sacá\"). Cuando aparecen los primeros y no los segundos, el sistema llamaría a `cotizar` con los renglones que surgen de los últimos `buscar`, y no a `pedido`. Como respaldo, si hay una cantidad y un criterio de precio, dispararía el `buscar` correspondiente antes de cotizar."
+ },
+ {
+  "corrida": "low",
+  "id": "K06",
+  "turno": 0,
+  "mensaje": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia",
+  "malas": [
+   "dice cordoba",
+   "dice tercero",
+   "dice transferencia"
+  ],
+  "falta": "llamar a cotizar, o a pedido, con los dos teclados y los dos mouse repartidos en los dos destinos y el pago por transferencia, para que salgan los dos envios y el medio",
+  "responde": "**1. Por qué no lo hice:** elijo **C**. Busqué los teclados y los mouse más baratos, consulté el envío a cada destino y di por hecho que con eso alcanzaba. No llamé a `pedido` ni a `cotizar`, y el pedido quedó vacío.\n\n**2. Frase que me llevó a eso:** falta la frase que dice que una compra se carga con `pedido`. Lo que tenía era la descripción de `buscar`: \"con texto, el envío a un lugar, 'envio a Rosario', o una regla\", que me llevó a usar `buscar` también para el costo de envío. La consigna dice: \"Si el cliente compra, cambia, saca o confirma algo, usa pedido con solo ese cambio, aunque falte un dato; un renglón por destino.\" Yo la leí como una consulta de precios, no como una compra.\n\n**3. Cambio mínimo:** agregar a la consigna esta línea:\n\"Si el cliente pide comprar algo (necesito, quiero, dame, pasame, pago por…), llamá `pedido` en ese mismo turno con un agrega por cada producto y destino, aunque falte la cantidad por destino o el nombre; no uses `buscar` ni `cotizar` para cerrar una compra. Ejemplo: 'necesito 2 teclados y 2 mouse, un envío a Córdoba y otro a Río Tercero, pago transferencia' → pedido con agrega: teclado (el más barato con stock), mouse (el más barato con stock), destino Córdoba, y lo mismo para Río Tercero, medio transferencia.\"\n\n**4. Cómo lo detectaría el sistema:** después de cada turno, si el mensaje del cliente contiene un verbo de compra o un medio de pago (\"pago\", \"transferencia\", \"necesito\", \"quiero\", \"llevo\") y el pedido sigue vacío o no cambió, reenviarle al modelo el mensaje con la instrucción de llamar `pedido` antes de responder. Es una comprobación simple y no depende de que yo me acuerde de la regla."
+ },
+ {
+  "corrida": "low",
+  "id": "C28",
+  "turno": 0,
+  "mensaje": "si no hay G502 Hero en negro, pasame el G305",
+  "malas": [
+   "dice que el negro no hay"
+  ],
+  "falta": "buscar el G502 Hero en negro sin filtrar por stock, para ver que tiene stock 0 y decirle que el negro no hay, y despues el G305",
+  "responde": "**1. Por qué no lo hice:** **B**, aunque también hubo algo de **C**. La consigna me pedía \"con stock > 0\" en cada consulta, y lo apliqué de forma literal. Así, el G502 Hero en negro, que tiene stock 0, quedó fuera de la búsqueda, y no pude decirle que no hay. Además, no incluí el color en el WHERE, y el pedido era justamente por el color.\n\n**2. Frase que me llevó a eso:** \"Una consulta por cosa que pide el cliente, con stock > 0, y en las columnas pedi siempre nombre, precio y stock\". Me faltó una frase que dijera que, cuando el cliente pregunta si hay algo, hay que buscar también lo que tiene stock 0.\n\n**3. Cambio mínimo:** reemplazar \"con stock > 0\" por algo así en la descripción de buscar:\n\n> \"Con stock > 0 para recomendar o cotizar. Si el cliente pregunta si hay un producto, un modelo o un color concreto (por ejemplo \"si no hay X en negro\", \"tenes X\", \"hay X\"), NO filtres por stock: busca ese producto y ese color y mostra también las filas con stock 0, para decirle que no hay. Luego busca la alternativa que pidió.\"\n\nY en la consigna, un ejemplo: \"Cliente: 'si no hay G502 Hero en negro, pasame el G305'. Consulta 1: SELECT nombre, modelo, color, precio, stock FROM productos WHERE nombre LIKE '%G502 Hero%' AND color = 'Negro'. Consulta 2: SELECT ... WHERE nombre LIKE '%G305%' AND stock > 0.\"\n\n**4. Cómo lo detectaría el sistema solo:** en el mensaje del cliente, buscar un patrón de disponibilidad (\"si no hay\", \"hay\", \"tenes\", \"tiene stock\") junto con un nombre de producto y, si aparece, un color. Si aparece, la búsqueda debe incluir ese producto y color sin el filtro de stock, y la respuesta debe mencionar explícitamente cada producto que el cliente nombró. Como control final, antes de responder, verificar que cada producto y color que nombró el cliente aparezca en el resultado de la herramienta, aunque sea con stock 0. Si no aparece, el sistema obliga a una segunda consulta antes de contestar."
+ },
+ {
+  "corrida": "medium",
+  "id": "K04",
+  "turno": 0,
+  "mensaje": "el mouse mas liviano y el teclado mas barato, los dos a Rosario, cuanto es todo?",
+  "malas": [
+   "dice g pro",
+   "dice kb-110",
+   "el monto 7000",
+   "el monto 205000"
+  ],
+  "falta": "buscar el mouse mas liviano y el teclado mas barato y llamar a cotizar los dos a Rosario, para que el sistema de el envio de 7.000 y el total",
+  "responde": "**1. Por qué no lo hice:** **C)**. Creí que con lo que ya tenía alcanzaba. Tenía el mouse, el teclado y el precio del envío a Rosario, pero no llamé a cotizar para calcular el total, y en vez de responder mandé un mensaje de espera que no tenía ningún respaldo. Ese mensaje lo inventé: el sistema no me había dicho que hubiera demanda. Además cometí un error en la búsqueda del mouse: pedí `ORDER BY peso_g ASC` sin notar que la herramienta devolvía el orden alfabético (116 g antes que 75 g). Esa búsqueda tendría que haberme alertado para verificar el resultado completo.\n\n**2. Frase que me llevó a no hacerlo:** Ninguna frase de lo que recibí me pidió que no cotizara. Lo que faltó fue una instrucción que vinculara \"cuánto es todo a Rosario\" con cotizar. La descripción de cotizar dice \"Cuanto sale algo, sin tocar el pedido: renglones con producto, cantidad y destino\", pero no dice que sirva para calcular el total con envío. Y la consigna no cubre el caso de un criterio (\"el más liviano\", \"el más barato\") seguido de un destino y una pregunta por el total.\n\n**3. Cambio mínimo que lo hubiera resuelto:**\n> \"Si el cliente pide el total de algo con envío a un lugar: 1) buscá cada producto con su criterio (más liviano = ORDER BY peso_g, más barato = ORDER BY precio; si el resultado no sale en orden numérico, buscá sin ORDER BY y elegí el mínimo); 2) llamá cotizar con un renglón por producto, cantidad y destino; 3) respondé con PRESUPUESTO. Nunca mandes un mensaje de espera ni digas que el sistema está saturado: si falta un dato, preguntalo.\"\n\nY en la descripción de cotizar: \"Calcula el total con envío al destino que se le indique; úsala siempre que el cliente pregunte cuánto sale algo a un lugar.\"\n\n**4. Cómo lo detectaría el sistema solo:** Si el mensaje del cliente contiene un criterio de elección (más liviano, más barato, mejor, etc.) junto con una pregunta de precio o total (\"cuánto\", \"total\", \"sale\") y un destino (\"a Rosario\", \"envío a…\"), el sistema exige que el siguiente llamado sea cotizar con los productos ya buscados. Si el último llamado fue buscar y no hay cotizar después, bloquea la respuesta final y obliga a cotizar. Un mensaje de error o espera que no venga de una herramienta se descarta antes de llegar al cliente."
+ }
+]
