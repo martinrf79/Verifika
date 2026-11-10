@@ -94,3 +94,18 @@ Corte, escrito antes: Gemini 257 de 270 o más, sin romper ningún caso de ning�
   mandarlo es producto y envío: **comprar 85 de 90 contra 79, buscar 50 de 50 contra 47, producto igual. Gana 7, pierde 0.
   Pasa.**
 - Falta: dos corridas más, por la variación entre corridas, y llevar la llamada 1 al bot por camino fijo.
+
+## Las charlas enteras — 10-nov, FICHA 92 paso 1
+
+Instrumentos: `banco_pruebas/camino_fijo.py`, las 58, J y K por el webhook con la agenda a mano y el turno fijo, sin
+modelo; `banco_pruebas/camino_grabadas.py`, lo grabado de los seis modelos turno por turno, contra la agenda a mano por
+productos mostrados, pedido y montos.
+
+- Con la traducción perfecta: 136 de 138, y 138 al respetar el orden que el cliente dice con otras palabras cuando la
+  llamada 1 cita de dónde lo sacó, `orden_cita`, y al decir "No vendemos" lo que no se vende.
+- Lo grabado: Gemini 423 de 525. De las 102 diferencias, 54 de la traducción, 33 del código, 11 de la agenda a mano y 4
+  de la prueba. Cuatro clases del código arregladas: el destino escrito de una forma, lo que saca el tope por el producto
+  que nombra, el producto del envío por producto certificado y entre lo mostrado por modelo. **Gemini 454 de 525**,
+  DeepSeek 450, Haiku 463, Luna 444, Mini 398, Terra 416 de 482. Rompe 0, y las capas 1 a 3 quedan iguales.
+- Lo que sigue es de la llamada 1: acción equivocada 15, número M o L equivocado 12, condición perdida 6, alcance 6,
+  cantidad que suma 5, producto en vez de comprar 4, reparto como política 3, compra por destino 3.
