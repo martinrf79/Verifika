@@ -86,7 +86,7 @@ RENGLONES = {
     "producto": _producto,
     "no_existe": lambda h: [f"No encontré \"{h['nombre']}\" en el catálogo."],
     "lista": _lista,
-    "no_vende": lambda h: [f"No tengo {h['que']} en la tienda."],
+    "no_vende": lambda h: [f"No vendemos {h['que']}."],
     "compat": lambda h: [h.get("motivo") or f"{h.get('nombre')}: {h.get('veredicto')}."],
     "no_es": lambda h: [h["texto"]],
     "politica": lambda h: [h["texto"]],

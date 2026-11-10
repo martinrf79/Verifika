@@ -437,7 +437,10 @@ def orden_que_no_dijo(c: _Ctx) -> bool:
     por una frase del vocabulario de la tienda. Se mira todo lo que dijo el cliente en el mensaje, las citas juntas: "dos
     mouse y dos teclados, los mas baratos" ordena las dos busquedas. Si la agenda trae el mensaje, `mensaje`, se mira el
     mensaje: hay modelos que cortan la cita y dejan el orden solo en su campo. Una errata de una letra vale, "baartos".
-    Si no nombra ninguno, no hay orden. No interpreta: solo comprueba que lo dicho este en lo que dijo."""
+    Si no nombra ninguno, no hay orden. No interpreta: solo comprueba que lo dicho este en lo que dijo.
+    EL ORDEN DICHO CON OTRAS PALABRAS, 10-nov, FICHA 92: "dada la crisis" o "de buena calidad" no estan en el
+    vocabulario. La llamada 1 trae en `orden_cita` las palabras del cliente de donde lo saco; si estan literales en el
+    mensaje, el orden queda. Asi se comprueba lo dicho sin sumar frases a una lista."""
     from . import marcador as MK
     voc = MK.vocabulario_respuestas(c.tienda)["ordenes"]
     frases = {o: [K.n(o)] + [K.n(f) for f in voc.get(o) or []] for o in K.ORDEN}
@@ -448,7 +451,7 @@ def orden_que_no_dijo(c: _Ctx) -> bool:
         if orden not in frases or not dicho:
             continue  # sin orden, o uno que el codigo no sabe ordenar: lo dice el ejecutor
         dichos = [o for o, fs in frases.items() if any(_frase_en(f.split(), dicho) for f in fs)]
-        if orden in dichos:
+        if orden in dichos or (K.n(p.get("orden_cita")) and _frase_en(K.n(p.get("orden_cita")).split(), dicho)):
             continue
         p["orden"] = dichos[0] if len(dichos) == 1 else "nada"
         hizo = True

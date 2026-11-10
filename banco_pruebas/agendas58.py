@@ -20,9 +20,9 @@ def _p(accion, si=None, **datos):
     return p
 
 
-def bu(rubro, *condiciones, orden="nada", cantidad=1, entre=False, si=None):
+def bu(rubro, *condiciones, orden="nada", cantidad=1, entre=False, si=None, orden_cita=None):
     return _p("buscar", si, rubro=rubro, cantidad=cantidad, orden=orden, condiciones=list(condiciones),
-              entre_lo_mostrado=entre)
+              entre_lo_mostrado=entre, orden_cita=orden_cita)
 
 
 def pr(producto, quiere_saber="precio", color=None, afirma=None, si=None):
@@ -172,12 +172,14 @@ AGENDAS = {
     "K04": [ag(bu("mouse", orden="mas liviano"), bu("teclado", orden="mas barato"),
                com(a("mouse", destino="Rosario"), a("teclado", destino="Rosario")), cu())],
     "K05": [ag(bu("teclado", orden="mas barato", cantidad=3))],
-    "K08": [ag(bu("notebook", orden="mas barato", cantidad=2), bu("microfono", orden="mas barato"),
-               bu("memoria ram", orden="mas barato", cantidad=4),
+    "K08": [ag(bu("notebook", orden="mas barato", cantidad=2, orden_cita="de acuerdo a la crisis"),
+               bu("microfono", orden="mas barato", orden_cita="de acuerdo a la crisis"),
+               bu("memoria ram", orden="mas barato", cantidad=4, orden_cita="de acuerdo a la crisis"),
                com(a("notebook", 2, destino="La Plata"), a("los otros", 2, destino="Villa Maria"),
                    a("los otros", 3, destino="Toledo")), cu())],
-    "K09": [ag(otro("saludo"), bu("notebook", orden="mas caro", cantidad=2), bu("teclado", orden="mas caro", cantidad=2),
-               bu("auriculares", orden="mas caro", cantidad=2),
+    "K09": [ag(otro("saludo"), bu("notebook", orden="mas caro", cantidad=2, orden_cita="de buena calidad"),
+               bu("teclado", orden="mas caro", cantidad=2, orden_cita="de buena calidad"),
+               bu("auriculares", orden="mas caro", cantidad=2, orden_cita="de buena calidad"),
                com(a("notebook", destino="Palpala"), a("auriculares", destino="Palpala"),
                    a("auriculares", destino="San Francisco"), a("teclado", destino="San Francisco"),
                    a("los otros", 2, destino="Correa Santa Fe")), cu())],
@@ -256,9 +258,9 @@ AGENDAS = {
             ag(otro("dato"), cu(reparto=SETENTA_TREINTA))],
     # LAS J, 10-nov, FICHA 92: el rubro dicho con otras palabras. La agenda a mano lo lleva al rubro de la tienda, como lo
     # haria una traduccion perfecta; lo que el cliente pide del producto va como condicion o como orden.
-    "J01": [ag(bu("teclado", orden="mas barato"))],
+    "J01": [ag(bu("teclado", orden="mas barato", orden_cita="dada la crisis"))],
     "J02": [ag(bu("auriculares", "inalambrico"))],
-    "J03": [ag(bu("notebook", orden="mas liviano"))],
+    "J03": [ag(bu("notebook", orden="mas liviano", orden_cita="que no sea un fierro"))],
     "J04": [ag(bu("monitor", "grande"))],
     "J05": [ag(bu("almacenamiento externo", "2 TB"))],
     "J06": [ag(bu("webcam", "buena imagen"))],

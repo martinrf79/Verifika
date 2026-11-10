@@ -359,7 +359,7 @@ El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad
 
 ### 7 PEDIDO Y CUENTA
 
-El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3403 lineas.
+El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3406 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -491,7 +491,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.normal | `un_medio_es_todo` | 9 | · | si |
 | core.flujo.normal | `_casi` | 12 | · | si |
 | core.flujo.normal | `_frase_en` | 9 | · | si |
-| core.flujo.normal | `orden_que_no_dijo` | 22 | · | si |
+| core.flujo.normal | `orden_que_no_dijo` | 25 | · | si |
 | core.flujo.normal | `lo_corregido` | 13 | · | si |
 | core.flujo.normal | `rubro_con_marca` | 24 | · | si |
 | core.flujo.normal | `alternativa_compatible` | 18 | · | si |

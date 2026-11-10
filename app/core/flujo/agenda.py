@@ -16,8 +16,8 @@ import unicodedata
 
 ACCIONES = {
     "buscar": 'productos sin modelo concreto, uno por rubro. "rubro" de la lista; "cantidad"; "orden": "mas barato" '
-              '—economico, "de acuerdo a la crisis"—, "mas caro" —lo mejor—, "mas <dato>" o "nada"; "condiciones" '
-              'en palabras del cliente —marca, color, precio unitario, "que no sea X"—; "entre_lo_mostrado" true si elige '
+              '—economico, "de acuerdo a la crisis"—, "mas caro" —lo mejor—, "mas <dato>" o "nada"; "orden_cita": las '
+              'palabras literales del cliente de donde sale el orden; "condiciones" en palabras del cliente —marca, color, precio unitario, "que no sea X"—; "entre_lo_mostrado" true si elige '
               'entre lo mostrado. Las exclusiones de la libreta van en cada busqueda. Con pedido en la '
               'libreta, otro orden para todo: rubro "el pedido".',
     "producto": 'un modelo concreto. "producto" es lo que dijo el cliente, o el numero de la libreta si lo senala: "M-2". '

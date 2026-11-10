@@ -588,11 +588,9 @@
 "J01": [
 {
 "texto": "necesito un aparato rectangular con teclas y dada la crisis dame uno acorde",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn teclado tengo:\n- Teclado Logitech G915 TKL Negro: $512.500\n- Teclado Logitech K380 Negro: $55.000\n- Teclado Logitech G413 TKL SE Blanco: $98.500\n- Teclado Razer BlackWidow V4 Negro: $287.500\n- Teclado Razer Huntsman Mini Negro: $172.500",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000",
 "malas": [],
-"reglas": [
-"orden_que_no_dijo"
-]
+"reglas": []
 }
 ],
 "J02": [
@@ -606,11 +604,9 @@
 "J03": [
 {
 "texto": "una compu portatil para la facu que no sea un fierro",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn notebook tengo:\n- Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Plata: $727.500\n- Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris: $827.000\n- Notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD Gris: $1.000.500\n- Notebook Lenovo LOQ 15 Core i5 16GB 512GB SSD Gris: $1.428.500\n- Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro: $1.768.000",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn notebook tengo:\n- Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000",
 "malas": [],
-"reglas": [
-"orden_que_no_dijo"
-]
+"reglas": []
 }
 ],
 "J04": [
@@ -734,23 +730,17 @@
 "K08": [
 {
 "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame de acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn notebook tengo:\n- Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Plata: $727.500\n- Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris: $827.000\n- Notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD Gris: $1.000.500\nEn microfono tengo:\n- Microfono HyperX QuadCast S Negro: $241.500\n- Microfono Blue Yeti Negro: $232.500\n- Microfono FIFINE K669B Negro: $69.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n\nPara el presupuesto tomé la primera opción de notebook, Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris, porque del Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Plata no hay stock para todos, la primera opción de microfono, Microfono HyperX QuadCast S Negro, la primera opción de memoria ram, Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 2x Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris: $827.000 c/u = $1.654.000\nSubtotal: $1.654.000\nEnvio a La Plata: gratis\nTotal: $1.654.000\nPresupuesto:\n- 1x Microfono HyperX QuadCast S Negro: $241.500 c/u = $241.500\n- 1x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $34.500\nSubtotal: $276.000\nEnvio a Villa Maria: gratis\nTotal: $276.000\nPresupuesto:\n- 3x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $103.500\nSubtotal: $103.500\nEnvio a Toledo: $7.500\nTotal: $111.000\nTotal general: $2.041.000\n\nPara reservarlo, ¿me decís tu nombre?",
-"malas": [
-"dice hp 245"
-],
-"reglas": [
-"orden_que_no_dijo"
-]
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn notebook tengo:\n- Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000\n- Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Plata: $727.500\nEn microfono tengo:\n- Microfono FIFINE K669B Negro: $69.000\n\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Patriot Viper DDR4 3200 8GB Negro: $38.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\nPara el presupuesto tomé el más barato de notebook, Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris, el más barato de microfono, Microfono FIFINE K669B Negro, el más barato de memoria ram, Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 2x Notebook HP 245 G9 Core i5 16GB 512GB SSD Gris: $693.000 c/u = $1.386.000\nSubtotal: $1.386.000\nEnvio a La Plata: gratis\nTotal: $1.386.000\nPresupuesto:\n- 1x Microfono FIFINE K669B Negro: $69.000 c/u = $69.000\n- 1x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $34.500\nSubtotal: $103.500\nEnvio a Villa Maria: $7.500\nTotal: $111.000\nPresupuesto:\n- 3x Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500 c/u = $103.500\nSubtotal: $103.500\nEnvio a Toledo: $7.500\nTotal: $111.000\nTotal general: $1.608.000\n\nPara reservarlo, ¿me decís tu nombre?",
+"malas": [],
+"reglas": []
 }
 ],
 "K09": [
 {
 "texto": "Hola Quiero precio de dos Notebook 2 teclados y dos auriculares los cuales van a ser enviados a tres destinos unos irán a palpalá Jujuy el otro irá a Correa Santa Fe y el otro irá a San Francisco Córdoba el envío de Jujuy es una Notebook y un auricular el envío a San Francisco es un auricular y un teclado y los dos productos que faltan van a la otra dirección Dime O dame precio de los de buena calidad Confío en tu elección",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn notebook tengo:\n- Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Plata: $727.500\n- Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris: $827.000\n- Notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD Gris: $1.000.500\nEn teclado tengo:\n- Teclado Logitech G915 TKL Negro: $512.500\n- Teclado Logitech K380 Negro: $55.000\n- Teclado Logitech G413 TKL SE Blanco: $98.500\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n\nPara el presupuesto tomé la primera opción de notebook, Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris, porque del Notebook Lenovo IdeaPad 3 Core i5 16GB 512GB SSD Plata no hay stock para todos, la primera opción de auriculares, Auriculares HyperX Cloud II Negro, la primera opción de teclado, Teclado Logitech G915 TKL Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris: $827.000 c/u = $827.000\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\nSubtotal: $952.500\nEnvio a Palpala: gratis\nTotal: $952.500\nPresupuesto:\n- 1x Auriculares HyperX Cloud II Negro: $125.500 c/u = $125.500\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\nSubtotal: $638.000\nEnvio a San Francisco: gratis\nTotal: $638.000\nPresupuesto:\n- 1x Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris: $827.000 c/u = $827.000\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\nSubtotal: $1.339.500\nEnvio a Correa Santa Fe: gratis\nTotal: $1.339.500\nTotal general: $2.930.000\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn notebook tengo:\n- Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD Gris: $3.100.500\n- Notebook Asus ROG Strix G16 Ryzen 7 16GB 512GB SSD Gris: $2.827.000\nEn teclado tengo:\n- Teclado Logitech G915 TKL Negro: $512.500\n- Teclado Razer Huntsman V3 Pro Negro: $402.000\n\nEn auriculares tengo:\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\n- Auriculares Sony ULT Wear Negro: $444.000\nPara el presupuesto tomé el de gama más alta de notebook, Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD Gris, el de gama más alta de auriculares, Auriculares Sony ULT Wear Negro, porque del Auriculares Sony WH-1000XM5 Blanco no hay stock para todos, el de gama más alta de teclado, Teclado Logitech G915 TKL Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD Gris: $3.100.500 c/u = $3.100.500\n- 1x Auriculares Sony ULT Wear Negro: $444.000 c/u = $444.000\nSubtotal: $3.544.500\nEnvio a Palpala: gratis\nTotal: $3.544.500\nPresupuesto:\n- 1x Auriculares Sony ULT Wear Negro: $444.000 c/u = $444.000\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\nSubtotal: $956.500\nEnvio a San Francisco: gratis\nTotal: $956.500\nPresupuesto:\n- 1x Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD Gris: $3.100.500 c/u = $3.100.500\n- 1x Teclado Logitech G915 TKL Negro: $512.500 c/u = $512.500\nSubtotal: $3.613.000\nEnvio a Correa Santa Fe: gratis\nTotal: $3.613.000\nTotal general: $8.114.000\n\nPara reservarlo, ¿me decís tu nombre?",
 "malas": [],
-"reglas": [
-"orden_que_no_dijo"
-]
+"reglas": []
 }
 ],
 "K10": [
@@ -844,10 +834,8 @@
 "K12": [
 {
 "texto": "tenes celulares samsung o iphone?",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nNo tengo celular en la tienda.",
-"malas": [
-"dice no vendemos|no tenemos|no trabajamos|no manejamos|no comercializamos"
-],
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nNo vendemos celular.",
+"malas": [],
 "reglas": []
 },
 {
