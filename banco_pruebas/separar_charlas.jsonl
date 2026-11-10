@@ -395,3 +395,12 @@
 {"etiqueta": "formas", "charla": "C45", "turno": 0, "forma": "redactada", "texto": "Estoy buscando un mouse Logitech que sea con cable.", "salida": {"error": "RateLimitError: Error code: 429"}}
 {"etiqueta": "formas", "charla": "C45", "turno": 0, "forma": "whatsapp", "texto": "busco un mouse logitech con cable", "salida": {"error": "RateLimitError: Error code: 429"}}
 {"etiqueta": "formas", "charla": "C45", "turno": 0, "forma": "coloquial", "texto": "busco mouse logitech con cable", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C34", "turno": 0, "forma": "whatsapp", "texto": "cunato sale mandar un g203 a rosario", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C34", "turno": 1, "forma": "whatsapp", "texto": "me eqiuvoque era para cordoba no rosario", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C34", "turno": 0, "forma": "original", "texto": "cuanto sale mandar un G203 a Rosario?", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C34", "turno": 1, "forma": "redactada", "texto": "Perdón, me confundí: el envío es a Córdoba, no a Rosario.", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C35", "turno": 0, "forma": "redactada", "texto": "Estoy buscando un mouse gamer de la marca Logitech.", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C35", "turno": 0, "forma": "whatsapp", "texto": "busco un mouse gamer logitech", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C35", "turno": 1, "forma": "whatsapp", "texto": "ya no imoprta la marca pasame otras opciones", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C35", "turno": 0, "forma": "original", "texto": "busco un mouse gamer Logitech", "salida": {"error": "RateLimitError: Error code: 429"}}
+{"etiqueta": "formas", "charla": "C35", "turno": 1, "forma": "plano", "texto": "ya no importa la marca pasame otras opciones", "salida": {"error": "RateLimitError: Error code: 429"}}
