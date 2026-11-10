@@ -55,7 +55,7 @@ Cada celda cuenta cuantas funciones de la caja de la fila nombran a una funcion 
 | **4** CONTEXTO | 2 |  |  | 9 | · |  | 26 | 10 |  |  | 3 |
 | **5** BUCLE | 4 |  |  |  | 8 | · | 4 | 7 | 1 | 7 | 1 |
 | **6** BUSCAR | 1 |  |  | 23 | 8 |  | · | 7 |  |  | 6 |
-| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 5 |  | 147 | · |  | 1 | 4 |
+| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 6 |  | 147 | · |  | 1 | 4 |
 | **8** COBRO | 2 |  |  | 6 |  |  |  | 4 | · |  | 3 |
 | **9** RESPUESTA Y CONTROL |  |  |  |  | 10 |  | 41 | 4 |  | · |  |
 | **10** TEXTOS Y GUARDAS |  |  |  | 2 |  |  |  |  |  |  | · |
@@ -359,7 +359,7 @@ El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad
 
 ### 7 PEDIDO Y CUENTA
 
-El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3406 lineas.
+El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3415 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -399,7 +399,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.agente | `_id_de` | 2 | 5 | si |
 | core.flujo.agente | `_por_rubro` | 4 | 9 | si |
 | core.flujo.borrador | `leer` | 3 | 4 | si |
-| core.flujo.borrador | `_destino` | 3 | · | si |
+| core.flujo.borrador | `_destino` | 7 | · | si |
 | core.flujo.borrador | `_mismo_destino` | 4 | · | si |
 | core.flujo.borrador | `_cantidad` | 2 | · | si |
 | core.flujo.borrador | `_por_L` | 2 | · | si |
@@ -434,7 +434,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.ejecutor | `_modelo` | 5 | · | si |
 | core.flujo.ejecutor | `_modelo_de` | 2 | · | si |
 | core.flujo.ejecutor | `_no_achica` | 4 | · | si |
-| core.flujo.ejecutor | `Turno` (clase) | 246 | · | si |
+| core.flujo.ejecutor | `Turno` (clase) | 249 | · | si |
 | core.flujo.ejecutor | `_valor_de` | 6 | · | si |
 | core.flujo.ejecutor | `_campo_de` | 22 | · | si |
 | core.flujo.ejecutor | `_frases_de_campos` | 9 | · | si |
@@ -495,7 +495,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.normal | `lo_corregido` | 13 | · | si |
 | core.flujo.normal | `rubro_con_marca` | 24 | · | si |
 | core.flujo.normal | `alternativa_compatible` | 18 | · | si |
-| core.flujo.normal | `producto_del_envio` | 24 | · | si |
+| core.flujo.normal | `producto_del_envio` | 26 | · | si |
 | core.flujo.normal | `compra_si_sale` | 23 | · | si |
 | core.flujo.normal | `_numerar` | 8 | · | si |
 | core.flujo.normal | `normalizar` | 12 | · | si |

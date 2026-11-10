@@ -26,6 +26,7 @@ Las partes:
               le dijo que entendio, no lo dicho: vale mientras lo dicho siga igual, y queda supuesto hasta que acepte.
 """
 import itertools
+import re
 
 from . import catalogo as K
 
@@ -39,8 +40,12 @@ def leer(guardado) -> dict:
 
 
 def _destino(d) -> str:
-    d = str(d or "").strip()
-    return "" if K.n(d) in ("", "null", "none", "nada", "sin destino", "sin definir", "a definir") else d
+    """EL DESTINO ES EL LUGAR, 10-nov, FICHA 92: "Córdoba, Colón 1500" es Córdoba, la calle no es el destino y la
+    provincia si, "Correa Santa Fe"; y "rosario" se escribe Rosario. Lo que el padron no ubica queda igual."""
+    from .normal import lugares
+    d, sin = str(d or "").strip(), ", ".join(x.strip() for x in re.split(r"[,;]", str(d or "")) if not re.search(r"[^\W\d]\s+\d{2,5}\b", x))
+    if K.n(d) in ("", "null", "none", "nada", "sin destino", "sin definir", "a definir"): return ""  # noqa: E701
+    return (sin.title() if sin == sin.lower() else sin) if len(lugares(d)) == 1 else d
 
 
 def _mismo_destino(b: dict, d) -> str:

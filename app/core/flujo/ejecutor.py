@@ -21,7 +21,7 @@ from app.logger import get_logger
 
 from . import agenda as A
 from . import borrador as B
-from . import catalogo as K
+from . import catalogo as K, marcador as MK
 from .estado import mostrar
 from .normal import normalizar
 from app.core.calculadora import _money as _plata
@@ -156,7 +156,9 @@ class Turno:
             return False
         orden = str(b.get("orden") or "nada")
         cuantos = K.entero(b.get("cantidad"), 1) if K.n(orden) not in ("nada", "") else 5
-        entre = [m["id"] for m in self.estado["mostrados"]] if _si(b.get("entre_lo_mostrado")) else None
+        # ENTRE LO MOSTRADO ESTAN LOS MODELOS, 10-nov: "y en blanco?" despues de cuatro negros mira sus otros colores.
+        vistos = {_modelo_de(K.por_id(m["id"], self.tienda)) for m in self.estado["mostrados"]}
+        entre = [str(p["id"]) for p in K.productos(self.tienda) if _modelo_de(p) in vistos] if _si(b.get("entre_lo_mostrado")) else None
         r = K.buscar(rub, conds, orden, cuantos, self.tienda, entre)
         aviso = ""
         if entre is not None and conds and (not r["filas"] or r["vacio_por"]):
@@ -216,7 +218,8 @@ class Turno:
         total = (general or {}).get("total_final_ars") or (general or {}).get("total_ars") \
             or int(bloques[0].get("total_final_ars") or bloques[0]["total_ars"])
         if tope and total > tope and si_pasa:
-            idt = K.identificar(si_pasa, "", self.tienda)
+            # LO QUE SACA ES EL PRODUCTO QUE NOMBRA, 10-nov: "saca el MX Master 3S" con el verbo no se identificaba.
+            idt = K.identificar(next((d for d, e in MK.marcar(si_pasa, self.tienda) if e.startswith("el producto")), si_pasa), "", self.tienda)
             saca = {str(v["id"]) for v in idt.get("variantes") or []}
             quedan = [a for a in articulos if str(a["id"]) not in saca]
             if saca and quedan and len(quedan) < len(articulos):

@@ -44,8 +44,11 @@ def grabadas(modelos, ids) -> dict:
 
 
 def _huella(estado: dict, texto: str) -> dict:
+    """Lo que no se discute: los productos, el pedido y los montos. El destino se compara normalizado: "Córdoba" y
+    "Cordoba" son el mismo para el cliente."""
+    from app.core.flujo import catalogo as K
     return {"mostrados": sorted({m["id"] for m in estado["mostrados"]}),
-            "pedido": sorted(f"{a.get('id')}x{a.get('cantidad')}@{a.get('destino') or ''}" for a in estado["pedido"]),
+            "pedido": sorted(f"{a.get('id')}x{a.get('cantidad')}@{K.n(a.get('destino'))}" for a in estado["pedido"]),
             "montos": sorted(set(re.findall(r"\$\s?[\d.]+", texto)))}
 
 
@@ -96,7 +99,8 @@ def correr(modelos=("prod",), ids=()) -> dict:
             malas = [c["n"] for c in ch["turnos"][n]["casillas"] if nota_casilla(c, [], resp, previas + [resp]) is not True]
             distinto = [k for k in h if h[k] != oro[r["forma"]][1][k]]
             out[f"{r.get('modelo') or 'prod'}|{cid}|{n}|{r['forma']}"] = {
-                "bien": not distinto, "distinto": distinto, "casillas": not malas, "capa": _capa(ags[n]),
+                # Un error del camino es una falla aunque la agenda a mano rompa igual: si no, dos errores son iguales.
+                "bien": not distinto and "ERROR DEL CAMINO" not in resp + oro[r["forma"]][0], "distinto": distinto, "casillas": not malas, "capa": _capa(ags[n]),
                 "texto": r["texto"], "respuesta": resp, "oro": oro[r["forma"]][0]}
     print(f"[{len(out)} casos en {time.time() - t0:.0f} s]", flush=True)
     return out

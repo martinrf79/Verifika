@@ -422,7 +422,7 @@
 "casillas": true,
 "capa": "envio",
 "texto": "cuanto sale el envio a posadas",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEnvío a posadas: $10.000.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEnvío a Posadas: $10.000.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEnvío a Posadas: $10.000.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000."
 },
 "prod|C10|0|coloquial": {
@@ -440,7 +440,7 @@
 "casillas": true,
 "capa": "envio",
 "texto": "cunato sale el envio a posadas",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEnvío a posadas: $10.000.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEnvío a Posadas: $10.000.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEnvío a Posadas: $10.000.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000."
 },
 "prod|C10|0|redactada": {
@@ -773,7 +773,7 @@
 "casillas": true,
 "capa": "envio",
 "texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000."
 },
 "prod|C18|0|original": {
@@ -791,7 +791,7 @@
 "casillas": true,
 "capa": "envio",
 "texto": "tenes auris jbl y cunato sale mandarlos a cordoba",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000."
 },
 "prod|C18|0|coloquial": {
@@ -800,7 +800,7 @@
 "casillas": true,
 "capa": "envio",
 "texto": "auris jbl tenes? y cuanto sale el envio a cordoba",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares JBL Tune 510BT Negro: $78.000\n- Auriculares JBL Tune 770NC Negro: $171.000\n- Auriculares JBL Quantum 200 Negro: $99.000\n- Auriculares JBL Tune 520BT Negro: $87.500\nEnvío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000."
 },
 "prod|C18|0|redactada": {
@@ -1461,63 +1461,48 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMemoria ram Kingston Fury Beast DDR4 3200 16GB Negro no va en un equipo con ranuras de memoria DDR5: necesita ranuras de memoria DDR4. Modulo de escritorio: entra solo en placas con ranura DDR4. En una notebook NO entra, y en una placa DDR5 tampoco: el zocalo es distinto.\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n- Memoria ram Kingston Fury Beast DDR5 5600 32GB Negro: $81.500\n- Memoria ram Corsair Vengeance DDR5 6000 8GB Blanco: $77.500\n- Memoria ram Corsair Vengeance DDR5 6000 16GB Blanco: $90.000"
 },
 "prod|C31|0|original": {
-"bien": false,
-"distinto": [
-"pedido",
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nPresupuesto:\n- 1x Mouse Logitech MX Master 3S Negro: $203.000 c/u = $203.000\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $364.000\nTotal: $364.000\nEl total pasa tu tope de $300.000. ¿Saco algo o cambio algún producto?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C31|0|coloquial": {
-"bien": false,
-"distinto": [
-"pedido",
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nPresupuesto:\n- 1x Mouse Logitech MX Master 3S Negro: $203.000 c/u = $203.000\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $364.000\nTotal: $364.000\nEl total pasa tu tope de $300.000. ¿Saco algo o cambio algún producto?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C31|0|plano": {
-"bien": false,
-"distinto": [
-"pedido",
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nPresupuesto:\n- 1x Mouse Logitech MX Master 3S Negro: $203.000 c/u = $203.000\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $364.000\nTotal: $364.000\nEl total pasa tu tope de $300.000. ¿Saco algo o cambio algún producto?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C31|0|redactada": {
-"bien": false,
-"distinto": [
-"pedido",
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX.",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\n- 1x Mouse Logitech MX Master 3S Negro: $203.000 c/u = $203.000\nSubtotal: $364.000\nTotal: $364.000\nEl total pasa tu tope de $300.000. ¿Saco algo o cambio algún producto?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C31|0|whatsapp": {
-"bien": false,
-"distinto": [
-"pedido",
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nPresupuesto:\n- 1x Mouse Logitech MX Master 3S Negro: $203.000 c/u = $203.000\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $364.000\nTotal: $364.000\nEl total pasa tu tope de $300.000. ¿Saco algo o cambio algún producto?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEl total pasaba de $300.000, así que saqué el Mouse Logitech MX Master 3S Negro.\nPresupuesto:\n- 2x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $161.000\nSubtotal: $161.000\nTotal: $161.000\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C32|0|plano": {
@@ -1626,58 +1611,48 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn teclado tengo:\n- Teclado Logitech G915 TKL Negro: $512.500\n- Teclado Logitech K380 Negro: $55.000\n- Teclado Logitech G413 TKL SE Blanco: $98.500\n- Teclado Logitech G213 Prodigy Negro: $61.500\n- Teclado Logitech MX Keys S Negro: $257.500"
 },
 "prod|C34|0|whatsapp": {
-"bien": false,
-"distinto": [
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "envio",
 "texto": "cunato sale mandar un g203 a rosario",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\n\nPresupuesto:\n- 2x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $75.000\nSubtotal: $75.000\nEnvio a rosario: $7.000\nTotal: $82.000",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500"
 },
 "prod|C34|0|coloquial": {
-"bien": false,
-"distinto": [
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "envio",
 "texto": "cuanto sale mandar un g203 a rosario",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\n\nPresupuesto:\n- 2x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $75.000\nSubtotal: $75.000\nEnvio a Rosario: $7.000\nTotal: $82.000",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500"
 },
 "prod|C34|0|redactada": {
-"bien": false,
-"distinto": [
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "envio",
 "texto": "¿Cuánto cuesta enviar un G203 a Rosario?",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\n\nPresupuesto:\n- 2x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $75.000\nSubtotal: $75.000\nEnvio a Rosario: $7.000\nTotal: $82.000",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500"
 },
 "prod|C34|0|original": {
-"bien": false,
-"distinto": [
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "envio",
 "texto": "cuanto sale mandar un G203 a Rosario?",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\n\nPresupuesto:\n- 2x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $75.000\nSubtotal: $75.000\nEnvio a Rosario: $7.000\nTotal: $82.000",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500"
 },
 "prod|C34|0|plano": {
-"bien": false,
-"distinto": [
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "envio",
 "texto": "cuanto sale mandar un g203 a rosario",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\n\nPresupuesto:\n- 2x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $75.000\nSubtotal: $75.000\nEnvio a Rosario: $7.000\nTotal: $82.000",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G203 Lightsync Negro: $37.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G203 Lightsync Negro: $37.500 c/u = $37.500\nSubtotal: $37.500\nEnvio a Rosario: $7.000\nTotal: $44.500"
 },
 "prod|C34|1|original": {
@@ -1695,7 +1670,7 @@
 "casillas": true,
 "capa": "envio",
 "texto": "me equivoque, no era rosario era cordoba",
-"respuesta": "Envío a cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
+"respuesta": "Envío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000.",
 "oro": "Envío a Cordoba: $7.500.\nLlega en 4 a 7 dias habiles desde el pago.\nEl envío es gratis en compras desde $250.000."
 },
 "prod|C34|1|plano": {
@@ -2425,27 +2400,21 @@
 "oro": "En mouse tengo:\n- Mouse Logitech G203 Lightsync Blanco: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G502 X Blanco: $140.500\n- Mouse Logitech G600 MMO Blanco: $105.500"
 },
 "prod|C45|1|plano": {
-"bien": false,
-"distinto": [
-"mostrados",
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "buscar",
 "texto": "y en blanco",
-"respuesta": "En mouse tengo:\n- Mouse Logitech G502 Hero Blanco: $70.000",
+"respuesta": "En mouse tengo:\n- Mouse Logitech G203 Lightsync Blanco: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G502 X Blanco: $140.500\n- Mouse Logitech G600 MMO Blanco: $105.500",
 "oro": "En mouse tengo:\n- Mouse Logitech G203 Lightsync Blanco: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G502 X Blanco: $140.500\n- Mouse Logitech G600 MMO Blanco: $105.500"
 },
 "prod|C45|1|whatsapp": {
-"bien": false,
-"distinto": [
-"mostrados",
-"montos"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "buscar",
 "texto": "y en blnaco",
-"respuesta": "En mouse tengo:\n- Mouse Logitech G502 Hero Blanco: $70.000",
+"respuesta": "En mouse tengo:\n- Mouse Logitech G203 Lightsync Blanco: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G502 X Blanco: $140.500\n- Mouse Logitech G600 MMO Blanco: $105.500",
 "oro": "En mouse tengo:\n- Mouse Logitech G203 Lightsync Blanco: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G502 X Blanco: $140.500\n- Mouse Logitech G600 MMO Blanco: $105.500"
 },
 "prod|C45|1|redactada": {
@@ -2701,14 +2670,12 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nTotal: $80.500\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C48|1|plano": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "mandamelo a rosario cuanto seria en total",
-"respuesta": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C48|1|original": {
@@ -2721,25 +2688,21 @@
 "oro": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C48|1|whatsapp": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "madnamelo a rosario cuanto seria en total",
-"respuesta": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C48|1|coloquial": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "mandamelo a rosario, cuanto es todo",
-"respuesta": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "Presupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Rosario: $7.000\nTotal: $87.500\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C48|1|redactada": {
@@ -3076,10 +3039,8 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C51|0|redactada": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "comprar",
 "texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba.",
@@ -3087,36 +3048,30 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C51|0|coloquial": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "comprar",
 "texto": "cuanto esta el g305 negro? mandamelo a cordoba",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C51|0|plano": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "comprar",
 "texto": "cuanto sale el g305 negro y mandame ese a cordoba",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C51|0|whatsapp": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "comprar",
 "texto": "cunato sale el g305 negro y mandame ese a cordoba",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nMouse Logitech G305 Lightspeed Negro: $80.500, hay stock, también en Blanco.\nPresupuesto:\n- 1x Mouse Logitech G305 Lightspeed Negro: $80.500 c/u = $80.500\nSubtotal: $80.500\nEnvio a Cordoba: $7.500\nTotal: $88.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|C52|0|redactada": {
@@ -3651,43 +3606,35 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a Cordoba capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K03|0|coloquial": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a cordoba capital: $7.500\nTotal: $139.500\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a Cordoba Capital: $7.500\nTotal: $139.500\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a Cordoba capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K03|0|plano": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a cordoba capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a Cordoba Capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a Cordoba capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K03|0|whatsapp": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a cordoba capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a Cordoba Capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de auriculares, Auriculares Redragon Zeus X Negro, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 2x Auriculares Redragon Zeus X Negro: $57.500 c/u = $115.000\n- 2x Mouse Genius DX-110 Negro: $8.500 c/u = $17.000\nSubtotal: $132.000\nEnvio a Cordoba capital: $7.500\nTotal: $139.500\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K03|0|redactada": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital.",
@@ -3721,13 +3668,12 @@
 "prod|K06|0|original": {
 "bien": false,
 "distinto": [
-"pedido",
 "montos"
 ],
 "casillas": true,
 "capa": "cuenta",
 "texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Cordoba, Colon 1500: $7.500\nTotal: $28.000\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Rio Tercero, Sabatini 2000: $7.500\nTotal: $28.000\nTotal general: $56.000\n\nTenemos 10 por ciento de descuento pagando por transferencia bancaria.\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Cordoba: $7.500\nTotal: $28.000\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Rio Tercero: $7.500\nTotal: $28.000\nTotal general: $56.000\n\nTenemos 10 por ciento de descuento pagando por transferencia bancaria.\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Cordoba: $7.500\nTotal: $28.000\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Rio Tercero: $7.500\nTotal: $28.000\nTotal general: $56.000\n\nPago dividido:\n- transferencia (100%): $56.000 - 10% descuento = $50.400\nTotal final: $50.400\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K06|0|plano": {
@@ -3745,20 +3691,17 @@
 "prod|K06|0|redactada": {
 "bien": false,
 "distinto": [
-"pedido",
 "montos"
 ],
 "casillas": true,
 "capa": "cuenta",
 "texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia.",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco. Si preferís otro, decime cuál.\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Córdoba, Colón 1500: $7.500\nTotal: $28.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Río Tercero, Sabatini 2000: $7.500\nTotal: $28.000\nTotal general: $56.000\n\nTenemos 10 por ciento de descuento pagando por transferencia bancaria.\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco. Si preferís otro, decime cuál.\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Córdoba: $7.500\nTotal: $28.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Río Tercero: $7.500\nTotal: $28.000\nTotal general: $56.000\n\nTenemos 10 por ciento de descuento pagando por transferencia bancaria.\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\n\nPara el presupuesto tomé el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de mouse, Mouse Genius DX-110 Negro. Si preferís otro, decime cuál.\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Cordoba: $7.500\nTotal: $28.000\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\nSubtotal: $20.500\nEnvio a Rio Tercero: $7.500\nTotal: $28.000\nTotal general: $56.000\n\nPago dividido:\n- transferencia (100%): $56.000 - 10% descuento = $50.400\nTotal final: $50.400\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K07|0|original": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos",
@@ -3766,25 +3709,21 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a Concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a Rio Cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K07|0|plano": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a rio cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a Concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a Rio Cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a Concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a Rio Cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K07|0|coloquial": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a rio cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a Concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a Rio Cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a Concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a Rio Cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K07|0|whatsapp": {
@@ -3797,10 +3736,8 @@
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn mouse tengo:\n- Mouse Genius DX-110 Negro: $8.500\n- Mouse Logitech M170 Negro: $12.000\nEn teclado tengo:\n- Teclado Genius KB-110X Blanco: $12.000\n- Teclado Logitech K120 Negro: $14.500\n\nEn auriculares tengo:\n- Auriculares Redragon Zeus X Negro: $57.500\n- Auriculares Redragon Pandora Negro: $62.500\nPara el presupuesto tomé el más barato de mouse, Mouse Genius DX-110 Negro, el más barato de teclado, Teclado Genius KB-110X Blanco, el más barato de auriculares, Auriculares Redragon Zeus X Negro. Si preferís otro, decime cuál.\n\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\nSubtotal: $20.500\nEnvio a Rosario: $7.000\nTotal: $27.500\nPresupuesto:\n- 1x Teclado Genius KB-110X Blanco: $12.000 c/u = $12.000\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $69.500\nEnvio a Concordia: $6.500\nTotal: $76.000\nPresupuesto:\n- 1x Mouse Genius DX-110 Negro: $8.500 c/u = $8.500\n- 1x Auriculares Redragon Zeus X Negro: $57.500 c/u = $57.500\nSubtotal: $66.000\nEnvio a Rio Cuarto: $7.500\nTotal: $73.500\nTotal general: $177.000\n\nTransferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K07|0|redactada": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen.",
@@ -4197,14 +4134,12 @@
 "oro": "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nTotal: $12.000"
 },
 "prod|K10|7|plano": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "el envio va a rosario cuanto me queda",
-"respuesta": "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nEnvio a rosario: $7.000\nTotal: $19.000\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nEnvio a Rosario: $7.000\nTotal: $19.000\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nEnvio a Rosario: $7.000\nTotal: $19.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K10|7|original": {
@@ -4217,14 +4152,12 @@
 "oro": "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nEnvio a Rosario: $7.000\nTotal: $19.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K10|7|coloquial": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "el envio es a rosario cuanto queda",
-"respuesta": "La disponibilidad la confirmo en el momento contra el catalogo. Decime que producto buscas y te digo si esta disponible. Si esta sin stock, podemos tomar reserva con sena del 20 por ciento.\nPresupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nEnvio a rosario: $7.000\nTotal: $19.000\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "La disponibilidad la confirmo en el momento contra el catalogo. Decime que producto buscas y te digo si esta disponible. Si esta sin stock, podemos tomar reserva con sena del 20 por ciento.\nPresupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nEnvio a Rosario: $7.000\nTotal: $19.000\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nSubtotal: $12.000\nEnvio a Rosario: $7.000\nTotal: $19.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K10|7|whatsapp": {
@@ -4501,25 +4434,21 @@
 "oro": "Presupuesto:\n- 3x Teclado Genius KB-110X Blanco: $12.000 c/u = $36.000\nSubtotal: $36.000\nTotal: $36.000\n\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K11|5|plano": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "uy no mejor 2 y mandalos a rosario cuanto me sale todo con el envio",
-"respuesta": "Presupuesto:\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\nSubtotal: $24.000\nEnvio a rosario: $7.000\nTotal: $31.000\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "Presupuesto:\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\nSubtotal: $24.000\nEnvio a Rosario: $7.000\nTotal: $31.000\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "Presupuesto:\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\nSubtotal: $24.000\nEnvio a Rosario: $7.000\nTotal: $31.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K11|5|coloquial": {
-"bien": false,
-"distinto": [
-"pedido"
-],
+"bien": true,
+"distinto": [],
 "casillas": true,
 "capa": "cuenta",
 "texto": "uh no mejor 2 y mandalos a rosario. cuanto sale todo con envio",
-"respuesta": "Presupuesto:\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\nSubtotal: $24.000\nEnvio a rosario: $7.000\nTotal: $31.000\nPara reservarlo, ¿me decís tu nombre?",
+"respuesta": "Presupuesto:\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\nSubtotal: $24.000\nEnvio a Rosario: $7.000\nTotal: $31.000\nPara reservarlo, ¿me decís tu nombre?",
 "oro": "Presupuesto:\n- 2x Teclado Genius KB-110X Blanco: $12.000 c/u = $24.000\nSubtotal: $24.000\nEnvio a Rosario: $7.000\nTotal: $31.000\nPara reservarlo, ¿me decís tu nombre?"
 },
 "prod|K11|5|whatsapp": {
@@ -4573,7 +4502,7 @@
 "casillas": true,
 "capa": "cuenta",
 "texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nEl teclado para concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nLo de \"menos partes chinas posibles\" no figura en las fichas, así que no pude filtrar por eso.\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?"
 },
 "prod|K20|0|plano": {
@@ -4594,7 +4523,7 @@
 "casillas": true,
 "capa": "cuenta",
 "texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nEl material y la composicion dependen del modelo y estan en las especificaciones de la ficha. Decime que producto miras y que dato necesitas y te lo confirmo antes de que compres.\n\nEl teclado para concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nEl material y la composicion dependen del modelo y estan en las especificaciones de la ficha. Decime que producto miras y que dato necesitas y te lo confirmo antes de que compres.\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nLo de \"menos partes chinas posibles\" no figura en las fichas, así que no pude filtrar por eso.\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?"
 },
 "prod|K20|1|original": {
@@ -4648,7 +4577,7 @@
 "casillas": true,
 "capa": "cuenta",
 "texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nEl material y la composicion dependen del modelo y estan en las especificaciones de la ficha. Decime que producto miras y que dato necesitas y te lo confirmo antes de que compres.\n\nEl teclado para concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nEl material y la composicion dependen del modelo y estan en las especificaciones de la ficha. Decime que producto miras y que dato necesitas y te lo confirmo antes de que compres.\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nLo de \"menos partes chinas posibles\" no figura en las fichas, así que no pude filtrar por eso.\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?"
 },
 "prod|K21|0|plano": {
@@ -4687,7 +4616,7 @@
 "casillas": true,
 "capa": "cuenta",
 "texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue",
-"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nEl teclado para concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
+"respuesta": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nCada producto viene en su caja original sellada con el equipo y los accesorios estandar del fabricante. El detalle exacto figura en la ficha. De que producto queres que te lo confirme?\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?\n\n¿Con qué medio pagás cada parte: el 70% y el 30%?",
 "oro": "¡Hola! Soy el asistente automático de Verifika Tech.\n\nEn auriculares tengo:\n- Auriculares HyperX Cloud II Negro: $125.500\n- Auriculares HyperX Cloud Stinger 2 Negro: $70.000\n- Auriculares Logitech G Pro X Negro: $284.000\n- Auriculares Logitech G435 Negro: $97.000\n- Auriculares Sony WH-1000XM5 Blanco: $680.500\nEn mouse tengo:\n- Mouse Logitech G203 Lightsync Negro: $37.500\n- Mouse Logitech G502 Hero Blanco: $70.000\n- Mouse Logitech G Pro X Superlight Negro: $163.000\n- Mouse Logitech MX Master 3S Negro: $203.000\n- Mouse Logitech M170 Negro: $12.000\nEn memoria ram tengo:\n- Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro: $34.500\n- Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro: $41.000\n- Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro: $49.500\n- Memoria ram Kingston Fury Beast DDR5 5600 8GB Negro: $63.500\n- Memoria ram Kingston Fury Beast DDR5 5600 16GB Negro: $76.500\n\nLo de \"menos partes chinas posibles\" no figura en las fichas, así que no pude filtrar por eso.\n\nEl teclado para Concordia no estaba en tu lista. Si era auriculares o memoria ram cierra con lo que dijiste: ¿era eso, o va aparte?"
 },
 "prod|K21|1|coloquial": {

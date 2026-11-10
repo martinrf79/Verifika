@@ -15,7 +15,6 @@ Lo que hace cada regla:
 `normalizar` es pura: devuelve una agenda nueva y los nombres de las reglas que aplico, para el log del turno.
 """
 import copy
-import json
 import re
 
 from . import agenda as A
@@ -523,8 +522,10 @@ def producto_del_envio(c: _Ctx) -> bool:
     """"CUANTO SALE MANDAR UN G203 A ROSARIO" pregunta el envio y el producto: el modelo dejaba solo el envio, y el cliente
     no sabia el precio de lo que mandaba. Un producto que la tienda certifica en la cita de un envio, y que ninguna otra
     pregunta nombra, se pregunta tambien: su precio."""
-    nombrados = " ".join(K.n(" ".join(str(x) for x in _lista(p.get("producto")))) + " " + K.n(json.dumps(p.get("agrega") or []))
-                         for p in c.ps)
+    # SE COMPARA POR PRODUCTO, 10-nov: "un g203 a" no esta escrito en "G203", pero es el mismo producto certificado.
+    ids = lambda x: {str(v["id"]) for v in K.identificar(str(x), "", c.tienda).get("variantes") or []}  # noqa: E731
+    ya = set().union(*[ids(x) for p in c.ps for x in _lista(p.get("producto")) + [
+        a.get("producto") for a in _lista(p.get("agrega")) if isinstance(a, dict)]])
     if len(c.acciones("envio")) != 1:
         return False  # "un G203 a Rosario y otro a Mendoza" manda unidades a cada lugar: es una compra, no el precio
     hizo = False
@@ -537,10 +538,10 @@ def producto_del_envio(c: _Ctx) -> bool:
                             and K.identificar(" ".join(ws[i:i + largo]), "", c.tienda).get("veredicto") == "exists"), "")
             if hallado:
                 break
-        if hallado and K.n(hallado) not in nombrados:
+        if hallado and not ids(hallado) & ya:
             c.agenda["preguntas"] = _numerar(c.ps + [{"n": None, "cita": p.get("cita"), "accion": "producto",
                                                       "producto": hallado, "quiere_saber": "precio"}])
-            nombrados += " " + K.n(hallado)
+            ya |= ids(hallado)
             hizo = True
     return hizo
 
