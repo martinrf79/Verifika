@@ -10,7 +10,7 @@ Lo que hace cada regla:
     modelo le puso a esa pregunta, y solo para buscar ahi un lugar o un producto de la fuente.
   - Cubre una forma de decir, no un caso. No usa listas de palabras.
   - Entra si, sobre las traducciones grabadas, arregla alguna y no rompe ninguna en ningun modelo:
-    `banco_pruebas/forma_normal/regrado.py`.
+    `banco_pruebas/camino_grabadas.py` y `banco_pruebas/capa_buscar.py`.
 
 `normalizar` es pura: devuelve una agenda nueva y los nombres de las reglas que aplico, para el log del turno.
 """

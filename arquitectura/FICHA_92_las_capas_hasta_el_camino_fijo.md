@@ -11,7 +11,7 @@ Primero lo determinista con lo grabado, sin modelo. Después la clave gratis. Al
 
 1. **El banco cubre las charlas enteras.** `banco_pruebas/capa_buscar.py` mide hoy solo el primer turno. Se extiende a todos
    los turnos de las 58, J y K que tradujeron los modelos en `traduccion58_corridas.jsonl`: los turnos anteriores corren con
-   su agenda a mano, `agendas58.py`, y el estado queda en la memoria, como hacía `forma_normal/regrado.py`. La vara: los
+   su agenda a mano, `agendas58.py`, y el estado queda en la memoria, hoy `banco_pruebas/camino_grabadas.py` sobre el turno fijo de `banco_pruebas/camino_fijo.py`. La vara: los
    mismos productos que la agenda a mano y, donde hay cuenta, los mismos montos.
 2. **Capa por capa, por tipo:** cuenta y plata, envío, política, compatibilidad, otro. Se arregla en la forma normal,
    `normal.py`, o en la receta, `ejecutor.py`. Lo que es intención del cliente va a la consigna de la llamada 1, no al código:
