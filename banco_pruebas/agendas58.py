@@ -254,6 +254,18 @@ AGENDAS = {
             ag(otro("dato"), cliente={"nombre": "Julio"}),
             ag(cu()),
             ag(otro("dato"), cu(reparto=SETENTA_TREINTA))],
+    # LAS J, 10-nov, FICHA 92: el rubro dicho con otras palabras. La agenda a mano lo lleva al rubro de la tienda, como lo
+    # haria una traduccion perfecta; lo que el cliente pide del producto va como condicion o como orden.
+    "J01": [ag(bu("teclado", orden="mas barato"))],
+    "J02": [ag(bu("auriculares", "inalambrico"))],
+    "J03": [ag(bu("notebook", orden="mas liviano"))],
+    "J04": [ag(bu("monitor", "grande"))],
+    "J05": [ag(bu("almacenamiento externo", "2 TB"))],
+    "J06": [ag(bu("webcam", "buena imagen"))],
+    "J07": [ag(bu("router", "que cubra toda la casa"))],
+    "J08": [ag(bu("silla gamer", "ergonomica"))],
+    "J09": [ag(bu("placa de video", "para jugar"))],
+    "J10": [ag(po("defectuoso"))],
 }
 
 # LA SEGUNDA LLAMADA, la de saber general, escrita a mano.
