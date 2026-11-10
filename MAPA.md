@@ -71,6 +71,7 @@ permiso.
 | Lo que devuelve el intérprete en cada turno de las 58 y las K, escrito a mano como agenda | `banco_pruebas/agendas58.py` |
 | Cada compleja dicha de muchas formas, con el modelo real: la vara para cambiar la consigna | `banco_pruebas/variantes.py` |
 | El camino fijo con la traduccion perfecta: las 58, las J y las K por el webhook, sin modelo, FICHA 92 | `banco_pruebas/camino_fijo.py` |
+| La llamada 1 que separa y traduce, con la gratis, y su vara; FICHA 93 | `banco_pruebas/separar_charlas.py` |
 | Las traducciones grabadas de seis modelos, turno por turno por el camino fijo, contra la agenda a mano, sin modelo | `banco_pruebas/camino_grabadas.py` |
 | Jev, el índice en niveles y las dos vueltas; los siete casos de producción charla entera, FICHA 75 | `banco_pruebas/jev/` |
 | Las 16 charlas de razonamiento con memoria y lo correcto de cada turno; Python con menú, FICHA 76 | `banco_pruebas/pregunta_razonada/` |
