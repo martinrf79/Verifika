@@ -204,7 +204,37 @@ def informe():
                   f"{'  · bien' if f and bien(f[0][0], r['concepto']) else ''}")
 
 
+def solo_embeddings():
+    """El mensaje del cliente entero, tal cual, contra la taxonomia: sin nada del modelo. Por cada producto del mensaje,
+    si su categoria esta entre las cinco primeras."""
+    import engranaje0 as E
+    from nuevas70 import CASOS
+    tax = taxonomia()
+    docs = np.load(os.path.join(CACHE, f"shopify_{DIM}.npy"))
+    esperado = E._esperado()
+    msgs = [m for _, m, _ in CASOS]
+    vq = emb(msgs, "RETRIEVAL_QUERY")
+    filas, total, p1, p5 = [], 0, 0, 0
+    for (cid, m, cosas), v in zip(CASOS, vq):
+        pts = docs @ v
+        top = [[tax[k][0], tax[k][1], round(float(pts[k]), 3)] for k in np.argsort(-pts)[:5]]
+        conceptos = [FUERA[cid] if esperado[(cid, i)] == "ninguno" else esperado[(cid, i)]
+                     for i in range(len(cosas)) if (cid, i) in esperado]
+        res = {c: (bien(top[0][0], c), any(bien(t[0], c) for t in top)) for c in conceptos}
+        total, p1, p5 = total + len(res), p1 + sum(a for a, _ in res.values()), p5 + sum(b for _, b in res.values())
+        filas.append({"id": cid, "mensaje": m, "conceptos": conceptos, "top": top})
+        if conceptos:
+            print(f"{cid} {m[:90]}\n   espera {conceptos} -> " + " | ".join(t[1].split(' > ')[-1] for t in top)
+                  + "   " + " ".join(f"{c}:{'1' if a else '5' if b else 'NO'}" for c, (a, b) in res.items()))
+    json.dump(filas, open(os.path.join(AQUI, "momento0_shopify_mensaje.json"), "w", encoding="utf-8"),
+              ensure_ascii=False, indent=0)
+    print(f"\nEL MENSAJE ENTERO, SOLO EMBEDDINGS: {total} productos, primera {p1}, entre cinco {p5}")
+
+
 if __name__ == "__main__":
+    if "--mensaje" in ARGS:
+        solo_embeddings()
+        sys.exit()
     if "--correr" in ARGS:
         correr()
     informe()
