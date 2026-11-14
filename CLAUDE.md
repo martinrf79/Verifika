@@ -53,7 +53,7 @@ de la FICHA 81 y al plan del intérprete que traduce, que están en git.
 
 ### Lo que sigue
 
-**Toda sesión arranca por la FICHA 93**, `arquitectura/FICHA_93_la_llamada_1_con_candidatos.md`, la llamada 1 con candidatos, y por la FICHA 92, `arquitectura/FICHA_92_las_capas_hasta_el_camino_fijo.md`, que sigue el PLAN POR CAPAS, `arquitectura/PLAN_CAPAS.md`, orden de Martín del 9-nov: el tipo de pregunta es
+**Toda sesión arranca por la FICHA 94**, `arquitectura/FICHA_94_el_engranaje_0_y_el_nexo.md`, el engranaje 0 sin la tienda y el nexo por embeddings. Antecedentes: la FICHA 93, la llamada 1 con candidatos, y la FICHA 92, `arquitectura/FICHA_92_las_capas_hasta_el_camino_fijo.md`, que sigue el PLAN POR CAPAS, `arquitectura/PLAN_CAPAS.md`, orden de Martín del 9-nov: el tipo de pregunta es
 el mapa de la respuesta. Una llamada separa en una agenda tipada, el código la cumple tipo por tipo con su receta y sus
 condiciones, y otra llamada redacta citando por número. Se avanza una capa por tipo, medida sin modelo sobre lo que los modelos
 ya tradujeron, con la vara de los mismos productos que la agenda a mano y el corte escrito antes. El bucle del agente sale cuando
