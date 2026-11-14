@@ -231,7 +231,58 @@ def solo_embeddings():
     print(f"\nEL MENSAJE ENTERO, SOLO EMBEDDINGS: {total} productos, primera {p1}, entre cinco {p5}")
 
 
+def separado():
+    """Solo la separacion del modelo: los fragmentos de la v2 grabada, con las palabras del cliente y sin la busqueda del
+    modelo, cada uno contra la taxonomia. Por producto pedido: si algun fragmento del mensaje lo trae primero o entre
+    cinco."""
+    import engranaje0 as E
+    from nuevas70 import CASOS
+    tax = taxonomia()
+    docs = np.load(os.path.join(CACHE, f"shopify_{DIM}.npy"))
+    esperado = E._esperado()
+    casos = {c[0]: c for c in CASOS}
+    grab = [r for r in map(json.loads, open(E.SALIDA)) if r["v"] == "v2" and r.get("salida")]
+    frags = sorted({str(l.get("fragmento") or "") for r in grab for l in r["salida"]["lineas"]} - {""})
+    vq = dict(zip(frags, emb(frags, "RETRIEVAL_QUERY")))
+    tops = {}
+    for f in frags:
+        pts = docs @ vq[f]
+        tops[f] = [[tax[k][0], tax[k][1], round(float(pts[k]), 3)] for k in np.argsort(-pts)[:5]]
+    salida, fallas = [], []
+    print("\nSOLO LA SEPARACION DEL MODELO, CADA FRAGMENTO POR EMBEDDINGS")
+    for m in ("gemini", "haiku", "deepseek"):
+        n = p1 = p5 = 0
+        grupos = {}
+        for r in (x for x in grab if x["modelo"] == m):
+            cid = r["id"]
+            fs = [str(l.get("fragmento") or "") for l in r["salida"]["lineas"] if l.get("fragmento")]
+            salida.append({"modelo": m, "id": cid, "fragmentos": {f: tops[f] for f in fs}})
+            for i in range(len(casos[cid][2])):
+                if (cid, i) not in esperado:
+                    continue
+                c = FUERA[cid] if esperado[(cid, i)] == "ninguno" else esperado[(cid, i)]
+                a = any(bien(tops[f][0][0], c) for f in fs)
+                b = any(bien(t[0], c) for f in fs for t in tops[f])
+                n, p1, p5 = n + 1, p1 + a, p5 + b
+                g = grupos.setdefault(cid[0], [0, 0, 0])
+                g[0], g[1], g[2] = g[0] + 1, g[1] + a, g[2] + b
+                if not a:
+                    fallas.append((m, cid, c, b, [(f, tops[f][0][1].split(" > ")[-1]) for f in fs]))
+        print(f"  {m:9} primera {p1:>3}, entre cinco {p5:>3}, de {n} · " +
+              " · ".join(f"{k} {v[1]}/{v[2]}/{v[0]}" for k, v in grupos.items()))
+    json.dump(salida, open(os.path.join(AQUI, "momento0_shopify_separado.json"), "w", encoding="utf-8"),
+              ensure_ascii=False, indent=0)
+    print("\n  lo que ningun fragmento trae primero:")
+    for m, cid, c, b, fs in fallas:
+        print(f"    {m:8} {cid} espera {c}{'  · esta entre cinco' if b else ''}")
+        for f, cat in fs:
+            print(f"        '{f}' -> {cat}")
+
+
 if __name__ == "__main__":
+    if "--separado" in ARGS:
+        separado()
+        sys.exit()
     if "--mensaje" in ARGS:
         solo_embeddings()
         sys.exit()
