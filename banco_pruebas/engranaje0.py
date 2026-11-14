@@ -274,5 +274,105 @@ if __name__ == "__main__":
         correr(ARGS[i + 1], ARGS[i + 2])
     elif "--autoprueba" in ARGS:
         autoprueba()
-    else:
+    elif not {"--embeddings", "--nexo"} & set(ARGS):
         calificar()
+
+
+# ══ EL NEXO: LA BUSQUEDA ANCLADA A LOS RUBROS DE LA TIENDA POR EMBEDDINGS, 14-nov ══
+# Aca si entra la tienda: es el anclaje, despues del engranaje 0. Cada producto pedido tiene su rubro esperado; lo que la
+# tienda no vende tiene que quedar sin anclar. Con la paga de Gemini, por orden de Martin.
+def _esperado():
+    import nuevas70 as N
+    por_lista = {id(N.AURIS): "auriculares", id(N.MOUSE): "mouse", id(N.TECLADO): "teclado", id(N.MONITOR): "monitor",
+                 id(N.NOTEBOOK): "notebook", id(N.RAM): "memoria ram", id(N.SSD): "ssd",
+                 id(N.EXTERNO): "almacenamiento externo", id(N.PARLANTE): "parlante", id(N.WEBCAM): "webcam",
+                 id(N.IMPRESORA): "impresora", id(N.SILLA): "silla gamer", id(N.ROUTER): "router",
+                 id(N.CARGADOR): "cargador", id(N.MICRO): "microfono", id(N.GPU): "placa de video",
+                 id(N.CPU): "procesador", id(N.MOTHER): "motherboard", id(N.FUENTE): "fuente",
+                 id(N.GABINETE): "gabinete", id(N.COOLER): "cooler", id(N.TABLET): "tablet"}
+    # Las listas armadas con un "+" son otra lista: se resuelven por su primer sinonimo.
+    por_primero = {"memoria ram": "memoria ram", "disco externo": "almacenamiento externo", "microfono": "microfono",
+                   "parlante": "parlante"}
+    out = {}
+    for cid, _, cosas in N.CASOS:
+        for i, c in enumerate(cosas):
+            if c["concepto"] is None:
+                continue
+            out[(cid, i)] = por_lista.get(id(c["concepto"])) or por_primero.get(c["concepto"][0]) or "ninguno"
+    return out
+
+
+def embeddings():
+    if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
+        raise SystemExit("los embeddings van con la paga: falta MARTIN_AUTORIZO_LA_PAGA=<fecha>")
+    import llamada1_modelos as L
+    from nuevas70 import CASOS
+    clave = os.environ["GEMINI_API_KEY_PROD"].strip()
+    cache_f = "/tmp/claude-0/-home-user-Verifika/5f208f43-0a09-5b2e-aeaf-05c8eef85751/scratchpad/llamada1_emb.json"
+    cache = json.load(open(cache_f)) if os.path.exists(cache_f) else {}
+    rubros = [(t, k) for t, tipo, k in L.indice_tienda() if tipo == "rubro"]
+    docs = L._emb([t for t, _ in rubros], "RETRIEVAL_DOCUMENT", clave, cache)
+    esperado = _esperado()
+    casos = {c[0]: c for c in CASOS}
+    filas = [r for r in map(json.loads, open(SALIDA)) if r["v"] == "v2" and r.get("salida")]
+    pares = []
+    for r in filas:
+        ls = r["salida"]["lineas"]
+        for i, cosa in enumerate(casos[r["id"]][2]):
+            if (r["id"], i) not in esperado:
+                continue
+            suyas = [l for l in ls if any(n(e) in n(l.get("fragmento")) for e in cosa["en"])]
+            if suyas:
+                pares.append((r["modelo"], r["id"], i, str(suyas[0].get("busqueda") or ""),
+                              str(suyas[0].get("fragmento") or ""), esperado[(r["id"], i)]))
+    qs = sorted({q for p in pares for q in p[3:5] if q})
+    vs = dict(zip(qs, L._emb(qs, "RETRIEVAL_QUERY", clave, cache)))
+    json.dump(cache, open(cache_f, "w"))
+    res = []
+    for m, cid, i, busq, frag, esp in pares:
+        fila = {"modelo": m, "id": cid, "i": i, "esperado": esp}
+        for nombre, q in (("busqueda", busq), ("fragmento", frag)):
+            if not q:
+                fila[nombre] = None
+                continue
+            pts = sorted(((sum(a * b for a, b in zip(vs[q], d)), k) for d, (_, k) in zip(docs, rubros)), reverse=True)
+            fila[nombre] = [(k, round(p, 3)) for p, k in pts[:3]]
+        fila["texto_busqueda"], fila["texto_fragmento"] = busq, frag
+        res.append(fila)
+    json.dump(res, open(os.path.join(AQUI, "engranaje0_embeddings.json"), "w", encoding="utf-8"), ensure_ascii=False,
+              indent=0)
+    print(f"{len(rubros)} rubros, {len(qs)} consultas, {len(res)} productos")
+
+
+def calificar_embeddings(umbral=None):
+    res = json.load(open(os.path.join(AQUI, "engranaje0_embeddings.json"), encoding="utf-8"))
+    dentro = [r for r in res if r["esperado"] != "ninguno"]
+    fuera = [r for r in res if r["esperado"] == "ninguno"]
+    print(f"\nEL NEXO POR EMBEDDINGS, {len(dentro)} productos que la tienda vende y {len(fuera)} que no")
+    for campo in ("busqueda", "fragmento"):
+        for m in ("gemini", "haiku", "deepseek"):
+            xs = [r for r in dentro if r["modelo"] == m and r[campo]]
+            p1 = sum(r[campo][0][0] == r["esperado"] for r in xs)
+            p3 = sum(r["esperado"] in [k for k, _ in r[campo]] for r in xs)
+            print(f"  {campo:10} {m:9} primero {p1:>3}, entre tres {p3:>3}, de {len(xs)}")
+    # El puntaje separa lo que la tienda vende de lo que no?
+    bien = sorted(r["busqueda"][0][1] for r in dentro if r["busqueda"] and r["busqueda"][0][0] == r["esperado"])
+    nada = sorted(r["busqueda"][0][1] for r in fuera if r["busqueda"])
+    if bien and nada:
+        print(f"\n  puntaje del primero: lo que la tienda vende y ancla bien, de {bien[0]} a {bien[-1]}, mediana "
+              f"{bien[len(bien) // 2]}; lo que no vende, de {nada[0]} a {nada[-1]}, mediana {nada[len(nada) // 2]}")
+        for u in (0.62, 0.65, 0.68, 0.70):
+            print(f"  umbral {u}: ancla {sum(x >= u for x in bien)} de {len(bien)} buenos; deja afuera "
+                  f"{sum(x < u for x in nada)} de {len(nada)} que no vende")
+    # Lo que el engranaje 0 tradujo mal: lo rescata el nexo?
+    print("\n  lo que el engranaje 0 dejo con las palabras del cliente, y a donde lo lleva el nexo:")
+    for r in dentro:
+        if r["busqueda"] and r["busqueda"][0][0] != r["esperado"] or r["id"][0] == "R" and r["modelo"] == "gemini":
+            print(f"    {r['modelo']:8} {r['id']} '{r['texto_busqueda']}' -> {r['busqueda'][:2] if r['busqueda'] else None}"
+                  f" · esperado {r['esperado']}")
+
+
+if __name__ == "__main__" and "--embeddings" in ARGS:
+    embeddings()
+if __name__ == "__main__" and "--nexo" in ARGS:
+    calificar_embeddings()

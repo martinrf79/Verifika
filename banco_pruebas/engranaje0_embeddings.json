@@ -1,0 +1,9038 @@
+[
+{
+"modelo": "gemini",
+"id": "M01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.727
+],
+[
+"auriculares",
+0.658
+],
+[
+"teclado",
+0.652
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "3 combos... cada uno lleva un mouse"
+},
+{
+"modelo": "gemini",
+"id": "M01",
+"i": 1,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.768
+],
+[
+"parlante",
+0.682
+],
+[
+"cooler",
+0.639
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.736
+],
+[
+"parlante",
+0.657
+],
+[
+"mouse",
+0.639
+]
+],
+"texto_busqueda": "auriculares",
+"texto_fragmento": "3 combos... cada uno lleva... unos auris"
+},
+{
+"modelo": "gemini",
+"id": "M02",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.761
+],
+[
+"tablet",
+0.634
+],
+[
+"motherboard",
+0.628
+]
+],
+"fragmento": [
+[
+"monitor",
+0.723
+],
+[
+"memoria ram",
+0.631
+],
+[
+"motherboard",
+0.63
+]
+],
+"texto_busqueda": "monitor 24 pulgadas",
+"texto_fragmento": "2 monitores de 24"
+},
+{
+"modelo": "gemini",
+"id": "M02",
+"i": 1,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.741
+],
+[
+"motherboard",
+0.651
+],
+[
+"mouse",
+0.646
+]
+],
+"fragmento": [
+[
+"teclado",
+0.721
+],
+[
+"motherboard",
+0.64
+],
+[
+"mouse",
+0.635
+]
+],
+"texto_busqueda": "teclado mecanico",
+"texto_fragmento": "2 teclados mecanicos"
+},
+{
+"modelo": "gemini",
+"id": "M03",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.657
+],
+[
+"tablet",
+0.62
+],
+[
+"motherboard",
+0.608
+]
+],
+"fragmento": [
+[
+"notebook",
+0.691
+],
+[
+"tablet",
+0.624
+],
+[
+"motherboard",
+0.62
+]
+],
+"texto_busqueda": "notebook",
+"texto_fragmento": "una note para la facu de mi hija"
+},
+{
+"modelo": "gemini",
+"id": "M03",
+"i": 1,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.733
+],
+[
+"teclado",
+0.659
+],
+[
+"auriculares",
+0.649
+]
+],
+"fragmento": [
+[
+"mouse",
+0.76
+],
+[
+"teclado",
+0.688
+],
+[
+"auriculares",
+0.67
+]
+],
+"texto_busqueda": "mouse inalambrico",
+"texto_fragmento": "un mouse inalambrico"
+},
+{
+"modelo": "gemini",
+"id": "M03",
+"i": 2,
+"esperado": "ninguno",
+"busqueda": [
+[
+"notebook",
+0.649
+],
+[
+"tablet",
+0.642
+],
+[
+"cooler",
+0.636
+]
+],
+"fragmento": [
+[
+"notebook",
+0.667
+],
+[
+"tablet",
+0.655
+],
+[
+"motherboard",
+0.639
+]
+],
+"texto_busqueda": "mochila",
+"texto_fragmento": "una mochila"
+},
+{
+"modelo": "gemini",
+"id": "M04",
+"i": 0,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.753
+],
+[
+"placa de video",
+0.647
+],
+[
+"procesador",
+0.626
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.739
+],
+[
+"placa de video",
+0.662
+],
+[
+"procesador",
+0.631
+]
+],
+"texto_busqueda": "memoria ram 8gb ddr4",
+"texto_fragmento": "4 memorias de 8 gigas ddr4"
+},
+{
+"modelo": "gemini",
+"id": "M04",
+"i": 1,
+"esperado": "ssd",
+"busqueda": [
+[
+"almacenamiento externo",
+0.743
+],
+[
+"ssd",
+0.74
+],
+[
+"memoria ram",
+0.631
+]
+],
+"fragmento": [
+[
+"ssd",
+0.737
+],
+[
+"almacenamiento externo",
+0.694
+],
+[
+"memoria ram",
+0.641
+]
+],
+"texto_busqueda": "disco solido 1tb",
+"texto_fragmento": "2 discos solidos de 1 tera"
+},
+{
+"modelo": "gemini",
+"id": "M05",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.744
+],
+[
+"microfono",
+0.684
+],
+[
+"parlante",
+0.645
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.751
+],
+[
+"microfono",
+0.678
+],
+[
+"parlante",
+0.633
+]
+],
+"texto_busqueda": "auriculares con microfono",
+"texto_fragmento": "5 auriculares con microfono"
+},
+{
+"modelo": "gemini",
+"id": "M05",
+"i": 1,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.709
+],
+[
+"motherboard",
+0.59
+],
+[
+"monitor",
+0.586
+]
+],
+"fragmento": [
+[
+"webcam",
+0.71
+],
+[
+"motherboard",
+0.583
+],
+[
+"tablet",
+0.583
+]
+],
+"texto_busqueda": "webcams",
+"texto_fragmento": "5 webcams"
+},
+{
+"modelo": "gemini",
+"id": "M05",
+"i": 2,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.755
+],
+[
+"motherboard",
+0.621
+],
+[
+"tablet",
+0.613
+]
+],
+"fragmento": [
+[
+"impresora",
+0.758
+],
+[
+"motherboard",
+0.633
+],
+[
+"tablet",
+0.63
+]
+],
+"texto_busqueda": "impresora multifuncion",
+"texto_fragmento": "1 impresora multifuncion"
+},
+{
+"modelo": "gemini",
+"id": "M06",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.789
+],
+[
+"monitor",
+0.668
+],
+[
+"mouse",
+0.657
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.759
+],
+[
+"mouse",
+0.66
+],
+[
+"monitor",
+0.649
+]
+],
+"texto_busqueda": "silla gamer",
+"texto_fragmento": "dame dos sillas gamer"
+},
+{
+"modelo": "gemini",
+"id": "M06",
+"i": 1,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.705
+],
+[
+"tablet",
+0.625
+],
+[
+"mouse",
+0.622
+]
+],
+"fragmento": [
+[
+"monitor",
+0.675
+],
+[
+"motherboard",
+0.619
+],
+[
+"mouse",
+0.617
+]
+],
+"texto_busqueda": "monitor curvo",
+"texto_fragmento": "y dos monitores curvos"
+},
+{
+"modelo": "gemini",
+"id": "M07",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.722
+],
+[
+"ssd",
+0.62
+],
+[
+"auriculares",
+0.603
+]
+],
+"fragmento": [
+[
+"cargador",
+0.7
+],
+[
+"ssd",
+0.618
+],
+[
+"auriculares",
+0.611
+]
+],
+"texto_busqueda": "cargador tipo c rapido",
+"texto_fragmento": "3 cargadores tipo c rapidos"
+},
+{
+"modelo": "gemini",
+"id": "M07",
+"i": 1,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.752
+],
+[
+"auriculares",
+0.664
+],
+[
+"tablet",
+0.613
+]
+],
+"fragmento": [
+[
+"parlante",
+0.722
+],
+[
+"auriculares",
+0.663
+],
+[
+"tablet",
+0.612
+]
+],
+"texto_busqueda": "parlante bluetooth",
+"texto_fragmento": "3 parlantitos bluetooth"
+},
+{
+"modelo": "gemini",
+"id": "M08",
+"i": 0,
+"esperado": "procesador",
+"busqueda": [
+[
+"procesador",
+0.723
+],
+[
+"motherboard",
+0.637
+],
+[
+"cooler",
+0.628
+]
+],
+"fragmento": [
+[
+"procesador",
+0.696
+],
+[
+"microfono",
+0.645
+],
+[
+"cooler",
+0.63
+]
+],
+"texto_busqueda": "microprocesador ryzen 5",
+"texto_fragmento": "un micro ryzen 5"
+},
+{
+"modelo": "gemini",
+"id": "M08",
+"i": 1,
+"esperado": "motherboard",
+"busqueda": [
+[
+"motherboard",
+0.639
+],
+[
+"procesador",
+0.58
+],
+[
+"gabinete",
+0.57
+]
+],
+"fragmento": [
+[
+"motherboard",
+0.731
+],
+[
+"placa de video",
+0.667
+],
+[
+"cooler",
+0.658
+]
+],
+"texto_busqueda": "motherboard compatible ryzen 5",
+"texto_fragmento": "una mother que lo banque"
+},
+{
+"modelo": "gemini",
+"id": "M08",
+"i": 2,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.733
+],
+[
+"procesador",
+0.625
+],
+[
+"placa de video",
+0.623
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.728
+],
+[
+"placa de video",
+0.662
+],
+[
+"procesador",
+0.645
+]
+],
+"texto_busqueda": "memoria ram 16gb",
+"texto_fragmento": "16 de ram"
+},
+{
+"modelo": "gemini",
+"id": "M08",
+"i": 3,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.735
+],
+[
+"cooler",
+0.651
+],
+[
+"motherboard",
+0.65
+]
+],
+"fragmento": [
+[
+"fuente",
+0.735
+],
+[
+"motherboard",
+0.657
+],
+[
+"impresora",
+0.652
+]
+],
+"texto_busqueda": "fuente de alimentacion 650w",
+"texto_fragmento": "una fuente de 650"
+},
+{
+"modelo": "gemini",
+"id": "M09",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.675
+],
+[
+"impresora",
+0.602
+],
+[
+"motherboard",
+0.593
+]
+],
+"fragmento": [
+[
+"router",
+0.628
+],
+[
+"motherboard",
+0.565
+],
+[
+"impresora",
+0.564
+]
+],
+"texto_busqueda": "router wifi 6",
+"texto_fragmento": "2 routers wifi 6"
+},
+{
+"modelo": "gemini",
+"id": "M09",
+"i": 1,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.617
+],
+[
+"tablet",
+0.561
+],
+[
+"impresora",
+0.561
+]
+],
+"fragmento": [
+[
+"cooler",
+0.616
+],
+[
+"tablet",
+0.608
+],
+[
+"almacenamiento externo",
+0.605
+]
+],
+"texto_busqueda": "mesh wifi",
+"texto_fragmento": "1 mesh"
+},
+{
+"modelo": "gemini",
+"id": "M10",
+"i": 0,
+"esperado": "tablet",
+"busqueda": [
+[
+"tablet",
+0.692
+],
+[
+"notebook",
+0.595
+],
+[
+"motherboard",
+0.59
+]
+],
+"fragmento": [
+[
+"tablet",
+0.749
+],
+[
+"motherboard",
+0.652
+],
+[
+"impresora",
+0.649
+]
+],
+"texto_busqueda": "tablets",
+"texto_fragmento": "quiero 2 tablets para los chicos"
+},
+{
+"modelo": "gemini",
+"id": "M10",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"motherboard",
+0.663
+],
+[
+"cooler",
+0.663
+],
+[
+"monitor",
+0.657
+]
+],
+"fragmento": [
+[
+"motherboard",
+0.631
+],
+[
+"cooler",
+0.63
+],
+[
+"notebook",
+0.616
+]
+],
+"texto_busqueda": "fundas",
+"texto_fragmento": "y 2 fundas"
+},
+{
+"modelo": "gemini",
+"id": "M11",
+"i": 0,
+"esperado": "microfono",
+"busqueda": [
+[
+"microfono",
+0.744
+],
+[
+"webcam",
+0.658
+],
+[
+"auriculares",
+0.653
+]
+],
+"fragmento": [
+[
+"microfono",
+0.719
+],
+[
+"auriculares",
+0.65
+],
+[
+"webcam",
+0.639
+]
+],
+"texto_busqueda": "microfono para streaming",
+"texto_fragmento": "3 microfonos para streaming"
+},
+{
+"modelo": "gemini",
+"id": "M11",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"motherboard",
+0.638
+],
+[
+"impresora",
+0.63
+],
+[
+"cooler",
+0.629
+]
+],
+"fragmento": [
+[
+"cooler",
+0.622
+],
+[
+"motherboard",
+0.618
+],
+[
+"impresora",
+0.614
+]
+],
+"texto_busqueda": "brazo articulado",
+"texto_fragmento": "3 brazos articulados"
+},
+{
+"modelo": "gemini",
+"id": "M12",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.69
+],
+[
+"motherboard",
+0.612
+],
+[
+"webcam",
+0.608
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "10 mouse"
+},
+{
+"modelo": "gemini",
+"id": "M12",
+"i": 1,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.728
+],
+[
+"motherboard",
+0.644
+],
+[
+"parlante",
+0.64
+]
+],
+"fragmento": [
+[
+"teclado",
+0.706
+],
+[
+"parlante",
+0.63
+],
+[
+"auriculares",
+0.626
+]
+],
+"texto_busqueda": "teclados",
+"texto_fragmento": "10 teclados"
+},
+{
+"modelo": "gemini",
+"id": "M13",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.65
+],
+[
+"placa de video",
+0.569
+],
+[
+"cooler",
+0.567
+]
+],
+"fragmento": [
+[
+"monitor",
+0.681
+],
+[
+"placa de video",
+0.61
+],
+[
+"cooler",
+0.601
+]
+],
+"texto_busqueda": "monitor 27 144hz",
+"texto_fragmento": "un monitor 27 de 144hz"
+},
+{
+"modelo": "gemini",
+"id": "M13",
+"i": 1,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.759
+],
+[
+"monitor",
+0.686
+],
+[
+"motherboard",
+0.686
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "una placa de video que lo aproveche"
+},
+{
+"modelo": "gemini",
+"id": "M13",
+"i": 2,
+"esperado": "gabinete",
+"busqueda": [
+[
+"gabinete",
+0.746
+],
+[
+"cooler",
+0.666
+],
+[
+"webcam",
+0.649
+]
+],
+"fragmento": [
+[
+"gabinete",
+0.729
+],
+[
+"cooler",
+0.728
+],
+[
+"silla gamer",
+0.645
+]
+],
+"texto_busqueda": "gabinete",
+"texto_fragmento": "un gabinete con buen aire"
+},
+{
+"modelo": "gemini",
+"id": "M14",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.74
+],
+[
+"ssd",
+0.657
+],
+[
+"motherboard",
+0.608
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.73
+],
+[
+"ssd",
+0.654
+],
+[
+"notebook",
+0.635
+]
+],
+"texto_busqueda": "disco externo 2tb",
+"texto_fragmento": "dos discos externos de 2 teras para backup, uno a mi casa en Lanus"
+},
+{
+"modelo": "gemini",
+"id": "M15",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.707
+],
+[
+"parlante",
+0.636
+],
+[
+"mouse",
+0.607
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.715
+],
+[
+"parlante",
+0.627
+],
+[
+"ssd",
+0.585
+]
+],
+"texto_busqueda": "auriculares inalambricos sony",
+"texto_fragmento": "tres auris inalambricos sony"
+},
+{
+"modelo": "gemini",
+"id": "M15",
+"i": 1,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.724
+],
+[
+"auriculares",
+0.63
+],
+[
+"microfono",
+0.615
+]
+],
+"fragmento": [
+[
+"parlante",
+0.738
+],
+[
+"auriculares",
+0.644
+],
+[
+"microfono",
+0.633
+]
+],
+"texto_busqueda": "parlante jbl grande",
+"texto_fragmento": "un parlante jbl grande"
+},
+{
+"modelo": "gemini",
+"id": "M16",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.78
+],
+[
+"motherboard",
+0.652
+],
+[
+"teclado",
+0.649
+]
+],
+"fragmento": [
+[
+"impresora",
+0.78
+],
+[
+"motherboard",
+0.652
+],
+[
+"teclado",
+0.649
+]
+],
+"texto_busqueda": "impresora",
+"texto_fragmento": "impresora"
+},
+{
+"modelo": "gemini",
+"id": "M16",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"impresora",
+0.661
+],
+[
+"auriculares",
+0.65
+],
+[
+"cargador",
+0.639
+]
+],
+"fragmento": [
+[
+"impresora",
+0.67
+],
+[
+"auriculares",
+0.635
+],
+[
+"ssd",
+0.629
+]
+],
+"texto_busqueda": "cartuchos",
+"texto_fragmento": "2 cartuchos"
+},
+{
+"modelo": "gemini",
+"id": "M16",
+"i": 2,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.712
+],
+[
+"tablet",
+0.627
+],
+[
+"motherboard",
+0.619
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.719
+],
+[
+"notebook",
+0.654
+],
+[
+"tablet",
+0.644
+]
+],
+"texto_busqueda": "silla",
+"texto_fragmento": "una silla comoda"
+},
+{
+"modelo": "gemini",
+"id": "M17",
+"i": 0,
+"esperado": "cooler",
+"busqueda": [
+[
+"cooler",
+0.79
+],
+[
+"procesador",
+0.734
+],
+[
+"motherboard",
+0.68
+]
+],
+"fragmento": [
+[
+"cooler",
+0.759
+],
+[
+"procesador",
+0.702
+],
+[
+"gabinete",
+0.666
+]
+],
+"texto_busqueda": "cooler para microprocesador",
+"texto_fragmento": "2 coolers para el micro"
+},
+{
+"modelo": "gemini",
+"id": "M17",
+"i": 1,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.75
+],
+[
+"motherboard",
+0.661
+],
+[
+"gabinete",
+0.643
+]
+],
+"fragmento": [
+[
+"fuente",
+0.678
+],
+[
+"motherboard",
+0.645
+],
+[
+"cooler",
+0.635
+]
+],
+"texto_busqueda": "fuente modular",
+"texto_fragmento": "2 fuentes modulares"
+},
+{
+"modelo": "gemini",
+"id": "M18",
+"i": 0,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.699
+],
+[
+"monitor",
+0.565
+],
+[
+"microfono",
+0.565
+]
+],
+"fragmento": [
+[
+"webcam",
+0.716
+],
+[
+"auriculares",
+0.605
+],
+[
+"monitor",
+0.587
+]
+],
+"texto_busqueda": "webcam full hd",
+"texto_fragmento": "6 webcams full hd para aulas"
+},
+{
+"modelo": "gemini",
+"id": "R01",
+"i": 0,
+"esperado": "microfono",
+"busqueda": [
+[
+"auriculares",
+0.727
+],
+[
+"microfono",
+0.687
+],
+[
+"parlante",
+0.652
+]
+],
+"fragmento": [
+[
+"webcam",
+0.748
+],
+[
+"microfono",
+0.743
+],
+[
+"auriculares",
+0.706
+]
+],
+"texto_busqueda": "auriculares con microfono para pc",
+"texto_fragmento": "busco la cosa esa que se enchufa a la compu para hablar en zoom y que se me escuche bien"
+},
+{
+"modelo": "gemini",
+"id": "R02",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.68
+],
+[
+"impresora",
+0.618
+],
+[
+"motherboard",
+0.615
+]
+],
+"fragmento": [
+[
+"router",
+0.749
+],
+[
+"cargador",
+0.679
+],
+[
+"mouse",
+0.669
+]
+],
+"texto_busqueda": "repetidor wifi",
+"texto_fragmento": "el aparatito que se pone en la pared para que el wifi llegue al patio"
+},
+{
+"modelo": "gemini",
+"id": "R03",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.714
+],
+[
+"notebook",
+0.69
+],
+[
+"tablet",
+0.657
+]
+],
+"fragmento": [
+[
+"monitor",
+0.717
+],
+[
+"notebook",
+0.688
+],
+[
+"motherboard",
+0.666
+]
+],
+"texto_busqueda": "monitor para notebook",
+"texto_fragmento": "necesito la pantalla grande para enchufar la notebook en el escritorio"
+},
+{
+"modelo": "gemini",
+"id": "R04",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.726
+],
+[
+"tablet",
+0.643
+],
+[
+"parlante",
+0.622
+]
+],
+"fragmento": [
+[
+"notebook",
+0.756
+],
+[
+"tablet",
+0.665
+],
+[
+"procesador",
+0.657
+]
+],
+"texto_busqueda": "notebook plegable liviana",
+"texto_fragmento": "una compu que se pliegue y me la pueda llevar al laburo"
+},
+{
+"modelo": "gemini",
+"id": "R05",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.732
+],
+[
+"memoria ram",
+0.64
+],
+[
+"cargador",
+0.637
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.726
+],
+[
+"cargador",
+0.654
+],
+[
+"motherboard",
+0.648
+]
+],
+"texto_busqueda": "dispositivo de almacenamiento fotos celular",
+"texto_fragmento": "algo donde guardar las fotos del celu"
+},
+{
+"modelo": "gemini",
+"id": "R06",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.727
+],
+[
+"motherboard",
+0.649
+],
+[
+"router",
+0.648
+]
+],
+"fragmento": [
+[
+"impresora",
+0.734
+],
+[
+"router",
+0.668
+],
+[
+"almacenamiento externo",
+0.655
+]
+],
+"texto_busqueda": "fotocopiadora",
+"texto_fragmento": "el aparato para sacar copias de los papeles de la escuela"
+},
+{
+"modelo": "gemini",
+"id": "R07",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.751
+],
+[
+"procesador",
+0.746
+],
+[
+"gabinete",
+0.72
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "eso que se pone adentro de la pc para que corran los jueguitos"
+},
+{
+"modelo": "gemini",
+"id": "R08",
+"i": 0,
+"esperado": "gabinete",
+"busqueda": [
+[
+"gabinete",
+0.771
+],
+[
+"cooler",
+0.701
+],
+[
+"fuente",
+0.673
+]
+],
+"fragmento": [
+[
+"gabinete",
+0.779
+],
+[
+"fuente",
+0.752
+],
+[
+"motherboard",
+0.735
+]
+],
+"texto_busqueda": "gabinete pc",
+"texto_fragmento": "la caja grande donde va todo lo de la pc"
+},
+{
+"modelo": "gemini",
+"id": "R09",
+"i": 0,
+"esperado": "cooler",
+"busqueda": [
+[
+"cooler",
+0.744
+],
+[
+"procesador",
+0.721
+],
+[
+"gabinete",
+0.663
+]
+],
+"fragmento": [
+[
+"cooler",
+0.78
+],
+[
+"procesador",
+0.738
+],
+[
+"gabinete",
+0.698
+]
+],
+"texto_busqueda": "ventilador procesador",
+"texto_fragmento": "el ventiladorcito que va arriba del procesador"
+},
+{
+"modelo": "gemini",
+"id": "R10",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.768
+],
+[
+"parlante",
+0.682
+],
+[
+"cooler",
+0.639
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.739
+],
+[
+"parlante",
+0.697
+],
+[
+"motherboard",
+0.661
+]
+],
+"texto_busqueda": "auriculares",
+"texto_fragmento": "lo que va en la oreja para escuchar musica"
+},
+{
+"modelo": "gemini",
+"id": "R11",
+"i": 0,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.765
+],
+[
+"monitor",
+0.709
+],
+[
+"motherboard",
+0.64
+]
+],
+"fragmento": [
+[
+"webcam",
+0.797
+],
+[
+"monitor",
+0.711
+],
+[
+"gabinete",
+0.685
+]
+],
+"texto_busqueda": "webcam para monitor",
+"texto_fragmento": "la camarita que va arriba del monitor"
+},
+{
+"modelo": "gemini",
+"id": "R12",
+"i": 0,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.789
+],
+[
+"cooler",
+0.669
+],
+[
+"procesador",
+0.663
+]
+],
+"fragmento": [
+[
+"fuente",
+0.775
+],
+[
+"motherboard",
+0.709
+],
+[
+"procesador",
+0.704
+]
+],
+"texto_busqueda": "fuente de alimentacion pc",
+"texto_fragmento": "lo que le da la corriente a la pc"
+},
+{
+"modelo": "gemini",
+"id": "R13",
+"i": 0,
+"esperado": "motherboard",
+"busqueda": [
+[
+"motherboard",
+0.729
+],
+[
+"procesador",
+0.638
+],
+[
+"placa de video",
+0.62
+]
+],
+"fragmento": [
+[
+"motherboard",
+0.819
+],
+[
+"placa de video",
+0.713
+],
+[
+"fuente",
+0.686
+]
+],
+"texto_busqueda": "motherboard",
+"texto_fragmento": "la plaqueta madre donde enchufas todo"
+},
+{
+"modelo": "gemini",
+"id": "R14",
+"i": 0,
+"esperado": "procesador",
+"busqueda": [
+[
+"procesador",
+0.799
+],
+[
+"motherboard",
+0.687
+],
+[
+"gabinete",
+0.677
+]
+],
+"fragmento": [
+[
+"procesador",
+0.758
+],
+[
+"memoria ram",
+0.671
+],
+[
+"motherboard",
+0.668
+]
+],
+"texto_busqueda": "procesador",
+"texto_fragmento": "el cerebro de la compu, uno bueno para editar videos"
+},
+{
+"modelo": "gemini",
+"id": "R15",
+"i": 0,
+"esperado": "tablet",
+"busqueda": [
+[
+"tablet",
+0.721
+],
+[
+"monitor",
+0.669
+],
+[
+"motherboard",
+0.63
+]
+],
+"fragmento": [
+[
+"tablet",
+0.746
+],
+[
+"monitor",
+0.69
+],
+[
+"mouse",
+0.654
+]
+],
+"texto_busqueda": "pantalla tactil",
+"texto_fragmento": "una pantallita tactil"
+},
+{
+"modelo": "gemini",
+"id": "R16",
+"i": 0,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.743
+],
+[
+"notebook",
+0.666
+],
+[
+"procesador",
+0.643
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.769
+],
+[
+"ssd",
+0.721
+],
+[
+"notebook",
+0.715
+]
+],
+"texto_busqueda": "memoria ram notebook",
+"texto_fragmento": "el chiche que le pones a la notebook para que vaya mas rapido, memoria se llama?"
+},
+{
+"modelo": "gemini",
+"id": "R17",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.655
+],
+[
+"fuente",
+0.639
+],
+[
+"motherboard",
+0.633
+]
+],
+"fragmento": [
+[
+"parlante",
+0.694
+],
+[
+"tablet",
+0.648
+],
+[
+"notebook",
+0.642
+]
+],
+"texto_busqueda": "cajita de musica",
+"texto_fragmento": "la cajita de musica que llevas a la playa"
+},
+{
+"modelo": "gemini",
+"id": "R18",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.789
+],
+[
+"monitor",
+0.668
+],
+[
+"mouse",
+0.657
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.766
+],
+[
+"mouse",
+0.696
+],
+[
+"monitor",
+0.684
+]
+],
+"texto_busqueda": "silla gamer",
+"texto_fragmento": "el trono ese de los gamers"
+},
+{
+"modelo": "gemini",
+"id": "O01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.738
+],
+[
+"auriculares",
+0.67
+],
+[
+"teclado",
+0.655
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "un mouse que no me funda el bolsillo"
+},
+{
+"modelo": "gemini",
+"id": "O02",
+"i": 0,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.717
+],
+[
+"cooler",
+0.635
+],
+[
+"motherboard",
+0.634
+]
+],
+"fragmento": [
+[
+"teclado",
+0.727
+],
+[
+"auriculares",
+0.647
+],
+[
+"cooler",
+0.646
+]
+],
+"texto_busqueda": "teclado silencioso",
+"texto_fragmento": "un teclado que no haga ruido"
+},
+{
+"modelo": "gemini",
+"id": "O03",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.657
+],
+[
+"tablet",
+0.62
+],
+[
+"motherboard",
+0.608
+]
+],
+"fragmento": [
+[
+"notebook",
+0.736
+],
+[
+"ssd",
+0.64
+],
+[
+"auriculares",
+0.639
+]
+],
+"texto_busqueda": "notebook",
+"texto_fragmento": "la mejor notebook que tengan"
+},
+{
+"modelo": "gemini",
+"id": "O04",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.745
+],
+[
+"parlante",
+0.661
+],
+[
+"mouse",
+0.635
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.762
+],
+[
+"parlante",
+0.661
+],
+[
+"mouse",
+0.615
+]
+],
+"texto_busqueda": "auriculares inalambricos",
+"texto_fragmento": "auriculares que no tengan cable y que no sean chinos"
+},
+{
+"modelo": "gemini",
+"id": "O05",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.699
+],
+[
+"motherboard",
+0.608
+],
+[
+"parlante",
+0.605
+]
+],
+"fragmento": [
+[
+"monitor",
+0.735
+],
+[
+"auriculares",
+0.648
+],
+[
+"mouse",
+0.647
+]
+],
+"texto_busqueda": "monitor",
+"texto_fragmento": "un monitor que no pase los 200 lucas"
+},
+{
+"modelo": "gemini",
+"id": "O06",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.757
+],
+[
+"motherboard",
+0.678
+],
+[
+"monitor",
+0.66
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "la placa de video mas bestia que tengan"
+},
+{
+"modelo": "gemini",
+"id": "O07",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.712
+],
+[
+"tablet",
+0.627
+],
+[
+"motherboard",
+0.619
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.719
+],
+[
+"parlante",
+0.623
+],
+[
+"notebook",
+0.614
+]
+],
+"texto_busqueda": "silla",
+"texto_fragmento": "una silla que aguante 120 kilos"
+},
+{
+"modelo": "gemini",
+"id": "O08",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.76
+],
+[
+"ssd",
+0.688
+],
+[
+"motherboard",
+0.637
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.756
+],
+[
+"ssd",
+0.683
+],
+[
+"notebook",
+0.649
+]
+],
+"texto_busqueda": "disco externo",
+"texto_fragmento": "un disco externo chiquito que entre en el bolsillo"
+},
+{
+"modelo": "gemini",
+"id": "O09",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.712
+],
+[
+"auriculares",
+0.629
+],
+[
+"microfono",
+0.601
+]
+],
+"fragmento": [
+[
+"parlante",
+0.738
+],
+[
+"auriculares",
+0.655
+],
+[
+"tablet",
+0.616
+]
+],
+"texto_busqueda": "parlante resistente al agua",
+"texto_fragmento": "un parlante que se banque el agua de la pileta"
+},
+{
+"modelo": "gemini",
+"id": "O10",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.697
+],
+[
+"ssd",
+0.616
+],
+[
+"auriculares",
+0.598
+]
+],
+"fragmento": [
+[
+"cargador",
+0.727
+],
+[
+"ssd",
+0.635
+],
+[
+"auriculares",
+0.622
+]
+],
+"texto_busqueda": "cargador rapido iphone",
+"texto_fragmento": "un cargador que le de rapido al iphone"
+},
+{
+"modelo": "gemini",
+"id": "O11",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.664
+],
+[
+"tablet",
+0.592
+],
+[
+"motherboard",
+0.588
+]
+],
+"fragmento": [
+[
+"notebook",
+0.725
+],
+[
+"tablet",
+0.631
+],
+[
+"ssd",
+0.624
+]
+],
+"texto_busqueda": "notebook liviana",
+"texto_fragmento": "la notebook mas liviana para viajar"
+},
+{
+"modelo": "gemini",
+"id": "O12",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.712
+],
+[
+"impresora",
+0.615
+],
+[
+"motherboard",
+0.609
+]
+],
+"fragmento": [
+[
+"router",
+0.703
+],
+[
+"impresora",
+0.618
+],
+[
+"motherboard",
+0.61
+]
+],
+"texto_busqueda": "router largo alcance",
+"texto_fragmento": "un router que llegue a los 3 pisos de la casa"
+},
+{
+"modelo": "gemini",
+"id": "F01",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"tablet",
+0.569
+],
+[
+"cargador",
+0.566
+],
+[
+"motherboard",
+0.565
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.604
+],
+[
+"ssd",
+0.599
+],
+[
+"cargador",
+0.597
+]
+],
+"texto_busqueda": "iphone 15 pro max",
+"texto_fragmento": "tenes el iphone 15 pro max?"
+},
+{
+"modelo": "gemini",
+"id": "F02",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"auriculares",
+0.6
+],
+[
+"tablet",
+0.599
+],
+[
+"monitor",
+0.594
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.599
+],
+[
+"ssd",
+0.58
+],
+[
+"monitor",
+0.576
+]
+],
+"texto_busqueda": "zapatillas nike talle 42",
+"texto_fragmento": "venden zapatillas nike talle 42?"
+},
+{
+"modelo": "gemini",
+"id": "F11",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"parlante",
+0.591
+],
+[
+"auriculares",
+0.582
+],
+[
+"tablet",
+0.582
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.634
+],
+[
+"auriculares",
+0.618
+],
+[
+"tablet",
+0.612
+]
+],
+"texto_busqueda": "play 5",
+"texto_fragmento": "venden la play 5?"
+},
+{
+"modelo": "gemini",
+"id": "A01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.688
+],
+[
+"cooler",
+0.632
+],
+[
+"teclado",
+0.628
+]
+],
+"fragmento": [
+[
+"mouse",
+0.715
+],
+[
+"teclado",
+0.675
+],
+[
+"cooler",
+0.658
+]
+],
+"texto_busqueda": "mouse gamer rgb",
+"texto_fragmento": "cuanto sale un mause gamer de esos con luces rgb"
+},
+{
+"modelo": "gemini",
+"id": "A02",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.649
+],
+[
+"memoria ram",
+0.639
+],
+[
+"ssd",
+0.591
+]
+],
+"fragmento": [
+[
+"notebook",
+0.67
+],
+[
+"memoria ram",
+0.666
+],
+[
+"ssd",
+0.63
+]
+],
+"texto_busqueda": "notebook 16gb ram liviana",
+"texto_fragmento": "queria saber si tienen notebooks con dieciseis de ram y que sean livianas para la facultad"
+},
+{
+"modelo": "gemini",
+"id": "A03",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.68
+],
+[
+"microfono",
+0.656
+],
+[
+"webcam",
+0.618
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.733
+],
+[
+"microfono",
+0.685
+],
+[
+"mouse",
+0.651
+]
+],
+"texto_busqueda": "headset con microfono pc",
+"texto_fragmento": "necesito un headset para jugar a la play bueno no la play la compu eh que tenga micro"
+},
+{
+"modelo": "gemini",
+"id": "A04",
+"i": 0,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.725
+],
+[
+"motherboard",
+0.651
+],
+[
+"mouse",
+0.643
+]
+],
+"fragmento": [
+[
+"teclado",
+0.726
+],
+[
+"motherboard",
+0.656
+],
+[
+"tablet",
+0.644
+]
+],
+"texto_busqueda": "teclado mecanico español",
+"texto_fragmento": "dos teclados uno en español... los dos mecanicos"
+},
+{
+"modelo": "gemini",
+"id": "A05",
+"i": 0,
+"esperado": "ssd",
+"busqueda": [
+[
+"ssd",
+0.703
+],
+[
+"memoria ram",
+0.604
+],
+[
+"motherboard",
+0.591
+]
+],
+"fragmento": [
+[
+"ssd",
+0.74
+],
+[
+"almacenamiento externo",
+0.658
+],
+[
+"memoria ram",
+0.652
+]
+],
+"texto_busqueda": "ssd 500gb m.2",
+"texto_fragmento": "un ssd de quinientos gigas eme punto dos"
+},
+{
+"modelo": "gemini",
+"id": "A06",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.699
+],
+[
+"silla gamer",
+0.602
+],
+[
+"tablet",
+0.602
+]
+],
+"fragmento": [
+[
+"monitor",
+0.726
+],
+[
+"silla gamer",
+0.642
+],
+[
+"webcam",
+0.64
+]
+],
+"texto_busqueda": "monitor 27 pulgadas curvo",
+"texto_fragmento": "quiero el monitor ese de veintisiete pulgadas que vi en instagram el que es curvo"
+},
+{
+"modelo": "gemini",
+"id": "A07",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.744
+],
+[
+"monitor",
+0.673
+],
+[
+"motherboard",
+0.67
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "necesita una placa de video que le corra a ciento cuarenta y cuatro"
+},
+{
+"modelo": "gemini",
+"id": "A08",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.713
+],
+[
+"auriculares",
+0.631
+],
+[
+"notebook",
+0.604
+]
+],
+"fragmento": [
+[
+"parlante",
+0.663
+],
+[
+"auriculares",
+0.614
+],
+[
+"monitor",
+0.588
+]
+],
+"texto_busqueda": "parlante jbl flip",
+"texto_fragmento": "quisiera saber el precio del parlante jbl flip"
+},
+{
+"modelo": "gemini",
+"id": "A09",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.637
+],
+[
+"notebook",
+0.618
+],
+[
+"cooler",
+0.587
+]
+],
+"fragmento": [
+[
+"cargador",
+0.688
+],
+[
+"fuente",
+0.666
+],
+[
+"notebook",
+0.655
+]
+],
+"texto_busqueda": "charger 65w notebook tipo c",
+"texto_fragmento": "necesito un charger de sesenta y cinco watts para la notebook tipo ce"
+},
+{
+"modelo": "gemini",
+"id": "A10",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.756
+],
+[
+"monitor",
+0.649
+],
+[
+"cooler",
+0.638
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.736
+],
+[
+"auriculares",
+0.635
+],
+[
+"monitor",
+0.631
+]
+],
+"texto_busqueda": "silla gamer negra",
+"texto_fragmento": "dos sillas gamers negras"
+},
+{
+"modelo": "gemini",
+"id": "A11",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.732
+],
+[
+"router",
+0.628
+],
+[
+"teclado",
+0.606
+]
+],
+"fragmento": [
+[
+"impresora",
+0.723
+],
+[
+"router",
+0.619
+],
+[
+"teclado",
+0.594
+]
+],
+"texto_busqueda": "impresora color wifi tinta continua",
+"texto_fragmento": "impresora a color con wifi y que sea de tinta continua"
+},
+{
+"modelo": "haiku",
+"id": "M01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"auriculares",
+0.726
+],
+[
+"mouse",
+0.705
+],
+[
+"parlante",
+0.649
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.727
+],
+[
+"mouse",
+0.71
+],
+[
+"parlante",
+0.658
+]
+],
+"texto_busqueda": "combo mouse y auriculares",
+"texto_fragmento": "necesito armar 3 combos para mis sobrinos, cada uno lleva un mouse y unos auris"
+},
+{
+"modelo": "haiku",
+"id": "M01",
+"i": 1,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.726
+],
+[
+"mouse",
+0.705
+],
+[
+"parlante",
+0.649
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.727
+],
+[
+"mouse",
+0.71
+],
+[
+"parlante",
+0.658
+]
+],
+"texto_busqueda": "combo mouse y auriculares",
+"texto_fragmento": "necesito armar 3 combos para mis sobrinos, cada uno lleva un mouse y unos auris"
+},
+{
+"modelo": "haiku",
+"id": "M02",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.761
+],
+[
+"tablet",
+0.634
+],
+[
+"motherboard",
+0.628
+]
+],
+"fragmento": [
+[
+"monitor",
+0.723
+],
+[
+"memoria ram",
+0.624
+],
+[
+"motherboard",
+0.624
+]
+],
+"texto_busqueda": "monitor 24 pulgadas",
+"texto_fragmento": "pasame presu de 2 monitores de 24"
+},
+{
+"modelo": "haiku",
+"id": "M02",
+"i": 1,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.741
+],
+[
+"motherboard",
+0.651
+],
+[
+"mouse",
+0.646
+]
+],
+"fragmento": [
+[
+"teclado",
+0.721
+],
+[
+"motherboard",
+0.64
+],
+[
+"mouse",
+0.635
+]
+],
+"texto_busqueda": "teclado mecanico",
+"texto_fragmento": "2 teclados mecanicos"
+},
+{
+"modelo": "haiku",
+"id": "M03",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.657
+],
+[
+"tablet",
+0.62
+],
+[
+"motherboard",
+0.608
+]
+],
+"fragmento": [
+[
+"notebook",
+0.691
+],
+[
+"tablet",
+0.624
+],
+[
+"motherboard",
+0.62
+]
+],
+"texto_busqueda": "notebook",
+"texto_fragmento": "una note para la facu de mi hija"
+},
+{
+"modelo": "haiku",
+"id": "M03",
+"i": 1,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.733
+],
+[
+"teclado",
+0.659
+],
+[
+"auriculares",
+0.649
+]
+],
+"fragmento": [
+[
+"mouse",
+0.76
+],
+[
+"teclado",
+0.688
+],
+[
+"auriculares",
+0.67
+]
+],
+"texto_busqueda": "mouse inalambrico",
+"texto_fragmento": "un mouse inalambrico"
+},
+{
+"modelo": "haiku",
+"id": "M03",
+"i": 2,
+"esperado": "ninguno",
+"busqueda": [
+[
+"notebook",
+0.649
+],
+[
+"tablet",
+0.642
+],
+[
+"cooler",
+0.636
+]
+],
+"fragmento": [
+[
+"notebook",
+0.667
+],
+[
+"tablet",
+0.655
+],
+[
+"motherboard",
+0.639
+]
+],
+"texto_busqueda": "mochila",
+"texto_fragmento": "una mochila"
+},
+{
+"modelo": "haiku",
+"id": "M04",
+"i": 0,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.752
+],
+[
+"placa de video",
+0.646
+],
+[
+"procesador",
+0.63
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.73
+],
+[
+"placa de video",
+0.657
+],
+[
+"motherboard",
+0.623
+]
+],
+"texto_busqueda": "memoria ram ddr4 8gb",
+"texto_fragmento": "quiero 4 memorias de 8 gigas ddr4"
+},
+{
+"modelo": "haiku",
+"id": "M04",
+"i": 1,
+"esperado": "ssd",
+"busqueda": [
+[
+"ssd",
+0.756
+],
+[
+"almacenamiento externo",
+0.705
+],
+[
+"procesador",
+0.618
+]
+],
+"fragmento": [
+[
+"ssd",
+0.737
+],
+[
+"almacenamiento externo",
+0.694
+],
+[
+"memoria ram",
+0.641
+]
+],
+"texto_busqueda": "disco solido ssd 1tb",
+"texto_fragmento": "2 discos solidos de 1 tera"
+},
+{
+"modelo": "haiku",
+"id": "M05",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.744
+],
+[
+"microfono",
+0.684
+],
+[
+"parlante",
+0.645
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.751
+],
+[
+"microfono",
+0.678
+],
+[
+"parlante",
+0.633
+]
+],
+"texto_busqueda": "auriculares con microfono",
+"texto_fragmento": "5 auriculares con microfono"
+},
+{
+"modelo": "haiku",
+"id": "M05",
+"i": 1,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.709
+],
+[
+"motherboard",
+0.608
+],
+[
+"cooler",
+0.595
+]
+],
+"fragmento": [
+[
+"webcam",
+0.71
+],
+[
+"motherboard",
+0.583
+],
+[
+"tablet",
+0.583
+]
+],
+"texto_busqueda": "webcam",
+"texto_fragmento": "5 webcams"
+},
+{
+"modelo": "haiku",
+"id": "M05",
+"i": 2,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.755
+],
+[
+"motherboard",
+0.621
+],
+[
+"tablet",
+0.613
+]
+],
+"fragmento": [
+[
+"impresora",
+0.758
+],
+[
+"motherboard",
+0.633
+],
+[
+"tablet",
+0.63
+]
+],
+"texto_busqueda": "impresora multifuncion",
+"texto_fragmento": "1 impresora multifuncion"
+},
+{
+"modelo": "haiku",
+"id": "M06",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.789
+],
+[
+"monitor",
+0.668
+],
+[
+"mouse",
+0.657
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.759
+],
+[
+"mouse",
+0.66
+],
+[
+"monitor",
+0.649
+]
+],
+"texto_busqueda": "silla gamer",
+"texto_fragmento": "dame dos sillas gamer"
+},
+{
+"modelo": "haiku",
+"id": "M06",
+"i": 1,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.705
+],
+[
+"tablet",
+0.625
+],
+[
+"mouse",
+0.622
+]
+],
+"fragmento": [
+[
+"monitor",
+0.676
+],
+[
+"mouse",
+0.612
+],
+[
+"motherboard",
+0.609
+]
+],
+"texto_busqueda": "monitor curvo",
+"texto_fragmento": "dos monitores curvos"
+},
+{
+"modelo": "haiku",
+"id": "M07",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.722
+],
+[
+"ssd",
+0.62
+],
+[
+"auriculares",
+0.603
+]
+],
+"fragmento": [
+[
+"cargador",
+0.715
+],
+[
+"auriculares",
+0.629
+],
+[
+"ssd",
+0.625
+]
+],
+"texto_busqueda": "cargador tipo c rapido",
+"texto_fragmento": "necesito 3 cargadores tipo c rapidos"
+},
+{
+"modelo": "haiku",
+"id": "M07",
+"i": 1,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.752
+],
+[
+"auriculares",
+0.664
+],
+[
+"tablet",
+0.613
+]
+],
+"fragmento": [
+[
+"parlante",
+0.71
+],
+[
+"auriculares",
+0.66
+],
+[
+"tablet",
+0.614
+]
+],
+"texto_busqueda": "parlante bluetooth",
+"texto_fragmento": "3 parlantitos bluetooth para regalar"
+},
+{
+"modelo": "haiku",
+"id": "M08",
+"i": 0,
+"esperado": "procesador",
+"busqueda": [
+[
+"procesador",
+0.709
+],
+[
+"motherboard",
+0.629
+],
+[
+"cooler",
+0.627
+]
+],
+"fragmento": [
+[
+"procesador",
+0.696
+],
+[
+"microfono",
+0.645
+],
+[
+"cooler",
+0.63
+]
+],
+"texto_busqueda": "procesador ryzen 5",
+"texto_fragmento": "un micro ryzen 5"
+},
+{
+"modelo": "haiku",
+"id": "M08",
+"i": 1,
+"esperado": "motherboard",
+"busqueda": [
+[
+"motherboard",
+0.678
+],
+[
+"procesador",
+0.619
+],
+[
+"memoria ram",
+0.609
+]
+],
+"fragmento": [
+[
+"motherboard",
+0.731
+],
+[
+"placa de video",
+0.667
+],
+[
+"cooler",
+0.658
+]
+],
+"texto_busqueda": "motherboard compatible con ryzen 5",
+"texto_fragmento": "una mother que lo banque"
+},
+{
+"modelo": "haiku",
+"id": "M08",
+"i": 2,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.733
+],
+[
+"procesador",
+0.625
+],
+[
+"placa de video",
+0.623
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.728
+],
+[
+"placa de video",
+0.662
+],
+[
+"procesador",
+0.645
+]
+],
+"texto_busqueda": "memoria ram 16gb",
+"texto_fragmento": "16 de ram"
+},
+{
+"modelo": "haiku",
+"id": "M08",
+"i": 3,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.729
+],
+[
+"motherboard",
+0.645
+],
+[
+"cooler",
+0.641
+]
+],
+"fragmento": [
+[
+"fuente",
+0.735
+],
+[
+"motherboard",
+0.657
+],
+[
+"impresora",
+0.652
+]
+],
+"texto_busqueda": "fuente de poder 650w",
+"texto_fragmento": "una fuente de 650"
+},
+{
+"modelo": "haiku",
+"id": "M09",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.675
+],
+[
+"impresora",
+0.602
+],
+[
+"motherboard",
+0.593
+]
+],
+"fragmento": [
+[
+"router",
+0.628
+],
+[
+"motherboard",
+0.565
+],
+[
+"impresora",
+0.564
+]
+],
+"texto_busqueda": "router wifi 6",
+"texto_fragmento": "2 routers wifi 6"
+},
+{
+"modelo": "haiku",
+"id": "M09",
+"i": 1,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.658
+],
+[
+"impresora",
+0.608
+],
+[
+"tablet",
+0.607
+]
+],
+"fragmento": [
+[
+"cooler",
+0.616
+],
+[
+"tablet",
+0.608
+],
+[
+"almacenamiento externo",
+0.605
+]
+],
+"texto_busqueda": "sistema mesh wifi",
+"texto_fragmento": "1 mesh"
+},
+{
+"modelo": "haiku",
+"id": "M10",
+"i": 0,
+"esperado": "tablet",
+"busqueda": [
+[
+"tablet",
+0.718
+],
+[
+"notebook",
+0.62
+],
+[
+"motherboard",
+0.607
+]
+],
+"fragmento": [
+[
+"tablet",
+0.749
+],
+[
+"motherboard",
+0.652
+],
+[
+"impresora",
+0.649
+]
+],
+"texto_busqueda": "tablet",
+"texto_fragmento": "quiero 2 tablets para los chicos"
+},
+{
+"modelo": "haiku",
+"id": "M10",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"tablet",
+0.706
+],
+[
+"motherboard",
+0.629
+],
+[
+"notebook",
+0.629
+]
+],
+"fragmento": [
+[
+"notebook",
+0.654
+],
+[
+"cooler",
+0.65
+],
+[
+"motherboard",
+0.641
+]
+],
+"texto_busqueda": "funda para tablet",
+"texto_fragmento": "2 fundas"
+},
+{
+"modelo": "haiku",
+"id": "M11",
+"i": 0,
+"esperado": "microfono",
+"busqueda": [
+[
+"microfono",
+0.744
+],
+[
+"webcam",
+0.658
+],
+[
+"auriculares",
+0.653
+]
+],
+"fragmento": [
+[
+"microfono",
+0.72
+],
+[
+"auriculares",
+0.663
+],
+[
+"webcam",
+0.647
+]
+],
+"texto_busqueda": "microfono para streaming",
+"texto_fragmento": "me pasas precio de 3 microfonos para streaming"
+},
+{
+"modelo": "haiku",
+"id": "M11",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"microfono",
+0.694
+],
+[
+"auriculares",
+0.636
+],
+[
+"parlante",
+0.618
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.606
+],
+[
+"cooler",
+0.605
+],
+[
+"mouse",
+0.605
+]
+],
+"texto_busqueda": "brazo articulado para microfono",
+"texto_fragmento": "3 brazos articulados? 1 a cada uno: Rio Cuarto, Villa Maria y San Francisco"
+},
+{
+"modelo": "haiku",
+"id": "M12",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.73
+],
+[
+"auriculares",
+0.663
+],
+[
+"webcam",
+0.659
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "necesito 10 mouse"
+},
+{
+"modelo": "haiku",
+"id": "M12",
+"i": 1,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.757
+],
+[
+"motherboard",
+0.671
+],
+[
+"mouse",
+0.661
+]
+],
+"fragmento": [
+[
+"teclado",
+0.689
+],
+[
+"auriculares",
+0.623
+],
+[
+"mouse",
+0.612
+]
+],
+"texto_busqueda": "teclado",
+"texto_fragmento": "10 teclados de los mas economicos"
+},
+{
+"modelo": "haiku",
+"id": "M13",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.65
+],
+[
+"placa de video",
+0.569
+],
+[
+"cooler",
+0.567
+]
+],
+"fragmento": [
+[
+"monitor",
+0.681
+],
+[
+"placa de video",
+0.61
+],
+[
+"cooler",
+0.601
+]
+],
+"texto_busqueda": "monitor 27 144hz",
+"texto_fragmento": "un monitor 27 de 144hz"
+},
+{
+"modelo": "haiku",
+"id": "M13",
+"i": 1,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.705
+],
+[
+"monitor",
+0.643
+],
+[
+"motherboard",
+0.627
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.759
+],
+[
+"monitor",
+0.686
+],
+[
+"motherboard",
+0.686
+]
+],
+"texto_busqueda": "placa de video 144hz",
+"texto_fragmento": "una placa de video que lo aproveche"
+},
+{
+"modelo": "haiku",
+"id": "M13",
+"i": 2,
+"esperado": "gabinete",
+"busqueda": [
+[
+"gabinete",
+0.73
+],
+[
+"cooler",
+0.706
+],
+[
+"memoria ram",
+0.641
+]
+],
+"fragmento": [
+[
+"gabinete",
+0.729
+],
+[
+"cooler",
+0.728
+],
+[
+"silla gamer",
+0.645
+]
+],
+"texto_busqueda": "gabinete buena ventilacion",
+"texto_fragmento": "un gabinete con buen aire"
+},
+{
+"modelo": "haiku",
+"id": "M14",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.735
+],
+[
+"ssd",
+0.652
+],
+[
+"notebook",
+0.605
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.733
+],
+[
+"ssd",
+0.643
+],
+[
+"motherboard",
+0.624
+]
+],
+"texto_busqueda": "disco externo 2TB",
+"texto_fragmento": "dos discos externos de 2 teras para backup"
+},
+{
+"modelo": "haiku",
+"id": "M15",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.707
+],
+[
+"parlante",
+0.636
+],
+[
+"mouse",
+0.607
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.715
+],
+[
+"parlante",
+0.627
+],
+[
+"ssd",
+0.585
+]
+],
+"texto_busqueda": "auriculares inalambricos sony",
+"texto_fragmento": "tres auris inalambricos sony"
+},
+{
+"modelo": "haiku",
+"id": "M15",
+"i": 1,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.724
+],
+[
+"auriculares",
+0.63
+],
+[
+"microfono",
+0.615
+]
+],
+"fragmento": [
+[
+"parlante",
+0.738
+],
+[
+"auriculares",
+0.644
+],
+[
+"microfono",
+0.633
+]
+],
+"texto_busqueda": "parlante jbl grande",
+"texto_fragmento": "un parlante jbl grande"
+},
+{
+"modelo": "haiku",
+"id": "M16",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.78
+],
+[
+"motherboard",
+0.652
+],
+[
+"teclado",
+0.649
+]
+],
+"fragmento": [
+[
+"impresora",
+0.78
+],
+[
+"motherboard",
+0.652
+],
+[
+"teclado",
+0.649
+]
+],
+"texto_busqueda": "impresora",
+"texto_fragmento": "impresora"
+},
+{
+"modelo": "haiku",
+"id": "M16",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"impresora",
+0.705
+],
+[
+"procesador",
+0.632
+],
+[
+"auriculares",
+0.624
+]
+],
+"fragmento": [
+[
+"impresora",
+0.67
+],
+[
+"auriculares",
+0.635
+],
+[
+"ssd",
+0.629
+]
+],
+"texto_busqueda": "cartuchos de impresora",
+"texto_fragmento": "2 cartuchos"
+},
+{
+"modelo": "haiku",
+"id": "M16",
+"i": 2,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.706
+],
+[
+"notebook",
+0.637
+],
+[
+"tablet",
+0.63
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.719
+],
+[
+"notebook",
+0.654
+],
+[
+"tablet",
+0.644
+]
+],
+"texto_busqueda": "silla comoda",
+"texto_fragmento": "una silla comoda"
+},
+{
+"modelo": "haiku",
+"id": "M17",
+"i": 0,
+"esperado": "cooler",
+"busqueda": [
+[
+"cooler",
+0.79
+],
+[
+"procesador",
+0.734
+],
+[
+"motherboard",
+0.68
+]
+],
+"fragmento": [
+[
+"cooler",
+0.759
+],
+[
+"procesador",
+0.702
+],
+[
+"gabinete",
+0.666
+]
+],
+"texto_busqueda": "cooler para microprocesador",
+"texto_fragmento": "2 coolers para el micro"
+},
+{
+"modelo": "haiku",
+"id": "M18",
+"i": 0,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.727
+],
+[
+"monitor",
+0.593
+],
+[
+"auriculares",
+0.592
+]
+],
+"fragmento": [
+[
+"webcam",
+0.735
+],
+[
+"auriculares",
+0.635
+],
+[
+"teclado",
+0.618
+]
+],
+"texto_busqueda": "webcam full hd aula",
+"texto_fragmento": "me armas presupuesto de 6 webcams full hd para aulas"
+},
+{
+"modelo": "haiku",
+"id": "R01",
+"i": 0,
+"esperado": "microfono",
+"busqueda": [
+[
+"microfono",
+0.728
+],
+[
+"webcam",
+0.675
+],
+[
+"auriculares",
+0.649
+]
+],
+"fragmento": [
+[
+"webcam",
+0.774
+],
+[
+"microfono",
+0.737
+],
+[
+"auriculares",
+0.717
+]
+],
+"texto_busqueda": "micrófono USB para computadora",
+"texto_fragmento": "busco la cosa esa que se enchufa a la compu para hablar en zoom"
+},
+{
+"modelo": "haiku",
+"id": "R02",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.674
+],
+[
+"impresora",
+0.62
+],
+[
+"motherboard",
+0.611
+]
+],
+"fragmento": [
+[
+"router",
+0.749
+],
+[
+"cargador",
+0.679
+],
+[
+"mouse",
+0.669
+]
+],
+"texto_busqueda": "repetidor wifi extensor de alcance",
+"texto_fragmento": "el aparatito que se pone en la pared para que el wifi llegue al patio"
+},
+{
+"modelo": "haiku",
+"id": "R03",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.714
+],
+[
+"notebook",
+0.69
+],
+[
+"tablet",
+0.657
+]
+],
+"fragmento": [
+[
+"monitor",
+0.717
+],
+[
+"notebook",
+0.688
+],
+[
+"motherboard",
+0.666
+]
+],
+"texto_busqueda": "monitor para notebook",
+"texto_fragmento": "necesito la pantalla grande para enchufar la notebook en el escritorio"
+},
+{
+"modelo": "haiku",
+"id": "R04",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.713
+],
+[
+"tablet",
+0.638
+],
+[
+"motherboard",
+0.616
+]
+],
+"fragmento": [
+[
+"notebook",
+0.735
+],
+[
+"procesador",
+0.671
+],
+[
+"motherboard",
+0.669
+]
+],
+"texto_busqueda": "notebook plegable",
+"texto_fragmento": "una compu que se pliegue"
+},
+{
+"modelo": "haiku",
+"id": "R05",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.782
+],
+[
+"ssd",
+0.665
+],
+[
+"memoria ram",
+0.621
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.739
+],
+[
+"motherboard",
+0.637
+],
+[
+"notebook",
+0.633
+]
+],
+"texto_busqueda": "disco externo para fotos celular",
+"texto_fragmento": "algo donde guardar las fotos del celu que no sea la nube"
+},
+{
+"modelo": "haiku",
+"id": "R06",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.727
+],
+[
+"motherboard",
+0.649
+],
+[
+"router",
+0.648
+]
+],
+"fragmento": [
+[
+"impresora",
+0.734
+],
+[
+"router",
+0.668
+],
+[
+"almacenamiento externo",
+0.655
+]
+],
+"texto_busqueda": "fotocopiadora",
+"texto_fragmento": "el aparato para sacar copias de los papeles de la escuela"
+},
+{
+"modelo": "haiku",
+"id": "R07",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.751
+],
+[
+"procesador",
+0.746
+],
+[
+"gabinete",
+0.72
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "eso que se pone adentro de la pc para que corran los jueguitos"
+},
+{
+"modelo": "haiku",
+"id": "R08",
+"i": 0,
+"esperado": "gabinete",
+"busqueda": [
+[
+"gabinete",
+0.773
+],
+[
+"cooler",
+0.701
+],
+[
+"fuente",
+0.674
+]
+],
+"fragmento": [
+[
+"gabinete",
+0.779
+],
+[
+"fuente",
+0.752
+],
+[
+"motherboard",
+0.735
+]
+],
+"texto_busqueda": "gabinete PC",
+"texto_fragmento": "la caja grande donde va todo lo de la pc"
+},
+{
+"modelo": "haiku",
+"id": "R09",
+"i": 0,
+"esperado": "cooler",
+"busqueda": [
+[
+"cooler",
+0.741
+],
+[
+"procesador",
+0.696
+],
+[
+"gabinete",
+0.648
+]
+],
+"fragmento": [
+[
+"cooler",
+0.78
+],
+[
+"procesador",
+0.738
+],
+[
+"gabinete",
+0.698
+]
+],
+"texto_busqueda": "ventilador para procesador",
+"texto_fragmento": "el ventiladorcito que va arriba del procesador"
+},
+{
+"modelo": "haiku",
+"id": "R10",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.768
+],
+[
+"parlante",
+0.682
+],
+[
+"cooler",
+0.639
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.767
+],
+[
+"parlante",
+0.68
+],
+[
+"tablet",
+0.645
+]
+],
+"texto_busqueda": "auriculares",
+"texto_fragmento": "lo que va en la oreja para escuchar musica sin molestar a nadie en el bondi"
+},
+{
+"modelo": "haiku",
+"id": "R11",
+"i": 0,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.765
+],
+[
+"monitor",
+0.709
+],
+[
+"motherboard",
+0.64
+]
+],
+"fragmento": [
+[
+"webcam",
+0.797
+],
+[
+"monitor",
+0.711
+],
+[
+"gabinete",
+0.685
+]
+],
+"texto_busqueda": "webcam para monitor",
+"texto_fragmento": "la camarita que va arriba del monitor"
+},
+{
+"modelo": "haiku",
+"id": "R12",
+"i": 0,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.788
+],
+[
+"cooler",
+0.673
+],
+[
+"procesador",
+0.671
+]
+],
+"fragmento": [
+[
+"fuente",
+0.775
+],
+[
+"motherboard",
+0.709
+],
+[
+"procesador",
+0.704
+]
+],
+"texto_busqueda": "fuente de poder para PC",
+"texto_fragmento": "lo que le da la corriente a la pc"
+},
+{
+"modelo": "haiku",
+"id": "R13",
+"i": 0,
+"esperado": "motherboard",
+"busqueda": [
+[
+"motherboard",
+0.773
+],
+[
+"placa de video",
+0.693
+],
+[
+"procesador",
+0.679
+]
+],
+"fragmento": [
+[
+"motherboard",
+0.819
+],
+[
+"placa de video",
+0.713
+],
+[
+"fuente",
+0.686
+]
+],
+"texto_busqueda": "placa madre",
+"texto_fragmento": "la plaqueta madre donde enchufas todo"
+},
+{
+"modelo": "haiku",
+"id": "R14",
+"i": 0,
+"esperado": "procesador",
+"busqueda": [
+[
+"procesador",
+0.73
+],
+[
+"placa de video",
+0.655
+],
+[
+"motherboard",
+0.637
+]
+],
+"fragmento": [
+[
+"procesador",
+0.758
+],
+[
+"memoria ram",
+0.671
+],
+[
+"motherboard",
+0.668
+]
+],
+"texto_busqueda": "procesador para edicion de video",
+"texto_fragmento": "el cerebro de la compu, uno bueno para editar videos"
+},
+{
+"modelo": "haiku",
+"id": "R15",
+"i": 0,
+"esperado": "tablet",
+"busqueda": [
+[
+"tablet",
+0.711
+],
+[
+"monitor",
+0.661
+],
+[
+"notebook",
+0.622
+]
+],
+"fragmento": [
+[
+"tablet",
+0.713
+],
+[
+"monitor",
+0.652
+],
+[
+"notebook",
+0.636
+]
+],
+"texto_busqueda": "pantalla tactil para lectura de diario",
+"texto_fragmento": "una pantallita tactil para que mi abuela lea el diario"
+},
+{
+"modelo": "haiku",
+"id": "R16",
+"i": 0,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.742
+],
+[
+"notebook",
+0.662
+],
+[
+"procesador",
+0.642
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.769
+],
+[
+"ssd",
+0.721
+],
+[
+"notebook",
+0.715
+]
+],
+"texto_busqueda": "memoria RAM para notebook",
+"texto_fragmento": "el chiche que le pones a la notebook para que vaya mas rapido, memoria se llama?"
+},
+{
+"modelo": "haiku",
+"id": "R17",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.694
+],
+[
+"notebook",
+0.648
+],
+[
+"tablet",
+0.646
+]
+],
+"fragmento": [
+[
+"parlante",
+0.694
+],
+[
+"tablet",
+0.648
+],
+[
+"notebook",
+0.642
+]
+],
+"texto_busqueda": "cajita de musica portatil",
+"texto_fragmento": "la cajita de musica que llevas a la playa"
+},
+{
+"modelo": "haiku",
+"id": "R18",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.789
+],
+[
+"monitor",
+0.668
+],
+[
+"mouse",
+0.657
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.766
+],
+[
+"mouse",
+0.696
+],
+[
+"monitor",
+0.684
+]
+],
+"texto_busqueda": "silla gamer",
+"texto_fragmento": "el trono ese de los gamers"
+},
+{
+"modelo": "haiku",
+"id": "O01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.738
+],
+[
+"auriculares",
+0.67
+],
+[
+"teclado",
+0.655
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "un mouse que no me funda el bolsillo"
+},
+{
+"modelo": "haiku",
+"id": "O02",
+"i": 0,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.717
+],
+[
+"cooler",
+0.635
+],
+[
+"motherboard",
+0.634
+]
+],
+"fragmento": [
+[
+"teclado",
+0.727
+],
+[
+"auriculares",
+0.647
+],
+[
+"cooler",
+0.646
+]
+],
+"texto_busqueda": "teclado silencioso",
+"texto_fragmento": "un teclado que no haga ruido"
+},
+{
+"modelo": "haiku",
+"id": "O03",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.657
+],
+[
+"tablet",
+0.62
+],
+[
+"motherboard",
+0.608
+]
+],
+"fragmento": [
+[
+"notebook",
+0.736
+],
+[
+"ssd",
+0.64
+],
+[
+"auriculares",
+0.639
+]
+],
+"texto_busqueda": "notebook",
+"texto_fragmento": "la mejor notebook que tengan"
+},
+{
+"modelo": "haiku",
+"id": "O04",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.737
+],
+[
+"parlante",
+0.652
+],
+[
+"mouse",
+0.629
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.762
+],
+[
+"parlante",
+0.661
+],
+[
+"mouse",
+0.615
+]
+],
+"texto_busqueda": "auriculares inalámbricos",
+"texto_fragmento": "auriculares que no tengan cable y que no sean chinos"
+},
+{
+"modelo": "haiku",
+"id": "O05",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.699
+],
+[
+"motherboard",
+0.608
+],
+[
+"parlante",
+0.605
+]
+],
+"fragmento": [
+[
+"monitor",
+0.735
+],
+[
+"auriculares",
+0.648
+],
+[
+"mouse",
+0.647
+]
+],
+"texto_busqueda": "monitor",
+"texto_fragmento": "un monitor que no pase los 200 lucas"
+},
+{
+"modelo": "haiku",
+"id": "O06",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.757
+],
+[
+"motherboard",
+0.678
+],
+[
+"monitor",
+0.66
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "la placa de video mas bestia que tengan"
+},
+{
+"modelo": "haiku",
+"id": "O07",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.708
+],
+[
+"parlante",
+0.612
+],
+[
+"tablet",
+0.606
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.719
+],
+[
+"parlante",
+0.623
+],
+[
+"notebook",
+0.614
+]
+],
+"texto_busqueda": "silla resistente 120 kilos",
+"texto_fragmento": "una silla que aguante 120 kilos"
+},
+{
+"modelo": "haiku",
+"id": "O08",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.74
+],
+[
+"ssd",
+0.666
+],
+[
+"notebook",
+0.627
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.756
+],
+[
+"ssd",
+0.683
+],
+[
+"notebook",
+0.649
+]
+],
+"texto_busqueda": "disco externo portátil pequeño",
+"texto_fragmento": "un disco externo chiquito que entre en el bolsillo"
+},
+{
+"modelo": "haiku",
+"id": "O09",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.707
+],
+[
+"auriculares",
+0.636
+],
+[
+"tablet",
+0.6
+]
+],
+"fragmento": [
+[
+"parlante",
+0.738
+],
+[
+"auriculares",
+0.655
+],
+[
+"tablet",
+0.616
+]
+],
+"texto_busqueda": "parlante resistente al agua impermeable para pileta",
+"texto_fragmento": "un parlante que se banque el agua de la pileta"
+},
+{
+"modelo": "haiku",
+"id": "O10",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.697
+],
+[
+"ssd",
+0.616
+],
+[
+"auriculares",
+0.598
+]
+],
+"fragmento": [
+[
+"cargador",
+0.727
+],
+[
+"ssd",
+0.635
+],
+[
+"auriculares",
+0.622
+]
+],
+"texto_busqueda": "cargador rapido iphone",
+"texto_fragmento": "un cargador que le de rapido al iphone"
+},
+{
+"modelo": "haiku",
+"id": "O11",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.732
+],
+[
+"tablet",
+0.642
+],
+[
+"ssd",
+0.62
+]
+],
+"fragmento": [
+[
+"notebook",
+0.725
+],
+[
+"tablet",
+0.631
+],
+[
+"ssd",
+0.624
+]
+],
+"texto_busqueda": "notebook liviana para viajar",
+"texto_fragmento": "la notebook mas liviana para viajar"
+},
+{
+"modelo": "haiku",
+"id": "O12",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.699
+],
+[
+"impresora",
+0.624
+],
+[
+"auriculares",
+0.601
+]
+],
+"fragmento": [
+[
+"router",
+0.703
+],
+[
+"impresora",
+0.618
+],
+[
+"motherboard",
+0.61
+]
+],
+"texto_busqueda": "router wifi para cubrir 3 pisos",
+"texto_fragmento": "un router que llegue a los 3 pisos de la casa"
+},
+{
+"modelo": "haiku",
+"id": "F01",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"tablet",
+0.569
+],
+[
+"cargador",
+0.566
+],
+[
+"motherboard",
+0.565
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.604
+],
+[
+"ssd",
+0.599
+],
+[
+"cargador",
+0.597
+]
+],
+"texto_busqueda": "iphone 15 pro max",
+"texto_fragmento": "tenes el iphone 15 pro max?"
+},
+{
+"modelo": "haiku",
+"id": "F02",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"auriculares",
+0.6
+],
+[
+"tablet",
+0.599
+],
+[
+"monitor",
+0.594
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.599
+],
+[
+"ssd",
+0.58
+],
+[
+"monitor",
+0.576
+]
+],
+"texto_busqueda": "zapatillas nike talle 42",
+"texto_fragmento": "venden zapatillas nike talle 42?"
+},
+{
+"modelo": "haiku",
+"id": "F11",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"ssd",
+0.602
+],
+[
+"placa de video",
+0.598
+],
+[
+"motherboard",
+0.596
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.634
+],
+[
+"auriculares",
+0.618
+],
+[
+"tablet",
+0.612
+]
+],
+"texto_busqueda": "PlayStation 5",
+"texto_fragmento": "venden la play 5?"
+},
+{
+"modelo": "haiku",
+"id": "A01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.687
+],
+[
+"cooler",
+0.632
+],
+[
+"teclado",
+0.629
+]
+],
+"fragmento": [
+[
+"mouse",
+0.715
+],
+[
+"teclado",
+0.675
+],
+[
+"cooler",
+0.658
+]
+],
+"texto_busqueda": "mouse gamer RGB",
+"texto_fragmento": "cuanto sale un mause gamer de esos con luces rgb"
+},
+{
+"modelo": "haiku",
+"id": "A02",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.659
+],
+[
+"memoria ram",
+0.643
+],
+[
+"ssd",
+0.607
+]
+],
+"fragmento": [
+[
+"notebook",
+0.67
+],
+[
+"memoria ram",
+0.666
+],
+[
+"ssd",
+0.63
+]
+],
+"texto_busqueda": "notebook 16 GB RAM liviana",
+"texto_fragmento": "queria saber si tienen notebooks con dieciseis de ram y que sean livianas para la facultad"
+},
+{
+"modelo": "haiku",
+"id": "A03",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.708
+],
+[
+"microfono",
+0.674
+],
+[
+"silla gamer",
+0.651
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.733
+],
+[
+"microfono",
+0.685
+],
+[
+"mouse",
+0.651
+]
+],
+"texto_busqueda": "headset gamer con micrófono para PC",
+"texto_fragmento": "necesito un headset para jugar a la play bueno no la play la compu eh que tenga micro"
+},
+{
+"modelo": "haiku",
+"id": "A04",
+"i": 0,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.723
+],
+[
+"motherboard",
+0.648
+],
+[
+"mouse",
+0.635
+]
+],
+"fragmento": [
+[
+"teclado",
+0.703
+],
+[
+"motherboard",
+0.66
+],
+[
+"tablet",
+0.643
+]
+],
+"texto_busqueda": "teclado mecánico español",
+"texto_fragmento": "dos teclados uno en español"
+},
+{
+"modelo": "haiku",
+"id": "A05",
+"i": 0,
+"esperado": "ssd",
+"busqueda": [
+[
+"ssd",
+0.703
+],
+[
+"memoria ram",
+0.604
+],
+[
+"motherboard",
+0.591
+]
+],
+"fragmento": [
+[
+"ssd",
+0.765
+],
+[
+"almacenamiento externo",
+0.67
+],
+[
+"procesador",
+0.668
+]
+],
+"texto_busqueda": "ssd 500gb m.2",
+"texto_fragmento": "che tenes un ssd de quinientos gigas eme punto dos"
+},
+{
+"modelo": "haiku",
+"id": "A06",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.711
+],
+[
+"tablet",
+0.618
+],
+[
+"motherboard",
+0.617
+]
+],
+"fragmento": [
+[
+"monitor",
+0.746
+],
+[
+"tablet",
+0.647
+],
+[
+"cooler",
+0.641
+]
+],
+"texto_busqueda": "monitor 27 pulgadas",
+"texto_fragmento": "quiero el monitor ese de veintisiete pulgadas"
+},
+{
+"modelo": "haiku",
+"id": "A07",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.709
+],
+[
+"memoria ram",
+0.626
+],
+[
+"motherboard",
+0.622
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.744
+],
+[
+"monitor",
+0.673
+],
+[
+"motherboard",
+0.67
+]
+],
+"texto_busqueda": "placa de video para fortnite 144 fps",
+"texto_fragmento": "necesita una placa de video que le corra a ciento cuarenta y cuatro"
+},
+{
+"modelo": "haiku",
+"id": "A08",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.713
+],
+[
+"auriculares",
+0.631
+],
+[
+"notebook",
+0.604
+]
+],
+"fragmento": [
+[
+"parlante",
+0.663
+],
+[
+"auriculares",
+0.614
+],
+[
+"monitor",
+0.588
+]
+],
+"texto_busqueda": "parlante jbl flip",
+"texto_fragmento": "quisiera saber el precio del parlante jbl flip"
+},
+{
+"modelo": "haiku",
+"id": "A09",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.66
+],
+[
+"notebook",
+0.642
+],
+[
+"fuente",
+0.608
+]
+],
+"fragmento": [
+[
+"cargador",
+0.688
+],
+[
+"fuente",
+0.666
+],
+[
+"notebook",
+0.655
+]
+],
+"texto_busqueda": "cargador 65W notebook USB-C",
+"texto_fragmento": "necesito un charger de sesenta y cinco watts para la notebook tipo ce"
+},
+{
+"modelo": "haiku",
+"id": "A10",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.756
+],
+[
+"monitor",
+0.649
+],
+[
+"cooler",
+0.638
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.736
+],
+[
+"auriculares",
+0.635
+],
+[
+"monitor",
+0.631
+]
+],
+"texto_busqueda": "silla gamer negra",
+"texto_fragmento": "dos sillas gamers negras"
+},
+{
+"modelo": "haiku",
+"id": "A11",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.728
+],
+[
+"router",
+0.625
+],
+[
+"teclado",
+0.598
+]
+],
+"fragmento": [
+[
+"impresora",
+0.718
+],
+[
+"router",
+0.615
+],
+[
+"teclado",
+0.598
+]
+],
+"texto_busqueda": "impresora a color wifi tinta continua",
+"texto_fragmento": "queria saber cuanto me sale una impresora a color con wifi y que sea de tinta continua"
+},
+{
+"modelo": "deepseek",
+"id": "M01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.757
+],
+[
+"tablet",
+0.677
+],
+[
+"auriculares",
+0.67
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "cada uno lleva un mouse"
+},
+{
+"modelo": "deepseek",
+"id": "M01",
+"i": 1,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.768
+],
+[
+"parlante",
+0.682
+],
+[
+"cooler",
+0.639
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.743
+],
+[
+"parlante",
+0.662
+],
+[
+"mouse",
+0.63
+]
+],
+"texto_busqueda": "auriculares",
+"texto_fragmento": "y unos auris"
+},
+{
+"modelo": "deepseek",
+"id": "M02",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.717
+],
+[
+"motherboard",
+0.6
+],
+[
+"silla gamer",
+0.597
+]
+],
+"fragmento": [
+[
+"monitor",
+0.723
+],
+[
+"memoria ram",
+0.631
+],
+[
+"motherboard",
+0.63
+]
+],
+"texto_busqueda": "monitor 24",
+"texto_fragmento": "2 monitores de 24"
+},
+{
+"modelo": "deepseek",
+"id": "M02",
+"i": 1,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.741
+],
+[
+"motherboard",
+0.651
+],
+[
+"mouse",
+0.646
+]
+],
+"fragmento": [
+[
+"teclado",
+0.721
+],
+[
+"motherboard",
+0.64
+],
+[
+"mouse",
+0.635
+]
+],
+"texto_busqueda": "teclado mecanico",
+"texto_fragmento": "2 teclados mecanicos"
+},
+{
+"modelo": "deepseek",
+"id": "M03",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.657
+],
+[
+"tablet",
+0.62
+],
+[
+"motherboard",
+0.608
+]
+],
+"fragmento": [
+[
+"notebook",
+0.701
+],
+[
+"motherboard",
+0.63
+],
+[
+"tablet",
+0.627
+]
+],
+"texto_busqueda": "notebook",
+"texto_fragmento": "q sale una note para la facu de mi hija"
+},
+{
+"modelo": "deepseek",
+"id": "M03",
+"i": 1,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.733
+],
+[
+"teclado",
+0.659
+],
+[
+"auriculares",
+0.649
+]
+],
+"fragmento": [
+[
+"mouse",
+0.76
+],
+[
+"teclado",
+0.688
+],
+[
+"auriculares",
+0.67
+]
+],
+"texto_busqueda": "mouse inalambrico",
+"texto_fragmento": "un mouse inalambrico"
+},
+{
+"modelo": "deepseek",
+"id": "M03",
+"i": 2,
+"esperado": "ninguno",
+"busqueda": [
+[
+"notebook",
+0.649
+],
+[
+"tablet",
+0.642
+],
+[
+"cooler",
+0.636
+]
+],
+"fragmento": [
+[
+"notebook",
+0.667
+],
+[
+"tablet",
+0.655
+],
+[
+"motherboard",
+0.639
+]
+],
+"texto_busqueda": "mochila",
+"texto_fragmento": "una mochila"
+},
+{
+"modelo": "deepseek",
+"id": "M04",
+"i": 0,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.75
+],
+[
+"placa de video",
+0.646
+],
+[
+"procesador",
+0.626
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.73
+],
+[
+"placa de video",
+0.657
+],
+[
+"motherboard",
+0.623
+]
+],
+"texto_busqueda": "memoria RAM 8GB DDR4",
+"texto_fragmento": "quiero 4 memorias de 8 gigas ddr4"
+},
+{
+"modelo": "deepseek",
+"id": "M04",
+"i": 1,
+"esperado": "ssd",
+"busqueda": [
+[
+"ssd",
+0.746
+],
+[
+"almacenamiento externo",
+0.693
+],
+[
+"procesador",
+0.619
+]
+],
+"fragmento": [
+[
+"ssd",
+0.737
+],
+[
+"almacenamiento externo",
+0.694
+],
+[
+"memoria ram",
+0.641
+]
+],
+"texto_busqueda": "disco sólido SSD 1TB",
+"texto_fragmento": "2 discos solidos de 1 tera"
+},
+{
+"modelo": "deepseek",
+"id": "M05",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.744
+],
+[
+"microfono",
+0.684
+],
+[
+"parlante",
+0.645
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.751
+],
+[
+"microfono",
+0.678
+],
+[
+"parlante",
+0.633
+]
+],
+"texto_busqueda": "auriculares con microfono",
+"texto_fragmento": "5 auriculares con microfono"
+},
+{
+"modelo": "deepseek",
+"id": "M05",
+"i": 1,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.709
+],
+[
+"motherboard",
+0.59
+],
+[
+"monitor",
+0.586
+]
+],
+"fragmento": [
+[
+"webcam",
+0.71
+],
+[
+"motherboard",
+0.583
+],
+[
+"tablet",
+0.583
+]
+],
+"texto_busqueda": "webcams",
+"texto_fragmento": "5 webcams"
+},
+{
+"modelo": "deepseek",
+"id": "M05",
+"i": 2,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.755
+],
+[
+"motherboard",
+0.621
+],
+[
+"tablet",
+0.613
+]
+],
+"fragmento": [
+[
+"impresora",
+0.758
+],
+[
+"motherboard",
+0.633
+],
+[
+"tablet",
+0.63
+]
+],
+"texto_busqueda": "impresora multifuncion",
+"texto_fragmento": "1 impresora multifuncion"
+},
+{
+"modelo": "deepseek",
+"id": "M06",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.789
+],
+[
+"monitor",
+0.668
+],
+[
+"mouse",
+0.657
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.759
+],
+[
+"mouse",
+0.66
+],
+[
+"monitor",
+0.649
+]
+],
+"texto_busqueda": "silla gamer",
+"texto_fragmento": "dame dos sillas gamer"
+},
+{
+"modelo": "deepseek",
+"id": "M06",
+"i": 1,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.705
+],
+[
+"tablet",
+0.625
+],
+[
+"mouse",
+0.622
+]
+],
+"fragmento": [
+[
+"monitor",
+0.675
+],
+[
+"motherboard",
+0.619
+],
+[
+"mouse",
+0.617
+]
+],
+"texto_busqueda": "monitor curvo",
+"texto_fragmento": "y dos monitores curvos"
+},
+{
+"modelo": "deepseek",
+"id": "M07",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.721
+],
+[
+"ssd",
+0.614
+],
+[
+"auriculares",
+0.598
+]
+],
+"fragmento": [
+[
+"cargador",
+0.715
+],
+[
+"auriculares",
+0.629
+],
+[
+"ssd",
+0.625
+]
+],
+"texto_busqueda": "cargador tipo c rápido",
+"texto_fragmento": "necesito 3 cargadores tipo c rapidos"
+},
+{
+"modelo": "deepseek",
+"id": "M07",
+"i": 1,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.752
+],
+[
+"auriculares",
+0.664
+],
+[
+"tablet",
+0.613
+]
+],
+"fragmento": [
+[
+"parlante",
+0.71
+],
+[
+"auriculares",
+0.66
+],
+[
+"tablet",
+0.614
+]
+],
+"texto_busqueda": "parlante bluetooth",
+"texto_fragmento": "3 parlantitos bluetooth para regalar"
+},
+{
+"modelo": "deepseek",
+"id": "M08",
+"i": 0,
+"esperado": "procesador",
+"busqueda": [
+[
+"procesador",
+0.675
+],
+[
+"microfono",
+0.63
+],
+[
+"cooler",
+0.597
+]
+],
+"fragmento": [
+[
+"procesador",
+0.696
+],
+[
+"microfono",
+0.645
+],
+[
+"cooler",
+0.63
+]
+],
+"texto_busqueda": "micro Ryzen 5",
+"texto_fragmento": "un micro ryzen 5"
+},
+{
+"modelo": "deepseek",
+"id": "M08",
+"i": 1,
+"esperado": "motherboard",
+"busqueda": [
+[
+"motherboard",
+0.647
+],
+[
+"procesador",
+0.581
+],
+[
+"ssd",
+0.578
+]
+],
+"fragmento": [
+[
+"motherboard",
+0.731
+],
+[
+"placa de video",
+0.667
+],
+[
+"cooler",
+0.658
+]
+],
+"texto_busqueda": "mother compatible Ryzen 5",
+"texto_fragmento": "una mother que lo banque"
+},
+{
+"modelo": "deepseek",
+"id": "M08",
+"i": 2,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.73
+],
+[
+"procesador",
+0.625
+],
+[
+"placa de video",
+0.622
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.728
+],
+[
+"placa de video",
+0.662
+],
+[
+"procesador",
+0.645
+]
+],
+"texto_busqueda": "memoria RAM 16GB",
+"texto_fragmento": "16 de ram"
+},
+{
+"modelo": "deepseek",
+"id": "M08",
+"i": 3,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.74
+],
+[
+"motherboard",
+0.647
+],
+[
+"cooler",
+0.646
+]
+],
+"fragmento": [
+[
+"fuente",
+0.735
+],
+[
+"motherboard",
+0.657
+],
+[
+"impresora",
+0.652
+]
+],
+"texto_busqueda": "fuente 650W",
+"texto_fragmento": "una fuente de 650"
+},
+{
+"modelo": "deepseek",
+"id": "M09",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.675
+],
+[
+"impresora",
+0.602
+],
+[
+"motherboard",
+0.593
+]
+],
+"fragmento": [
+[
+"router",
+0.628
+],
+[
+"motherboard",
+0.565
+],
+[
+"impresora",
+0.564
+]
+],
+"texto_busqueda": "router wifi 6",
+"texto_fragmento": "2 routers wifi 6"
+},
+{
+"modelo": "deepseek",
+"id": "M09",
+"i": 1,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.617
+],
+[
+"tablet",
+0.561
+],
+[
+"impresora",
+0.561
+]
+],
+"fragmento": [
+[
+"mouse",
+0.661
+],
+[
+"tablet",
+0.658
+],
+[
+"motherboard",
+0.658
+]
+],
+"texto_busqueda": "mesh wifi",
+"texto_fragmento": "1 mesh para la casa de mis viejos"
+},
+{
+"modelo": "deepseek",
+"id": "M10",
+"i": 0,
+"esperado": "tablet",
+"busqueda": [
+[
+"tablet",
+0.692
+],
+[
+"notebook",
+0.595
+],
+[
+"motherboard",
+0.59
+]
+],
+"fragmento": [
+[
+"tablet",
+0.749
+],
+[
+"motherboard",
+0.652
+],
+[
+"impresora",
+0.649
+]
+],
+"texto_busqueda": "tablets",
+"texto_fragmento": "quiero 2 tablets para los chicos"
+},
+{
+"modelo": "deepseek",
+"id": "M10",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"motherboard",
+0.663
+],
+[
+"cooler",
+0.663
+],
+[
+"monitor",
+0.657
+]
+],
+"fragmento": [
+[
+"notebook",
+0.654
+],
+[
+"cooler",
+0.65
+],
+[
+"motherboard",
+0.641
+]
+],
+"texto_busqueda": "fundas",
+"texto_fragmento": "2 fundas"
+},
+{
+"modelo": "deepseek",
+"id": "M11",
+"i": 0,
+"esperado": "microfono",
+"busqueda": [
+[
+"microfono",
+0.744
+],
+[
+"webcam",
+0.658
+],
+[
+"auriculares",
+0.653
+]
+],
+"fragmento": [
+[
+"microfono",
+0.72
+],
+[
+"auriculares",
+0.663
+],
+[
+"webcam",
+0.647
+]
+],
+"texto_busqueda": "microfono para streaming",
+"texto_fragmento": "me pasas precio de 3 microfonos para streaming"
+},
+{
+"modelo": "deepseek",
+"id": "M11",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"motherboard",
+0.638
+],
+[
+"impresora",
+0.63
+],
+[
+"cooler",
+0.629
+]
+],
+"fragmento": [
+[
+"cooler",
+0.622
+],
+[
+"motherboard",
+0.618
+],
+[
+"impresora",
+0.614
+]
+],
+"texto_busqueda": "brazo articulado",
+"texto_fragmento": "3 brazos articulados"
+},
+{
+"modelo": "deepseek",
+"id": "M12",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.73
+],
+[
+"auriculares",
+0.663
+],
+[
+"webcam",
+0.659
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "necesito 10 mouse"
+},
+{
+"modelo": "deepseek",
+"id": "M12",
+"i": 1,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.757
+],
+[
+"motherboard",
+0.671
+],
+[
+"mouse",
+0.661
+]
+],
+"fragmento": [
+[
+"teclado",
+0.689
+],
+[
+"auriculares",
+0.623
+],
+[
+"mouse",
+0.612
+]
+],
+"texto_busqueda": "teclado",
+"texto_fragmento": "10 teclados de los mas economicos"
+},
+{
+"modelo": "deepseek",
+"id": "M13",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.65
+],
+[
+"placa de video",
+0.569
+],
+[
+"cooler",
+0.567
+]
+],
+"fragmento": [
+[
+"monitor",
+0.681
+],
+[
+"placa de video",
+0.61
+],
+[
+"cooler",
+0.601
+]
+],
+"texto_busqueda": "monitor 27 144hz",
+"texto_fragmento": "un monitor 27 de 144hz"
+},
+{
+"modelo": "deepseek",
+"id": "M13",
+"i": 1,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.759
+],
+[
+"monitor",
+0.686
+],
+[
+"motherboard",
+0.686
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "una placa de video que lo aproveche"
+},
+{
+"modelo": "deepseek",
+"id": "M13",
+"i": 2,
+"esperado": "gabinete",
+"busqueda": [
+[
+"gabinete",
+0.746
+],
+[
+"cooler",
+0.666
+],
+[
+"webcam",
+0.649
+]
+],
+"fragmento": [
+[
+"gabinete",
+0.729
+],
+[
+"cooler",
+0.728
+],
+[
+"silla gamer",
+0.645
+]
+],
+"texto_busqueda": "gabinete",
+"texto_fragmento": "un gabinete con buen aire"
+},
+{
+"modelo": "deepseek",
+"id": "M14",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.737
+],
+[
+"ssd",
+0.654
+],
+[
+"notebook",
+0.609
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.733
+],
+[
+"ssd",
+0.643
+],
+[
+"motherboard",
+0.624
+]
+],
+"texto_busqueda": "disco externo 2 TB",
+"texto_fragmento": "dos discos externos de 2 teras para backup"
+},
+{
+"modelo": "deepseek",
+"id": "M15",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.697
+],
+[
+"parlante",
+0.632
+],
+[
+"mouse",
+0.597
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.715
+],
+[
+"parlante",
+0.627
+],
+[
+"ssd",
+0.585
+]
+],
+"texto_busqueda": "auriculares inalámbricos Sony",
+"texto_fragmento": "tres auris inalambricos sony"
+},
+{
+"modelo": "deepseek",
+"id": "M15",
+"i": 1,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.727
+],
+[
+"auriculares",
+0.63
+],
+[
+"microfono",
+0.616
+]
+],
+"fragmento": [
+[
+"parlante",
+0.738
+],
+[
+"auriculares",
+0.644
+],
+[
+"microfono",
+0.633
+]
+],
+"texto_busqueda": "parlante JBL grande",
+"texto_fragmento": "un parlante jbl grande"
+},
+{
+"modelo": "deepseek",
+"id": "M16",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.78
+],
+[
+"motherboard",
+0.652
+],
+[
+"teclado",
+0.649
+]
+],
+"fragmento": [
+[
+"impresora",
+0.78
+],
+[
+"motherboard",
+0.652
+],
+[
+"teclado",
+0.649
+]
+],
+"texto_busqueda": "impresora",
+"texto_fragmento": "impresora"
+},
+{
+"modelo": "deepseek",
+"id": "M16",
+"i": 1,
+"esperado": "ninguno",
+"busqueda": [
+[
+"impresora",
+0.661
+],
+[
+"auriculares",
+0.65
+],
+[
+"cargador",
+0.639
+]
+],
+"fragmento": [
+[
+"impresora",
+0.67
+],
+[
+"auriculares",
+0.635
+],
+[
+"ssd",
+0.629
+]
+],
+"texto_busqueda": "cartuchos",
+"texto_fragmento": "2 cartuchos"
+},
+{
+"modelo": "deepseek",
+"id": "M16",
+"i": 2,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.706
+],
+[
+"notebook",
+0.637
+],
+[
+"tablet",
+0.63
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.719
+],
+[
+"notebook",
+0.654
+],
+[
+"tablet",
+0.644
+]
+],
+"texto_busqueda": "silla comoda",
+"texto_fragmento": "una silla comoda"
+},
+{
+"modelo": "deepseek",
+"id": "M17",
+"i": 0,
+"esperado": "cooler",
+"busqueda": [
+[
+"cooler",
+0.76
+],
+[
+"procesador",
+0.699
+],
+[
+"microfono",
+0.68
+]
+],
+"fragmento": [
+[
+"cooler",
+0.759
+],
+[
+"procesador",
+0.702
+],
+[
+"gabinete",
+0.666
+]
+],
+"texto_busqueda": "cooler para micro",
+"texto_fragmento": "2 coolers para el micro"
+},
+{
+"modelo": "deepseek",
+"id": "M17",
+"i": 1,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.75
+],
+[
+"motherboard",
+0.661
+],
+[
+"gabinete",
+0.643
+]
+],
+"fragmento": [
+[
+"fuente",
+0.678
+],
+[
+"motherboard",
+0.645
+],
+[
+"cooler",
+0.635
+]
+],
+"texto_busqueda": "fuente modular",
+"texto_fragmento": "2 fuentes modulares"
+},
+{
+"modelo": "deepseek",
+"id": "M18",
+"i": 0,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.693
+],
+[
+"monitor",
+0.565
+],
+[
+"auriculares",
+0.556
+]
+],
+"fragmento": [
+[
+"webcam",
+0.735
+],
+[
+"auriculares",
+0.635
+],
+[
+"teclado",
+0.618
+]
+],
+"texto_busqueda": "webcams full hd",
+"texto_fragmento": "me armas presupuesto de 6 webcams full hd para aulas"
+},
+{
+"modelo": "deepseek",
+"id": "R01",
+"i": 0,
+"esperado": "microfono",
+"busqueda": [
+[
+"microfono",
+0.72
+],
+[
+"webcam",
+0.665
+],
+[
+"auriculares",
+0.645
+]
+],
+"fragmento": [
+[
+"webcam",
+0.748
+],
+[
+"microfono",
+0.743
+],
+[
+"auriculares",
+0.706
+]
+],
+"texto_busqueda": "micrófono USB para PC",
+"texto_fragmento": "busco la cosa esa que se enchufa a la compu para hablar en zoom y que se me escuche bien"
+},
+{
+"modelo": "deepseek",
+"id": "R02",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.662
+],
+[
+"cargador",
+0.624
+],
+[
+"motherboard",
+0.615
+]
+],
+"fragmento": [
+[
+"router",
+0.749
+],
+[
+"cargador",
+0.679
+],
+[
+"mouse",
+0.669
+]
+],
+"texto_busqueda": "repetidor wifi pared",
+"texto_fragmento": "el aparatito que se pone en la pared para que el wifi llegue al patio"
+},
+{
+"modelo": "deepseek",
+"id": "R03",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.702
+],
+[
+"notebook",
+0.696
+],
+[
+"tablet",
+0.676
+]
+],
+"fragmento": [
+[
+"monitor",
+0.717
+],
+[
+"notebook",
+0.688
+],
+[
+"motherboard",
+0.666
+]
+],
+"texto_busqueda": "pantalla grande para notebook",
+"texto_fragmento": "necesito la pantalla grande para enchufar la notebook en el escritorio"
+},
+{
+"modelo": "deepseek",
+"id": "R04",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.742
+],
+[
+"tablet",
+0.672
+],
+[
+"monitor",
+0.668
+]
+],
+"fragmento": [
+[
+"notebook",
+0.756
+],
+[
+"tablet",
+0.665
+],
+[
+"procesador",
+0.657
+]
+],
+"texto_busqueda": "compu que se pliegue",
+"texto_fragmento": "una compu que se pliegue y me la pueda llevar al laburo"
+},
+{
+"modelo": "deepseek",
+"id": "R05",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.687
+],
+[
+"memoria ram",
+0.619
+],
+[
+"cargador",
+0.608
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.739
+],
+[
+"motherboard",
+0.637
+],
+[
+"notebook",
+0.633
+]
+],
+"texto_busqueda": "almacenamiento fotos celular",
+"texto_fragmento": "algo donde guardar las fotos del celu que no sea la nube"
+},
+{
+"modelo": "deepseek",
+"id": "R06",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.727
+],
+[
+"motherboard",
+0.649
+],
+[
+"router",
+0.648
+]
+],
+"fragmento": [
+[
+"impresora",
+0.734
+],
+[
+"router",
+0.668
+],
+[
+"almacenamiento externo",
+0.655
+]
+],
+"texto_busqueda": "fotocopiadora",
+"texto_fragmento": "el aparato para sacar copias de los papeles de la escuela"
+},
+{
+"modelo": "deepseek",
+"id": "R07",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.751
+],
+[
+"procesador",
+0.746
+],
+[
+"gabinete",
+0.72
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "eso que se pone adentro de la pc para que corran los jueguitos"
+},
+{
+"modelo": "deepseek",
+"id": "R08",
+"i": 0,
+"esperado": "gabinete",
+"busqueda": [
+[
+"gabinete",
+0.746
+],
+[
+"cooler",
+0.666
+],
+[
+"webcam",
+0.649
+]
+],
+"fragmento": [
+[
+"gabinete",
+0.779
+],
+[
+"fuente",
+0.752
+],
+[
+"motherboard",
+0.735
+]
+],
+"texto_busqueda": "gabinete",
+"texto_fragmento": "la caja grande donde va todo lo de la pc"
+},
+{
+"modelo": "deepseek",
+"id": "R09",
+"i": 0,
+"esperado": "cooler",
+"busqueda": [
+[
+"cooler",
+0.741
+],
+[
+"procesador",
+0.696
+],
+[
+"gabinete",
+0.648
+]
+],
+"fragmento": [
+[
+"cooler",
+0.78
+],
+[
+"procesador",
+0.738
+],
+[
+"gabinete",
+0.698
+]
+],
+"texto_busqueda": "ventilador para procesador",
+"texto_fragmento": "el ventiladorcito que va arriba del procesador"
+},
+{
+"modelo": "deepseek",
+"id": "R10",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.768
+],
+[
+"parlante",
+0.682
+],
+[
+"cooler",
+0.639
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.767
+],
+[
+"parlante",
+0.68
+],
+[
+"tablet",
+0.645
+]
+],
+"texto_busqueda": "auriculares",
+"texto_fragmento": "lo que va en la oreja para escuchar musica sin molestar a nadie en el bondi"
+},
+{
+"modelo": "deepseek",
+"id": "R11",
+"i": 0,
+"esperado": "webcam",
+"busqueda": [
+[
+"webcam",
+0.784
+],
+[
+"motherboard",
+0.639
+],
+[
+"impresora",
+0.634
+]
+],
+"fragmento": [
+[
+"webcam",
+0.797
+],
+[
+"monitor",
+0.711
+],
+[
+"gabinete",
+0.685
+]
+],
+"texto_busqueda": "camara web",
+"texto_fragmento": "la camarita que va arriba del monitor"
+},
+{
+"modelo": "deepseek",
+"id": "R12",
+"i": 0,
+"esperado": "fuente",
+"busqueda": [
+[
+"fuente",
+0.773
+],
+[
+"cooler",
+0.669
+],
+[
+"motherboard",
+0.668
+]
+],
+"fragmento": [
+[
+"fuente",
+0.775
+],
+[
+"motherboard",
+0.709
+],
+[
+"procesador",
+0.704
+]
+],
+"texto_busqueda": "fuente de alimentación para PC",
+"texto_fragmento": "lo que le da la corriente a la pc"
+},
+{
+"modelo": "deepseek",
+"id": "R13",
+"i": 0,
+"esperado": "motherboard",
+"busqueda": [
+[
+"motherboard",
+0.757
+],
+[
+"placa de video",
+0.695
+],
+[
+"tablet",
+0.657
+]
+],
+"fragmento": [
+[
+"motherboard",
+0.819
+],
+[
+"placa de video",
+0.713
+],
+[
+"fuente",
+0.686
+]
+],
+"texto_busqueda": "plaqueta madre",
+"texto_fragmento": "la plaqueta madre donde enchufas todo"
+},
+{
+"modelo": "deepseek",
+"id": "R14",
+"i": 0,
+"esperado": "procesador",
+"busqueda": [
+[
+"procesador",
+0.716
+],
+[
+"placa de video",
+0.643
+],
+[
+"memoria ram",
+0.634
+]
+],
+"fragmento": [
+[
+"procesador",
+0.758
+],
+[
+"memoria ram",
+0.671
+],
+[
+"motherboard",
+0.668
+]
+],
+"texto_busqueda": "procesador bueno para editar videos",
+"texto_fragmento": "el cerebro de la compu, uno bueno para editar videos"
+},
+{
+"modelo": "deepseek",
+"id": "R15",
+"i": 0,
+"esperado": "tablet",
+"busqueda": [
+[
+"tablet",
+0.726
+],
+[
+"monitor",
+0.679
+],
+[
+"teclado",
+0.623
+]
+],
+"fragmento": [
+[
+"tablet",
+0.713
+],
+[
+"monitor",
+0.652
+],
+[
+"notebook",
+0.636
+]
+],
+"texto_busqueda": "pantalla táctil",
+"texto_fragmento": "una pantallita tactil para que mi abuela lea el diario"
+},
+{
+"modelo": "deepseek",
+"id": "R16",
+"i": 0,
+"esperado": "memoria ram",
+"busqueda": [
+[
+"memoria ram",
+0.74
+],
+[
+"notebook",
+0.667
+],
+[
+"procesador",
+0.642
+]
+],
+"fragmento": [
+[
+"memoria ram",
+0.769
+],
+[
+"ssd",
+0.721
+],
+[
+"notebook",
+0.715
+]
+],
+"texto_busqueda": "memoria RAM notebook",
+"texto_fragmento": "el chiche que le pones a la notebook para que vaya mas rapido, memoria se llama?"
+},
+{
+"modelo": "deepseek",
+"id": "R17",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.689
+],
+[
+"tablet",
+0.634
+],
+[
+"notebook",
+0.624
+]
+],
+"fragmento": [
+[
+"parlante",
+0.694
+],
+[
+"tablet",
+0.648
+],
+[
+"notebook",
+0.642
+]
+],
+"texto_busqueda": "cajita de musica portatil playa",
+"texto_fragmento": "la cajita de musica que llevas a la playa"
+},
+{
+"modelo": "deepseek",
+"id": "R18",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.72
+],
+[
+"monitor",
+0.653
+],
+[
+"mouse",
+0.651
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.766
+],
+[
+"mouse",
+0.696
+],
+[
+"monitor",
+0.684
+]
+],
+"texto_busqueda": "trono gamer",
+"texto_fragmento": "el trono ese de los gamers"
+},
+{
+"modelo": "deepseek",
+"id": "O01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.71
+],
+[
+"motherboard",
+0.623
+],
+[
+"webcam",
+0.61
+]
+],
+"fragmento": [
+[
+"mouse",
+0.738
+],
+[
+"auriculares",
+0.67
+],
+[
+"teclado",
+0.655
+]
+],
+"texto_busqueda": "mouse",
+"texto_fragmento": "un mouse que no me funda el bolsillo"
+},
+{
+"modelo": "deepseek",
+"id": "O02",
+"i": 0,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.717
+],
+[
+"cooler",
+0.635
+],
+[
+"motherboard",
+0.634
+]
+],
+"fragmento": [
+[
+"teclado",
+0.727
+],
+[
+"auriculares",
+0.647
+],
+[
+"cooler",
+0.646
+]
+],
+"texto_busqueda": "teclado silencioso",
+"texto_fragmento": "un teclado que no haga ruido"
+},
+{
+"modelo": "deepseek",
+"id": "O03",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.657
+],
+[
+"tablet",
+0.62
+],
+[
+"motherboard",
+0.608
+]
+],
+"fragmento": [
+[
+"notebook",
+0.736
+],
+[
+"ssd",
+0.64
+],
+[
+"auriculares",
+0.639
+]
+],
+"texto_busqueda": "notebook",
+"texto_fragmento": "la mejor notebook que tengan"
+},
+{
+"modelo": "deepseek",
+"id": "O04",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.737
+],
+[
+"parlante",
+0.652
+],
+[
+"mouse",
+0.629
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.762
+],
+[
+"parlante",
+0.661
+],
+[
+"mouse",
+0.615
+]
+],
+"texto_busqueda": "auriculares inalámbricos",
+"texto_fragmento": "auriculares que no tengan cable y que no sean chinos"
+},
+{
+"modelo": "deepseek",
+"id": "O05",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.699
+],
+[
+"motherboard",
+0.608
+],
+[
+"parlante",
+0.605
+]
+],
+"fragmento": [
+[
+"monitor",
+0.735
+],
+[
+"auriculares",
+0.648
+],
+[
+"mouse",
+0.647
+]
+],
+"texto_busqueda": "monitor",
+"texto_fragmento": "un monitor que no pase los 200 lucas"
+},
+{
+"modelo": "deepseek",
+"id": "O06",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.757
+],
+[
+"motherboard",
+0.678
+],
+[
+"monitor",
+0.66
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "la placa de video mas bestia que tengan"
+},
+{
+"modelo": "deepseek",
+"id": "O07",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.707
+],
+[
+"parlante",
+0.612
+],
+[
+"tablet",
+0.607
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.719
+],
+[
+"parlante",
+0.623
+],
+[
+"notebook",
+0.614
+]
+],
+"texto_busqueda": "silla resistente 120 kg",
+"texto_fragmento": "una silla que aguante 120 kilos"
+},
+{
+"modelo": "deepseek",
+"id": "O08",
+"i": 0,
+"esperado": "almacenamiento externo",
+"busqueda": [
+[
+"almacenamiento externo",
+0.767
+],
+[
+"ssd",
+0.696
+],
+[
+"notebook",
+0.653
+]
+],
+"fragmento": [
+[
+"almacenamiento externo",
+0.756
+],
+[
+"ssd",
+0.683
+],
+[
+"notebook",
+0.649
+]
+],
+"texto_busqueda": "disco externo chiquito",
+"texto_fragmento": "un disco externo chiquito que entre en el bolsillo"
+},
+{
+"modelo": "deepseek",
+"id": "O09",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.712
+],
+[
+"auriculares",
+0.629
+],
+[
+"microfono",
+0.601
+]
+],
+"fragmento": [
+[
+"parlante",
+0.738
+],
+[
+"auriculares",
+0.655
+],
+[
+"tablet",
+0.616
+]
+],
+"texto_busqueda": "parlante resistente al agua",
+"texto_fragmento": "un parlante que se banque el agua de la pileta"
+},
+{
+"modelo": "deepseek",
+"id": "O10",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.696
+],
+[
+"ssd",
+0.603
+],
+[
+"auriculares",
+0.589
+]
+],
+"fragmento": [
+[
+"cargador",
+0.727
+],
+[
+"ssd",
+0.635
+],
+[
+"auriculares",
+0.622
+]
+],
+"texto_busqueda": "cargador rápido iPhone",
+"texto_fragmento": "un cargador que le de rapido al iphone"
+},
+{
+"modelo": "deepseek",
+"id": "O11",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.664
+],
+[
+"tablet",
+0.592
+],
+[
+"motherboard",
+0.588
+]
+],
+"fragmento": [
+[
+"notebook",
+0.725
+],
+[
+"tablet",
+0.631
+],
+[
+"ssd",
+0.624
+]
+],
+"texto_busqueda": "notebook liviana",
+"texto_fragmento": "la notebook mas liviana para viajar"
+},
+{
+"modelo": "deepseek",
+"id": "O12",
+"i": 0,
+"esperado": "router",
+"busqueda": [
+[
+"router",
+0.712
+],
+[
+"motherboard",
+0.616
+],
+[
+"impresora",
+0.616
+]
+],
+"fragmento": [
+[
+"router",
+0.703
+],
+[
+"impresora",
+0.618
+],
+[
+"motherboard",
+0.61
+]
+],
+"texto_busqueda": "router",
+"texto_fragmento": "un router que llegue a los 3 pisos de la casa"
+},
+{
+"modelo": "deepseek",
+"id": "F01",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"tablet",
+0.569
+],
+[
+"cargador",
+0.566
+],
+[
+"motherboard",
+0.565
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.604
+],
+[
+"ssd",
+0.599
+],
+[
+"cargador",
+0.597
+]
+],
+"texto_busqueda": "iphone 15 pro max",
+"texto_fragmento": "tenes el iphone 15 pro max?"
+},
+{
+"modelo": "deepseek",
+"id": "F02",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"auriculares",
+0.6
+],
+[
+"tablet",
+0.599
+],
+[
+"monitor",
+0.594
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.599
+],
+[
+"ssd",
+0.58
+],
+[
+"monitor",
+0.576
+]
+],
+"texto_busqueda": "zapatillas nike talle 42",
+"texto_fragmento": "venden zapatillas nike talle 42?"
+},
+{
+"modelo": "deepseek",
+"id": "F11",
+"i": 0,
+"esperado": "ninguno",
+"busqueda": [
+[
+"parlante",
+0.591
+],
+[
+"auriculares",
+0.582
+],
+[
+"tablet",
+0.582
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.634
+],
+[
+"auriculares",
+0.618
+],
+[
+"tablet",
+0.612
+]
+],
+"texto_busqueda": "play 5",
+"texto_fragmento": "venden la play 5?"
+},
+{
+"modelo": "deepseek",
+"id": "A01",
+"i": 0,
+"esperado": "mouse",
+"busqueda": [
+[
+"mouse",
+0.688
+],
+[
+"cooler",
+0.632
+],
+[
+"teclado",
+0.628
+]
+],
+"fragmento": [
+[
+"mouse",
+0.715
+],
+[
+"teclado",
+0.675
+],
+[
+"cooler",
+0.658
+]
+],
+"texto_busqueda": "mouse gamer rgb",
+"texto_fragmento": "cuanto sale un mause gamer de esos con luces rgb"
+},
+{
+"modelo": "deepseek",
+"id": "A02",
+"i": 0,
+"esperado": "notebook",
+"busqueda": [
+[
+"notebook",
+0.662
+],
+[
+"memoria ram",
+0.644
+],
+[
+"ssd",
+0.606
+]
+],
+"fragmento": [
+[
+"notebook",
+0.67
+],
+[
+"memoria ram",
+0.666
+],
+[
+"ssd",
+0.63
+]
+],
+"texto_busqueda": "notebook 16GB RAM liviana",
+"texto_fragmento": "queria saber si tienen notebooks con dieciseis de ram y que sean livianas para la facultad"
+},
+{
+"modelo": "deepseek",
+"id": "A03",
+"i": 0,
+"esperado": "auriculares",
+"busqueda": [
+[
+"auriculares",
+0.713
+],
+[
+"microfono",
+0.675
+],
+[
+"parlante",
+0.645
+]
+],
+"fragmento": [
+[
+"auriculares",
+0.733
+],
+[
+"microfono",
+0.685
+],
+[
+"mouse",
+0.651
+]
+],
+"texto_busqueda": "headset para PC con micrófono",
+"texto_fragmento": "necesito un headset para jugar a la play bueno no la play la compu eh que tenga micro"
+},
+{
+"modelo": "deepseek",
+"id": "A04",
+"i": 0,
+"esperado": "teclado",
+"busqueda": [
+[
+"teclado",
+0.725
+],
+[
+"motherboard",
+0.651
+],
+[
+"mouse",
+0.643
+]
+],
+"fragmento": [
+[
+"teclado",
+0.715
+],
+[
+"impresora",
+0.637
+],
+[
+"motherboard",
+0.634
+]
+],
+"texto_busqueda": "teclado mecanico español",
+"texto_fragmento": "necesito dos teclados uno en español y otro en ingles los dos mecanicos"
+},
+{
+"modelo": "deepseek",
+"id": "A05",
+"i": 0,
+"esperado": "ssd",
+"busqueda": [
+[
+"ssd",
+0.702
+],
+[
+"memoria ram",
+0.61
+],
+[
+"motherboard",
+0.588
+]
+],
+"fragmento": [
+[
+"ssd",
+0.748
+],
+[
+"almacenamiento externo",
+0.653
+],
+[
+"procesador",
+0.648
+]
+],
+"texto_busqueda": "ssd 500GB M.2",
+"texto_fragmento": "tenes un ssd de quinientos gigas eme punto dos"
+},
+{
+"modelo": "deepseek",
+"id": "A06",
+"i": 0,
+"esperado": "monitor",
+"busqueda": [
+[
+"monitor",
+0.699
+],
+[
+"silla gamer",
+0.602
+],
+[
+"tablet",
+0.602
+]
+],
+"fragmento": [
+[
+"monitor",
+0.726
+],
+[
+"silla gamer",
+0.642
+],
+[
+"webcam",
+0.64
+]
+],
+"texto_busqueda": "monitor 27 pulgadas curvo",
+"texto_fragmento": "quiero el monitor ese de veintisiete pulgadas que vi en instagram el que es curvo"
+},
+{
+"modelo": "deepseek",
+"id": "A07",
+"i": 0,
+"esperado": "placa de video",
+"busqueda": [
+[
+"placa de video",
+0.744
+],
+[
+"motherboard",
+0.683
+],
+[
+"procesador",
+0.661
+]
+],
+"fragmento": [
+[
+"placa de video",
+0.744
+],
+[
+"monitor",
+0.673
+],
+[
+"motherboard",
+0.67
+]
+],
+"texto_busqueda": "placa de video",
+"texto_fragmento": "necesita una placa de video que le corra a ciento cuarenta y cuatro"
+},
+{
+"modelo": "deepseek",
+"id": "A08",
+"i": 0,
+"esperado": "parlante",
+"busqueda": [
+[
+"parlante",
+0.713
+],
+[
+"auriculares",
+0.631
+],
+[
+"notebook",
+0.604
+]
+],
+"fragmento": [
+[
+"parlante",
+0.663
+],
+[
+"auriculares",
+0.614
+],
+[
+"monitor",
+0.588
+]
+],
+"texto_busqueda": "parlante jbl flip",
+"texto_fragmento": "quisiera saber el precio del parlante jbl flip"
+},
+{
+"modelo": "deepseek",
+"id": "A09",
+"i": 0,
+"esperado": "cargador",
+"busqueda": [
+[
+"cargador",
+0.612
+],
+[
+"notebook",
+0.604
+],
+[
+"fuente",
+0.568
+]
+],
+"fragmento": [
+[
+"cargador",
+0.688
+],
+[
+"fuente",
+0.666
+],
+[
+"notebook",
+0.655
+]
+],
+"texto_busqueda": "charger 65W notebook USB-C",
+"texto_fragmento": "necesito un charger de sesenta y cinco watts para la notebook tipo ce"
+},
+{
+"modelo": "deepseek",
+"id": "A10",
+"i": 0,
+"esperado": "silla gamer",
+"busqueda": [
+[
+"silla gamer",
+0.756
+],
+[
+"monitor",
+0.649
+],
+[
+"cooler",
+0.638
+]
+],
+"fragmento": [
+[
+"silla gamer",
+0.736
+],
+[
+"auriculares",
+0.635
+],
+[
+"monitor",
+0.631
+]
+],
+"texto_busqueda": "silla gamer negra",
+"texto_fragmento": "dos sillas gamers negras"
+},
+{
+"modelo": "deepseek",
+"id": "A11",
+"i": 0,
+"esperado": "impresora",
+"busqueda": [
+[
+"impresora",
+0.728
+],
+[
+"router",
+0.625
+],
+[
+"teclado",
+0.598
+]
+],
+"fragmento": [
+[
+"impresora",
+0.714
+],
+[
+"router",
+0.615
+],
+[
+"teclado",
+0.592
+]
+],
+"texto_busqueda": "impresora a color wifi tinta continua",
+"texto_fragmento": "cuanto me sale una impresora a color con wifi y que sea de tinta continua"
+}
+]
