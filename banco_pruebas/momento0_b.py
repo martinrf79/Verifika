@@ -1,8 +1,10 @@
 """LA LLAMADA 0 SOBRE OTRAS 70, CON JERGA MAS DURA: EL MODELO MAS LOS EMBEDDINGS (15-nov-2026).
 
 Orden de Martin del 15-nov. Los 70 mensajes de `nuevas70b.py`, con su vara escrita antes.
-  la llamada 0  el prompt v2 del engranaje 0 tal cual, `engranaje0.PROMPT["v2"]` y su esquema, con Gemini, el modelo de
-                produccion, por la clave gratis. Si la gratis se traba, Martin autorizo la paga.
+  la llamada 0  el prompt del engranaje 0 tal cual, con Gemini, el modelo de produccion, por la clave gratis. Si la gratis
+                se traba, Martin autorizo la paga.
+                v1, dos acciones: separar y traducir, fragmento y busqueda. Es la llamada 0 que pidio Martin el 15-nov.
+                v2, siete: lo mismo mas cantidad, destino, plata, orden y condiciones. El destino del asado salio de aca.
   embeddings    con la paga: lo que tradujo el modelo en cada linea, y su fragmento, contra los rubros de la tienda con sus
                 alias, el mismo documento de `nexo_rubro`.
 
@@ -10,10 +12,14 @@ LA VARA, por mensaje y por rubro, como `momento0_suma.py`:
   trae   el rubro esperado esta entre los que da la busqueda para ese mensaje.
   sobra  un rubro que da la busqueda y el mensaje no pide; lo que la tienda no vende suma aca.
 Se cuenta para lo que tradujo el modelo con el primer rubro, con los tres primeros, para los fragmentos, y para los dos.
+EL DESTINO, escrito antes de correr, en DESTINOS: los lugares que el cliente nombro para enviar. En la v1 los saca el
+codigo, `normal.lugares` sobre los fragmentos del modelo; en la v2, el mismo codigo sobre el campo destino.
+  acierta  un lugar esperado que el codigo encuentra.
+  inventa  un lugar que el codigo encuentra y el cliente no nombro para enviar.
 
-    python3 banco_pruebas/momento0_b.py --correr        # la llamada 0 con la gratis
+    python3 banco_pruebas/momento0_b.py --correr v1     # la llamada 0 con la gratis
     MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/momento0_b.py --embeddings
-    python3 banco_pruebas/momento0_b.py [--ver]         # califica, sin gasto
+    python3 banco_pruebas/momento0_b.py [v1|v2] [--ver] # califica, sin gasto
 """
 import collections
 import json
@@ -31,9 +37,12 @@ from nuevas70b import CASOS  # noqa: E402
 
 SALIDA = os.path.join(AQUI, "momento0_b_corridas.jsonl")
 PUNTAJES = os.path.join(AQUI, "momento0_b_puntajes.json")
+DESTINOS = {"B01": ["Lomas de Zamora"], "B07": ["Merlo"], "B10": ["Quilmes"], "B14": ["Mar del Plata"], "B47": ["Tigre"],
+            "B55": ["Jujuy", "Formosa", "Rio Gallegos"], "B56": ["Lanus"], "B57": ["Cordoba"], "B58": ["Rosario"],
+            "B60": ["Salta", "Tucuman"], "B61": ["La Plata"], "B64": ["Ushuaia"]}
 
 
-def correr():
+def correr(v):
     from openai import OpenAI
     from app.config import get_settings
     s = get_settings()
@@ -42,20 +51,20 @@ def correr():
                  base_url=s.GEMINI_BASE_URL)
     hechas = set()
     if os.path.exists(SALIDA):
-        hechas = {r["id"] for r in map(json.loads, open(SALIDA)) if r.get("salida") is not None}
+        hechas = {r["id"] for r in map(json.loads, open(SALIDA)) if r.get("salida") is not None and r["v"] == v}
     falta = [c for c in CASOS if c[0] not in hechas]
-    print(f"[gemini v2, {s.GEMINI_MODEL}, clave {'paga' if paga else 'gratis'}: {len(falta)} por correr]", flush=True)
+    print(f"[gemini {v}, {s.GEMINI_MODEL}, clave {'paga' if paga else 'gratis'}: {len(falta)} por correr]", flush=True)
     for cid, texto, _ in falta:
-        fila = {"modelo": "gemini", "v": "v2", "id": cid, "clave": "paga" if paga else "gratis"}
+        fila = {"modelo": "gemini", "v": v, "id": cid, "clave": "paga" if paga else "gratis"}
         for intento in range(5):
             try:
                 t0 = time.time()
                 r = cli.chat.completions.create(
                     model=s.GEMINI_MODEL, reasoning_effort="low",
-                    messages=[{"role": "system", "content": E.PROMPT["v2"]},
+                    messages=[{"role": "system", "content": E.PROMPT[v]},
                               {"role": "user", "content": f"MENSAJE DEL CLIENTE: {texto}"}],
                     response_format={"type": "json_schema", "json_schema": {"name": "lineas", "strict": True,
-                                                                            "schema": E.esquema("v2")}})
+                                                                            "schema": E.esquema(v)}})
                 crudo = r.choices[0].message.content or ""
                 t = re.sub(r"^```(?:json)?|```$", "", crudo.strip(), flags=re.M).strip()
                 try:
@@ -76,11 +85,11 @@ def correr():
         time.sleep(4)
 
 
-def salidas():
+def salidas(v="v2"):
     out = {}
     if os.path.exists(SALIDA):
         for r in map(json.loads, open(SALIDA)):
-            if r.get("salida") is not None:
+            if r.get("salida") is not None and r["v"] == v:
                 out[r["id"]] = r["salida"]
     return out
 
@@ -95,8 +104,8 @@ def embeddings():
     import llamada1_modelos as L
     _, alias, rubros, _ = NR.fuente()
     cache = json.load(open(NR.CACHE)) if os.path.exists(NR.CACHE) else {}
-    qs = sorted({str(l.get(k) or "") for s in salidas().values() for l in lineas(s) for k in ("busqueda", "fragmento")}
-                - {""})
+    qs = sorted({str(l.get(k) or "") for v in ("v1", "v2") for s in salidas(v).values() for l in lineas(s)
+                 for k in ("busqueda", "fragmento")} - {""})
     clave = os.environ["GEMINI_API_KEY_PROD"].strip()
     dr = L._emb([NR.doc_rubro(r, alias) for r in rubros], "RETRIEVAL_DOCUMENT", clave, cache)
     vq = L._emb(qs, "RETRIEVAL_QUERY", clave, cache)
@@ -106,15 +115,23 @@ def embeddings():
     print(f"{len(qs)} consultas, {sum(len(q) for q in qs)} caracteres")
 
 
-def calificar(ver=False):
+def destinos(sal, v):
+    """Los lugares que encuentra el codigo: en la v1 sobre los fragmentos, en la v2 sobre el campo destino."""
+    from app.core.flujo.normal import lugares
+    campo = "fragmento" if v == "v1" else "destino"
+    return [f for l in sal.get("lineas") or [] for f, _ in lugares(str(l.get(campo) or ""))]
+
+
+def calificar(v="v2", ver=False):
+    NR.instalar()
     p = json.load(open(PUNTAJES, encoding="utf-8"))
 
     def rank(q):
         return [r for _, r in sorted(zip(p["consultas"][q], p["rubros"]), reverse=True)] if q else []
 
-    sal = salidas()
+    sal = salidas(v)
     c = collections.Counter()
-    falla, no_vende, sin_salida = [], [], []
+    falla, no_vende, sin_salida, dest = [], [], [], []
     for cid, texto, cosas in CASOS:
         if cid not in sal:
             sin_salida.append(cid)
@@ -132,16 +149,29 @@ def calificar(ver=False):
         if pide - t1:
             falla.append((cid, sorted(pide - t1), [(l["busqueda"], rank(l["busqueda"])[:3]) for l in ls],
                           sorted(pide - t3)))
+        hallados = {E.n(x) for x in destinos(sal[cid], v)}
+        esperados = {E.n(x) for x in DESTINOS.get(cid, [])}
+        bien = {e for e in esperados if any(e in h or h in e for h in hallados)}
+        inventa = {h for h in hallados if not any(e in h or h in e for e in esperados)}
+        c["destinos"] += len(esperados)
+        c["destino acierta"] += len(bien)
+        c["destino inventa"] += len(inventa)
+        if esperados - bien or inventa:
+            dest.append((cid, sorted(esperados - bien), sorted(inventa)))
         for raices, r in cosas:
             if r == "ninguno":
                 suyas = [l for l in ls if any(E.n(x) in E.n(l.get("fragmento")) + " " + E.n(l.get("busqueda"))
                                               for x in raices)]
                 no_vende.append((cid, raices[0], [(l["busqueda"], rank(l["busqueda"])[0]) for l in suyas]))
-    print(f"\nLA LLAMADA 0 SOBRE OTRAS 70, JERGA DURA · gemini v2 · {len(sal)} mensajes con salida"
+    print(f"\nLA LLAMADA 0 SOBRE OTRAS 70, JERGA DURA · gemini {v} · {len(sal)} mensajes con salida"
           + (f", sin salida {sin_salida}" if sin_salida else ""))
     print(f"  de {c['pide']} rubros pedidos")
     for nombre in ("tradujo, primero", "tradujo, tres", "fragmentos", "tradujo y fragmentos"):
         print(f"    {nombre:22} trae {c[nombre + ' trae']:>3} · sobran {c[nombre + ' sobra']:>3}")
+    print(f"\n  destinos, de {c['destinos']} que nombro el cliente: el codigo acierta {c['destino acierta']} · inventa "
+          f"{c['destino inventa']}")
+    for cid, falta, inv in dest:
+        print(f"    {cid} no encuentra {falta} · inventa {inv}")
     print("\n  donde lo que tradujo, con el primer rubro, no trae lo pedido:")
     for cid, falta, ls, falta3 in falla:
         print(f"    {cid} falta {falta}{' y con tres tambien ' + str(falta3) if falta3 else ', con tres aparece'}")
@@ -154,9 +184,10 @@ def calificar(ver=False):
 
 
 if __name__ == "__main__":
+    v = "v1" if "v1" in sys.argv else "v2"
     if "--correr" in sys.argv:
-        correr()
+        correr(v)
     elif "--embeddings" in sys.argv:
         embeddings()
     else:
-        calificar("--ver" in sys.argv)
+        calificar(v, "--ver" in sys.argv)
