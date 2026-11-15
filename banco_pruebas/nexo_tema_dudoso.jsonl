@@ -1,0 +1,92 @@
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "M04", "segundos": 0.44, "tokens": 585, "lineas": {"3": "costo_envio"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "M15", "segundos": 0.17, "tokens": 537, "lineas": {"2": "costo_envio"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "M18", "segundos": 0.15, "tokens": 539, "lineas": {"3": "mayoristas"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "F03", "segundos": 0.21, "tokens": 537, "lineas": {"0": "horarios"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "F04", "segundos": 0.2, "tokens": 521, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "F05", "segundos": 0.14, "tokens": 551, "lineas": {"0": "garantia_como_usar"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "F06", "segundos": 0.14, "tokens": 530, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "F08", "segundos": 0.13, "tokens": 526, "lineas": {"0": "retiro_local"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "F09", "segundos": 0.16, "tokens": 542, "lineas": {"0": "monedas_aceptadas"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "A08", "segundos": 0.15, "tokens": 770, "lineas": {"0": "ninguno", "1": "stock_disponibilidad"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70", "id": "A10", "segundos": 0.16, "tokens": 525, "lineas": {"2": "costo_envio"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B03", "segundos": 0.18, "tokens": 621, "lineas": {"1": "ninguno"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B08", "segundos": 0.15, "tokens": 625, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B18", "segundos": 0.14, "tokens": 549, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B19", "segundos": 0.16, "tokens": 582, "lineas": {"1": "ninguno"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B20", "segundos": 0.15, "tokens": 620, "lineas": {"1": "compatibilidad"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B48", "segundos": 0.16, "tokens": 549, "lineas": {"2": "ninguno"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B61", "segundos": 0.17, "tokens": 791, "lineas": {"0": "factura", "2": "plazo_envio"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B62", "segundos": 0.18, "tokens": 783, "lineas": {"0": "garantia", "1": "cuotas"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B63", "segundos": 0.17, "tokens": 531, "lineas": {"1": "retiro_local"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B64", "segundos": 0.15, "tokens": 729, "lineas": {"0": "mayoristas", "1": "envios"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B65", "segundos": 0.17, "tokens": 510, "lineas": {"0": "formas_pago"}}
+{"quien": "jev", "corrida": "1", "banco": "nuevas70b", "id": "B66", "segundos": 0.15, "tokens": 637, "lineas": {"2": "ninguno"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "M04", "segundos": 2.5, "tokens": 310, "lineas": {"3": "costo_envio"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "M15", "segundos": 1.1, "tokens": 269, "lineas": {"2": "costo_envio"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "M18", "segundos": 2.4, "tokens": 266, "lineas": {"3": "mayoristas"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "F03", "segundos": 0.93, "tokens": 258, "lineas": {"0": "horarios"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "F04", "segundos": 0.88, "tokens": 251, "lineas": {"0": "monedas_aceptadas"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "F05", "segundos": 0.88, "tokens": 273, "lineas": {"0": "garantia_como_usar"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "F06", "segundos": 6.34, "tokens": 256, "lineas": {"0": "ninguno"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "F08", "segundos": 1.03, "tokens": 253, "lineas": {"0": "retiro_local"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "F09", "segundos": 10.43, "tokens": 259, "lineas": {"0": "monedas_aceptadas"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "A08", "segundos": 1.15, "tokens": 417, "lineas": {"0": "precios_iva", "1": "stock_disponibilidad"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70", "id": "A10", "segundos": 1.01, "tokens": 256, "lineas": {"2": "costo_envio"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B03", "segundos": 0.91, "tokens": 333, "lineas": {"1": "ninguno"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B08", "segundos": 15.51, "tokens": 336, "lineas": {"0": "asesoramiento"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B18", "segundos": 5.59, "tokens": 268, "lineas": {"0": "cambios"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B19", "segundos": 0.93, "tokens": 300, "lineas": {"1": "ninguno"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B20", "segundos": 1.38, "tokens": 338, "lineas": {"1": "compatibilidad"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B48", "segundos": 1.96, "tokens": 278, "lineas": {"2": "promociones"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B61", "segundos": 3.87, "tokens": 439, "lineas": {"0": "datos_fiscales", "2": "plazo_envio"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B62", "segundos": 6.25, "tokens": 438, "lineas": {"0": "garantia", "1": "cuotas"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B63", "segundos": 2.08, "tokens": 259, "lineas": {"1": "retiro_local"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B64", "segundos": 1.03, "tokens": 382, "lineas": {"0": "mayoristas", "1": "envios"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B65", "segundos": 1.05, "tokens": 237, "lineas": {"0": "formas_pago"}}
+{"quien": "corta", "corrida": "1", "banco": "nuevas70b", "id": "B66", "segundos": 0.91, "tokens": 335, "lineas": {"2": "teclado_mecanico_membrana"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "M04", "segundos": 0.41, "tokens": 585, "lineas": {"3": "costo_envio"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "M15", "segundos": 0.16, "tokens": 537, "lineas": {"2": "costo_envio"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "M18", "segundos": 0.16, "tokens": 539, "lineas": {"3": "mayoristas"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "F03", "segundos": 0.14, "tokens": 537, "lineas": {"0": "horarios"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "F04", "segundos": 0.23, "tokens": 521, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "F05", "segundos": 0.15, "tokens": 551, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "F06", "segundos": 0.14, "tokens": 530, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "F08", "segundos": 0.16, "tokens": 526, "lineas": {"0": "retiro_local"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "F09", "segundos": 0.19, "tokens": 542, "lineas": {"0": "monedas_aceptadas"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "A08", "segundos": 0.21, "tokens": 770, "lineas": {"0": "ninguno", "1": "stock_disponibilidad"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70", "id": "A10", "segundos": 0.22, "tokens": 525, "lineas": {"2": "costo_envio"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B03", "segundos": 0.16, "tokens": 621, "lineas": {"1": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B08", "segundos": 0.15, "tokens": 625, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B18", "segundos": 0.15, "tokens": 549, "lineas": {"0": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B19", "segundos": 0.14, "tokens": 582, "lineas": {"1": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B20", "segundos": 0.14, "tokens": 620, "lineas": {"1": "compatibilidad"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B48", "segundos": 0.16, "tokens": 549, "lineas": {"2": "ninguno"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B61", "segundos": 0.18, "tokens": 791, "lineas": {"0": "factura", "2": "plazo_envio"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B62", "segundos": 0.18, "tokens": 783, "lineas": {"0": "garantia", "1": "cuotas"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B63", "segundos": 0.15, "tokens": 531, "lineas": {"1": "retiro_local"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B64", "segundos": 0.17, "tokens": 729, "lineas": {"0": "mayoristas", "1": "envios"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B65", "segundos": 0.16, "tokens": 510, "lineas": {"0": "formas_pago"}}
+{"quien": "jev", "corrida": "2", "banco": "nuevas70b", "id": "B66", "segundos": 0.18, "tokens": 637, "lineas": {"2": "ninguno"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "M04", "segundos": 7.86, "tokens": 310, "lineas": {"3": "costo_envio"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "M15", "segundos": 6.53, "tokens": 269, "lineas": {"2": "costo_envio"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "M18", "segundos": 2.72, "tokens": 266, "lineas": {"3": "mayoristas"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "F03", "segundos": 4.31, "tokens": 258, "lineas": {"0": "horarios"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "F04", "segundos": 1.2, "tokens": 251, "lineas": {"0": "monedas_aceptadas"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "F05", "segundos": 1.42, "tokens": 273, "lineas": {"0": "garantia_como_usar"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "F06", "segundos": 1.02, "tokens": 256, "lineas": {"0": "ninguno"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "F08", "segundos": 0.92, "tokens": 253, "lineas": {"0": "retiro_local"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "F09", "segundos": 1.19, "tokens": 259, "lineas": {"0": "monedas_aceptadas"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "A08", "segundos": 1.12, "tokens": 417, "lineas": {"0": "precios_iva", "1": "stock_disponibilidad"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70", "id": "A10", "segundos": 0.81, "tokens": 256, "lineas": {"2": "costo_envio"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B03", "segundos": 0.95, "tokens": 333, "lineas": {"1": "ninguno"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B08", "segundos": 0.8, "tokens": 336, "lineas": {"0": "asesoramiento"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B18", "segundos": 0.86, "tokens": 268, "lineas": {"0": "cambios"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B19", "segundos": 1.67, "tokens": 300, "lineas": {"1": "ninguno"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B20", "segundos": 14.49, "tokens": 338, "lineas": {"1": "compatibilidad"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B48", "segundos": 1.07, "tokens": 278, "lineas": {"2": "promociones"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B61", "segundos": 0.85, "tokens": 439, "lineas": {"0": "factura", "2": "plazo_envio"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B62", "segundos": 0.91, "tokens": 438, "lineas": {"0": "garantia", "1": "cuotas"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B63", "segundos": 1.2, "tokens": 259, "lineas": {"1": "retiro_local"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B64", "segundos": 1.2, "tokens": 382, "lineas": {"0": "mayoristas", "1": "envios"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B65", "segundos": 0.79, "tokens": 237, "lineas": {"0": "formas_pago"}}
+{"quien": "corta", "corrida": "2", "banco": "nuevas70b", "id": "B66", "segundos": 1.01, "tokens": 335, "lineas": {"2": "teclado_mecanico_membrana"}}

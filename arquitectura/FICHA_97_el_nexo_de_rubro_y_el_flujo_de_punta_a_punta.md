@@ -112,14 +112,11 @@ calcular con `--embeddings` y la paga: el catálogo entero cuesta menos de dos c
 
 ## 6. Lo que sigue
 
-1. **Decidir Jev o llamada corta para lo dudoso**, midiendo los dos sobre lo que no se vende de nuevas70b y sobre los
-   "no hay" de lo que se vende. Con el corte escrito antes.
-2. **El nexo de producto nombrado**: 11 líneas en los 140, "parlante jbl flip azul", "procesador intel". La función de
+1. **Hecho el 15-nov: el nexo de tema de la FAQ y Jev para lo dudoso**, `banco_pruebas/nexo_tema.py`, ver la sección 8.
+2. **Lo que no se vende del nexo de rubro**, 8 de 14 en nuevas70b: probar Jev en lo dudoso igual que en el de tema.
+3. **El nexo de producto nombrado**: 11 líneas en los 140, "parlante jbl flip azul", "procesador intel". La función de
    identidad que ya existe, existe, ambiguo o no existe, sobre marcas y modelos. Hace falta un banco con más nombrados y
    con modelos parecidos, G203 contra G305.
-3. **El nexo de tema de la FAQ**: 20 líneas. Tiene que poder decir "ningún tema", porque le llegan líneas que son solo
-   destino, "3 a Cipolletti". Y tiene que mirar también los fragmentos de las líneas de producto: "¿tienen garantía
-   oficial las placas de video?" queda en la línea del producto.
 4. **El nexo de condición, el último**: el más cargado, 188 líneas por el ruteo grueso, y el más difícil.
 
 ## 7. Lo que aportó Martín sobre variantes de embeddings, para considerar
@@ -137,3 +134,34 @@ Un texto que trajo Martín el 15-nov. Lo que sirve para lo que sigue:
   Gemini en los mismos dos bancos antes de decidir.
 - **El umbral de rechazo que propone el texto sigue prohibido** por la FICHA 95: los puntajes de lo que se vende y lo
   que no se pisan. Lo dudoso va a Jev o a la llamada corta.
+
+## 8. El nexo de tema de la FAQ, 15-nov
+
+Sobre los mismos 140 mensajes y la misma llamada 0. La vara y los cortes, escritos antes, en `banco_pruebas/nexo_tema.py`:
+15 preguntas de la tienda con su línea, más una que la llamada 0 no dejó en ningún fragmento, "factura A" de B12.
+
+- **Los candidatos:** el fragmento de cada línea, las palabras del cliente, contra los alias de cada tema, pregunta contra
+  pregunta. Tres temas. **El pedido está entre los tres en 15 de 15.** Los fragmentos ya van en el pedido de embeddings
+  del mensaje: el nexo no suma pedidos.
+- **La función de código que elige:** el primer candidato que comparte una palabra clave de la FAQ con el fragmento, menos
+  las palabras con que el catálogo nombra productos. Con los alias en vez de las palabras clave inventaba en 115 de 254
+  líneas: "una silla gamer" daba los DPI del mouse. Con las palabras clave, elige bien 15 de 15 e inventa 12.
+- **Lo dudoso:** toda línea donde el código eligió tema, 27. Una pregunta por mensaje, cada línea elige entre sus tres
+  candidatos o ninguno.
+
+| Lo dudoso con | Elige bien | Inventa | Ningún tema | Demora |
+| --- | --- | --- | --- | --- |
+| Jev, dos corridas | 15 de 15 | 3 y 2 de 254 | 7 de 7 | 0,15 s |
+| Gemini corta, dos corridas, gratis | 15 de 15 | 9 y 9 | 5 de 7 | 1 a 15 s |
+
+Jev pasa los cuatro cortes; Gemini no pasa el de inventar ni el de ningún tema. Lo que Jev deja: "si tienen en color azul"
+como stock, "su mother que sea compatible" como compatibilidad, y en una corrida "service de lavarropas" como garantía.
+
+- **Redactar:** el texto curado con los valores estampados por `curadas.estampar_valores`, como en producción.
+- **En el flujo:** el tema mira todas las líneas, no solo las sin búsqueda; la garantía de B62 y el descuento de B64
+  estaban en la línea del producto. Rubro y destino dan lo mismo que antes, cero cortes.
+
+```bash
+python3 banco_pruebas/nexo_tema.py --con jev            # califica con lo grabado, sin gasto
+python3 banco_pruebas/nexo_tema.py --correr jev --corrida 3   # otra corrida de Jev
+```

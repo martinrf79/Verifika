@@ -6,13 +6,14 @@ lo que pasa entre ellos es el contrato. Un nexo que todavia no existe devuelve "
   paso 1, la llamada 0   el modelo separa, traduce y marca el lugar de envio. Tres campos por linea: fragmento, busqueda
                          y destino. Es la v1 del engranaje 0 mas el lugar, que se midio que el texto suelto no alcanza:
                          el padron inventa "el ojito" como Salta. Gemini, el de produccion, por la clave gratis.
-  paso 2, el ruteo       con busqueda, producto; sin busqueda, tema de la FAQ; con destino, ademas envio. Con una marca
+  paso 2, el ruteo       con busqueda, producto; con fragmento, tema de la FAQ; con destino, ademas envio. Con una marca
                          de la tienda en la busqueda, ademas producto nombrado; con palabras despues del producto, ademas
                          condicion. Sin preguntarle nada mas al modelo.
   paso 3, embeddings     un pedido por mensaje: las busquedas y fragmentos. En el banco, del cache de la sesion.
-  paso 4, los nexos      destino, por el codigo de produccion; rubro y producto, `nexo_rubro`. Nombrado, tema y condicion
-                         todavia no existen: repreguntar.
-  paso 5, Jev o llamada corta   por decidir: no corre, y lo dudoso queda como lo dejo la funcion que elige.
+  paso 4, los nexos      destino, por el codigo de produccion; rubro y producto, `nexo_rubro`; tema de la FAQ, `nexo_tema`,
+                         sobre todas las lineas. Nombrado y condicion todavia no existen: repreguntar.
+  paso 5, Jev            decidido el 15-nov en `nexo_tema`, contra la llamada corta de Gemini: lo dudoso del tema lo
+                         confirma Jev, eligiendo entre los tres candidatos o ninguno. En el banco, lo grabado.
   paso 6, el filtro      lo elegido tiene que estar entre los candidatos y en la fuente.
   paso 7, redactar       el codigo, solo con el contrato.
   paso 8, la memoria     los ids mostrados.
@@ -173,6 +174,8 @@ class Indice(NR.Nexo):
         p = json.load(open(PUNTAJES, encoding="utf-8"))
         self.rubros, self.ms, self.q = p["rubros"], [tuple(m) for m in p["modelos"]], p["consultas"]
         self.marcas = {NR.n(k[1]) for k in self.modelos}
+        import nexo_tema as NT
+        self.temas = NT.Nexo()
 
 
 # ══ PASOS 2 Y 4, EL RUTEO Y LOS NEXOS ════════════════════════════════════════
@@ -185,7 +188,7 @@ def ruteo(linea, idx):
             nexos.append("nombrado")
         if len([w for w in palabras[1:] if w not in idx.marcas]) >= 1:
             nexos.append("condicion")
-    elif linea.fragmento:
+    if linea.fragmento:
         nexos.append("tema")
     if linea.destino:
         nexos.append("destino")
@@ -199,6 +202,17 @@ def nexo_producto(linea, idx):
         mismos = [f for f in p["candidatos"] if f["rubro"] == p["elegido"]["rubro"]][:3]
         return Resultado("producto", ids, p["elegido"]["id"], "coincide", mismos)
     return Resultado("producto", ids, None, "no hay", [p["cercano"]] if p["cercano"] else [])
+
+
+def nexo_tema(linea, idx, jev):
+    """El nexo de tema, `nexo_tema`: tres temas por los alias, el codigo elige por palabra y Jev confirma lo dudoso."""
+    r = idx.temas.tema(linea.fragmento)
+    if not r["elegido"]:
+        return Resultado("tema", r["candidatos"], None, "ningun tema", None)
+    v = jev(linea.fragmento)
+    if v not in r["candidatos"]:
+        return Resultado("tema", r["candidatos"], None, "ningun tema", None)
+    return Resultado("tema", r["candidatos"], v, "coincide", idx.temas.texto(v))
 
 
 def nexo_destino(linea):
@@ -216,10 +230,12 @@ def nexo_destino(linea):
     return out
 
 
-def nexos(linea, idx):
+def nexos(linea, idx, jev):
     for nexo in ruteo(linea, idx):
         if nexo == "producto":
             linea.nexos.append(nexo_producto(linea, idx))
+        elif nexo == "tema":
+            linea.nexos.append(nexo_tema(linea, idx, jev))
         elif nexo == "destino":
             linea.nexos.extend(nexo_destino(linea))
         else:
@@ -233,13 +249,15 @@ def filtro(linea, por_id):
     for r in linea.nexos:
         if r.nexo == "producto" and r.elegido is not None and (r.elegido not in r.candidatos or r.elegido not in por_id):
             r.elegido, r.veredicto = None, "repreguntar"
+        if r.nexo == "tema" and r.elegido is not None and r.elegido not in r.candidatos:
+            r.elegido, r.veredicto, r.datos = None, "ningun tema", None
     return linea
 
 
 def redactar(lineas):
     def plata(x):
         return "$" + f"{int(x):,}".replace(",", ".")
-    partes = []
+    partes, temas = [], []
     for l in lineas:
         for r in l.nexos:
             if r.nexo == "producto" and r.veredicto == "coincide":
@@ -253,8 +271,9 @@ def redactar(lineas):
                 partes.append(f"El envio a {r.datos['lugar']} sale {plata(r.datos['monto'])}.")
             elif r.nexo == "destino" and r.datos.get("motivo") == "falta la provincia":
                 partes.append(f"Para el envio a {r.datos['lugar']} necesito la provincia.")
-            elif r.nexo == "tema":
-                partes.append(f"[pendiente, tema de la FAQ: '{l.fragmento}']")
+            elif r.nexo == "tema" and r.veredicto == "coincide" and r.elegido not in temas:
+                temas.append(r.elegido)
+                partes.append(r.datos)
     return "\n".join(partes)
 
 
@@ -263,9 +282,9 @@ def memoria(lineas):
             for x in [f["id"] for f in r.datos]]
 
 
-def flujo(lineas, idx, por_id):
-    """Los pasos 2 a 8 sobre las lineas de la llamada 0."""
-    lineas = [filtro(nexos(l, idx), por_id) for l in lineas]
+def flujo(lineas, idx, por_id, jev):
+    """Los pasos 2 a 8 sobre las lineas de la llamada 0. `jev(fragmento)` da el veredicto de lo dudoso."""
+    lineas = [filtro(nexos(l, idx, jev), por_id) for l in lineas]
     return lineas, redactar(lineas), memoria(lineas)
 
 
@@ -275,6 +294,8 @@ def calificar(ver=False):
     idx = Indice()
     por_id = {f["id"]: f for f in idx.filas}
     l0 = llamada0()
+    import nexo_tema as NT
+    vd = NT.veredictos("jev", "1")
     c = collections.Counter()
     cortes, ejemplos, dest_mal = [], collections.defaultdict(list), []
     salida = {}
@@ -283,7 +304,13 @@ def calificar(ver=False):
             c["sin llamada 0"] += 1
             continue
         try:
-            lineas, resp, mem = flujo([Linea(l.fragmento, l.busqueda, l.destino) for l in l0[(banco, cid)]], idx, por_id)
+            frags = [l.fragmento for l in l0[(banco, cid)]]
+
+            def jev(fragmento, banco=banco, cid=cid, frags=frags):
+                # En el banco, lo que Jev contesto grabado en `nexo_tema_dudoso.jsonl`, corrida 1.
+                return vd.get((banco, cid, frags.index(fragmento)))
+            lineas, resp, mem = flujo([Linea(l.fragmento, l.busqueda, l.destino) for l in l0[(banco, cid)]], idx, por_id,
+                                      jev)
         except Exception as ex:  # noqa: BLE001
             cortes.append((banco, cid, f"{type(ex).__name__}: {ex}"))
             continue
