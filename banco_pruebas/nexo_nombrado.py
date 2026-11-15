@@ -85,6 +85,25 @@ ESPERADO_140 = [
 ]
 
 
+# LA SONDA: variantes de escritura que un cliente usa, escritas como las dejaria la llamada 0. No es vara: muestra que
+# hace el nexo fuera de lo medido. (busqueda, lo que deberia dar)
+SONDA = [
+    ("logitech g 305", "exists G305 Lightspeed"), ("g-305", "exists G305 Lightspeed"),
+    ("logi g305", "exists G305 Lightspeed"), ("logitec g305", "exists G305 Lightspeed"),
+    ("G305 LIGHTSPEED", "exists G305 Lightspeed"), ("rtx4060", "ambiguous las dos 4060"),
+    ("rtx 4060ti", "ambiguous las dos 4060 Ti"), ("i5-13400f", "exists Core i5-13400F"),
+    ("i5 13400f", "exists Core i5-13400F"), ("ryzen5 5600", "exists Ryzen 5 5600"),
+    ("ryzen 5 5600 x", "exists Ryzen 5 5600X"), ("sony wh1000xm5", "exists WH-1000XM5"),
+    ("sony xm 5", "exists WH-1000XM5"), ("jbl flip6", "exists Flip 6"), ("jbl flip 5", "not_found"),
+    ("g502x", "exists G502 X"), ("razer deathadder v3", "exists DeathAdder V3"), ("razer kraken v3", "exists Kraken V3"),
+    ("hyperx cloud iii", "exists Cloud III"), ("hyperx cloud 3", "exists Cloud III"),
+    ("samsung odyssey g5 32", "exists Odyssey G5 32"), ("epson l 3250", "exists EcoTank L3250"),
+    ("logitech c 920", "exists C920 HD Pro"), ("logitech mx master", "exists MX Master 3S"),
+    ("rtx 4070", "exists Trinity RTX 4070"), ("rx 7800 xt", "ambiguous las dos 7800 XT"),
+    ("mouse logitech inalambrico", "ambiguous los Logitech inalambricos, o los Logitech: condicion"),
+]
+
+
 # ══ LA LLAMADA 0 Y LOS EMBEDDINGS DEL BANCO NUEVO ════════════════════════════
 def correr_llamada0():
     """La misma llamada 0 de tres campos del flujo nuevo, Gemini de produccion por la gratis."""
@@ -145,7 +164,7 @@ def embeddings():
     dp_t = [NR.doc_producto(k, modelos[k]) for k in ms]
     viejos = json.load(open(os.path.join(AQUI, "flujo_nuevo_puntajes.json"), encoding="utf-8"))
     control = sorted(viejos["consultas"])[:3]
-    qs = sorted({l.busqueda for ls in llamada0().values() for l in ls} - {""}) + control
+    qs = sorted({l.busqueda for ls in llamada0().values() for l in ls} - {""} | {q for q, _ in SONDA}) + control
     cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
     # La gratis se traba con la cuota de embeddings; con la marca de Martin va la paga, menos de dos centavos.
     clave = os.environ["GEMINI_API_KEY_PROD" if os.environ.get("MARTIN_AUTORIZO_LA_PAGA") else "GEMINI_API_KEY"].split()[0]
@@ -179,6 +198,10 @@ def embeddings():
 
 
 # ══ EL NEXO ══════════════════════════════════════════════════════════════════
+def _codigo(w):
+    return any(c.isdigit() for c in w) and any(c.isalpha() for c in w)
+
+
 class Nexo:
     def __init__(self, indice):
         from app.core.flujo.agenda import _VACIAS
@@ -204,6 +227,8 @@ class Nexo:
                         if w not in NR.n(f["modelo"]).split()}
             self.rub[r] = {"marcas": {NR.n(f["marca"]) for f in ps}, "vocab": vocab, "tokens": tokens,
                            "nombres": {w for w in tokens - atributos - vocab - describe if not w.isdigit()},
+                           "no_nombre": atributos | vocab | describe,
+                           "modelos": {f["modelo"]: NR.n(f["modelo"]).split() for f in ps},
                            "colores": {NR.n(f["color"]) for f in ps if f.get("color")},
                            "por_marca": {m: {w for f in ps if NR.n(f["marca"]) == m for w in NR.n(f["modelo"]).split()}
                                          for m in {NR.n(f["marca"]) for f in ps}}}
@@ -216,7 +241,7 @@ class Nexo:
         esta en un modelo, o un codigo con letras y numeros aunque la tienda no lo tenga, "sony xm4", para que la
         identidad diga que no esta en vez de traer todos los Sony."""
         R = self.rub[rubro]
-        ws = [w for w in NR.n(busqueda).split() if w not in self.vacias]
+        ws = self._acomodar([w for w in NR.n(busqueda).split() if w not in self.vacias], R)
 
         def codigo(w):
             return any(c.isdigit() for c in w) and any(c.isalpha() for c in w)
@@ -224,6 +249,8 @@ class Nexo:
         # Un codigo es de identidad si lo usa una sola marca del rubro: "g305" es de Logitech; "16gb" o "750w" los
         # usan todas, son medidas metidas en el campo modelo y las resuelve el nexo de condicion.
         propio = [len({m for m, toks in R["por_marca"].items() if any(w in t for t in toks)}) == 1 for w in ws]
+        # Los nombres de modelo de otro rubro no: medido el 15-nov, "parlante para smart tv" tomaba "smart" de las
+        # impresoras Smart Tank y "keyboard switches red" el "red" de la Red Devil, y daban un falso "no lo tengo".
         si = [w in self.marcas or w in R["nombres"] or (codigo(w) and p) for w, p in zip(ws, propio)]
         cambio = True
         while cambio:
@@ -239,8 +266,80 @@ class Nexo:
         for w, s in zip(ws, si):
             if s:
                 con = {t for t in R["tokens"] if w in t}
-                out.append(w if w in R["tokens"] or len(con) != 1 else con.pop())
+                lleva = len(con) == 1 and (_codigo(w) or next(iter(con)).startswith(w))
+                out.append(con.pop() if w not in R["tokens"] and lleva else w)
         return out
+
+    @staticmethod
+    def _acomodar(ws, R):
+        """La busqueda escrita como el catalogo escribe sus codigos. Se juntan dos palabras seguidas si juntas estan en
+        un codigo del rubro y alguna de las dos sola no esta: "5600 x" es "5600x", "g 305" es "g305". Se parte un codigo
+        pegado que no esta en el rubro, entre letras y numeros, si sus partes son codigos exactos del rubro: "rtx4060",
+        "flip6", "4060ti"; "xm4" no, porque "xm" solo esta dentro de "1000xm5"."""
+        def esta(w):
+            return any(w in t for t in R["tokens"])
+        out, i = [], 0
+        while i < len(ws):
+            w = ws[i]
+            if i + 1 < len(ws) and (not esta(w) or not esta(ws[i + 1]) or len(w) == 1 or len(ws[i + 1]) == 1) \
+                    and _codigo(w + ws[i + 1]) and esta(w + ws[i + 1]):
+                out.append(w + ws[i + 1])
+                i += 2
+                continue
+            if _codigo(w) and not esta(w):
+                cortes = [k for k in range(1, len(w)) if w[k - 1].isdigit() != w[k].isdigit()]
+                partes = next(([w[:k], w[k:]] for k in cortes if w[:k] in R["tokens"] and w[k:] in R["tokens"]), None)
+                if partes:
+                    out.extend(partes)
+                    i += 1
+                    continue
+            out.append(w)
+            i += 1
+        return out
+
+    @staticmethod
+    def _solo(prods, modelos):
+        return [p for p in prods if p["modelo"] in modelos]
+
+    def _sufijo(self, v, ids, color, prods, R):
+        """Un numero dicho elige el modelo donde ese numero termina: el sufijo que el cliente no dijo, "Ti" o "Super", es
+        otro modelo, si hay alguno sin sufijo. "rtx 4060" no trae las 4060 Ti; "rtx 4070" no trae las 4070 Super."""
+        if v["veredicto"] != "ambiguous":
+            return v
+        # Solo numeros puros, los de generacion: "ddr5" o "32gb" son medidas y el sufijo de un DDR5 es su velocidad.
+        numeros = {w for w in ids if w.isdigit()}
+
+        def con_sufijo(m):
+            t = R["modelos"][m]
+            return any(x in numeros and k + 1 < len(t) and t[k + 1] not in ids for k, x in enumerate(t))
+        ms = [o["modelo"] for o in v["opciones"]]
+        sin = [m for m in ms if not con_sufijo(m)]
+        if not sin or len(sin) == len(ms) or not any(x in numeros for m in sin for x in R["modelos"][m]):
+            return v
+        from app.core.flujo.catalogo import _identificar
+        return _identificar(" ".join(ids), color, self._solo(prods, sin))
+
+    def _numero_suelto(self, v, ids, color, prods, R):
+        """Un numero suelto que calza de casualidad no elige: si el modelo hallado lleva un nombre que el cliente no dijo
+        y sin ese numero calzan otros, es ambiguo y se pregunta. "hyperx cloud 2" no es el Cloud Stinger 2: el Cloud II
+        se escribe con romanos."""
+        if v["veredicto"] != "exists":
+            return v
+        # Suelto es el numero que coincide entero con una palabra del modelo, el "2" de Stinger 2; el que esta dentro de
+        # un codigo, "13400" en "13400f", no.
+        sueltos = [w for w in ids if w.isdigit() and w in R["modelos"][v["producto"]["modelo"]]]
+        no_dicho = [x for x in R["modelos"][v["producto"]["modelo"]]
+                    if x in R["nombres"] and x not in ids and not any(w in x for w in sueltos)]
+        if not sueltos or not no_dicho:
+            return v
+        from app.core.flujo.catalogo import _identificar
+        sin = _identificar(" ".join(w for w in ids if w not in sueltos), color, prods)
+        if sin["veredicto"] != "ambiguous":
+            return v
+        # Si los otros modelos de la familia llevan otro numero, el del cliente elige de verdad: "rtx 4070" es la 4070,
+        # no cualquier RTX. En la familia Cloud los otros no llevan numero, y ahi el 2 calzo de casualidad.
+        otros = [o["modelo"] for o in sin["opciones"] if o["modelo"] != v["producto"]["modelo"]]
+        return v if any(x.isdigit() for m in otros for x in R["modelos"][m]) else sin
 
     def rubro(self, busqueda, elegido):
         """PIEZA 1, la mitad exacta: el rubro lo eligen los embeddings. Solo si no eligieron ninguno, lo propone la
@@ -248,10 +347,17 @@ class Nexo:
         "lenovo legion 5 i7" no trae notebook entre los tres rubros de los embeddings; "legion" solo nombra notebooks."""
         if elegido:
             return elegido
-        ws = [w for w in NR.n(busqueda).split() if w not in self.vacias]
-        # Tiene que nombrar una marca del rubro y un modelo: "repetidor wifi" no es una motherboard WiFi.
-        cuenta = {r: sum(w in R["tokens"] for w in ws) for r, R in self.rub.items()
-                  if any(w in R["nombres"] for w in ws) and any(w in R["marcas"] for w in ws)}
+        crudas = [w for w in NR.n(busqueda).split() if w not in self.vacias]
+        cuenta = {}
+        for r, R in self.rub.items():
+            ws = self._acomodar(crudas, R)
+            # Tiene que nombrar una marca del rubro, o traer un codigo exacto del rubro, ademas de un nombre o un codigo
+            # del rubro: "repetidor wifi" no es una motherboard WiFi y "resma a4" no es un SSD A400; "g-305" y
+            # "rtx4060" si dicen que son.
+            exacto = any(_codigo(w) and w in R["tokens"] for w in ws) or any(_codigo(w) for w in crudas if w not in ws)
+            nombra = any(w in R["nombres"] or (_codigo(w) and w in R["tokens"]) for w in ws)
+            if nombra and (exacto or any(w in R["marcas"] for w in ws)):
+                cuenta[r] = sum(any(w in t for t in R["tokens"]) for w in ws)
         mejor = [r for r, k in cuenta.items() if k == max(cuenta.values())] if cuenta else []
         return mejor[0] if len(mejor) == 1 else None
 
@@ -259,9 +365,11 @@ class Nexo:
         """PIEZAS 1 A 3. None si el nexo no corre."""
         p = self.idx.producto({"busqueda": linea.busqueda, "fragmento": linea.fragmento})
         rubro = self.rubro(linea.busqueda, p["elegido"]["rubro"] if p["elegido"] else None)
-        if not rubro:
-            return None
-        ids = self.palabras(linea.busqueda, rubro)
+        ids = self.palabras(linea.busqueda, rubro) if rubro else []
+        if not ids:
+            # Si el rubro de los embeddings no nombra nada, propone la palabra exacta: "g-305" no traia mouse.
+            rubro = self.rubro(linea.busqueda, None)
+            ids = self.palabras(linea.busqueda, rubro) if rubro else []
         if not ids:
             return None
         from app.core.flujo.catalogo import _identificar
@@ -269,6 +377,8 @@ class Nexo:
         color = next((c for c in R["colores"] if c and c in NR.n(linea.busqueda).split()), "")
         prods = [dict(f, stock=int(f["stock"] or 0)) for f in self.por_rubro[rubro]]
         v = _identificar(" ".join(ids), color, prods)
+        v = self._sufijo(v, ids, color, prods, R)
+        v = self._numero_suelto(v, ids, color, prods, R)
         if v["veredicto"] == "exists":
             modelos, prod = [v["producto"]["modelo"]], v["producto"]
         elif v["veredicto"] == "ambiguous":
@@ -278,7 +388,8 @@ class Nexo:
         # Si ninguna palabra es marca, nombre o codigo de este rubro, nombra otra cosa: "motherboard compatible procesador
         # intel" no pide una motherboard Intel. El not_found vale, pero no es un "no lo tengo": lo contestan el de
         # producto y el de condicion.
-        de_otro = not any(w in R["marcas"] or w in R["nombres"] or any(w in t for t in R["tokens"]) for w in ids)
+        de_otro = not any(w in R["marcas"] or w in R["nombres"] or (_codigo(w) and any(w in t for t in R["tokens"]))
+                          for w in ids)
         return {"busqueda": linea.busqueda, "rubro": rubro, "palabras": ids, "color": color, "de_otro_rubro": de_otro,
                 "veredicto": v["veredicto"], "modelos": modelos, "producto": prod and {
                     "id": prod["id"], "nombre": prod["nombre"], "precio": int(float(prod["precio_ars"])),
@@ -362,8 +473,22 @@ def calificar(ver=False):
         print(f"    {k}" + (f" · {v} veces" if v > 1 else ""))
 
 
+def sonda():
+    import flujo_nuevo as F
+    NR.instalar()
+    nx = Nexo(indice())
+    print("\nLA SONDA DEL NEXO NOMBRADO · variantes de escritura, no es vara")
+    for q, deberia in SONDA:
+        r = nx.nombrado(F.Linea("", q, ""))
+        dio = "no corre" if r is None else f"{r['veredicto']} {sorted(r['modelos'])[:4]}" + (
+            f" ... {len(r['modelos'])}" if len(r["modelos"]) > 4 else "")
+        print(f"  '{q}': deberia {deberia} · da {dio}" + (f" · {r['rubro']} {r['palabras']}" if r else ""))
+
+
 if __name__ == "__main__":
-    if "--llamada0" in sys.argv:
+    if "--sonda" in sys.argv:
+        sonda()
+    elif "--llamada0" in sys.argv:
         correr_llamada0()
     elif "--embeddings" in sys.argv:
         embeddings()

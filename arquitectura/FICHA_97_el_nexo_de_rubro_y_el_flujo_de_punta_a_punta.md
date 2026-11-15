@@ -187,12 +187,26 @@ La búsqueda híbrida: los embeddings ponen el rubro, la palabra exacta pone el 
 
 | Banco | Bien | Exists con otro modelo | No encontrado | Marca que no vende |
 | --- | --- | --- | --- | --- |
-| nombrados38 | 38 de 40 | 1 | 2 de 2 | 1 de 1 |
+| nombrados38 | 39 de 40 | 0 | 2 de 2 | 1 de 1 |
 | las 140 | 19 de 20 | 0 | 1 de 2 | 4 de 4 |
 
-- **Lo que falla:** "hyperx cloud 2" da Cloud Stinger 2, por el número romano de Cloud II, espera a Martín. "rtx 4060"
-  trae también las dos 4060 Ti, ambiguo con dos de más. "motherboard compatible ryzen 5" no corre, y la vara esperaba
-  no encontrado: las dos salidas dejan la línea al de producto y al de condición.
+- **Iterado el 15-nov sin tocar la vara**, de 38 a 39 de 40 y de un exists con otro modelo a cero. Cada regla cubre
+  una clase, sin listas:
+  - un número dicho elige el modelo donde ese número termina: el sufijo no dicho, "Ti" o "Super", es otro modelo si hay
+    uno sin sufijo. "rtx 4060" ya no trae las Ti; "rtx 4070" es la Trinity.
+  - un número suelto que calza de casualidad no elige: si el modelo lleva un nombre no dicho y los otros de la familia
+    no llevan número, es ambiguo. "hyperx cloud 2" pasa de Cloud Stinger 2 a preguntar entre los Cloud.
+  - la búsqueda se acomoda a cómo escribe el catálogo sus códigos: se juntan "5600 x" y "g 305", y se parten
+    "rtx4060", "flip6", "4060ti" si sus partes son códigos exactos del rubro.
+  - si el rubro de los embeddings no nombra nada, lo propone la palabra exacta con una marca o un código exacto del
+    rubro: "g-305" y "rtx4060" no traían rubro; "resma a4" no es un SSD A400.
+  - se probó y se sacó: los nombres de modelo de otro rubro como identidad. "parlante para smart tv" tomaba la Smart
+    Tank y daba un falso "no lo tengo".
+- **La sonda**, `--sonda`, 27 variantes de escritura que no son vara: 25 bien. Quedan "hyperx cloud 3", los romanos, y
+  "mouse logitech inalambrico", que es del nexo de condición.
+- **Lo que falla:** "hyperx cloud 2" pregunta entre los cuatro Cloud en vez de dar el Cloud II: leer romanos es una
+  lista y espera a Martín. "motherboard compatible ryzen 5" no corre, y la vara esperaba no encontrado: en
+  motherboards "ryzen" describe compatibilidad, y las dos salidas dejan la línea al de producto y al de condición.
 - **Fuera de la vara corre en 12 líneas de las 140**, por atributos que el catálogo metió en el nombre del modelo:
   "memoria ddr4", "monitor curvo", "mesh". Filtran bien según los datos; el borde se define con el nexo de condición.
 - **En el flujo:** si el nombrado corre, su respuesta reemplaza a la del producto genérico. Cuando sus palabras son todas
@@ -201,5 +215,6 @@ La búsqueda híbrida: los embeddings ponen el rubro, la palabra exacta pone el 
 
 ```bash
 python3 banco_pruebas/nexo_nombrado.py [--ver]    # califica, sin gasto
+python3 banco_pruebas/nexo_nombrado.py --sonda     # las variantes de escritura, sin gasto
 python3 banco_pruebas/busquedas.py                # cómo busca cada nexo
 ```
