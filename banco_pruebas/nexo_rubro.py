@@ -1,32 +1,31 @@
-"""EL NEXO DE RUBRO: EL MOMENTO CERO EN EQUIPO, LA SEGUNDA BUSQUEDA EN ESCALERA Y EL REORDENADOR (15-nov-2026).
+"""EL NEXO DE RUBRO: LA LLAMADA 0, LA SEGUNDA BUSQUEDA CONTRA LOS PRODUCTOS Y LA FUNCION DE CODIGO QUE ELIGE (15-nov-2026).
 
-Orden de Martin del 15-nov, FICHA 95 punto 3. Reemplaza al ancla de palabras de la primera version, que estaba hecha de
-reglas de gramatica a mano y se retoco dos veces despues de ver: esta en git, 83bfdba.
+Orden de Martin del 15-nov. Lo que el codigo necesita para redactar sale de tres piezas, sin modelo despues de la llamada 0:
 
-LO QUE EL CODIGO YA SABE: la fuente entera, el catalogo y la FAQ. Lo que el nexo le dice es QUE PARTE de la fuente
-corresponde a cada producto pedido, y con que relacion.
+  PIEZA 1, LA LLAMADA 0. El modelo reparte el mensaje en una linea por cosa y la traduce, el campo busqueda de la v2 del
+  engranaje 0. Los embeddings de esa traduccion contra los rubros de la tienda con sus alias dan tres rubros candidatos.
+  Cuando el modelo no sabe traducir una jerga la deja como la dijo el cliente, y los embeddings la llevan al rubro.
+  Medido el 15-nov: con tres rubros, el pedido esta en 76 de 76 en los tres modelos y en 112 de 112 en `nuevas70b`.
 
-  Entrada: la v2 grabada del engranaje 0 por gemini, haiku y deepseek, `engranaje0_corridas.jsonl`, sobre los 70 mensajes
-  de `nuevas70.py`. Cada linea con busqueda es un producto pedido.
+  PIEZA 2, LA SEGUNDA BUSQUEDA, EL NEXO. Dentro de esos tres rubros, la misma traduccion contra cada modelo de la tienda.
+  El documento de cada modelo es su rubro, marca y modelo mas las etiquetas del catalogo, que traen la jerga y los
+  atributos que la tienda ya cargo: mause, inalambrico, mesh, disco solido. Salen cinco candidatos con su fila real: el
+  mejor de cada rubro y los dos mejores que siguen, para que un rubro segundo no quede afuera.
 
-  PIEZA 1, EL MOMENTO CERO EN EQUIPO. Lo que tradujo el modelo, la busqueda, y lo que dijo el cliente, el fragmento, van
-  juntos: cada uno se busca por embeddings contra los rubros de la tienda con sus alias, y los dos rankings se funden por
-  posicion, sin puntaje ni umbral: cada rubro suma 1/(60 + puesto) en cada ranking. Ninguno tiene prioridad.
+  PIEZA 3, LA FUNCION DE CODIGO QUE ELIGE. La primera palabra de la traduccion es el producto pedido: "funda notebook"
+  pide una funda, no una notebook. Elige el primer candidato, en el orden de los embeddings, cuyo texto de la tienda
+  trae esa palabra: el nombre, las etiquetas, el nombre del rubro y sus alias. Igual, o una empieza con la otra desde
+  cuatro letras, por el plural. Si ninguno la trae, el codigo dice que eso no hay y ofrece el candidato mas cercano.
 
-  PIEZA 2, LA SEGUNDA BUSQUEDA, EN ESCALERA. En los dos primeros rubros de la fusion, los modelos de la tienda se buscan
-  con las mismas dos consultas y se funden igual. Salen cinco modelos por rubro, cada uno con su fila mas barata con
-  stock, tal cual del catalogo. El codigo usa los del primer rubro.
+LA VARA, escrita antes de correr, sobre `nuevas70` con gemini, haiku y deepseek y sobre `nuevas70b` con gemini. Cada cosa
+pedida se cruza con la linea del modelo cuyo fragmento o busqueda trae una de sus raices.
+  vende     en los candidatos: el rubro esperado esta entre los cinco. Corte: 99 por ciento.
+            elige bien: el elegido es del rubro esperado. No hay: dice que no hay y ofrece el mas cercano. Mal: elige
+            otro rubro. Corte: elige bien al menos 90 por ciento y mal a lo sumo 3 por ciento.
+  no vende  bien si dice que no hay; mal si elige algo. Corte: no hay al menos 80 por ciento.
+  la respuesta  cada fila citada esta en el catalogo con ese precio y ese rubro.
 
-LO QUE ENTREGA AL CODIGO, por producto: el rubro, los candidatos y las filas reales. Mas el envio del nexo de destino.
-`redactar` arma la respuesta robotica solo con eso, sin afirmar que sea lo pedido ni negarlo. La relacion, si lo hallado
-es lo pedido, se saco el 15-nov por orden de Martin, con el reordenador de Google: esta en git, ee23087.
-
-LA VARA, escrita antes de correr:
-  vende     el rubro esperado primero en la fusion, de 77 por modelo; y entre los candidatos de la escalera.
-  no vende  los 21 quedan en "lo mas cercano": el codigo no los detecta, es el numero a mejorar.
-  la respuesta  cada fila que cita esta en el catalogo con ese precio y ese rubro, y cada producto tiene su linea.
-
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/nexo_rubro.py --embeddings   # los puntajes, centavos
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/nexo_rubro.py --embeddings   # los vectores que falten
     python3 banco_pruebas/nexo_rubro.py [--ver]                                         # califica, sin gasto
 """
 import collections
@@ -41,15 +40,12 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(AQUI)
 sys.path[:0] = [REPO, AQUI]
 TID = "verifika_prod"
-# Los puntajes de cada consulta contra cada rubro y cada modelo; los vectores enteros pesan cincuenta megas y quedan en el
-# cache de la sesion.
 PUNTAJES = os.path.join(AQUI, "nexo_rubro_puntajes.json")
+# Los vectores enteros pesan decenas de megas: quedan en el cache de la sesion, y en el repo solo los puntajes.
 CACHE = "/tmp/claude-0/-home-user-Verifika/24fd8d4f-83e9-558a-8fef-87f530845b0a/scratchpad/nexo_rubro_vectores.json"
 MODELOS = ("gemini", "haiku", "deepseek")
-TOTAL_VENDE = 77
-FUSION_K = 60      # la constante de la fusion por posicion, la de la literatura; no es un umbral
-RUBROS_ESCALERA = 2
-POR_RUBRO = 5
+RUBROS_CANDIDATOS = 3
+CANDIDATOS = 5
 
 
 def n(t):
@@ -73,12 +69,17 @@ def doc_rubro(r, alias):
     return f"{r}: {', '.join(alias.get(r, []))}"
 
 
-def doc_modelo(k):
-    return f"{k[0]} {k[1]} {k[2]}"
+def etiquetas(filas):
+    return sorted({t.strip() for f in filas for t in str(f.get("tags") or "").split(",") if t.strip()})
 
 
+def doc_producto(k, filas):
+    return f"{k[0]} {k[1]} {k[2]}. {', '.join(etiquetas(filas))}"
+
+
+# ══ LO GRABADO DE LA LLAMADA 0 ═══════════════════════════════════════════════
 def lineas_v2():
-    """{(modelo, id): [linea con busqueda]} de la v2 grabada."""
+    """{(modelo, id): [linea con busqueda]} de la v2 grabada sobre `nuevas70`."""
     import engranaje0 as E
     out = {}
     for r in map(json.loads, open(E.SALIDA)):
@@ -87,86 +88,99 @@ def lineas_v2():
     return out
 
 
+def lineas_b():
+    """{("gemini", id): [linea con busqueda]} de la llamada 0 sobre `nuevas70b`."""
+    import momento0_b as B
+    return {("gemini", cid): B.lineas(s) for cid, s in B.salidas().items()}
+
+
 def embeddings():
-    """Los puntajes de cada consulta contra todos los rubros y todos los modelos de la tienda. Reusa el cache de vectores."""
     _, alias, rubros, modelos = fuente()
     ms = list(modelos)
-    qs = sorted({str(l.get(c) or "") for ls in lineas_v2().values() for l in ls for c in ("busqueda", "fragmento")} - {""})
+    todas = list(lineas_v2().values()) + list(lineas_b().values())
+    busquedas = sorted({str(l["busqueda"]) for ls in todas for l in ls})
+    consultas = sorted(set(busquedas) | {str(l.get("fragmento") or "") for ls in todas for l in ls} - {""})
     cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
-    faltan = [t for t in [doc_rubro(r, alias) for r in rubros] + [doc_modelo(k) for k in ms]
-              if f"RETRIEVAL_DOCUMENT|{t}" not in cache] + [q for q in qs if f"RETRIEVAL_QUERY|{q}" not in cache]
+    dr_t = [doc_rubro(r, alias) for r in rubros]
+    dp_t = [doc_producto(k, modelos[k]) for k in ms]
+    faltan = [t for t in dr_t + dp_t if f"RETRIEVAL_DOCUMENT|{t}" not in cache] + \
+             [q for q in consultas if f"RETRIEVAL_QUERY|{q}" not in cache]
     if faltan:
         if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
             raise SystemExit(f"faltan {len(faltan)} vectores y van con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
         import llamada1_modelos as L
         clave = os.environ["GEMINI_API_KEY_PROD"].strip()
-        L._emb([doc_rubro(r, alias) for r in rubros] + [doc_modelo(k) for k in ms], "RETRIEVAL_DOCUMENT", clave, cache)
-        L._emb(qs, "RETRIEVAL_QUERY", clave, cache)
+        L._emb(dr_t + dp_t, "RETRIEVAL_DOCUMENT", clave, cache)
+        L._emb(consultas, "RETRIEVAL_QUERY", clave, cache)
         json.dump(cache, open(CACHE, "w"))
-    dr = [cache[f"RETRIEVAL_DOCUMENT|{doc_rubro(r, alias)}"] for r in rubros]
-    dm = [cache[f"RETRIEVAL_DOCUMENT|{doc_modelo(k)}"] for k in ms]
+    dr = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in dr_t]
+    dp = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in dp_t]
 
     def dot(a, b):
         return round(sum(x * y for x, y in zip(a, b)), 4)
     out = {"rubros": rubros, "modelos": [list(k) for k in ms], "consultas": {}}
-    for q in qs:
+    for q in consultas:
         x = cache[f"RETRIEVAL_QUERY|{q}"]
-        out["consultas"][q] = {"r": [dot(x, d) for d in dr], "m": [dot(x, d) for d in dm]}
+        out["consultas"][q] = {"r": [dot(x, d) for d in dr]}
+        if q in busquedas:
+            out["consultas"][q]["m"] = [dot(x, d) for d in dp]
     json.dump(out, open(PUNTAJES, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print(f"{len(rubros)} rubros, {len(ms)} modelos, {len(qs)} consultas; vectores pagados ahora: {len(faltan)}")
+    print(f"{len(rubros)} rubros, {len(ms)} modelos, {len(consultas)} consultas; vectores pagados ahora: {len(faltan)}, "
+          f"{sum(len(t) for t in faltan)} caracteres")
 
 
 # ══ EL NEXO ══════════════════════════════════════════════════════════════════
-def fundir(*rankings):
-    """La fusion por posicion: cada clave suma 1/(K + puesto) en cada ranking. Sin puntajes, sin umbral."""
-    s = collections.Counter()
-    for rk in rankings:
-        for i, k in enumerate(rk):
-            s[k] += 1 / (FUSION_K + i + 1)
-    return [k for k, _ in s.most_common()]
-
-
 class Nexo:
     def __init__(self):
         self.filas, self.alias, _, self.modelos = fuente()
         p = json.load(open(PUNTAJES, encoding="utf-8"))
         self.rubros, self.ms, self.q = p["rubros"], [tuple(m) for m in p["modelos"]], p["consultas"]
+        # El texto de la tienda de cada modelo, para la funcion que elige.
+        self.texto = {}
+        for k, fs in self.modelos.items():
+            formas = [k[0], k[1], k[2]] + [f["nombre"] for f in fs] + etiquetas(fs) + self.alias.get(k[0], [])
+            self.texto[k] = set(" ".join(n(x) for x in formas).split())
 
     def _rank_rubros(self, q):
         return [r for _, r in sorted(zip(self.q[q]["r"], self.rubros), reverse=True)] if q else []
 
-    def _rank_modelos(self, q, rubro):
-        return [m for s, m in sorted(zip(self.q[q]["m"], self.ms), reverse=True) if m[0] == rubro] if q else []
+    def llamada0(self, linea):
+        """PIEZA 1: los tres rubros candidatos de lo que tradujo el modelo."""
+        return self._rank_rubros(str(linea["busqueda"]))[:RUBROS_CANDIDATOS]
 
-    def _fila(self, m):
-        con = [f for f in self.modelos[m] if int(f["stock"] or 0) > 0]
+    def _fila(self, k):
+        con = [f for f in self.modelos[k] if int(f["stock"] or 0) > 0]
         if not con:
             return None
         f = min(con, key=lambda f: float(f["precio_ars"]))
-        return {"id": f["id"], "nombre": f["nombre"], "rubro": m[0], "precio": int(float(f["precio_ars"])),
-                "stock": int(f["stock"])}
+        return {"id": f["id"], "nombre": f["nombre"], "rubro": k[0], "precio": int(float(f["precio_ars"])),
+                "stock": int(f["stock"]), "modelo": list(k)}
 
-    def momento_cero(self, linea):
-        """PIEZA 1: la busqueda del modelo y el fragmento del cliente, juntos, contra los rubros."""
-        b, fr = str(linea.get("busqueda") or ""), str(linea.get("fragmento") or "")
-        rb, rf = self._rank_rubros(b), self._rank_rubros(fr)
-        return {"busqueda": b, "fragmento": fr, "rubros": fundir(rb, rf)[:5],
-                "primero_busqueda": rb[0] if rb else None, "primero_fragmento": rf[0] if rf else None}
+    def busqueda2(self, linea, rubros):
+        """PIEZA 2: los cinco candidatos, el mejor de cada rubro y los dos que siguen, en el orden de los embeddings."""
+        orden = [k for _, k in sorted(zip(self.q[str(linea["busqueda"])]["m"], self.ms), reverse=True) if k[0] in rubros]
+        filas = [f for f in map(self._fila, orden) if f]
+        primeros = [next(f for f in filas if f["rubro"] == r) for r in rubros if any(f["rubro"] == r for f in filas)]
+        resto = [f for f in filas if f not in primeros][:CANDIDATOS - len(primeros)]
+        return sorted(primeros + resto, key=filas.index)
 
-    def escalera(self, m0):
-        """PIEZA 2: en los dos primeros rubros, los modelos por las dos consultas fundidas; cinco con stock por rubro."""
-        out = []
-        for r in m0["rubros"][:RUBROS_ESCALERA]:
-            orden = fundir(self._rank_modelos(m0["busqueda"], r), self._rank_modelos(m0["fragmento"], r))
-            filas = [f for f in map(self._fila, orden) if f][:POR_RUBRO]
-            out += filas
-        return out
+    def elegir(self, linea, candidatos):
+        """PIEZA 3: el primer candidato cuyo texto de la tienda trae la primera palabra de lo que tradujo el modelo."""
+        palabras = [w for w in n(linea["busqueda"]).split() if not w.isdigit()]
+        pedido = palabras[0] if palabras else ""
+
+        def trae(k):
+            return any(w == pedido or (min(len(w), len(pedido)) >= 4 and (w.startswith(pedido) or pedido.startswith(w)))
+                       for w in self.texto[k])
+        elegido = next((f for f in candidatos if trae(tuple(f["modelo"]))), None)
+        return {"pedido": pedido, "elegido": elegido, "no_hay": elegido is None,
+                "cercano": candidatos[0] if candidatos else None}
 
     def producto(self, linea):
-        m0 = self.momento_cero(linea)
-        cands = self.escalera(m0)
-        rubro = m0["rubros"][0] if m0["rubros"] else None
-        return {**m0, "rubro": rubro, "candidatos": cands, "filas": [f for f in cands if f["rubro"] == rubro][:3]}
+        rubros = self.llamada0(linea)
+        cands = self.busqueda2(linea, rubros)
+        return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
+                "candidatos": cands, **self.elegir(linea, cands)}
 
 
 def plata(x):
@@ -174,11 +188,18 @@ def plata(x):
 
 
 def redactar(productos, envios):
-    """La respuesta robotica: solo con lo que entregaron los nexos. No afirma que sea lo pedido ni lo niega."""
+    """La respuesta robotica, solo con lo que entrego el nexo."""
     partes = []
     for p in productos:
-        ej = "; ".join(f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}" for f in p["filas"])
-        partes.append(f"Por {p['busqueda']}, lo mas cercano que tengo en {p['rubro']}: {ej}.")
+        if p["elegido"]:
+            mismos = [f for f in p["candidatos"] if f["rubro"] == p["elegido"]["rubro"]][:3]
+            ej = "; ".join(f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}" for f in mismos)
+            partes.append(f"Por {p['busqueda']} tengo: {ej}.")
+        elif p["cercano"]:
+            c = p["cercano"]
+            partes.append(f"{p['busqueda'].capitalize()} no hay. Lo mas cercano: {c['nombre']} a {plata(c['precio'])}.")
+        else:
+            partes.append(f"{p['busqueda'].capitalize()} no hay.")
     for lugar, r in envios:
         partes.append(f"El envio a {lugar} sale {plata(int(r['monto']))}." if r else
                       f"Para el envio a {lugar} necesito la provincia.")
@@ -191,8 +212,7 @@ def envios_de(lineas):
     vistos, out = set(), []
     for l in lineas:
         campo = str(l.get("destino") or "").strip()
-        partes = [f for f, _ in lugares(campo)] or ([campo] if campo else [])
-        for p in partes:
+        for p in [f for f, _ in lugares(campo)] or ([campo] if campo else []):
             if n(p) not in vistos:
                 vistos.add(n(p))
                 out.append((p, _cotizar(p)))
@@ -207,60 +227,68 @@ def instalar():
 
 
 # ══ LA VARA ══════════════════════════════════════════════════════════════════
+def bancos():
+    """[(nombre, modelo, [(id, mensaje, [(raices, rubro esperado o "ninguno")])], lineas)]: lo vendido y lo no vendido."""
+    import engranaje0 as E
+    from nuevas70 import CASOS as C1
+    from nuevas70b import CASOS as C2
+    esp = E._esperado()
+    c1 = [(cid, t, [(c["en"], esp[(cid, i)]) for i, c in enumerate(cosas) if (cid, i) in esp]) for cid, t, cosas in C1]
+    c2 = [(cid, t, [(r, x) for r, x in cosas if x]) for cid, t, cosas in C2]
+    l1, l2 = lineas_v2(), lineas_b()
+    return [("nuevas70", m, c1, l1) for m in MODELOS] + [("nuevas70b", "gemini", c2, l2)]
+
+
 def calificar(ver=False):
     instalar()
-    import engranaje0 as E
-    from nuevas70 import CASOS
-    esperado = E._esperado()
     nx = Nexo()
     por_id = {f["id"]: f for f in nx.filas}
-    todas = lineas_v2()
     salida = {}
-    print("\nEL NEXO DE RUBRO · momento cero en equipo y escalera por embeddings fundidos")
-    for m in MODELOS:
+    print("\nEL NEXO DE RUBRO · llamada 0 con tres rubros, segunda busqueda con cinco productos, el codigo elige")
+    for banco, m, casos, lineas in bancos():
         c = collections.Counter()
-        fallas, malas_resp = [], []
-        for cid, texto, cosas in CASOS:
-            ls = todas.get((m, cid), [])
+        fallas = []
+        for cid, texto, cosas in casos:
+            ls = lineas.get((m, cid), [])
             prods = [nx.producto(l) for l in ls]
             usadas = set()
-            for i, cosa in enumerate(cosas):
-                if (cid, i) not in esperado:
-                    continue
-                k = next((j for j, l in enumerate(ls) if j not in usadas and
-                          any(E.n(e) in E.n(l.get("fragmento")) for e in cosa["en"])), None)
-                esp = esperado[(cid, i)]
+            for raices, esp in cosas:
+                k = next((j for j, l in enumerate(ls) if j not in usadas and any(
+                    n(x) in n(l.get("fragmento")) + " " + n(l.get("busqueda")) for x in raices)), None)
                 if k is None:
-                    c["perdido"] += 1
-                    fallas.append((cid, cosa["en"][0], esp, "sin linea en la traduccion"))
+                    c["sin linea"] += 1
                     continue
                 usadas.add(k)
                 p = prods[k]
                 if esp == "ninguno":
                     c["no vende"] += 1
+                    c["no vende bien" if p["no_hay"] else "no vende mal"] += 1
+                    if not p["no_hay"]:
+                        fallas.append((cid, p["busqueda"], "no vende", f"elige {p['elegido']['nombre']}"))
                     continue
                 c["vende"] += 1
-                c["fusion primero"] += p["rubros"][0] == esp
-                c["busqueda sola primero"] += p["primero_busqueda"] == esp
-                c["en la escalera"] += any(f["rubro"] == esp for f in p["candidatos"])
-                if p["rubros"][0] != esp:
-                    fallas.append((cid, p["busqueda"], esp, f"fusion {p['rubros'][:3]}, busqueda sola "
-                                                            f"{p['primero_busqueda']}, fragmento {p['primero_fragmento']}"))
-            envios = envios_de(ls)
-            resp = redactar(prods, envios)
+                c["en candidatos"] += any(f["rubro"] == esp for f in p["candidatos"])
+                if p["elegido"] and p["elegido"]["rubro"] == esp:
+                    c["elige bien"] += 1
+                elif p["no_hay"]:
+                    c["no hay"] += 1
+                    c["no hay, cercano bien"] += bool(p["cercano"]) and p["cercano"]["rubro"] == esp
+                    fallas.append((cid, p["busqueda"], esp, f"no hay; cercano {p['cercano'] and p['cercano']['nombre']}"))
+                else:
+                    c["mal"] += 1
+                    fallas.append((cid, p["busqueda"], esp, f"elige {p['elegido']['nombre']}"))
             for p in prods:
                 for f in p["candidatos"]:
                     real = por_id.get(f["id"])
                     if not real or int(float(real["precio_ars"])) != f["precio"] or real["categoria"] != f["rubro"]:
-                        malas_resp.append((cid, f["id"]))
-            if len(resp.splitlines()) < len(prods):
-                malas_resp.append((cid, "falta una linea"))
-            salida[f"{m} {cid}"] = {"mensaje": texto, "productos": prods, "envios": envios, "respuesta": resp}
-        print(f"\n  {m}: de {TOTAL_VENDE} que vende, el rubro esperado primero: fusion {c['fusion primero']}, "
-              f"busqueda sola {c['busqueda sola primero']}; entre los candidatos de la escalera {c['en la escalera']}; "
-              f"perdidos en la traduccion {c['perdido']}")
-        print(f"    no vende: {c['no vende']}, quedan en lo mas cercano")
-        print(f"    la respuesta: {len(malas_resp)} filas o lineas mal")
+                        c["filas mal"] += 1
+            salida[f"{banco} {m} {cid}"] = {"mensaje": texto, "productos": prods, "envios": envios_de(ls),
+                                            "respuesta": redactar(prods, envios_de(ls))}
+        v = c["vende"]
+        print(f"\n  {banco} {m}: vende {v} · en candidatos {c['en candidatos']} · elige bien {c['elige bien']} · "
+              f"no hay {c['no hay']}, con el cercano bien {c['no hay, cercano bien']} · mal {c['mal']}")
+        print(f"    no vende {c['no vende']}: dice no hay {c['no vende bien']} · elige algo {c['no vende mal']} · "
+              f"sin linea del modelo {c['sin linea']} · filas fuera del catalogo {c['filas mal']}")
         for x in fallas:
             print(f"    {x[0]} '{x[1]}': esperado {x[2]} · {x[3]}")
     json.dump(salida, open(os.path.join(AQUI, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
