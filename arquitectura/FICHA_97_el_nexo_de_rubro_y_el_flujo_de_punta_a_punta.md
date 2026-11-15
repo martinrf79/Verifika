@@ -112,12 +112,13 @@ calcular con `--embeddings` y la paga: el catálogo entero cuesta menos de dos c
 
 ## 6. Lo que sigue
 
-1. **Hecho el 15-nov: el nexo de tema de la FAQ y Jev para lo dudoso**, `banco_pruebas/nexo_tema.py`, ver la sección 8.
-2. **Lo que no se vende del nexo de rubro**, 8 de 14 en nuevas70b: probar Jev en lo dudoso igual que en el de tema.
-3. **El nexo de producto nombrado**: 11 líneas en los 140, "parlante jbl flip azul", "procesador intel". La función de
-   identidad que ya existe, existe, ambiguo o no existe, sobre marcas y modelos. Hace falta un banco con más nombrados y
-   con modelos parecidos, G203 contra G305.
-4. **El nexo de condición, el último**: el más cargado, 188 líneas por el ruteo grueso, y el más difícil.
+1. **Hechos el 15-nov:** el nexo de tema de la FAQ con Jev en lo dudoso, sección 8, y el de producto nombrado, sección 9.
+   Cómo busca cada nexo, en un solo lugar: `banco_pruebas/busquedas.py`.
+2. **El nexo de condición, el último**: el más cargado, 188 líneas por el ruteo grueso, y el más difícil. Su borde con
+   el nombrado: el catálogo mete atributos en el nombre del modelo, "Mesh", "Curvo", "DDR4", y ahí corren los dos.
+3. **Espera a Martín:** "hyperx cloud 2" da el Cloud Stinger 2 en vez del Cloud II. Arreglarlo es leer números romanos,
+   una lista.
+4. **Lo que no se vende del nexo de rubro**, 8 de 14 en nuevas70b: probar Jev en lo dudoso igual que en el de tema.
 
 ## 7. Lo que aportó Martín sobre variantes de embeddings, para considerar
 
@@ -164,4 +165,41 @@ como stock, "su mother que sea compatible" como compatibilidad, y en una corrida
 ```bash
 python3 banco_pruebas/nexo_tema.py --con jev            # califica con lo grabado, sin gasto
 python3 banco_pruebas/nexo_tema.py --correr jev --corrida 3   # otra corrida de Jev
+```
+
+## 9. El nexo de producto nombrado, 15-nov
+
+La búsqueda híbrida: los embeddings ponen el rubro, la palabra exacta pone el modelo. Sin vectores nuevos por mensaje.
+
+- **El banco:** las 140 nombran casi solo marcas, "mouse logitech", y ningún par de gemelos. Se sumó
+  `banco_pruebas/nombrados38.py`, 38 mensajes con la vara escrita antes: G203 contra G305, Ryzen 5 5600 contra 5600X,
+  RTX 4060 contra 4060 Ti, modelos que la tienda no tiene de una marca que sí, y una marca que no vende. La llamada 0 con
+  la gratis; los embeddings con la paga, porque la gratis se trabó con la cuota. Los vectores del catálogo recalculados
+  dieron diferencia cero contra los puntajes de la sesión anterior.
+- **El rubro:** el que elige el nexo de producto. Si no elige ninguno, lo propone la palabra exacta cuando la búsqueda
+  nombra una marca y un modelo de un solo rubro: "lenovo legion 5 i7" no traía notebook entre los tres rubros.
+- **Las palabras de identidad:** marca de la tienda; nombre de modelo del rubro, si no es atributo en otro campo ni
+  describe a modelos que no lo llevan en el nombre; código de letras y números de una sola marca; y, encadenados, los
+  números y palabras cortas pegados a esas, "ryzen 5 5600". Un código que la tienda no tiene, pegado a la marca, también:
+  "sony xm4" da no encontrado y no todos los Sony.
+- **La identidad:** la de producción, `catalogo._identificar`, sobre los productos del rubro. Lo corto que está dentro
+  de un código del catálogo se lleva a ese código: "xm5" a "1000xm5".
+
+| Banco | Bien | Exists con otro modelo | No encontrado | Marca que no vende |
+| --- | --- | --- | --- | --- |
+| nombrados38 | 38 de 40 | 1 | 2 de 2 | 1 de 1 |
+| las 140 | 19 de 20 | 0 | 1 de 2 | 4 de 4 |
+
+- **Lo que falla:** "hyperx cloud 2" da Cloud Stinger 2, por el número romano de Cloud II, espera a Martín. "rtx 4060"
+  trae también las dos 4060 Ti, ambiguo con dos de más. "motherboard compatible ryzen 5" no corre, y la vara esperaba
+  no encontrado: las dos salidas dejan la línea al de producto y al de condición.
+- **Fuera de la vara corre en 12 líneas de las 140**, por atributos que el catálogo metió en el nombre del modelo:
+  "memoria ddr4", "monitor curvo", "mesh". Filtran bien según los datos; el borde se define con el nexo de condición.
+- **En el flujo:** si el nombrado corre, su respuesta reemplaza a la del producto genérico. Cuando sus palabras son todas
+  de otro rubro, "motherboard compatible procesador intel", no dice "no lo tengo": contesta el de producto. Rubro,
+  destino y tema dan lo mismo que antes, cero cortes.
+
+```bash
+python3 banco_pruebas/nexo_nombrado.py [--ver]    # califica, sin gasto
+python3 banco_pruebas/busquedas.py                # cómo busca cada nexo
 ```

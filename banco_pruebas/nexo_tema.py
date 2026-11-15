@@ -53,7 +53,8 @@ import nexo_rubro as NR  # noqa: E402
 TID = NR.TID
 PUNTAJES = os.path.join(AQUI, "nexo_tema_puntajes.json")
 CACHE = "/tmp/claude-0/-home-user-Verifika/3792206b-c284-57cb-9afe-3ff1597e7864/scratchpad/nexo_tema_vectores.json"
-CANDIDATOS = 3
+from busquedas import NEXOS as _B  # noqa: E402
+CANDIDATOS = _B["tema de la FAQ"]["candidatos"]["temas"]
 
 # ══ LA VARA ══════════════════════════════════════════════════════════════════
 # (banco, id): [(raiz que ubica la linea, temas que valen)]

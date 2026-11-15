@@ -44,8 +44,9 @@ PUNTAJES = os.path.join(AQUI, "nexo_rubro_puntajes.json")
 # Los vectores enteros pesan decenas de megas: quedan en el cache de la sesion, y en el repo solo los puntajes.
 CACHE = "/tmp/claude-0/-home-user-Verifika/24fd8d4f-83e9-558a-8fef-87f530845b0a/scratchpad/nexo_rubro_vectores.json"
 MODELOS = ("gemini", "haiku", "deepseek")
-RUBROS_CANDIDATOS = 3
-CANDIDATOS = 5
+from busquedas import NEXOS as _B  # noqa: E402
+RUBROS_CANDIDATOS = _B["rubro y producto"]["candidatos"]["rubros"]
+CANDIDATOS = _B["rubro y producto"]["candidatos"]["productos"]
 
 
 def n(t):

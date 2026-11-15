@@ -1,0 +1,79 @@
+"""COMO BUSCA CADA NEXO: EL REGISTRO UNICO, PARA QUE LA PROXIMA SESION NO LO RECONSTRUYA (15-nov-2026).
+
+Orden de Martin del 15-nov: la configuracion de busqueda de cada nexo es la que da los numeros del banco, y tiene que
+pasar de una sesion a otra. Los nexos toman sus numeros de aca; lo que cambie aca cambia los numeros del banco.
+
+Un solo pedido de embeddings por mensaje: vectoriza las busquedas y los fragmentos de todas las lineas. Lo que cambia
+por nexo es que campo de la linea usa como consulta, contra que indice de la tienda la compara, cuantos candidatos
+deja y que funcion de codigo elige. Los indices de la tienda se calculan una vez, al subir el catalogo o la FAQ.
+
+LOS VECTORES no se guardan en el repo: pesan decenas de megas. Se guardan los puntajes, que alcanzan para repetir los
+numeros sin gasto. Si cambia una consulta o un documento, se recalculan; el 15-nov se recalcularon los del catalogo y
+dieron diferencia cero contra los puntajes de la sesion anterior.
+
+    python3 banco_pruebas/busquedas.py     # imprime el registro
+"""
+
+MODELO = "gemini-embedding-001"
+CONSULTA = "RETRIEVAL_QUERY"
+DOCUMENTO = "RETRIEVAL_DOCUMENT"
+
+NEXOS = {
+    "rubro y producto": {
+        "archivo": "banco_pruebas/nexo_rubro.py",
+        "consulta": "busqueda, lo que tradujo el modelo en la llamada 0",
+        "indice": ["rubro: sus alias, `nexo_rubro.doc_rubro`",
+                   "modelo de la tienda: rubro, marca, modelo y etiquetas del catalogo, `nexo_rubro.doc_producto`"],
+        "candidatos": {"rubros": 3, "productos": 5},
+        "elige": "la primera palabra de la busqueda contra el texto de la tienda de cada candidato",
+        "puntajes": ["banco_pruebas/nexo_rubro_puntajes.json", "banco_pruebas/flujo_nuevo_puntajes.json"],
+    },
+    "destino": {
+        "archivo": "banco_pruebas/flujo_nuevo.py, nexo_destino",
+        "consulta": "destino, el lugar que marco el modelo",
+        "indice": ["sin embeddings: el padron de lugares de produccion, `normal.lugares` y `fuente._cotizar`"],
+        "candidatos": {},
+        "elige": "el codigo de lugares",
+        "puntajes": [],
+    },
+    "tema de la FAQ": {
+        "archivo": "banco_pruebas/nexo_tema.py",
+        "consulta": "fragmento, las palabras del cliente: en una pregunta de la tienda la busqueda queda vacia",
+        "indice": ["cada alias de cada tema como documento suelto, pregunta contra pregunta; el puntaje del tema es el "
+                   "de su alias mas parecido"],
+        "candidatos": {"temas": 3},
+        "elige": "palabra clave de la FAQ compartida, menos el vocabulario de productos; Jev confirma lo dudoso",
+        "puntajes": ["banco_pruebas/nexo_tema_puntajes.json", "banco_pruebas/nexo_tema_dudoso.jsonl"],
+    },
+    "producto nombrado": {
+        "archivo": "banco_pruebas/nexo_nombrado.py",
+        "consulta": "busqueda",
+        "indice": ["el mismo de rubro y producto, sin vectores nuevos: da el rubro",
+                   "palabra exacta: marca, nombre de modelo y codigo del catalogo en ese rubro"],
+        "candidatos": {"rubros": 1},
+        "elige": "la identidad de produccion, `catalogo._identificar`, sobre el rubro: exists, ambiguous, not_found",
+        "puntajes": ["banco_pruebas/flujo_nuevo_puntajes.json", "banco_pruebas/nexo_nombrado_puntajes.json"],
+    },
+    "condicion": {
+        "archivo": "por hacer",
+        "consulta": "busqueda, las palabras despues del producto",
+        "indice": ["los campos del rubro ya elegido"],
+        "candidatos": {},
+        "elige": "el codigo; Jev en lo vago",
+        "puntajes": [],
+    },
+}
+
+
+if __name__ == "__main__":
+    print(f"embeddings: {MODELO}, consultas {CONSULTA}, indices {DOCUMENTO}; un pedido por mensaje")
+    for nombre, x in NEXOS.items():
+        print(f"\n{nombre.upper()} · {x['archivo']}")
+        print(f"  consulta    {x['consulta']}")
+        for i in x["indice"]:
+            print(f"  indice      {i}")
+        if x["candidatos"]:
+            print("  candidatos  " + ", ".join(f"{v} {k}" for k, v in x["candidatos"].items()))
+        print(f"  elige       {x['elige']}")
+        for p in x["puntajes"]:
+            print(f"  puntajes    {p}")

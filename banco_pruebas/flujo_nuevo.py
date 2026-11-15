@@ -6,12 +6,13 @@ lo que pasa entre ellos es el contrato. Un nexo que todavia no existe devuelve "
   paso 1, la llamada 0   el modelo separa, traduce y marca el lugar de envio. Tres campos por linea: fragmento, busqueda
                          y destino. Es la v1 del engranaje 0 mas el lugar, que se midio que el texto suelto no alcanza:
                          el padron inventa "el ojito" como Salta. Gemini, el de produccion, por la clave gratis.
-  paso 2, el ruteo       con busqueda, producto; con fragmento, tema de la FAQ; con destino, ademas envio. Con una marca
-                         de la tienda en la busqueda, ademas producto nombrado; con palabras despues del producto, ademas
+  paso 2, el ruteo       con busqueda, producto; con fragmento, tema de la FAQ; con destino, ademas envio. Con busqueda,
+                         ademas el nombrado, que corre si nombra marca o modelo; con palabras despues del producto, ademas
                          condicion. Sin preguntarle nada mas al modelo.
   paso 3, embeddings     un pedido por mensaje: las busquedas y fragmentos. En el banco, del cache de la sesion.
   paso 4, los nexos      destino, por el codigo de produccion; rubro y producto, `nexo_rubro`; tema de la FAQ, `nexo_tema`,
-                         sobre todas las lineas. Nombrado y condicion todavia no existen: repreguntar.
+                         sobre todas las lineas; nombrado, `nexo_nombrado`, cuando la busqueda nombra marca o modelo,
+                         y su respuesta reemplaza a la del producto. Condicion todavia no existe: repreguntar.
   paso 5, Jev            decidido el 15-nov en `nexo_tema`, contra la llamada corta de Gemini: lo dudoso del tema lo
                          confirma Jev, eligiendo entre los tres candidatos o ninguno. En el banco, lo grabado.
   paso 6, el filtro      lo elegido tiene que estar entre los candidatos y en la fuente.
@@ -175,7 +176,9 @@ class Indice(NR.Nexo):
         self.rubros, self.ms, self.q = p["rubros"], [tuple(m) for m in p["modelos"]], p["consultas"]
         self.marcas = {NR.n(k[1]) for k in self.modelos}
         import nexo_tema as NT
+        import nexo_nombrado as NN
         self.temas = NT.Nexo()
+        self.nombres = NN.Nexo(self)
 
 
 # ══ PASOS 2 Y 4, EL RUTEO Y LOS NEXOS ════════════════════════════════════════
@@ -184,8 +187,8 @@ def ruteo(linea, idx):
     if linea.busqueda:
         nexos.append("producto")
         palabras = NR.n(linea.busqueda).split()
-        if idx.marcas & set(palabras):
-            nexos.append("nombrado")
+        # El nombrado decide solo si corre: sus palabras de identidad, `nexo_nombrado`.
+        nexos.append("nombrado")
         if len([w for w in palabras[1:] if w not in idx.marcas]) >= 1:
             nexos.append("condicion")
     if linea.fragmento:
@@ -215,6 +218,24 @@ def nexo_tema(linea, idx, jev):
     return Resultado("tema", r["candidatos"], v, "coincide", idx.temas.texto(v))
 
 
+def nexo_nombrado(linea, idx):
+    """El nexo nombrado, `nexo_nombrado`: el rubro por embeddings y la identidad por palabra exacta. None si no corre."""
+    r = idx.nombres.nombrado(linea)
+    if r is None or (r["veredicto"] == "not_found" and r["de_otro_rubro"]):
+        return None
+    if r["veredicto"] == "exists":
+        f = next(x for x in idx.filas if x["id"] == r["producto"]["id"])
+        fila = {"id": f["id"], "nombre": f["nombre"], "rubro": f["categoria"], "precio": int(float(f["precio_ars"])),
+                "stock": int(f["stock"] or 0)}
+        return Resultado("nombrado", [f["id"]], f["id"], "coincide", [fila])
+    if r["veredicto"] == "ambiguous":
+        filas = [x for x in (idx._fila((r["rubro"], f["marca"], f["modelo"])) for f in idx.filas
+                             if f["categoria"] == r["rubro"] and f["modelo"] in r["modelos"]) if x]
+        filas = sorted({x["id"]: x for x in filas}.values(), key=lambda x: x["precio"])
+        return Resultado("nombrado", [x["id"] for x in filas], None, "ambiguo", filas)
+    return Resultado("nombrado", [], None, "no hay", {"palabras": r["palabras"], "rubro": r["rubro"]})
+
+
 def nexo_destino(linea):
     from app.core.flujo.normal import lugares
     from app.core.fuente import _cotizar
@@ -236,6 +257,10 @@ def nexos(linea, idx, jev):
             linea.nexos.append(nexo_producto(linea, idx))
         elif nexo == "tema":
             linea.nexos.append(nexo_tema(linea, idx, jev))
+        elif nexo == "nombrado":
+            r = nexo_nombrado(linea, idx)
+            if r:
+                linea.nexos.append(r)
         elif nexo == "destino":
             linea.nexos.extend(nexo_destino(linea))
         else:
@@ -249,6 +274,8 @@ def filtro(linea, por_id):
     for r in linea.nexos:
         if r.nexo == "producto" and r.elegido is not None and (r.elegido not in r.candidatos or r.elegido not in por_id):
             r.elegido, r.veredicto = None, "repreguntar"
+        if r.nexo == "nombrado" and r.elegido is not None and (r.elegido not in r.candidatos or r.elegido not in por_id):
+            r.elegido, r.veredicto = None, "repreguntar"
         if r.nexo == "tema" and r.elegido is not None and r.elegido not in r.candidatos:
             r.elegido, r.veredicto, r.datos = None, "ningun tema", None
     return linea
@@ -259,8 +286,21 @@ def redactar(lineas):
         return "$" + f"{int(x):,}".replace(",", ".")
     partes, temas = [], []
     for l in lineas:
+        # Si el nombrado corrio, su respuesta reemplaza a la del producto generico de la misma linea.
+        nombro = any(r.nexo == "nombrado" for r in l.nexos)
         for r in l.nexos:
-            if r.nexo == "producto" and r.veredicto == "coincide":
+            if r.nexo == "producto" and nombro:
+                continue
+            if r.nexo == "nombrado" and r.veredicto == "coincide":
+                f = r.datos[0]
+                partes.append(f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}.")
+            elif r.nexo == "nombrado" and r.veredicto == "ambiguo":
+                partes.append(f"Por {l.busqueda} tengo: " + "; ".join(
+                    f"{f['nombre']} a {plata(f['precio'])}" for f in r.datos[:5])
+                    + (f"; y {len(r.datos) - 5} mas" if len(r.datos) > 5 else "") + ". Cual te interesa?")
+            elif r.nexo == "nombrado":
+                partes.append(f"{l.busqueda.capitalize()} no lo tengo.")
+            elif r.nexo == "producto" and r.veredicto == "coincide":
                 partes.append(f"Por {l.busqueda} tengo: " + "; ".join(
                     f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}" for f in r.datos) + ".")
             elif r.nexo == "producto":
@@ -278,7 +318,7 @@ def redactar(lineas):
 
 
 def memoria(lineas):
-    return [x for l in lineas for r in l.nexos if r.nexo == "producto" and r.veredicto == "coincide"
+    return [x for l in lineas for r in l.nexos if r.nexo in ("producto", "nombrado") and r.veredicto in ("coincide", "ambiguo")
             for x in [f["id"] for f in r.datos]]
 
 
@@ -337,7 +377,7 @@ def calificar(ver=False):
                 if r.datos == "pendiente: el nexo no existe todavia" and len(ejemplos[r.nexo]) < 6:
                     ejemplos[r.nexo].append(l.busqueda or l.fragmento)
             for r in l.nexos:
-                for f in (r.datos if r.nexo == "producto" else []) or []:
+                for f in (r.datos if r.nexo in ("producto", "nombrado") and isinstance(r.datos, list) else []) or []:
                     real = por_id.get(f["id"])
                     if not real or int(float(real["precio_ars"])) != f["precio"]:
                         c["filas fuera del catalogo"] += 1

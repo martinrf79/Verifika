@@ -1053,6 +1053,249 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "RAM0001",
+       "RAM0043",
+       "RAM0003",
+       "RAM0045",
+       "RAM0025",
+       "RAM0091",
+       "RAM0013",
+       "RAM0027",
+       "RAM0005",
+       "RAM0047",
+       "RAM0085",
+       "RAM0015",
+       "RAM0029",
+       "RAM0093",
+       "RAM0087",
+       "RAM0017",
+       "RAM0095",
+       "RAM0089"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "RAM0001",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 34500,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0043",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 38500,
+        "stock": 9,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0003",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 41000,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0045",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 43500,
+        "stock": 15,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0025",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 44000,
+        "stock": 10,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0091",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48000,
+        "stock": 5,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0013",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48500,
+        "stock": 25,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0027",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48500,
+        "stock": 12,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0005",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 49500,
+        "stock": 17,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0047",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 52500,
+        "stock": 7,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0085",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 53000,
+        "stock": 18,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0015",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 57000,
+        "stock": 16,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0029",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 57000,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0093",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 58000,
+        "stock": 12,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0087",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 63500,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0017",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 65000,
+        "stock": 4,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0095",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 68500,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0089",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 69000,
+        "stock": 21,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 32GB"
+        ]
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -1137,6 +1380,249 @@
          "memoria ram",
          "ADATA",
          "XPG Spectrix DDR4 3600 8GB"
+        ]
+       }
+      ]
+     },
+     {
+      "nexo": "nombrado",
+      "candidatos": [
+       "RAM0001",
+       "RAM0043",
+       "RAM0003",
+       "RAM0045",
+       "RAM0025",
+       "RAM0091",
+       "RAM0013",
+       "RAM0027",
+       "RAM0005",
+       "RAM0047",
+       "RAM0085",
+       "RAM0015",
+       "RAM0029",
+       "RAM0093",
+       "RAM0087",
+       "RAM0017",
+       "RAM0095",
+       "RAM0089"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "RAM0001",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 34500,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0043",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 38500,
+        "stock": 9,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0003",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 41000,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0045",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 43500,
+        "stock": 15,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0025",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 44000,
+        "stock": 10,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0091",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48000,
+        "stock": 5,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0013",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48500,
+        "stock": 25,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0027",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48500,
+        "stock": 12,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0005",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 49500,
+        "stock": 17,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0047",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 52500,
+        "stock": 7,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0085",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 53000,
+        "stock": 18,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0015",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 57000,
+        "stock": 16,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0029",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 57000,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0093",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 58000,
+        "stock": 12,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0087",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 63500,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0017",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 65000,
+        "stock": 4,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0095",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 68500,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0089",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 69000,
+        "stock": 21,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 32GB"
         ]
        }
       ]
@@ -1283,14 +1769,50 @@
     ]
    }
   ],
-  "respuesta": "Por memoria 8gb ddr4 tengo: Memoria ram Patriot Viper DDR4 3200 8GB Negro a $38.500, quedan 9; Memoria ram Patriot Viper Steel DDR4 3600 8GB Negro a $48.000, quedan 5; Memoria ram ADATA XPG Spectrix DDR4 3600 8GB Negro a $53.000, quedan 18.\nEl envio a Tucuman sale $9.500.\nPor memoria 8gb ddr4 tengo: Memoria ram Patriot Viper DDR4 3200 8GB Negro a $38.500, quedan 9; Memoria ram Patriot Viper Steel DDR4 3600 8GB Negro a $48.000, quedan 5; Memoria ram ADATA XPG Spectrix DDR4 3600 8GB Negro a $53.000, quedan 18.\nEl envio a Cordoba sale $7.500.\nPor disco solido 1tb tengo: Ssd Kingston KC3000 1TB a $127.000, quedan 9; Ssd Samsung 980 1TB a $44.000, quedan 19; Ssd Crucial P3 Plus 1TB a $49.500, quedan 7.\nEl envio a Cordoba sale $7.500.\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?",
+  "respuesta": "Por memoria 8gb ddr4 tengo: Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500; Memoria ram Patriot Viper DDR4 3200 8GB Negro a $38.500; Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro a $41.000; Memoria ram Patriot Viper DDR4 3200 16GB Negro a $43.500; Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro a $44.000; y 13 mas. Cual te interesa?\nEl envio a Tucuman sale $9.500.\nPor memoria 8gb ddr4 tengo: Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500; Memoria ram Patriot Viper DDR4 3200 8GB Negro a $38.500; Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro a $41.000; Memoria ram Patriot Viper DDR4 3200 16GB Negro a $43.500; Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro a $44.000; y 13 mas. Cual te interesa?\nEl envio a Cordoba sale $7.500.\nPor disco solido 1tb tengo: Ssd Kingston KC3000 1TB a $127.000, quedan 9; Ssd Samsung 980 1TB a $44.000, quedan 19; Ssd Crucial P3 Plus 1TB a $49.500, quedan 7.\nEl envio a Cordoba sale $7.500.\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?",
   "memoria": [
    "RAM0043",
    "RAM0091",
    "RAM0085",
+   "RAM0001",
+   "RAM0043",
+   "RAM0003",
+   "RAM0045",
+   "RAM0025",
+   "RAM0091",
+   "RAM0013",
+   "RAM0027",
+   "RAM0005",
+   "RAM0047",
+   "RAM0085",
+   "RAM0015",
+   "RAM0029",
+   "RAM0093",
+   "RAM0087",
+   "RAM0017",
+   "RAM0095",
+   "RAM0089",
    "RAM0043",
    "RAM0091",
    "RAM0085",
+   "RAM0001",
+   "RAM0043",
+   "RAM0003",
+   "RAM0045",
+   "RAM0025",
+   "RAM0091",
+   "RAM0013",
+   "RAM0027",
+   "RAM0005",
+   "RAM0047",
+   "RAM0085",
+   "RAM0015",
+   "RAM0029",
+   "RAM0093",
+   "RAM0087",
+   "RAM0017",
+   "RAM0095",
+   "RAM0089",
    "SSD0014",
    "SSD0002",
    "SSD0026"
@@ -1721,6 +2243,23 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "MON0014"
+      ],
+      "elegido": "MON0014",
+      "veredicto": "coincide",
+      "datos": [
+       {
+        "id": "MON0014",
+        "nombre": "Monitor LG 34WP65C Curvo",
+        "rubro": "monitor",
+        "precio": 697500,
+        "stock": 0
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -1899,6 +2438,23 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "MON0014"
+      ],
+      "elegido": "MON0014",
+      "veredicto": "coincide",
+      "datos": [
+       {
+        "id": "MON0014",
+        "nombre": "Monitor LG 34WP65C Curvo",
+        "rubro": "monitor",
+        "precio": 697500,
+        "stock": 0
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -1933,7 +2489,7 @@
     ]
    }
   ],
-  "respuesta": "Por silla gamer tengo: Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10.\nEl envio a Parana sale $6.500.\nPor monitor curvo tengo: Monitor LG 29WP60G UltraWide a $409.500, quedan 22; Monitor Samsung Odyssey G9 49 a $1.954.000, quedan 21; Monitor LG 27GP850 UltraGear a $594.000, quedan 10.\nEl envio a Parana sale $6.500.\nPor silla gamer tengo: Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10.\nEl envio a Santa Fe sale $7.000.\nPor monitor curvo tengo: Monitor LG 29WP60G UltraWide a $409.500, quedan 22; Monitor Samsung Odyssey G9 49 a $1.954.000, quedan 21; Monitor LG 27GP850 UltraGear a $594.000, quedan 10.\nEl envio a Santa Fe sale $7.000.",
+  "respuesta": "Por silla gamer tengo: Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10.\nEl envio a Parana sale $6.500.\nMonitor LG 34WP65C Curvo a $697.500, quedan 0.\nEl envio a Parana sale $6.500.\nPor silla gamer tengo: Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10.\nEl envio a Santa Fe sale $7.000.\nMonitor LG 34WP65C Curvo a $697.500, quedan 0.\nEl envio a Santa Fe sale $7.000.",
   "memoria": [
    "SIL0007",
    "SIL0037",
@@ -1941,12 +2497,14 @@
    "MON0013",
    "MON0015",
    "MON0002",
+   "MON0014",
    "SIL0007",
    "SIL0037",
    "SIL0025",
    "MON0013",
    "MON0015",
-   "MON0002"
+   "MON0002",
+   "MON0014"
   ]
  },
  "nuevas70 M07": {
@@ -2223,6 +2781,93 @@
          "procesador",
          "AMD",
          "Ryzen 5 7500F"
+        ]
+       }
+      ]
+     },
+     {
+      "nexo": "nombrado",
+      "candidatos": [
+       "CPU0009",
+       "CPU0005",
+       "CPU0015",
+       "CPU0019",
+       "CPU0016",
+       "CPU0006"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "CPU0009",
+        "nombre": "Procesador AMD Ryzen 5 5500",
+        "rubro": "procesador",
+        "precio": 147000,
+        "stock": 14,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 5500"
+        ]
+       },
+       {
+        "id": "CPU0005",
+        "nombre": "Procesador AMD Ryzen 5 5600",
+        "rubro": "procesador",
+        "precio": 181000,
+        "stock": 1,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 5600"
+        ]
+       },
+       {
+        "id": "CPU0015",
+        "nombre": "Procesador AMD Ryzen 5 5600X",
+        "rubro": "procesador",
+        "precio": 212000,
+        "stock": 15,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 5600X"
+        ]
+       },
+       {
+        "id": "CPU0019",
+        "nombre": "Procesador AMD Ryzen 5 8400F",
+        "rubro": "procesador",
+        "precio": 238000,
+        "stock": 15,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 8400F"
+        ]
+       },
+       {
+        "id": "CPU0016",
+        "nombre": "Procesador AMD Ryzen 5 7500F",
+        "rubro": "procesador",
+        "precio": 273000,
+        "stock": 8,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 7500F"
+        ]
+       },
+       {
+        "id": "CPU0006",
+        "nombre": "Procesador AMD Ryzen 5 7600",
+        "rubro": "procesador",
+        "precio": 328000,
+        "stock": 19,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 7600"
         ]
        }
       ]
@@ -2529,11 +3174,17 @@
     ]
    }
   ],
-  "respuesta": "Por procesador ryzen 5 tengo: Procesador AMD Ryzen 5 5500 a $147.000, quedan 14; Procesador AMD Ryzen 5 8400F a $238.000, quedan 15; Procesador AMD Ryzen 5 7500F a $273.000, quedan 8.\nEl envio a Jujuy sale $11.000.\nPor motherboard compatible ryzen 5 tengo: Motherboard Asus Prime B550M-A a $162.500, quedan 13; Motherboard Asus ROG Strix B550-F a $387.500, quedan 15; Motherboard Gigabyte A520M K a $106.500, quedan 9.\nEl envio a Jujuy sale $11.000.\nPor memoria ram 16gb tengo: Memoria ram G.Skill Trident Z5 DDR5 6000 16GB Blanco a $111.000, quedan 22; Memoria ram Crucial Pro DDR5 5600 16GB Negro a $84.000, quedan 9; Memoria ram G.Skill Flare X5 DDR5 6000 16GB Negro a $103.000, quedan 11.\nEl envio a Jujuy sale $11.000.\nPor fuente alimentacion 650w tengo: Fuente Cooler Master MWE 650 Bronze a $111.500, quedan 10; Fuente Gigabyte P650B a $98.500, quedan 25; Fuente Seasonic Focus GX-650 a $216.500, quedan 19.\nEl envio a Jujuy sale $11.000.",
+  "respuesta": "Por procesador ryzen 5 tengo: Procesador AMD Ryzen 5 5500 a $147.000; Procesador AMD Ryzen 5 5600 a $181.000; Procesador AMD Ryzen 5 5600X a $212.000; Procesador AMD Ryzen 5 8400F a $238.000; Procesador AMD Ryzen 5 7500F a $273.000; y 1 mas. Cual te interesa?\nEl envio a Jujuy sale $11.000.\nPor motherboard compatible ryzen 5 tengo: Motherboard Asus Prime B550M-A a $162.500, quedan 13; Motherboard Asus ROG Strix B550-F a $387.500, quedan 15; Motherboard Gigabyte A520M K a $106.500, quedan 9.\nEl envio a Jujuy sale $11.000.\nPor memoria ram 16gb tengo: Memoria ram G.Skill Trident Z5 DDR5 6000 16GB Blanco a $111.000, quedan 22; Memoria ram Crucial Pro DDR5 5600 16GB Negro a $84.000, quedan 9; Memoria ram G.Skill Flare X5 DDR5 6000 16GB Negro a $103.000, quedan 11.\nEl envio a Jujuy sale $11.000.\nPor fuente alimentacion 650w tengo: Fuente Cooler Master MWE 650 Bronze a $111.500, quedan 10; Fuente Gigabyte P650B a $98.500, quedan 25; Fuente Seasonic Focus GX-650 a $216.500, quedan 19.\nEl envio a Jujuy sale $11.000.",
   "memoria": [
    "CPU0009",
    "CPU0019",
    "CPU0016",
+   "CPU0009",
+   "CPU0005",
+   "CPU0015",
+   "CPU0019",
+   "CPU0016",
+   "CPU0006",
    "MBO0001",
    "MBO0009",
    "MBO0006",
@@ -2693,6 +3344,54 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "ROU0009",
+       "ROU0021",
+       "ROU0015"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "ROU0009",
+        "nombre": "Router TP-Link Deco M4 Mesh Negro",
+        "rubro": "router",
+        "precio": 148500,
+        "stock": 15,
+        "modelo": [
+         "router",
+         "TP-Link",
+         "Deco M4 Mesh"
+        ]
+       },
+       {
+        "id": "ROU0021",
+        "nombre": "Router Tenda Nova MW6 Mesh Negro",
+        "rubro": "router",
+        "precio": 172000,
+        "stock": 2,
+        "modelo": [
+         "router",
+         "Tenda",
+         "Nova MW6 Mesh"
+        ]
+       },
+       {
+        "id": "ROU0015",
+        "nombre": "Router TP-Link Deco X50 Mesh Negro",
+        "rubro": "router",
+        "precio": 288500,
+        "stock": 18,
+        "modelo": [
+         "router",
+         "TP-Link",
+         "Deco X50 Mesh"
+        ]
+       }
+      ]
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "soporte_configuracion",
@@ -2720,14 +3419,17 @@
     ]
    }
   ],
-  "respuesta": "Por router wifi 6 tengo: Router TP-Link Archer AX23 Negro a $97.500, quedan 18; Router TP-Link Archer AX73 Negro a $191.500, quedan 6; Router TP-Link Archer C6 Negro a $47.500, quedan 14.\nEl envio a Mar del Plata sale $6.000.\nPor mesh tengo: Router TP-Link Deco M4 Mesh Negro a $148.500, quedan 15; Router TP-Link Deco X50 Mesh Negro a $288.500, quedan 18; Router Tenda Nova MW6 Mesh Negro a $172.000, quedan 2.\nEl envio a Tandil sale $6.000.",
+  "respuesta": "Por router wifi 6 tengo: Router TP-Link Archer AX23 Negro a $97.500, quedan 18; Router TP-Link Archer AX73 Negro a $191.500, quedan 6; Router TP-Link Archer C6 Negro a $47.500, quedan 14.\nEl envio a Mar del Plata sale $6.000.\nPor mesh tengo: Router TP-Link Deco M4 Mesh Negro a $148.500; Router Tenda Nova MW6 Mesh Negro a $172.000; Router TP-Link Deco X50 Mesh Negro a $288.500. Cual te interesa?\nEl envio a Tandil sale $6.000.",
   "memoria": [
    "ROU0003",
    "ROU0013",
    "ROU0001",
    "ROU0009",
    "ROU0015",
-   "ROU0021"
+   "ROU0021",
+   "ROU0009",
+   "ROU0021",
+   "ROU0015"
   ]
  },
  "nuevas70 M10": {
@@ -3492,6 +4194,41 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "GAB0009",
+       "GAB0021"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "GAB0009",
+        "nombre": "Gabinete Corsair 4000D Airflow Negro",
+        "rubro": "gabinete",
+        "precio": 180000,
+        "stock": 23,
+        "modelo": [
+         "gabinete",
+         "Corsair",
+         "4000D Airflow"
+        ]
+       },
+       {
+        "id": "GAB0021",
+        "nombre": "Gabinete Corsair 5000D Airflow Negro",
+        "rubro": "gabinete",
+        "precio": 320500,
+        "stock": 20,
+        "modelo": [
+         "gabinete",
+         "Corsair",
+         "5000D Airflow"
+        ]
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -3522,7 +4259,7 @@
     ]
    }
   ],
-  "respuesta": "Por monitor 27 pulgadas 144hz tengo: Monitor AOC 27G2 a $291.000, quedan 19; Monitor LG 27GP850 UltraGear a $594.000, quedan 10; Monitor Gigabyte M27Q a $524.500, quedan 17.\nPor placa de video tengo: Placa de video Sapphire Nitro+ RX 7800 XT a $1.370.000, quedan 4; Placa de video MSI Gaming X RX 7600 a $572.000, quedan 16; Placa de video PowerColor Hellhound RX 7800 XT a $1.300.000, quedan 16.\nPor gabinete airflow tengo: Gabinete Corsair 5000D Airflow Negro a $320.500, quedan 20; Gabinete Corsair 4000D Airflow Negro a $180.000, quedan 23; Gabinete NZXT H5 Flow Negro a $189.000, quedan 4.",
+  "respuesta": "Por monitor 27 pulgadas 144hz tengo: Monitor AOC 27G2 a $291.000, quedan 19; Monitor LG 27GP850 UltraGear a $594.000, quedan 10; Monitor Gigabyte M27Q a $524.500, quedan 17.\nPor placa de video tengo: Placa de video Sapphire Nitro+ RX 7800 XT a $1.370.000, quedan 4; Placa de video MSI Gaming X RX 7600 a $572.000, quedan 16; Placa de video PowerColor Hellhound RX 7800 XT a $1.300.000, quedan 16.\nPor gabinete airflow tengo: Gabinete Corsair 4000D Airflow Negro a $180.000; Gabinete Corsair 5000D Airflow Negro a $320.500. Cual te interesa?",
   "memoria": [
    "MON0007",
    "MON0002",
@@ -3532,7 +4269,9 @@
    "GPU0009",
    "GAB0021",
    "GAB0009",
-   "GAB0003"
+   "GAB0003",
+   "GAB0009",
+   "GAB0021"
   ]
  },
  "nuevas70 M14": {
@@ -3787,10 +4526,64 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "AUR0011",
+       "AUR0035",
+       "AUR0037",
+       "AUR0010"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "AUR0011",
+        "nombre": "Auriculares Sony WH-CH520 Negro",
+        "rubro": "auriculares",
+        "precio": 91500,
+        "stock": 8,
+        "modelo": [
+         "auriculares",
+         "Sony",
+         "WH-CH520"
+        ]
+       },
+       {
+        "id": "AUR0035",
+        "nombre": "Auriculares Sony WH-CH720N Negro",
+        "rubro": "auriculares",
+        "precio": 237500,
+        "stock": 20,
+        "modelo": [
+         "auriculares",
+         "Sony",
+         "WH-CH720N"
+        ]
+       },
+       {
+        "id": "AUR0037",
+        "nombre": "Auriculares Sony ULT Wear Negro",
+        "rubro": "auriculares",
+        "precio": 444000,
+        "stock": 7,
+        "modelo": [
+         "auriculares",
+         "Sony",
+         "ULT Wear"
+        ]
+       },
+       {
+        "id": "AUR0010",
+        "nombre": "Auriculares Sony WH-1000XM5 Blanco",
+        "rubro": "auriculares",
+        "precio": 680500,
+        "stock": 1,
+        "modelo": [
+         "auriculares",
+         "Sony",
+         "WH-1000XM5"
+        ]
+       }
+      ]
      },
      {
       "nexo": "condicion",
@@ -3883,10 +4676,64 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "PAR0010",
+       "PAR0031",
+       "PAR0013",
+       "PAR0028"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "PAR0010",
+        "nombre": "Parlante JBL Go 3 Negro",
+        "rubro": "parlante",
+        "precio": 57000,
+        "stock": 4,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Go 3"
+        ]
+       },
+       {
+        "id": "PAR0031",
+        "nombre": "Parlante JBL Clip 4 Negro",
+        "rubro": "parlante",
+        "precio": 75500,
+        "stock": 7,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Clip 4"
+        ]
+       },
+       {
+        "id": "PAR0013",
+        "nombre": "Parlante JBL Flip 6 Negro",
+        "rubro": "parlante",
+        "precio": 168500,
+        "stock": 20,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Flip 6"
+        ]
+       },
+       {
+        "id": "PAR0028",
+        "nombre": "Parlante JBL Charge 5 Negro",
+        "rubro": "parlante",
+        "precio": 210000,
+        "stock": 2,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Charge 5"
+        ]
+       }
+      ]
      },
      {
       "nexo": "condicion",
@@ -3941,14 +4788,22 @@
     ]
    }
   ],
-  "respuesta": "Por auriculares inalambricos sony tengo: Auriculares Sony WH-CH520 Negro a $91.500, quedan 8; Auriculares Sony WH-1000XM5 Blanco a $680.500, quedan 1; Auriculares Sony WH-CH720N Negro a $237.500, quedan 20.\nEl envio a Mendoza sale $9.000.\nPor parlante jbl grande tengo: Parlante JBL Charge 5 Negro a $210.000, quedan 2; Parlante JBL Flip 6 Negro a $168.500, quedan 20; Parlante JBL Go 3 Negro a $57.000, quedan 4.\nEl envio a San Rafael sale $9.000.\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?",
+  "respuesta": "Por auriculares inalambricos sony tengo: Auriculares Sony WH-CH520 Negro a $91.500; Auriculares Sony WH-CH720N Negro a $237.500; Auriculares Sony ULT Wear Negro a $444.000; Auriculares Sony WH-1000XM5 Blanco a $680.500. Cual te interesa?\nEl envio a Mendoza sale $9.000.\nPor parlante jbl grande tengo: Parlante JBL Go 3 Negro a $57.000; Parlante JBL Clip 4 Negro a $75.500; Parlante JBL Flip 6 Negro a $168.500; Parlante JBL Charge 5 Negro a $210.000. Cual te interesa?\nEl envio a San Rafael sale $9.000.\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?",
   "memoria": [
    "AUR0011",
    "AUR0010",
    "AUR0035",
+   "AUR0011",
+   "AUR0035",
+   "AUR0037",
+   "AUR0010",
    "PAR0028",
    "PAR0013",
-   "PAR0010"
+   "PAR0010",
+   "PAR0010",
+   "PAR0031",
+   "PAR0013",
+   "PAR0028"
   ]
  },
  "nuevas70 M16": {
@@ -8339,6 +9194,23 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "MON0014"
+      ],
+      "elegido": "MON0014",
+      "veredicto": "coincide",
+      "datos": [
+       {
+        "id": "MON0014",
+        "nombre": "Monitor LG 34WP65C Curvo",
+        "rubro": "monitor",
+        "precio": 697500,
+        "stock": 0
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -8359,11 +9231,12 @@
     ]
    }
   ],
-  "respuesta": "Por monitor 27 pulgadas curvo tengo: Monitor LG 27GP850 UltraGear a $594.000, quedan 10; Monitor Gigabyte M27Q a $524.500, quedan 17; Monitor AOC 27G2 a $291.000, quedan 19.",
+  "respuesta": "Monitor LG 34WP65C Curvo a $697.500, quedan 0.",
   "memoria": [
    "MON0002",
    "MON0009",
-   "MON0007"
+   "MON0007",
+   "MON0014"
   ]
  },
  "nuevas70 A07": {
@@ -8512,10 +9385,20 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
-      "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "candidatos": [
+       "PAR0013"
+      ],
+      "elegido": "PAR0013",
+      "veredicto": "coincide",
+      "datos": [
+       {
+        "id": "PAR0013",
+        "nombre": "Parlante JBL Flip 6 Negro",
+        "rubro": "parlante",
+        "precio": 168500,
+        "stock": 20
+       }
+      ]
      },
      {
       "nexo": "condicion",
@@ -8594,10 +9477,20 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
-      "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "candidatos": [
+       "PAR0014"
+      ],
+      "elegido": "PAR0014",
+      "veredicto": "coincide",
+      "datos": [
+       {
+        "id": "PAR0014",
+        "nombre": "Parlante JBL Flip 6 Azul",
+        "rubro": "parlante",
+        "precio": 168500,
+        "stock": 10
+       }
+      ]
      },
      {
       "nexo": "condicion",
@@ -8620,14 +9513,16 @@
     ]
    }
   ],
-  "respuesta": "Por parlante jbl flip tengo: Parlante JBL Flip 6 Negro a $168.500, quedan 20; Parlante JBL Clip 4 Negro a $75.500, quedan 7; Parlante JBL Charge 5 Negro a $210.000, quedan 2.\nPor parlante jbl flip azul tengo: Parlante JBL Flip 6 Negro a $168.500, quedan 20; Parlante JBL Clip 4 Negro a $75.500, quedan 7; Parlante JBL Charge 5 Negro a $210.000, quedan 2.\nLa disponibilidad te la confirmo al instante contra el catalogo real. Decime que producto buscas y te digo si hay stock; si esta agotado, lo podemos reservar con una sena.",
+  "respuesta": "Parlante JBL Flip 6 Negro a $168.500, quedan 20.\nParlante JBL Flip 6 Azul a $168.500, quedan 10.\nLa disponibilidad te la confirmo al instante contra el catalogo real. Decime que producto buscas y te digo si hay stock; si esta agotado, lo podemos reservar con una sena.",
   "memoria": [
    "PAR0013",
    "PAR0031",
    "PAR0028",
    "PAR0013",
+   "PAR0013",
    "PAR0031",
-   "PAR0028"
+   "PAR0028",
+   "PAR0014"
   ]
  },
  "nuevas70 A09": {
@@ -9564,6 +10459,93 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "CPU0009",
+       "CPU0005",
+       "CPU0015",
+       "CPU0019",
+       "CPU0016",
+       "CPU0006"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "CPU0009",
+        "nombre": "Procesador AMD Ryzen 5 5500",
+        "rubro": "procesador",
+        "precio": 147000,
+        "stock": 14,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 5500"
+        ]
+       },
+       {
+        "id": "CPU0005",
+        "nombre": "Procesador AMD Ryzen 5 5600",
+        "rubro": "procesador",
+        "precio": 181000,
+        "stock": 1,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 5600"
+        ]
+       },
+       {
+        "id": "CPU0015",
+        "nombre": "Procesador AMD Ryzen 5 5600X",
+        "rubro": "procesador",
+        "precio": 212000,
+        "stock": 15,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 5600X"
+        ]
+       },
+       {
+        "id": "CPU0019",
+        "nombre": "Procesador AMD Ryzen 5 8400F",
+        "rubro": "procesador",
+        "precio": 238000,
+        "stock": 15,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 8400F"
+        ]
+       },
+       {
+        "id": "CPU0016",
+        "nombre": "Procesador AMD Ryzen 5 7500F",
+        "rubro": "procesador",
+        "precio": 273000,
+        "stock": 8,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 7500F"
+        ]
+       },
+       {
+        "id": "CPU0006",
+        "nombre": "Procesador AMD Ryzen 5 7600",
+        "rubro": "procesador",
+        "precio": 328000,
+        "stock": 19,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 5 7600"
+        ]
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -9652,11 +10634,17 @@
     ]
    }
   ],
-  "respuesta": "Por procesador ryzen 5 tengo: Procesador AMD Ryzen 5 5500 a $147.000, quedan 14; Procesador AMD Ryzen 5 8400F a $238.000, quedan 15; Procesador AMD Ryzen 5 7500F a $273.000, quedan 8.\nPor motherboard tengo: Motherboard Asus TUF B760-Plus WiFi a $340.500, quedan 25; Motherboard Asus TUF B650-Plus WiFi a $400.000, quedan 12; Motherboard Gigabyte A520M K a $106.500, quedan 9.",
+  "respuesta": "Por procesador ryzen 5 tengo: Procesador AMD Ryzen 5 5500 a $147.000; Procesador AMD Ryzen 5 5600 a $181.000; Procesador AMD Ryzen 5 5600X a $212.000; Procesador AMD Ryzen 5 8400F a $238.000; Procesador AMD Ryzen 5 7500F a $273.000; y 1 mas. Cual te interesa?\nPor motherboard tengo: Motherboard Asus TUF B760-Plus WiFi a $340.500, quedan 25; Motherboard Asus TUF B650-Plus WiFi a $400.000, quedan 12; Motherboard Gigabyte A520M K a $106.500, quedan 9.",
   "memoria": [
    "CPU0009",
    "CPU0019",
    "CPU0016",
+   "CPU0009",
+   "CPU0005",
+   "CPU0015",
+   "CPU0019",
+   "CPU0016",
+   "CPU0006",
    "MBO0010",
    "MBO0007",
    "MBO0006"
@@ -11249,6 +12237,23 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "FUE0007"
+      ],
+      "elegido": "FUE0007",
+      "veredicto": "coincide",
+      "datos": [
+       {
+        "id": "FUE0007",
+        "nombre": "Fuente Asus TUF Gaming 750W Gold",
+        "rubro": "fuente",
+        "precio": 198500,
+        "stock": 4
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -11372,11 +12377,12 @@
     ]
    }
   ],
-  "respuesta": "Por fuente certificada 80 plus gold 750w tengo: Fuente Asus TUF Gaming 750W Gold a $198.500, quedan 4; Fuente Gigabyte UD750GM a $145.500, quedan 8; Fuente Asus ROG Strix 850W Gold a $325.000, quedan 5.\nEl envio a Mar del Plata sale $6.000.\nPor placa de video 8gb tengo: Placa de video Sapphire Nitro+ RX 7800 XT a $1.370.000, quedan 4; Placa de video PowerColor Hellhound RX 7800 XT a $1.300.000, quedan 16; Placa de video Asus TUF RTX 4080 Super a $2.620.500, quedan 8.\nEl envio a Mar del Plata sale $6.000.",
+  "respuesta": "Fuente Asus TUF Gaming 750W Gold a $198.500, quedan 4.\nEl envio a Mar del Plata sale $6.000.\nPor placa de video 8gb tengo: Placa de video Sapphire Nitro+ RX 7800 XT a $1.370.000, quedan 4; Placa de video PowerColor Hellhound RX 7800 XT a $1.300.000, quedan 16; Placa de video Asus TUF RTX 4080 Super a $2.620.500, quedan 8.\nEl envio a Mar del Plata sale $6.000.",
   "memoria": [
    "FUE0007",
    "FUE0013",
    "FUE0015",
+   "FUE0007",
    "GPU0015",
    "GPU0009",
    "GPU0005"
@@ -12238,10 +13244,129 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "CPU0010",
+       "CPU0011",
+       "CPU0001",
+       "CPU0002",
+       "CPU0003",
+       "CPU0012",
+       "CPU0004",
+       "CPU0013",
+       "CPU0014"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "CPU0010",
+        "nombre": "Procesador Intel Core i3-12100F",
+        "rubro": "procesador",
+        "precio": 95000,
+        "stock": 2,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i3-12100F"
+        ]
+       },
+       {
+        "id": "CPU0011",
+        "nombre": "Procesador Intel Core i3-14100F",
+        "rubro": "procesador",
+        "precio": 134000,
+        "stock": 1,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i3-14100F"
+        ]
+       },
+       {
+        "id": "CPU0001",
+        "nombre": "Procesador Intel Core i5-12400F",
+        "rubro": "procesador",
+        "precio": 198500,
+        "stock": 19,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i5-12400F"
+        ]
+       },
+       {
+        "id": "CPU0002",
+        "nombre": "Procesador Intel Core i5-13400F",
+        "rubro": "procesador",
+        "precio": 274500,
+        "stock": 7,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i5-13400F"
+        ]
+       },
+       {
+        "id": "CPU0003",
+        "nombre": "Procesador Intel Core i5-14600KF",
+        "rubro": "procesador",
+        "precio": 417000,
+        "stock": 16,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i5-14600KF"
+        ]
+       },
+       {
+        "id": "CPU0012",
+        "nombre": "Procesador Intel Core i5-13600KF",
+        "rubro": "procesador",
+        "precio": 460000,
+        "stock": 4,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i5-13600KF"
+        ]
+       },
+       {
+        "id": "CPU0004",
+        "nombre": "Procesador Intel Core i7-13700KF",
+        "rubro": "procesador",
+        "precio": 627500,
+        "stock": 17,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i7-13700KF"
+        ]
+       },
+       {
+        "id": "CPU0013",
+        "nombre": "Procesador Intel Core i7-14700KF",
+        "rubro": "procesador",
+        "precio": 732000,
+        "stock": 21,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i7-14700KF"
+        ]
+       },
+       {
+        "id": "CPU0014",
+        "nombre": "Procesador Intel Core i9-14900K",
+        "rubro": "procesador",
+        "precio": 1120500,
+        "stock": 17,
+        "modelo": [
+         "procesador",
+         "Intel",
+         "Core i9-14900K"
+        ]
+       }
+      ]
      },
      {
       "nexo": "tema",
@@ -12310,13 +13435,6 @@
         ]
        }
       ]
-     },
-     {
-      "nexo": "nombrado",
-      "candidatos": [],
-      "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
      },
      {
       "nexo": "condicion",
@@ -12394,6 +13512,145 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "RAM0041",
+       "RAM0011",
+       "RAM0077",
+       "RAM0024",
+       "RAM0071",
+       "RAM0035",
+       "RAM0083",
+       "RAM0059",
+       "RAM0053",
+       "RAM0065"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "RAM0041",
+        "nombre": "Memoria ram ADATA XPG Lancer DDR5 5200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 78500,
+        "stock": 8,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Lancer DDR5 5200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0011",
+        "nombre": "Memoria ram Kingston Fury Beast DDR5 5600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 81500,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR5 5600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0077",
+        "nombre": "Memoria ram Crucial Pro DDR5 5600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 100500,
+        "stock": 7,
+        "modelo": [
+         "memoria ram",
+         "Crucial",
+         "Pro DDR5 5600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0024",
+        "nombre": "Memoria ram Corsair Vengeance DDR5 6000 32GB Blanco",
+        "rubro": "memoria ram",
+        "precio": 110000,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance DDR5 6000 32GB"
+        ]
+       },
+       {
+        "id": "RAM0071",
+        "nombre": "Memoria ram G.Skill Flare X5 DDR5 6000 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 120000,
+        "stock": 19,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Flare X5 DDR5 6000 32GB"
+        ]
+       },
+       {
+        "id": "RAM0035",
+        "nombre": "Memoria ram G.Skill Trident Z5 DDR5 6000 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 130000,
+        "stock": 19,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Trident Z5 DDR5 6000 32GB"
+        ]
+       },
+       {
+        "id": "RAM0083",
+        "nombre": "Memoria ram TeamGroup T-Force Delta RGB DDR5 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 136000,
+        "stock": 24,
+        "modelo": [
+         "memoria ram",
+         "TeamGroup",
+         "T-Force Delta RGB DDR5 32GB"
+        ]
+       },
+       {
+        "id": "RAM0059",
+        "nombre": "Memoria ram Corsair Vengeance RGB DDR5 6000 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 147000,
+        "stock": 13,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance RGB DDR5 6000 32GB"
+        ]
+       },
+       {
+        "id": "RAM0053",
+        "nombre": "Memoria ram Kingston Fury Renegade DDR5 6400 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 148500,
+        "stock": 20,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Renegade DDR5 6400 32GB"
+        ]
+       },
+       {
+        "id": "RAM0065",
+        "nombre": "Memoria ram Corsair Dominator DDR5 6200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 199500,
+        "stock": 5,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Dominator DDR5 6200 32GB"
+        ]
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -12414,17 +13671,36 @@
     ]
    }
   ],
-  "respuesta": "Por procesador intel tengo: Procesador Intel Core i3-12100F a $95.000, quedan 2; Procesador Intel Core i9-14900K a $1.120.500, quedan 17; Procesador Intel Core i7-13700KF a $627.500, quedan 17.\nPor motherboard compatible procesador intel tengo: Motherboard Gigabyte A520M K a $106.500, quedan 9; Motherboard MSI PRO B760M-A WiFi a $306.500, quedan 14; Motherboard Asus Prime B550M-A a $162.500, quedan 13.\nTe lo chequeo con gusto. Decime que producto estas mirando y con que lo queres usar, y lo verifico contra la ficha. Si ahi no lo aclara, lo confirmo antes de que compres; no te arriesgo un si sin estar seguro.\nPor memoria ram 32gb ddr5 tengo: Memoria ram G.Skill Trident Z5 DDR5 6000 32GB Negro a $130.000, quedan 19; Memoria ram TeamGroup T-Force Delta RGB DDR5 32GB Negro a $136.000, quedan 24; Memoria ram Corsair Vengeance DDR5 6000 32GB Blanco a $110.000, quedan 23.",
+  "respuesta": "Por procesador intel tengo: Procesador Intel Core i3-12100F a $95.000; Procesador Intel Core i3-14100F a $134.000; Procesador Intel Core i5-12400F a $198.500; Procesador Intel Core i5-13400F a $274.500; Procesador Intel Core i5-14600KF a $417.000; y 4 mas. Cual te interesa?\nPor motherboard compatible procesador intel tengo: Motherboard Gigabyte A520M K a $106.500, quedan 9; Motherboard MSI PRO B760M-A WiFi a $306.500, quedan 14; Motherboard Asus Prime B550M-A a $162.500, quedan 13.\nTe lo chequeo con gusto. Decime que producto estas mirando y con que lo queres usar, y lo verifico contra la ficha. Si ahi no lo aclara, lo confirmo antes de que compres; no te arriesgo un si sin estar seguro.\nPor memoria ram 32gb ddr5 tengo: Memoria ram ADATA XPG Lancer DDR5 5200 32GB Negro a $78.500; Memoria ram Kingston Fury Beast DDR5 5600 32GB Negro a $81.500; Memoria ram Crucial Pro DDR5 5600 32GB Negro a $100.500; Memoria ram Corsair Vengeance DDR5 6000 32GB Blanco a $110.000; Memoria ram G.Skill Flare X5 DDR5 6000 32GB Negro a $120.000; y 5 mas. Cual te interesa?",
   "memoria": [
    "CPU0010",
    "CPU0014",
    "CPU0004",
+   "CPU0010",
+   "CPU0011",
+   "CPU0001",
+   "CPU0002",
+   "CPU0003",
+   "CPU0012",
+   "CPU0004",
+   "CPU0013",
+   "CPU0014",
    "MBO0006",
    "MBO0004",
    "MBO0001",
    "RAM0035",
    "RAM0083",
-   "RAM0024"
+   "RAM0024",
+   "RAM0041",
+   "RAM0011",
+   "RAM0077",
+   "RAM0024",
+   "RAM0071",
+   "RAM0035",
+   "RAM0083",
+   "RAM0059",
+   "RAM0053",
+   "RAM0065"
   ]
  },
  "nuevas70b B21": {
@@ -14012,6 +15288,23 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "FUE0005"
+      ],
+      "elegido": "FUE0005",
+      "veredicto": "coincide",
+      "datos": [
+       {
+        "id": "FUE0005",
+        "nombre": "Fuente Thermaltake Smart 600W",
+        "rubro": "fuente",
+        "precio": 68500,
+        "stock": 9
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -14076,11 +15369,12 @@
     ]
    }
   ],
-  "respuesta": "Estabilizador de tension pc no hay. Lo mas cercano: Fuente Gigabyte P650B a $98.500.\nPor fuente de alimentacion 600w tengo: Fuente Thermaltake Smart 600W a $68.500, quedan 9; Fuente EVGA 600 BR a $85.000, quedan 2; Fuente Gigabyte P650B a $98.500, quedan 25.\nUps no hay. Lo mas cercano: Fuente Gigabyte UD750GM a $145.500.",
+  "respuesta": "Estabilizador de tension pc no hay. Lo mas cercano: Fuente Gigabyte P650B a $98.500.\nFuente Thermaltake Smart 600W a $68.500, quedan 9.\nUps no hay. Lo mas cercano: Fuente Gigabyte UD750GM a $145.500.",
   "memoria": [
    "FUE0005",
    "FUE0003",
-   "FUE0006"
+   "FUE0006",
+   "FUE0005"
   ]
  },
  "nuevas70b B30": {
@@ -16226,6 +17520,249 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "RAM0001",
+       "RAM0043",
+       "RAM0003",
+       "RAM0045",
+       "RAM0025",
+       "RAM0091",
+       "RAM0013",
+       "RAM0027",
+       "RAM0005",
+       "RAM0047",
+       "RAM0085",
+       "RAM0015",
+       "RAM0029",
+       "RAM0093",
+       "RAM0087",
+       "RAM0017",
+       "RAM0095",
+       "RAM0089"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "RAM0001",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 34500,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0043",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 38500,
+        "stock": 9,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0003",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 41000,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0045",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 43500,
+        "stock": 15,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0025",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 44000,
+        "stock": 10,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 8GB"
+        ]
+       },
+       {
+        "id": "RAM0091",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48000,
+        "stock": 5,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0013",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48500,
+        "stock": 25,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0027",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 48500,
+        "stock": 12,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 16GB"
+        ]
+       },
+       {
+        "id": "RAM0005",
+        "nombre": "Memoria ram Kingston Fury Beast DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 49500,
+        "stock": 17,
+        "modelo": [
+         "memoria ram",
+         "Kingston",
+         "Fury Beast DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0047",
+        "nombre": "Memoria ram Patriot Viper DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 52500,
+        "stock": 7,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0085",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 8GB Negro",
+        "rubro": "memoria ram",
+        "precio": 53000,
+        "stock": 18,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 8GB"
+        ]
+       },
+       {
+        "id": "RAM0015",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 57000,
+        "stock": 16,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0029",
+        "nombre": "Memoria ram G.Skill Ripjaws V DDR4 3200 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 57000,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "G.Skill",
+         "Ripjaws V DDR4 3200 32GB"
+        ]
+       },
+       {
+        "id": "RAM0093",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 58000,
+        "stock": 12,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0087",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 16GB Negro",
+        "rubro": "memoria ram",
+        "precio": 63500,
+        "stock": 23,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 16GB"
+        ]
+       },
+       {
+        "id": "RAM0017",
+        "nombre": "Memoria ram Corsair Vengeance LPX DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 65000,
+        "stock": 4,
+        "modelo": [
+         "memoria ram",
+         "Corsair",
+         "Vengeance LPX DDR4 3600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0095",
+        "nombre": "Memoria ram Patriot Viper Steel DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 68500,
+        "stock": 2,
+        "modelo": [
+         "memoria ram",
+         "Patriot",
+         "Viper Steel DDR4 3600 32GB"
+        ]
+       },
+       {
+        "id": "RAM0089",
+        "nombre": "Memoria ram ADATA XPG Spectrix DDR4 3600 32GB Negro",
+        "rubro": "memoria ram",
+        "precio": 69000,
+        "stock": 21,
+        "modelo": [
+         "memoria ram",
+         "ADATA",
+         "XPG Spectrix DDR4 3600 32GB"
+        ]
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -16321,11 +17858,29 @@
     ]
    }
   ],
-  "respuesta": "Por memoria ram 8gb ddr4 tengo: Memoria ram Patriot Viper DDR4 3200 8GB Negro a $38.500, quedan 9; Memoria ram ADATA XPG Spectrix DDR4 3600 8GB Negro a $53.000, quedan 18; Memoria ram Patriot Viper Steel DDR4 3600 8GB Negro a $48.000, quedan 5.\nPor ssd 1tb tengo: Ssd Samsung 980 1TB a $44.000, quedan 19; Ssd Kingston KC3000 1TB a $127.000, quedan 9; Ssd Samsung 980 PRO 1TB a $117.000, quedan 24.",
+  "respuesta": "Por memoria ram 8gb ddr4 tengo: Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500; Memoria ram Patriot Viper DDR4 3200 8GB Negro a $38.500; Memoria ram Kingston Fury Beast DDR4 3200 16GB Negro a $41.000; Memoria ram Patriot Viper DDR4 3200 16GB Negro a $43.500; Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro a $44.000; y 13 mas. Cual te interesa?\nPor ssd 1tb tengo: Ssd Samsung 980 1TB a $44.000, quedan 19; Ssd Kingston KC3000 1TB a $127.000, quedan 9; Ssd Samsung 980 PRO 1TB a $117.000, quedan 24.",
   "memoria": [
    "RAM0043",
    "RAM0085",
    "RAM0091",
+   "RAM0001",
+   "RAM0043",
+   "RAM0003",
+   "RAM0045",
+   "RAM0025",
+   "RAM0091",
+   "RAM0013",
+   "RAM0027",
+   "RAM0005",
+   "RAM0047",
+   "RAM0085",
+   "RAM0015",
+   "RAM0029",
+   "RAM0093",
+   "RAM0087",
+   "RAM0017",
+   "RAM0095",
+   "RAM0089",
    "SSD0002",
    "SSD0014",
    "SSD0005"
@@ -16391,10 +17946,142 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "MOU0009",
+       "MOU0035",
+       "MOU0001",
+       "MOU0004",
+       "MOU0029",
+       "MOU0051",
+       "MOU0031",
+       "MOU0005",
+       "MOU0033",
+       "MOU0007"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "MOU0009",
+        "nombre": "Mouse Logitech M170 Negro",
+        "rubro": "mouse",
+        "precio": 12000,
+        "stock": 16,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "M170"
+        ]
+       },
+       {
+        "id": "MOU0035",
+        "nombre": "Mouse Logitech M220 Silent Negro",
+        "rubro": "mouse",
+        "precio": 18000,
+        "stock": 21,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "M220 Silent"
+        ]
+       },
+       {
+        "id": "MOU0001",
+        "nombre": "Mouse Logitech G203 Lightsync Negro",
+        "rubro": "mouse",
+        "precio": 37500,
+        "stock": 5,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "G203 Lightsync"
+        ]
+       },
+       {
+        "id": "MOU0004",
+        "nombre": "Mouse Logitech G502 Hero Blanco",
+        "rubro": "mouse",
+        "precio": 70000,
+        "stock": 2,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "G502 Hero"
+        ]
+       },
+       {
+        "id": "MOU0029",
+        "nombre": "Mouse Logitech G305 Lightspeed Negro",
+        "rubro": "mouse",
+        "precio": 80500,
+        "stock": 9,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "G305 Lightspeed"
+        ]
+       },
+       {
+        "id": "MOU0051",
+        "nombre": "Mouse Logitech G600 MMO Negro",
+        "rubro": "mouse",
+        "precio": 105500,
+        "stock": 3,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "G600 MMO"
+        ]
+       },
+       {
+        "id": "MOU0031",
+        "nombre": "Mouse Logitech G502 X Negro",
+        "rubro": "mouse",
+        "precio": 140500,
+        "stock": 13,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "G502 X"
+        ]
+       },
+       {
+        "id": "MOU0005",
+        "nombre": "Mouse Logitech G Pro X Superlight Negro",
+        "rubro": "mouse",
+        "precio": 163000,
+        "stock": 5,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "G Pro X Superlight"
+        ]
+       },
+       {
+        "id": "MOU0033",
+        "nombre": "Mouse Logitech G Pro Wireless Negro",
+        "rubro": "mouse",
+        "precio": 186000,
+        "stock": 24,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "G Pro Wireless"
+        ]
+       },
+       {
+        "id": "MOU0007",
+        "nombre": "Mouse Logitech MX Master 3S Negro",
+        "rubro": "mouse",
+        "precio": 203000,
+        "stock": 7,
+        "modelo": [
+         "mouse",
+         "Logitech",
+         "MX Master 3S"
+        ]
+       }
+      ]
      },
      {
       "nexo": "tema",
@@ -16466,10 +18153,90 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "TEC0029",
+       "TEC0003",
+       "TEC0025",
+       "TEC0006",
+       "TEC0027",
+       "TEC0001"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "TEC0029",
+        "nombre": "Teclado Logitech K120 Negro",
+        "rubro": "teclado",
+        "precio": 14500,
+        "stock": 4,
+        "modelo": [
+         "teclado",
+         "Logitech",
+         "K120"
+        ]
+       },
+       {
+        "id": "TEC0003",
+        "nombre": "Teclado Logitech K380 Negro",
+        "rubro": "teclado",
+        "precio": 55000,
+        "stock": 3,
+        "modelo": [
+         "teclado",
+         "Logitech",
+         "K380"
+        ]
+       },
+       {
+        "id": "TEC0025",
+        "nombre": "Teclado Logitech G213 Prodigy Negro",
+        "rubro": "teclado",
+        "precio": 61500,
+        "stock": 16,
+        "modelo": [
+         "teclado",
+         "Logitech",
+         "G213 Prodigy"
+        ]
+       },
+       {
+        "id": "TEC0006",
+        "nombre": "Teclado Logitech G413 TKL SE Blanco",
+        "rubro": "teclado",
+        "precio": 98500,
+        "stock": 5,
+        "modelo": [
+         "teclado",
+         "Logitech",
+         "G413 TKL SE"
+        ]
+       },
+       {
+        "id": "TEC0027",
+        "nombre": "Teclado Logitech MX Keys S Negro",
+        "rubro": "teclado",
+        "precio": 257500,
+        "stock": 25,
+        "modelo": [
+         "teclado",
+         "Logitech",
+         "MX Keys S"
+        ]
+       },
+       {
+        "id": "TEC0001",
+        "nombre": "Teclado Logitech G915 TKL Negro",
+        "rubro": "teclado",
+        "precio": 512500,
+        "stock": 8,
+        "modelo": [
+         "teclado",
+         "Logitech",
+         "G915 TKL"
+        ]
+       }
+      ]
      },
      {
       "nexo": "tema",
@@ -16541,10 +18308,64 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "AUR0007",
+       "AUR0029",
+       "AUR0027",
+       "AUR0005"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "AUR0007",
+        "nombre": "Auriculares Logitech G435 Negro",
+        "rubro": "auriculares",
+        "precio": 97000,
+        "stock": 8,
+        "modelo": [
+         "auriculares",
+         "Logitech",
+         "G435"
+        ]
+       },
+       {
+        "id": "AUR0029",
+        "nombre": "Auriculares Logitech G535 Negro",
+        "rubro": "auriculares",
+        "precio": 159500,
+        "stock": 4,
+        "modelo": [
+         "auriculares",
+         "Logitech",
+         "G535"
+        ]
+       },
+       {
+        "id": "AUR0027",
+        "nombre": "Auriculares Logitech G733 Lightspeed Negro",
+        "rubro": "auriculares",
+        "precio": 250000,
+        "stock": 21,
+        "modelo": [
+         "auriculares",
+         "Logitech",
+         "G733 Lightspeed"
+        ]
+       },
+       {
+        "id": "AUR0005",
+        "nombre": "Auriculares Logitech G Pro X Negro",
+        "rubro": "auriculares",
+        "precio": 284000,
+        "stock": 10,
+        "modelo": [
+         "auriculares",
+         "Logitech",
+         "G Pro X"
+        ]
+       }
+      ]
      },
      {
       "nexo": "tema",
@@ -16560,17 +18381,37 @@
     ]
    }
   ],
-  "respuesta": "Por mouse logitech tengo: Mouse Logitech M170 Negro a $12.000, quedan 16; Mouse Logitech G502 X Negro a $140.500, quedan 13; Mouse Logitech G600 MMO Negro a $105.500, quedan 3.\nPor teclado logitech tengo: Teclado Logitech K120 Negro a $14.500, quedan 4; Teclado Logitech G213 Prodigy Negro a $61.500, quedan 16; Teclado Logitech MX Keys S Negro a $257.500, quedan 25.\nPor auriculares logitech tengo: Auriculares Logitech G435 Negro a $97.000, quedan 8; Auriculares Logitech G535 Negro a $159.500, quedan 4; Auriculares Logitech G733 Lightspeed Negro a $250.000, quedan 21.",
+  "respuesta": "Por mouse logitech tengo: Mouse Logitech M170 Negro a $12.000; Mouse Logitech M220 Silent Negro a $18.000; Mouse Logitech G203 Lightsync Negro a $37.500; Mouse Logitech G502 Hero Blanco a $70.000; Mouse Logitech G305 Lightspeed Negro a $80.500; y 5 mas. Cual te interesa?\nPor teclado logitech tengo: Teclado Logitech K120 Negro a $14.500; Teclado Logitech K380 Negro a $55.000; Teclado Logitech G213 Prodigy Negro a $61.500; Teclado Logitech G413 TKL SE Blanco a $98.500; Teclado Logitech MX Keys S Negro a $257.500; y 1 mas. Cual te interesa?\nPor auriculares logitech tengo: Auriculares Logitech G435 Negro a $97.000; Auriculares Logitech G535 Negro a $159.500; Auriculares Logitech G733 Lightspeed Negro a $250.000; Auriculares Logitech G Pro X Negro a $284.000. Cual te interesa?",
   "memoria": [
    "MOU0009",
    "MOU0031",
    "MOU0051",
+   "MOU0009",
+   "MOU0035",
+   "MOU0001",
+   "MOU0004",
+   "MOU0029",
+   "MOU0051",
+   "MOU0031",
+   "MOU0005",
+   "MOU0033",
+   "MOU0007",
    "TEC0029",
    "TEC0025",
    "TEC0027",
+   "TEC0029",
+   "TEC0003",
+   "TEC0025",
+   "TEC0006",
+   "TEC0027",
+   "TEC0001",
    "AUR0007",
    "AUR0029",
-   "AUR0027"
+   "AUR0027",
+   "AUR0007",
+   "AUR0029",
+   "AUR0027",
+   "AUR0005"
   ]
  },
  "nuevas70b B52": {
@@ -17035,6 +18876,19 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "no hay",
+      "datos": {
+       "palabras": [
+        "curvo",
+        "32"
+       ],
+       "rubro": "monitor"
+      }
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -17055,7 +18909,7 @@
     ]
    }
   ],
-  "respuesta": "Por silla gamer tengo: Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10.\nPor monitor curvo 32 pulgadas tengo: Monitor LG 32GN600 a $417.500, quedan 10; Monitor Samsung Odyssey G5 32 a $480.000, quedan 18; Monitor LG 29WP60G UltraWide a $409.500, quedan 22.",
+  "respuesta": "Por silla gamer tengo: Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10.\nMonitor curvo 32 pulgadas no lo tengo.",
   "memoria": [
    "SIL0007",
    "SIL0037",
@@ -19248,10 +21102,64 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "PAR0010",
+       "PAR0031",
+       "PAR0013",
+       "PAR0028"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "PAR0010",
+        "nombre": "Parlante JBL Go 3 Negro",
+        "rubro": "parlante",
+        "precio": 57000,
+        "stock": 4,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Go 3"
+        ]
+       },
+       {
+        "id": "PAR0031",
+        "nombre": "Parlante JBL Clip 4 Negro",
+        "rubro": "parlante",
+        "precio": 75500,
+        "stock": 7,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Clip 4"
+        ]
+       },
+       {
+        "id": "PAR0013",
+        "nombre": "Parlante JBL Flip 6 Negro",
+        "rubro": "parlante",
+        "precio": 168500,
+        "stock": 20,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Flip 6"
+        ]
+       },
+       {
+        "id": "PAR0028",
+        "nombre": "Parlante JBL Charge 5 Negro",
+        "rubro": "parlante",
+        "precio": 210000,
+        "stock": 2,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Charge 5"
+        ]
+       }
+      ]
      },
      {
       "nexo": "tema",
@@ -19321,11 +21229,15 @@
     ]
    }
   ],
-  "respuesta": "Por parlante jbl tengo: Parlante JBL Charge 5 Negro a $210.000, quedan 2; Parlante JBL Go 3 Negro a $57.000, quedan 4; Parlante JBL Flip 6 Negro a $168.500, quedan 20.\nAirpods no hay. Lo mas cercano: Auriculares JBL Tune 520BT Negro a $87.500.",
+  "respuesta": "Por parlante jbl tengo: Parlante JBL Go 3 Negro a $57.000; Parlante JBL Clip 4 Negro a $75.500; Parlante JBL Flip 6 Negro a $168.500; Parlante JBL Charge 5 Negro a $210.000. Cual te interesa?\nAirpods no hay. Lo mas cercano: Auriculares JBL Tune 520BT Negro a $87.500.",
   "memoria": [
    "PAR0028",
    "PAR0010",
-   "PAR0013"
+   "PAR0013",
+   "PAR0010",
+   "PAR0031",
+   "PAR0013",
+   "PAR0028"
   ]
  },
  "nuevas70b B68": {
@@ -19358,6 +21270,158 @@
          "placa de video",
          "Asus",
          "Dual RTX 4060"
+        ]
+       },
+       {
+        "id": "GPU0005",
+        "nombre": "Placa de video Asus TUF RTX 4080 Super",
+        "rubro": "placa de video",
+        "precio": 2620500,
+        "stock": 8,
+        "modelo": [
+         "placa de video",
+         "Asus",
+         "TUF RTX 4080 Super"
+        ]
+       },
+       {
+        "id": "GPU0011",
+        "nombre": "Placa de video Asus ROG Strix RTX 4080 Super",
+        "rubro": "placa de video",
+        "precio": 2962000,
+        "stock": 24,
+        "modelo": [
+         "placa de video",
+         "Asus",
+         "ROG Strix RTX 4080 Super"
+        ]
+       }
+      ]
+     },
+     {
+      "nexo": "nombrado",
+      "candidatos": [
+       "GPU0012",
+       "GPU0001",
+       "GPU0002",
+       "GPU0014",
+       "GPU0006",
+       "GPU0003",
+       "GPU0010",
+       "GPU0004",
+       "GPU0013",
+       "GPU0005",
+       "GPU0011"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "GPU0012",
+        "nombre": "Placa de video Gigabyte Eagle RTX 4060",
+        "rubro": "placa de video",
+        "precio": 601000,
+        "stock": 22,
+        "modelo": [
+         "placa de video",
+         "Gigabyte",
+         "Eagle RTX 4060"
+        ]
+       },
+       {
+        "id": "GPU0001",
+        "nombre": "Placa de video Asus Dual RTX 4060",
+        "rubro": "placa de video",
+        "precio": 652000,
+        "stock": 20,
+        "modelo": [
+         "placa de video",
+         "Asus",
+         "Dual RTX 4060"
+        ]
+       },
+       {
+        "id": "GPU0002",
+        "nombre": "Placa de video Gigabyte Gaming OC RTX 4060 Ti",
+        "rubro": "placa de video",
+        "precio": 758500,
+        "stock": 1,
+        "modelo": [
+         "placa de video",
+         "Gigabyte",
+         "Gaming OC RTX 4060 Ti"
+        ]
+       },
+       {
+        "id": "GPU0014",
+        "nombre": "Placa de video Zotac Twin Edge RTX 4060 Ti",
+        "rubro": "placa de video",
+        "precio": 777500,
+        "stock": 21,
+        "modelo": [
+         "placa de video",
+         "Zotac",
+         "Twin Edge RTX 4060 Ti"
+        ]
+       },
+       {
+        "id": "GPU0006",
+        "nombre": "Placa de video Zotac Trinity RTX 4070",
+        "rubro": "placa de video",
+        "precio": 1118500,
+        "stock": 21,
+        "modelo": [
+         "placa de video",
+         "Zotac",
+         "Trinity RTX 4070"
+        ]
+       },
+       {
+        "id": "GPU0003",
+        "nombre": "Placa de video MSI Ventus 2X RTX 4070 Super",
+        "rubro": "placa de video",
+        "precio": 1221000,
+        "stock": 2,
+        "modelo": [
+         "placa de video",
+         "MSI",
+         "Ventus 2X RTX 4070 Super"
+        ]
+       },
+       {
+        "id": "GPU0010",
+        "nombre": "Placa de video Asus Dual RTX 4070 Super",
+        "rubro": "placa de video",
+        "precio": 1249000,
+        "stock": 3,
+        "modelo": [
+         "placa de video",
+         "Asus",
+         "Dual RTX 4070 Super"
+        ]
+       },
+       {
+        "id": "GPU0004",
+        "nombre": "Placa de video Gigabyte Gaming OC RTX 4070 Ti Super",
+        "rubro": "placa de video",
+        "precio": 1783500,
+        "stock": 5,
+        "modelo": [
+         "placa de video",
+         "Gigabyte",
+         "Gaming OC RTX 4070 Ti Super"
+        ]
+       },
+       {
+        "id": "GPU0013",
+        "nombre": "Placa de video MSI Gaming X RTX 4070 Ti Super",
+        "rubro": "placa de video",
+        "precio": 1900000,
+        "stock": 4,
+        "modelo": [
+         "placa de video",
+         "MSI",
+         "Gaming X RTX 4070 Ti Super"
         ]
        },
        {
@@ -19455,6 +21519,54 @@
       ]
      },
      {
+      "nexo": "nombrado",
+      "candidatos": [
+       "CPU0007",
+       "CPU0017",
+       "CPU0008"
+      ],
+      "elegido": null,
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "CPU0007",
+        "nombre": "Procesador AMD Ryzen 7 5800X3D",
+        "rubro": "procesador",
+        "precio": 535000,
+        "stock": 24,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 7 5800X3D"
+        ]
+       },
+       {
+        "id": "CPU0017",
+        "nombre": "Procesador AMD Ryzen 7 7700X",
+        "rubro": "procesador",
+        "precio": 617000,
+        "stock": 15,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 7 7700X"
+        ]
+       },
+       {
+        "id": "CPU0008",
+        "nombre": "Procesador AMD Ryzen 7 7800X3D",
+        "rubro": "procesador",
+        "precio": 728000,
+        "stock": 4,
+        "modelo": [
+         "procesador",
+         "AMD",
+         "Ryzen 7 7800X3D"
+        ]
+       }
+      ]
+     },
+     {
       "nexo": "condicion",
       "candidatos": [],
       "elegido": null,
@@ -19475,14 +21587,28 @@
     ]
    }
   ],
-  "respuesta": "Por rtx tengo: Placa de video Asus Dual RTX 4060 a $652.000, quedan 20; Placa de video Asus TUF RTX 4080 Super a $2.620.500, quedan 8; Placa de video Asus ROG Strix RTX 4080 Super a $2.962.000, quedan 24.\nPor ryzen 7 tengo: Procesador AMD Ryzen 7 7800X3D a $728.000, quedan 4; Procesador AMD Ryzen 7 7700X a $617.000, quedan 15; Procesador AMD Ryzen 7 5800X3D a $535.000, quedan 24.",
+  "respuesta": "Por rtx tengo: Placa de video Gigabyte Eagle RTX 4060 a $601.000; Placa de video Asus Dual RTX 4060 a $652.000; Placa de video Gigabyte Gaming OC RTX 4060 Ti a $758.500; Placa de video Zotac Twin Edge RTX 4060 Ti a $777.500; Placa de video Zotac Trinity RTX 4070 a $1.118.500; y 6 mas. Cual te interesa?\nPor ryzen 7 tengo: Procesador AMD Ryzen 7 5800X3D a $535.000; Procesador AMD Ryzen 7 7700X a $617.000; Procesador AMD Ryzen 7 7800X3D a $728.000. Cual te interesa?",
   "memoria": [
    "GPU0001",
    "GPU0005",
    "GPU0011",
+   "GPU0012",
+   "GPU0001",
+   "GPU0002",
+   "GPU0014",
+   "GPU0006",
+   "GPU0003",
+   "GPU0010",
+   "GPU0004",
+   "GPU0013",
+   "GPU0005",
+   "GPU0011",
    "CPU0008",
    "CPU0017",
-   "CPU0007"
+   "CPU0007",
+   "CPU0007",
+   "CPU0017",
+   "CPU0008"
   ]
  },
  "nuevas70b B69": {
@@ -19545,10 +21671,64 @@
      },
      {
       "nexo": "nombrado",
-      "candidatos": [],
+      "candidatos": [
+       "IMP0001",
+       "IMP0011",
+       "IMP0003",
+       "IMP0013"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
-      "datos": "pendiente: el nexo no existe todavia"
+      "veredicto": "ambiguo",
+      "datos": [
+       {
+        "id": "IMP0001",
+        "nombre": "Impresora Epson EcoTank L3250 Negro",
+        "rubro": "impresora",
+        "precio": 277000,
+        "stock": 1,
+        "modelo": [
+         "impresora",
+         "Epson",
+         "EcoTank L3250"
+        ]
+       },
+       {
+        "id": "IMP0011",
+        "nombre": "Impresora Epson EcoTank L4260 Negro",
+        "rubro": "impresora",
+        "precio": 366500,
+        "stock": 20,
+        "modelo": [
+         "impresora",
+         "Epson",
+         "EcoTank L4260"
+        ]
+       },
+       {
+        "id": "IMP0003",
+        "nombre": "Impresora Epson EcoTank L3560 Negro",
+        "rubro": "impresora",
+        "precio": 381000,
+        "stock": 14,
+        "modelo": [
+         "impresora",
+         "Epson",
+         "EcoTank L3560"
+        ]
+       },
+       {
+        "id": "IMP0013",
+        "nombre": "Impresora Epson EcoTank L5590 Negro",
+        "rubro": "impresora",
+        "precio": 532500,
+        "stock": 18,
+        "modelo": [
+         "impresora",
+         "Epson",
+         "EcoTank L5590"
+        ]
+       }
+      ]
      },
      {
       "nexo": "condicion",
@@ -19622,11 +21802,15 @@
     ]
    }
   ],
-  "respuesta": "Por epson tinta continua tengo: Impresora Epson EcoTank L3250 Negro a $277.000, quedan 1; Impresora Epson EcoTank L4260 Negro a $366.500, quedan 20; Impresora Epson EcoTank L3560 Negro a $381.000, quedan 14.\nPen drive 64gb no hay. Lo mas cercano: Almacenamiento externo Kingston DataTraveler Exodia 1TB Negro a $13.500.",
+  "respuesta": "Por epson tinta continua tengo: Impresora Epson EcoTank L3250 Negro a $277.000; Impresora Epson EcoTank L4260 Negro a $366.500; Impresora Epson EcoTank L3560 Negro a $381.000; Impresora Epson EcoTank L5590 Negro a $532.500. Cual te interesa?\nPen drive 64gb no hay. Lo mas cercano: Almacenamiento externo Kingston DataTraveler Exodia 1TB Negro a $13.500.",
   "memoria": [
    "IMP0001",
    "IMP0011",
-   "IMP0003"
+   "IMP0003",
+   "IMP0001",
+   "IMP0011",
+   "IMP0003",
+   "IMP0013"
   ]
  },
  "nuevas70b B70": {
