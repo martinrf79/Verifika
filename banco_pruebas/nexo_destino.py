@@ -63,6 +63,7 @@ def veredicto(r, ciudad):
 def main():
     instalar()
     import engranaje0 as E
+    from app.core.flujo.normal import lugares
     from app.core.fuente import _cotizar
     from nuevas70 import CASOS
     filas = {(r["modelo"], r["id"]): r for r in map(json.loads, open(E.SALIDA)) if r["v"] == "v2"}
@@ -78,7 +79,9 @@ def main():
                     detalle.append((cid, d, "perdido", None, None))
                     continue
                 campo = min(campos, key=len)
-                r = _cotizar(campo)
+                # Como el camino vivo, `normal.envio_a_varios`: un campo con varios lugares es un envio por cada uno.
+                partes = [f for f, _ in lugares(campo)]
+                r = _cotizar(next((f for f in partes if E.n(d) in E.n(f)), campo) if len(partes) > 1 else campo)
                 v = veredicto(r, d)
                 cuenta[v] += 1
                 if v != "bien":

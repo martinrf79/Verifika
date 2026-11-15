@@ -359,7 +359,7 @@ El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad
 
 ### 7 PEDIDO Y CUENTA
 
-El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3415 lineas.
+El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3419 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -471,12 +471,12 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.interprete | `numeros` | 16 | · | si |
 | core.flujo.normal | `_lista` | 2 | · | si |
 | core.flujo.normal | `_es` | 2 | · | si |
-| core.flujo.normal | `lugares` | 26 | 6 | si |
+| core.flujo.normal | `lugares` | 29 | 6 | si |
 | core.flujo.normal | `_Ctx` (clase) | 21 | · | si |
 | core.flujo.normal | `si_sin_efecto` | 18 | · | si |
 | core.flujo.normal | `precio_con_envio` | 9 | · | si |
 | core.flujo.normal | `politica_de_envio_con_lugar` | 22 | · | si |
-| core.flujo.normal | `envio_a_varios` | 13 | · | si |
+| core.flujo.normal | `envio_a_varios` | 14 | · | si |
 | core.flujo.normal | `un_destino_para_el_pedido` | 22 | · | si |
 | core.flujo.normal | `cuenta_de_lo_buscado` | 19 | · | si |
 | core.flujo.normal | `cuenta_de_lo_nombrado` | 18 | · | si |

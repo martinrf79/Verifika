@@ -39,23 +39,26 @@ def lugares(texto: str) -> list:
     la direccion del lugar anterior, y una ciudad seguida de su provincia es un solo lugar: "Posadas, Misiones". Desde
     el 26-oct, FICHA 82, la direccion es una palabra con su altura, "Belgrano 1234": antes cualquier numero tapaba el
     lugar, y "un G203 a Rosario" perdia Rosario por el modelo."""
-    from app.core import geo_cp
-    from app.core.envio import clasificar_provincia
+    from app.core import envio, geo_cp
     out = []
     for parte in re.split(r"[,;]|\by\b|\be\b", str(texto or "")):
         parte = parte.strip()
         if not parte or re.search(r"[^\W\d]\s+\d{2,5}\b", parte):
             continue
-        prov = clasificar_provincia(parte)
+        # EL CONURBANO NO TIENE PROVINCIA EN EL PADRON, 15-nov: Lanus o Quilmes se perdian enteros y "envio a Lanus" no se
+        # cotizaba. Lo ubica la zona de envio, con el nombre del partido que dijo, y cada partido es un lugar aparte.
+        prov = envio.clasificar_provincia(parte) or ("gba" if envio.clasificar_zona(parte) == "gba" else None)
         if not prov:
             continue
         palabras, hits = geo_cp._localidades_en_texto(geo_cp._norm(parte))
         hits = sorted(h for h in [(i, f, loc) for loc, i, f in hits] if prov in geo_cp._LOC.get(h[2], {}))
-        nombre = " ".join(palabras[hits[0][0]:hits[0][1]]) if hits else prov if prov in K.n(parte) else K.n(parte).strip()
+        gba = [p for p in envio._PARTIDOS_GBA if prov == "gba" and re.search(rf"\b{re.escape(K.n(p))}\b", K.n(parte))]
+        nombre = " ".join(palabras[hits[0][0]:hits[0][1]]) if hits else max(gba, key=len) if gba else \
+            prov if prov in K.n(parte) else K.n(parte).strip()
         plano, i = K.n(parte), K.n(parte).find(K.n(nombre))
         if i >= 0 and len(plano) == len(parte):
             nombre = parte[i:i + len(nombre)]  # como lo escribio el cliente: "Posadas", no "posadas"
-        if out and out[-1][1] == prov and (K.n(nombre) == K.n(prov) or not hits):
+        if out and out[-1][1] == prov != "gba" and (K.n(nombre) == K.n(prov) or not hits):
             continue
         out.append((nombre, prov))
     return out
@@ -145,8 +148,9 @@ def envio_a_varios(c: _Ctx) -> bool:
     """UN ENVIO A UN DESTINO QUE NOMBRA VARIOS LUGARES —"Rosario y Mendoza"— es un envio por cada uno."""
     hizo, nuevas = False, []
     for p in c.ps:
-        ls = lugares(p.get("destino")) if p.get("accion") == "envio" else []
-        if len(ls) > 1 and len({pr for _, pr in ls}) > 1:
+        # Dos lugares de la misma provincia son dos envios, 15-nov: "Mar del Plata y Tandil" quedaba en uno. Una ciudad con
+        # su provincia, "Posadas, Misiones", ya llega como un solo lugar desde `lugares`.
+        if p.get("accion") == "envio" and len(ls := lugares(p.get("destino"))) > 1:
             nuevas += [{**p, "n": p.get("n") if i == 0 else None, "destino": f} for i, (f, _) in enumerate(ls)]
             hizo = True
         else:
