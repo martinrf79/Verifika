@@ -15,24 +15,18 @@ corresponde a cada producto pedido, y con que relacion.
 
   PIEZA 2, LA SEGUNDA BUSQUEDA, EN ESCALERA. En los dos primeros rubros de la fusion, los modelos de la tienda se buscan
   con las mismas dos consultas y se funden igual. Salen cinco modelos por rubro, cada uno con su fila mas barata con
-  stock, tal cual del catalogo. Sin el reordenador, el codigo usa los del primer rubro.
+  stock, tal cual del catalogo. El codigo usa los del primer rubro.
 
-  PIEZA 3, LA RELACION, POR EL REORDENADOR DE GOOGLE. El Ranking API de Vertex AI lee la consulta y cada fila juntas y
-  da cuanto la responde, de 0 a 1. Se le pregunta con las palabras del cliente y con la busqueda del modelo, y vale el
-  mayor. Mide si separa lo que la tienda vende de lo que no; el corte lo decide Martin viendo los numeros, no se pone
-  antes. Va con la cuenta del proyecto, con la paga.
-
-LO QUE ENTREGA AL CODIGO, por producto: el rubro, los candidatos, las filas reales y la relacion: coincide, no esta o no
-se. Mas el envio del nexo de destino. `redactar` arma la respuesta robotica solo con eso.
+LO QUE ENTREGA AL CODIGO, por producto: el rubro, los candidatos y las filas reales. Mas el envio del nexo de destino.
+`redactar` arma la respuesta robotica solo con eso, sin afirmar que sea lo pedido ni negarlo. La relacion, si lo hallado
+es lo pedido, se saco el 15-nov por orden de Martin, con el reordenador de Google: esta en git, ee23087.
 
 LA VARA, escrita antes de correr:
   vende     el rubro esperado primero en la fusion, de 77 por modelo; y entre los candidatos de la escalera.
-  no vende  sin reordenador, los 21 quedan en "no se": es el numero a mejorar. Con reordenador, el puntaje de cada uno
-            contra el de lo que se vende: si no se pisan, el corte separa sin error.
+  no vende  los 21 quedan en "lo mas cercano": el codigo no los detecta, es el numero a mejorar.
   la respuesta  cada fila que cita esta en el catalogo con ese precio y ese rubro, y cada producto tiene su linea.
 
     MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/nexo_rubro.py --embeddings   # los puntajes, centavos
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/nexo_rubro.py --reordenar    # el reordenador, centavos
     python3 banco_pruebas/nexo_rubro.py [--ver]                                         # califica, sin gasto
 """
 import collections
@@ -42,17 +36,14 @@ import logging
 import os
 import re
 import sys
-import urllib.request
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(AQUI)
 sys.path[:0] = [REPO, AQUI]
 TID = "verifika_prod"
-PROYECTO = "memory-engine-v1"
 # Los puntajes de cada consulta contra cada rubro y cada modelo; los vectores enteros pesan cincuenta megas y quedan en el
 # cache de la sesion.
 PUNTAJES = os.path.join(AQUI, "nexo_rubro_puntajes.json")
-REORDEN = os.path.join(AQUI, "nexo_rubro_reorden.json")
 CACHE = "/tmp/claude-0/-home-user-Verifika/24fd8d4f-83e9-558a-8fef-87f530845b0a/scratchpad/nexo_rubro_vectores.json"
 MODELOS = ("gemini", "haiku", "deepseek")
 TOTAL_VENDE = 77
@@ -125,28 +116,6 @@ def embeddings():
     print(f"{len(rubros)} rubros, {len(ms)} modelos, {len(qs)} consultas; vectores pagados ahora: {len(faltan)}")
 
 
-# ══ EL REORDENADOR ═══════════════════════════════════════════════════════════
-def _token():
-    import base64
-    import google.auth.transport.requests as R
-    from google.oauth2 import service_account
-    info = json.loads(base64.b64decode(os.environ["GCP_SA_KEY_B64"]))
-    c = service_account.Credentials.from_service_account_info(info, scopes=["https://www.googleapis.com/auth/cloud-platform"])
-    c.refresh(R.Request())
-    return c.token
-
-
-def reordenar_uno(token, consulta, registros):
-    """{id: puntaje} del Ranking API de Vertex AI para esa consulta y esos registros."""
-    url = (f"https://discoveryengine.googleapis.com/v1/projects/{PROYECTO}/locations/global/rankingConfigs/"
-           "default_ranking_config:rank")
-    body = {"model": "semantic-ranker-default@latest", "query": consulta, "topN": len(registros),
-            "records": [{"id": i, "content": t} for i, t in registros]}
-    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={
-        "Authorization": f"Bearer {token}", "Content-Type": "application/json", "x-goog-user-project": PROYECTO})
-    return {r["id"]: r.get("score", 0.0) for r in json.load(urllib.request.urlopen(req, timeout=60)).get("records", [])}
-
-
 # ══ EL NEXO ══════════════════════════════════════════════════════════════════
 def fundir(*rankings):
     """La fusion por posicion: cada clave suma 1/(K + puesto) en cada ranking. Sin puntajes, sin umbral."""
@@ -162,7 +131,6 @@ class Nexo:
         self.filas, self.alias, _, self.modelos = fuente()
         p = json.load(open(PUNTAJES, encoding="utf-8"))
         self.rubros, self.ms, self.q = p["rubros"], [tuple(m) for m in p["modelos"]], p["consultas"]
-        self.reorden = json.load(open(REORDEN, encoding="utf-8")) if os.path.exists(REORDEN) else {}
 
     def _rank_rubros(self, q):
         return [r for _, r in sorted(zip(self.q[q]["r"], self.rubros), reverse=True)] if q else []
@@ -194,24 +162,11 @@ class Nexo:
             out += filas
         return out
 
-    def relacion(self, m0, cands):
-        """PIEZA 3: el reordenador, si ya corrio para esta consulta; si no, no se."""
-        p = {}
-        for q in (m0["fragmento"], m0["busqueda"]):
-            for i, s in (self.reorden.get(q) or {}).items():
-                p[i] = max(p.get(i, 0.0), s)
-        if not p:
-            return {"relacion": "no se", "mejor": None, "puntaje": None}
-        mejor = max((f for f in cands if f["id"] in p), key=lambda f: p[f["id"]], default=None)
-        return {"relacion": "medida", "mejor": mejor, "puntaje": p[mejor["id"]] if mejor else None}
-
     def producto(self, linea):
         m0 = self.momento_cero(linea)
         cands = self.escalera(m0)
-        rel = self.relacion(m0, cands)
-        rubro = rel["mejor"]["rubro"] if rel["mejor"] else (m0["rubros"][0] if m0["rubros"] else None)
-        return {**m0, "rubro": rubro, "candidatos": cands, **rel,
-                "filas": [f for f in cands if f["rubro"] == rubro][:3]}
+        rubro = m0["rubros"][0] if m0["rubros"] else None
+        return {**m0, "rubro": rubro, "candidatos": cands, "filas": [f for f in cands if f["rubro"] == rubro][:3]}
 
 
 def plata(x):
@@ -219,16 +174,11 @@ def plata(x):
 
 
 def redactar(productos, envios):
-    """La respuesta robotica: solo con lo que entregaron los nexos. Sin relacion medida, no afirma que sea lo pedido."""
+    """La respuesta robotica: solo con lo que entregaron los nexos. No afirma que sea lo pedido ni lo niega."""
     partes = []
     for p in productos:
         ej = "; ".join(f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}" for f in p["filas"])
-        if p["relacion"] == "no esta":
-            partes.append(f"{p['busqueda'].capitalize()} no lo tenemos.")
-        elif p["relacion"] == "coincide":
-            partes.append(f"De {p['rubro']} tengo: {ej}.")
-        else:
-            partes.append(f"Por {p['busqueda']} no estoy seguro de tenerlo. Lo mas cercano en {p['rubro']}: {ej}.")
+        partes.append(f"Por {p['busqueda']}, lo mas cercano que tengo en {p['rubro']}: {ej}.")
     for lugar, r in envios:
         partes.append(f"El envio a {lugar} sale {plata(int(r['monto']))}." if r else
                       f"Para el envio a {lugar} necesito la provincia.")
@@ -256,29 +206,6 @@ def instalar():
     structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(logging.CRITICAL))
 
 
-def reordenar():
-    """Corre el reordenador sobre los candidatos de la escalera de cada producto, y lo guarda. Con la paga."""
-    if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
-        raise SystemExit("el reordenador va con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
-    nx = Nexo()
-    hecho = dict(nx.reorden)
-    token = _token()
-    pedidos = 0
-    for ls in lineas_v2().values():
-        for l in ls:
-            m0 = nx.momento_cero(l)
-            regs = [(f["id"], f"{f['nombre']}. Rubro: {doc_rubro(f['rubro'], nx.alias)}") for f in nx.escalera(m0)]
-            for q in (m0["fragmento"], m0["busqueda"]):
-                ya = hecho.get(q) or {}
-                falta = [x for x in regs if x[0] not in ya]
-                if q and falta:
-                    ya.update(reordenar_uno(token, q, falta))
-                    hecho[q] = ya
-                    pedidos += 1
-    json.dump(hecho, open(REORDEN, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    print(f"reordenador: {pedidos} consultas")
-
-
 # ══ LA VARA ══════════════════════════════════════════════════════════════════
 def calificar(ver=False):
     instalar()
@@ -289,9 +216,7 @@ def calificar(ver=False):
     por_id = {f["id"]: f for f in nx.filas}
     todas = lineas_v2()
     salida = {}
-    vende_p, nada_p = [], []
-    print("\nEL NEXO DE RUBRO · momento cero en equipo, escalera por embeddings fundidos, reordenador"
-          + ("" if nx.reorden else " sin correr"))
+    print("\nEL NEXO DE RUBRO · momento cero en equipo y escalera por embeddings fundidos")
     for m in MODELOS:
         c = collections.Counter()
         fallas, malas_resp = [], []
@@ -313,16 +238,11 @@ def calificar(ver=False):
                 p = prods[k]
                 if esp == "ninguno":
                     c["no vende"] += 1
-                    if p["puntaje"] is not None:
-                        nada_p.append((p["puntaje"], m, cid, p["busqueda"], p["mejor"]["nombre"]))
                     continue
                 c["vende"] += 1
                 c["fusion primero"] += p["rubros"][0] == esp
                 c["busqueda sola primero"] += p["primero_busqueda"] == esp
                 c["en la escalera"] += any(f["rubro"] == esp for f in p["candidatos"])
-                if p["puntaje"] is not None:
-                    c["reordenador en el rubro"] += p["rubro"] == esp
-                    vende_p.append((p["puntaje"], m, cid, p["busqueda"], p["mejor"]["nombre"], p["rubro"] == esp))
                 if p["rubros"][0] != esp:
                     fallas.append((cid, p["busqueda"], esp, f"fusion {p['rubros'][:3]}, busqueda sola "
                                                             f"{p['primero_busqueda']}, fragmento {p['primero_fragmento']}"))
@@ -339,24 +259,10 @@ def calificar(ver=False):
         print(f"\n  {m}: de {TOTAL_VENDE} que vende, el rubro esperado primero: fusion {c['fusion primero']}, "
               f"busqueda sola {c['busqueda sola primero']}; entre los candidatos de la escalera {c['en la escalera']}; "
               f"perdidos en la traduccion {c['perdido']}")
-        if nx.reorden:
-            print(f"    el reordenador elige una fila del rubro esperado: {c['reordenador en el rubro']}")
-        print(f"    no vende: {c['no vende']}, sin reordenador quedan en no se")
+        print(f"    no vende: {c['no vende']}, quedan en lo mas cercano")
         print(f"    la respuesta: {len(malas_resp)} filas o lineas mal")
         for x in fallas:
             print(f"    {x[0]} '{x[1]}': esperado {x[2]} · {x[3]}")
-    if vende_p and nada_p:
-        print("\n  EL REORDENADOR: el puntaje de la mejor fila")
-        b = sorted(x[0] for x in vende_p if x[5])
-        z = sorted(x[0] for x in nada_p)
-        print(f"    lo que vende, bien elegido: {len(b)}, de {b[0]:.3f} a {b[-1]:.3f}, mediana {b[len(b) // 2]:.3f}")
-        print(f"    lo que no vende: {len(z)}, de {z[0]:.3f} a {z[-1]:.3f}, mediana {z[len(z) // 2]:.3f}")
-        print(f"    se pisan: {sum(x >= b[0] for x in z)} de lo que no vende quedan por encima del menor de lo que vende")
-        if ver:
-            for x in sorted(nada_p, reverse=True):
-                print(f"    no vende {x[0]:.3f} {x[1]} {x[2]} '{x[3]}' -> {x[4]}")
-            for x in sorted(vende_p)[:15]:
-                print(f"    vende bajo {x[0]:.3f} {x[1]} {x[2]} '{x[3]}' -> {x[4]} {'bien' if x[5] else 'otro rubro'}")
     json.dump(salida, open(os.path.join(AQUI, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1, default=str)
 
@@ -364,7 +270,5 @@ def calificar(ver=False):
 if __name__ == "__main__":
     if "--embeddings" in sys.argv:
         embeddings()
-    elif "--reordenar" in sys.argv:
-        reordenar()
     else:
         calificar("--ver" in sys.argv)
