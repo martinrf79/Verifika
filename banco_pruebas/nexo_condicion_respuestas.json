@@ -1,0 +1,2360 @@
+{
+ "140 nuevas70 M01 mouse barato": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M01 auriculares baratos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M02 monitor 24 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "24 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M02 teclado mecanico": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanico",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M03 mouse inalambrico": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M04 memoria 8gb ddr4": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "8gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "8gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr4",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M04 disco solido 1tb": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "1tb",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "1tb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M05 auriculares con microfono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M05 impresora multifuncion": {
+  "rubro": "impresora",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 M06 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 M07 cargador tipo c rapido": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "tipo",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "rapido",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tipo",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ],
+   [
+    "rapido",
+    [
+     "campo|material",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M07 parlante bluetooth": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "bluetooth",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "bluetooth",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M08 procesador ryzen 5": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "ryzen 5",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen 5",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M08 motherboard compatible ryzen 5": {
+  "rubro": "motherboard",
+  "items": [
+   {
+    "parte": "ryzen 5",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compatible",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible",
+    [
+     "campo|procesador",
+     "campo|formato",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M08 memoria ram 16gb": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M08 fuente alimentacion 650w": {
+  "rubro": "fuente",
+  "items": [
+   {
+    "parte": "650w",
+    "veredicto": "ata",
+    "campo": "potencia",
+    "valor": "650w",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M09 router wifi 6": {
+  "rubro": "router",
+  "items": [
+   {
+    "parte": "wifi 6",
+    "veredicto": "no hay",
+    "campo": "caracteristicas_extra",
+    "valor": "wifi 6",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M11 microfono streaming": {
+  "rubro": "microfono",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 M12 mouse economico": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "economico",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "economico",
+    [
+     "campo|material",
+     "orden|precio",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M12 teclado economico": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "economico",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "economico",
+    [
+     "orden|precio",
+     "campo|material",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M13 monitor 27 pulgadas 144hz": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "27 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "144hz",
+    "veredicto": "ata",
+    "campo": "hz",
+    "valor": "144hz",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M13 placa de video": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 M13 gabinete airflow": {
+  "rubro": "gabinete",
+  "items": [
+   {
+    "parte": "airflow",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "airflow",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M14 disco externo 2tb": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "2tb",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "2tb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M15 auriculares inalambricos sony": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "inalambricos",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "sony",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "sony",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M15 parlante jbl grande": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "grande",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "grande",
+    [
+     "campo|garantia_meses",
+     "campo|color",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M16 silla de oficina": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 M17 cooler microprocesador": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "microprocesador",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microprocesador",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M17 fuente modular": {
+  "rubro": "fuente",
+  "items": [
+   {
+    "parte": "modular",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "modular",
+    [
+     "campo|material",
+     "campo|formato",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 M18 webcam full hd": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 R01 microfono para computadora": {
+  "rubro": "microfono",
+  "items": [
+   {
+    "parte": "computadora",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "computadora",
+    [
+     "campo|material",
+     "campo|caracteristicas_extra",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R03 monitor para notebook": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "notebook",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "notebook",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R04 notebook plegable": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "plegable",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "plegable",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R05 pendrive para celular o disco externo": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "celular",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "celular",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R06 fotocopiadora o impresora multifuncion": {
+  "rubro": "impresora",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 R07 placa de video": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 R08 gabinete pc": {
+  "rubro": "gabinete",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 R09 ventilador procesador": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "procesador",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "procesador",
+    [
+     "campo|uso_recomendado",
+     "campo|potencia",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R11 webcam para monitor": {
+  "rubro": "webcam",
+  "items": [
+   {
+    "parte": "monitor",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "monitor",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|camara"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R14 procesador para edicion de video": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "edicion de video",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "edicion de video",
+    [
+     "campo|marca",
+     "campo|garantia_meses",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R16 memoria para notebook": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "notebook",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "notebook",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R17 cajita de musica": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "musica",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "musica",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R17 cajita de musica para playa": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "musica para playa",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "musica para playa",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R18 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 O01 mouse economico": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "economico",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "economico",
+    [
+     "campo|material",
+     "orden|precio",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 O02 teclado silencioso": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "silencioso",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "silencioso",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 O03 notebook de alta gama": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "alta gama",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "alta gama",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 O04 auriculares inalámbricos no chinos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "inalambricos",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "no chinos",
+    "veredicto": "no hay",
+    "campo": "pais_fabricacion",
+    "valor": "china",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 O05 monitor hasta 200000": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "hasta 200000",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 200000,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 O06 placa de video alta gama": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "alta gama",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "alta gama",
+    [
+     "campo|uso_recomendado",
+     "campo|color",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 O07 silla 120 kg": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "120 kg",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 O08 disco externo portátil": {
+  "rubro": "almacenamiento externo",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 O09 parlante resistente al agua": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "resistente al agua",
+    "veredicto": "ata",
+    "campo": "resistencia_agua",
+    "valor": "si",
+    "niega": false,
+    "si_no": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 O10 cargador carga rapida iphone": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "rapida iphone",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapida iphone",
+    [
+     "campo|garantia_meses",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 O11 notebook liviana viaje": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "liviana",
+    "veredicto": "orden",
+    "valor": "mas liviano",
+    "por": "codigo"
+   },
+   {
+    "parte": "viaje",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "viaje",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 O12 router de largo alcance": {
+  "rubro": "router",
+  "items": [
+   {
+    "parte": "largo alcance",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "largo alcance",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 A01 mouse gamer rgb": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "rgb",
+    "veredicto": "ata",
+    "campo": "retroiluminacion",
+    "valor": "si",
+    "niega": false,
+    "si_no": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 A02 notebook 16gb ram liviana": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "liviana",
+    "veredicto": "orden",
+    "valor": "mas liviano",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 A03 headset para PC con microfono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "pc con microfono",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc con microfono",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 A04 teclado mecánico español": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanico",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "espanol",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "espanol",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 A04 teclado mecánico inglés": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanico",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ingles",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "ingles",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 A05 ssd 500gb m.2": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "500gb",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "500gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 A07 placa de video para fortnite 144 fps": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "144 fps",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "fortnite",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "fortnite",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 A09 cargador notebook 65w tipo c": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "65w",
+    "veredicto": "ata",
+    "campo": "potencia",
+    "valor": "65w",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "tipo",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tipo",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 A10 silla gamer negra": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 A10 silla gamer roja": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "roja",
+    "veredicto": "ata",
+    "campo": "color",
+    "valor": "rojo",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 A11 impresora color wifi tinta continua": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "wifi",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "wifi",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "color",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "tinta continua",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "color",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ],
+   [
+    "tinta continua",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B01 mouse inalambrico": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B01 teclado inalambrico": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B02 parlante portatil potente": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "portatil",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "portatil",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "potente",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "potente",
+    [
+     "campo|garantia_meses",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B03 fuente de alimentacion 650w": {
+  "rubro": "fuente",
+  "items": [
+   {
+    "parte": "650w",
+    "veredicto": "ata",
+    "campo": "potencia",
+    "valor": "650w",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B03 gabinete vidrio templado": {
+  "rubro": "gabinete",
+  "items": [
+   {
+    "parte": "templado",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "templado",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B04 procesador ryzen 5": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "ryzen 5",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen 5",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B06 cargador rapido tipo c": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "rapido tipo",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapido tipo",
+    [
+     "campo|caracteristicas_extra",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B07 pendrive o disco duro externo": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "duro",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "duro",
+    [
+     "campo|material",
+     "campo|almacenamiento",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B08 memoria ram 16gb": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B08 disco duro ssd nvme": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "duro",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "duro",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B09 tarjeta grafica gamer warzone": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "warzone",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "warzone",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B09 ventilador cooler microprocesador": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "microprocesador",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microprocesador",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B10 computadora portatil": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B11 tablet para dibujar": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "dibujar",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "dibujar",
+    [
+     "campo|uso_recomendado",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B12 mouses con cable": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "cable",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "cable",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B12 teclados con ñ": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "n",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "n",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B12 camara web": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B13 cascos con microfono gaming usb": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "usb",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "usb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B13 microfono de mesa para podcast usb": {
+  "rubro": "microfono",
+  "items": [
+   {
+    "parte": "mesa para podcast",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mesa para podcast",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B14 placa de video 8gb": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "8gb",
+    "veredicto": "ata",
+    "campo": "memoria_video",
+    "valor": "8gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B15 tablets niños antigolpes": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "ninos antigolpes",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "ninos antigolpes",
+    [
+     "campo|marca",
+     "campo|material",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B15 parlante bluetooth sumergible": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "bluetooth",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "bluetooth",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "sumergible",
+    "veredicto": "ata",
+    "campo": "resistencia_agua",
+    "valor": "si",
+    "niega": false,
+    "si_no": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B16 monitor gamer 144hz": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "144hz",
+    "veredicto": "ata",
+    "campo": "hz",
+    "valor": "144hz",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B16 silla ergonomica economica": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "economica",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "economica",
+    [
+     "campo|material",
+     "orden|precio",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B17 cargador notebook universal": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "universal",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "universal",
+    [
+     "campo|uso_recomendado",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B18 coolers rgb 120mm": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "120mm",
+    "veredicto": "no hay",
+    "campo": "potencia",
+    "valor": "120mm",
+    "por": "codigo"
+   },
+   {
+    "parte": "rgb",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rgb",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B19 impresora multifuncion": {
+  "rubro": "impresora",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B19 disco externo 2 teras": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "2 teras",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "2tb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B20 motherboard compatible procesador intel": {
+  "rubro": "motherboard",
+  "items": [
+   {
+    "parte": "intel",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "intel",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compatible procesador",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible procesador",
+    [
+     "campo|procesador",
+     "campo|formato",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B20 memoria ram 32gb ddr5": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "32gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "32gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B21 mouse inalambrico compacto": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compacto",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compacto",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B22 impresora laser": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "laser",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "laser",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B23 cargador rapido": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "rapido",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapido",
+    [
+     "campo|material",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B23 auriculares inalambricos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "inalambricos",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B24 parlante para smart tv": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "smart tv",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "smart tv",
+    [
+     "campo|garantia_meses",
+     "campo|marca",
+     "campo|retroiluminacion"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B25 webcam para streaming": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B26 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B27 auriculares gamer sonido envolvente": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "sonido envolvente",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "sonido envolvente",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B28 cooler para procesador": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "procesador",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "procesador",
+    [
+     "campo|uso_recomendado",
+     "campo|potencia",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B30 placa de video": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B31 auriculares vincha": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "vincha",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "vincha",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B32 monitor para computadora de escritorio": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "computadora de escritorio",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "computadora de escritorio",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|tactil"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B33 pendrive o disco duro externo": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "duro",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "duro",
+    [
+     "campo|material",
+     "campo|almacenamiento",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B34 repetidor wifi potente mesh": {
+  "rubro": "router",
+  "items": [
+   {
+    "parte": "mesh",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "mesh",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "potente",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "potente",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B35 tarjeta grafica": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B36 cooler para procesador": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "procesador",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "procesador",
+    [
+     "campo|uso_recomendado",
+     "campo|potencia",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B37 memoria ram": {
+  "rubro": "memoria ram",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B39 mouse gamer": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B41 notebook portatil bateria larga duracion": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "larga duracion",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "larga duracion",
+    [
+     "campo|uso_recomendado",
+     "campo|bateria",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B42 gabinete pc gamer luces": {
+  "rubro": "gabinete",
+  "items": [
+   {
+    "parte": "gamer luces",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "gamer luces",
+    [
+     "campo|color",
+     "campo|retroiluminacion",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B43 fuente de alimentacion pc": {
+  "rubro": "fuente",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B44 placa madre motherboard": {
+  "rubro": "motherboard",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B45 procesador mas rapido": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "mas rapido",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas rapido",
+    [
+     "campo|marca",
+     "campo|garantia_meses",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B46 disco ssd": {
+  "rubro": "ssd",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B47 webcam full hd": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B48 impresora wifi celular": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "wifi",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "wifi",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "celular",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "celular",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B50 memoria ram 8gb ddr4": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "8gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "8gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr4",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B50 ssd 1tb": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "1tb",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "1tb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B52 fuente 750w": {
+  "rubro": "fuente",
+  "items": [
+   {
+    "parte": "750w",
+    "veredicto": "ata",
+    "campo": "potencia",
+    "valor": "750w",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B52 gabinete amplio placa madre": {
+  "rubro": "gabinete",
+  "items": [
+   {
+    "parte": "amplio placa madre",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "amplio placa madre",
+    [
+     "campo|formato",
+     "campo|caracteristicas_extra",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B53 tableta para leer libros": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "leer libros",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "leer libros",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B53 cargador para tableta": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "tableta",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tableta",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B54 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B54 monitor curvo 32 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "32 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "curvo",
+    "veredicto": "no hay",
+    "campo": "modelo",
+    "valor": "curvo",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B56 disco solido 480gb": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "480gb",
+    "veredicto": "no hay",
+    "campo": "almacenamiento",
+    "valor": "480gb",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B56 memoria ram 8gb": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "8gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "8gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B58 auriculares con microfono call center": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "microfono call center",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono call center",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B59 placa madre": {
+  "rubro": "motherboard",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B59 cooler pc": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "pc",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B60 monitor 27 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "27 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B62 placa de video": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B63 notebook con windows": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "windows",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "windows",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B68 ryzen 7": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "ryzen 7",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen 7",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B69 epson tinta continua": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "epson",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "epson",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "tinta continua",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tinta continua",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B70 monitor 24 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "24 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B70 webcam con microfono": {
+  "rubro": "webcam",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ }
+}

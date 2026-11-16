@@ -12,7 +12,9 @@ lo que pasa entre ellos es el contrato. Un nexo que todavia no existe devuelve "
   paso 3, embeddings     un pedido por mensaje: las busquedas y fragmentos. En el banco, del cache de la sesion.
   paso 4, los nexos      destino, por el codigo de produccion; rubro y producto, `nexo_rubro`; tema de la FAQ, `nexo_tema`,
                          sobre todas las lineas; nombrado, `nexo_nombrado`, cuando la busqueda nombra marca o modelo,
-                         y su respuesta reemplaza a la del producto. Condicion todavia no existe: repreguntar.
+                         y su respuesta reemplaza a la del producto; condicion, `nexo_condicion`, desde el 16-nov, sobre
+                         el rubro que eligieron los otros dos, salvo que el nombrado diga exists: ata, no hay o
+                         repregunta, y su respuesta reemplaza a la del producto y a la del nombrado ambiguo.
   paso 5, Jev            decidido el 15-nov en `nexo_tema`, contra la llamada corta de Gemini: lo dudoso del tema lo
                          confirma Jev, eligiendo entre los tres candidatos o ninguno. Desde el 16-nov tambien lo dudoso
                          del producto, `nexo_rubro`: entre los cinco candidatos o ninguno. En el banco, lo grabado.
@@ -188,6 +190,8 @@ class Indice(NR.Nexo):
         import nexo_nombrado as NN
         self.temas = NT.Nexo()
         self.nombres = NN.Nexo(self)
+        import nexo_condicion as NC
+        self.condicion = NC.Nexo()
 
 
 # ══ PASOS 2 Y 4, EL RUTEO Y LOS NEXOS ════════════════════════════════════════
@@ -250,6 +254,38 @@ def nexo_nombrado(linea, idx):
     return Resultado("nombrado", [], None, "no hay", {"palabras": r["palabras"], "rubro": r["rubro"]})
 
 
+def nexo_condicion(linea, idx, por_id):
+    """El nexo de condicion, `nexo_condicion`, sobre el rubro que ya decidieron el de producto y el nombrado. None si no
+    corre, o si la busqueda no pide nada mas que el producto."""
+    import nexo_condicion as NC
+    r, _ = NC.rubro_de(linea, por_id)
+    if r is None:
+        return None
+    nx = idx.condicion
+    items = nx.condicion(linea.busqueda, r)["items"]
+    if not items:
+        return None
+
+    def fila(p):
+        return {"id": p["id"], "nombre": p["nombre"], "rubro": r, "precio": int(p["precio_ars"]), "stock": int(p["stock"])}
+    atados = [it for it in items if it["veredicto"] in ("ata", "orden", "tope")]
+    filas = nx.filas(r, atados)
+    if any(it["veredicto"] == "no se ata" for it in items):
+        # Lo que no se ata se repregunta; si algo si se ato, "144hz" en "monitor 27 pulgadas 144hz", se muestra con eso.
+        fs = [fila(p) for p in filas[:3]] if atados and not any(it["veredicto"] == "no hay" for it in items) else []
+        return Resultado("condicion", [x["id"] for x in fs], None, "repreguntar",
+                         {"rubro": r, "items": items, "filas": fs, "atado": [it["parte"] for it in atados],
+                          "partes": [it["parte"] for it in items if it["veredicto"] == "no se ata"]})
+    if any(it["veredicto"] == "no hay" for it in items) or not filas:
+        # Lo mas cercano: lo que cumple lo demas, sin lo que no hay.
+        cerca = [fila(p) for p in filas[:1]]
+        return Resultado("condicion", [x["id"] for x in cerca], None, "no hay",
+                         {"rubro": r, "items": items, "filas": cerca,
+                          "partes": [it["parte"] for it in items if it["veredicto"] == "no hay"] or [linea.busqueda]})
+    fs = [fila(p) for p in filas[:3]]
+    return Resultado("condicion", [x["id"] for x in fs], fs[0]["id"], "coincide", {"rubro": r, "items": items, "filas": fs})
+
+
 def nexo_destino(linea):
     from app.core.flujo.normal import lugares
     from app.core.fuente import _cotizar
@@ -277,6 +313,10 @@ def nexos(linea, idx, jev, jev_producto=None):
                 linea.nexos.append(r)
         elif nexo == "destino":
             linea.nexos.extend(nexo_destino(linea))
+        elif nexo == "condicion":
+            r = nexo_condicion(linea, idx, {f["id"]: f for f in idx.filas})
+            if r:
+                linea.nexos.append(r)
         else:
             linea.nexos.append(pendiente(nexo))
     return linea
@@ -292,6 +332,8 @@ def filtro(linea, por_id):
             r.elegido, r.veredicto = None, "repreguntar"
         if r.nexo == "tema" and r.elegido is not None and r.elegido not in r.candidatos:
             r.elegido, r.veredicto, r.datos = None, "ningun tema", None
+        if r.nexo == "condicion" and any(x not in por_id for x in r.candidatos):
+            r.elegido, r.veredicto = None, "repreguntar"
     return linea
 
 
@@ -300,11 +342,30 @@ def redactar(lineas):
         return "$" + f"{int(x):,}".replace(",", ".")
     partes, temas = [], []
     for l in lineas:
-        # Si el nombrado corrio, su respuesta reemplaza a la del producto generico de la misma linea.
+        # Si el nombrado corrio, su respuesta reemplaza a la del producto generico de la misma linea; si corrio la condicion,
+        # la suya reemplaza a las dos.
         nombro = any(r.nexo == "nombrado" for r in l.nexos)
+        condiciono = any(r.nexo == "condicion" for r in l.nexos)
         for r in l.nexos:
-            if r.nexo == "producto" and nombro:
+            if (r.nexo == "producto" and (nombro or condiciono)) or (r.nexo == "nombrado" and condiciono):
                 continue
+            if r.nexo == "condicion" and r.veredicto == "coincide":
+                # Solo lo que se ato: repetir la busqueda entera afirmaria lo que no se ato.
+                dicho = ", ".join(it["parte"] for it in r.datos["items"])
+                partes.append(f"En {r.datos['rubro']}, {dicho}, tengo: " + "; ".join(
+                    f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}" for f in r.datos["filas"]) + ".")
+            elif r.nexo == "condicion" and r.veredicto == "no hay":
+                c = r.datos["filas"][0] if r.datos["filas"] else None
+                partes.append(f"{r.datos['rubro'].capitalize()} {', '.join(r.datos['partes'])} no hay."
+                              + (f" Lo mas cercano: {c['nombre']} a {plata(c['precio'])}." if c else ""))
+            elif r.nexo == "condicion" and r.datos["filas"]:
+                partes.append(f"De {', '.join(r.datos['partes'])} la ficha de {r.datos['rubro']} no dice nada. Con "
+                              f"{', '.join(r.datos['atado'])} tengo: " + "; ".join(
+                                  f"{f['nombre']} a {plata(f['precio'])}" for f in r.datos["filas"])
+                              + ". Te sirve alguno, o contame que buscas?")
+            elif r.nexo == "condicion":
+                partes.append(f"De {', '.join(r.datos['partes'])} la ficha de {r.datos['rubro']} no dice nada: "
+                              f"te muestro los que hay, o contame que buscas.")
             if r.nexo == "nombrado" and r.veredicto == "coincide":
                 f = r.datos[0]
                 partes.append(f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}.")
@@ -332,8 +393,9 @@ def redactar(lineas):
 
 
 def memoria(lineas):
-    return [x for l in lineas for r in l.nexos if r.nexo in ("producto", "nombrado") and r.veredicto in ("coincide", "ambiguo")
-            for x in [f["id"] for f in r.datos]]
+    return [x for l in lineas for r in l.nexos if r.nexo in ("producto", "nombrado", "condicion")
+            and r.veredicto in ("coincide", "ambiguo") for x in [f["id"] for f in (r.datos["filas"] if r.nexo == "condicion"
+                                                                                     else r.datos)]]
 
 
 def flujo(lineas, idx, por_id, jev, jev_producto=None):
@@ -396,7 +458,8 @@ def calificar(ver=False):
                 if r.datos == "pendiente: el nexo no existe todavia" and len(ejemplos[r.nexo]) < 6:
                     ejemplos[r.nexo].append(l.busqueda or l.fragmento)
             for r in l.nexos:
-                for f in (r.datos if r.nexo in ("producto", "nombrado") and isinstance(r.datos, list) else []) or []:
+                filas = r.datos.get("filas") if r.nexo == "condicion" and isinstance(r.datos, dict) else r.datos
+                for f in (filas if r.nexo in ("producto", "nombrado", "condicion") and isinstance(filas, list) else []) or []:
                     real = por_id.get(f["id"])
                     if not real or int(float(real["precio_ars"])) != f["precio"]:
                         c["filas fuera del catalogo"] += 1

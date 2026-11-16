@@ -62,12 +62,21 @@ NEXOS = {
         "puntajes": ["banco_pruebas/flujo_nuevo_puntajes.json", "banco_pruebas/nexo_nombrado_puntajes.json"],
     },
     "condicion": {
-        "archivo": "por hacer",
-        "consulta": "busqueda, las palabras despues del producto",
-        "indice": ["los campos del rubro ya elegido"],
-        "candidatos": {},
-        "elige": "el codigo; Jev en lo vago",
-        "puntajes": [],
+        "archivo": "banco_pruebas/nexo_condicion.py",
+        "consulta": "cada parte de la busqueda que el codigo no ato, con el rubro adelante: \"mouse: economico\"",
+        "indice": ["cada campo del rubro elegido, su etiqueta de `specs_preguntables` y sus valores; y dos ordenes, "
+                   "precio y peso, `nexo_condicion.docs_campo`"],
+        "candidatos": {"campos": 3},
+        "variante": "V2 segmento con rubro, documento por campo",
+        "elige": "primero el codigo, sin modelo: el tope de plata; el numero con su unidad contra los campos que miden "
+                 "en ella, si no hay ninguno no se ata; el valor de un campo con plural, genero y negacion; el campo de "
+                 "si o no por su clave; el orden. Lo que queda lo confirma Jev entre los valores reales de los tres "
+                 "campos, los ordenes, solo producto o ninguno, que es no se ata. Lo que vale para todo el rubro se "
+                 "saca; lo atado sin ningun producto con stock es no hay",
+        "calibrado": "16-nov, `nexo_condicion.py --calibrar` con Jev perfecto: V1, V2 y V3 dan 150 de 188 en las 140; "
+                     "V2 con 3 candidatos, la elegida. La busqueda no es el cuello: el codigo solo da 144. V4, un "
+                     "documento por valor, sin medir: la gratis se trabo",
+        "puntajes": ["banco_pruebas/nexo_condicion_puntajes.json", "banco_pruebas/nexo_condicion_jev.jsonl"],
     },
 }
 

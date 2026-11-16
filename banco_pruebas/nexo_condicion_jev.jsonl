@@ -1,0 +1,96 @@
+{"rubro": "auriculares", "busqueda": "auriculares con microfono", "tokens": 786, "partes": {"microfono": "ninguno"}}
+{"rubro": "cargador", "busqueda": "cargador tipo c rapido", "tokens": 640, "partes": {"tipo": "ninguno", "rapido": "ninguno"}}
+{"rubro": "motherboard", "busqueda": "motherboard compatible ryzen 5", "tokens": 724, "partes": {"compatible": "procesador|socket am4, para ryzen de 1a a 5a generacion"}}
+{"rubro": "mouse", "busqueda": "mouse economico", "tokens": 466, "partes": {"economico": "orden|mas barato"}}
+{"rubro": "teclado", "busqueda": "teclado economico", "tokens": 470, "partes": {"economico": "orden|mas barato"}}
+{"rubro": "parlante", "busqueda": "parlante jbl grande", "tokens": 490, "partes": {"grande": "ninguno"}}
+{"rubro": "cooler", "busqueda": "cooler microprocesador", "tokens": 466, "partes": {"microprocesador": "solo_producto"}}
+{"rubro": "fuente", "busqueda": "fuente modular", "tokens": 439, "partes": {"modular": "ninguno"}}
+{"rubro": "microfono", "busqueda": "microfono para computadora", "tokens": 458, "partes": {"computadora": "solo_producto"}}
+{"rubro": "monitor", "busqueda": "monitor para notebook", "tokens": 568, "partes": {"notebook": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook plegable", "tokens": 481, "partes": {"plegable": "ninguno"}}
+{"rubro": "almacenamiento externo", "busqueda": "pendrive para celular o disco externo", "tokens": 557, "partes": {"celular": "ninguno"}}
+{"rubro": "cooler", "busqueda": "ventilador procesador", "tokens": 896, "partes": {"procesador": "solo_producto"}}
+{"rubro": "webcam", "busqueda": "webcam para monitor", "tokens": 446, "partes": {"monitor": "solo_producto"}}
+{"rubro": "procesador", "busqueda": "procesador para edicion de video", "tokens": 484, "partes": {"edicion de video": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria para notebook", "tokens": 516, "partes": {"notebook": "ninguno"}}
+{"rubro": "parlante", "busqueda": "cajita de musica", "tokens": 488, "partes": {"musica": "solo_producto"}}
+{"rubro": "parlante", "busqueda": "cajita de musica para playa", "tokens": 491, "partes": {"musica para playa": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado silencioso", "tokens": 590, "partes": {"silencioso": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook de alta gama", "tokens": 515, "partes": {"alta gama": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video alta gama", "tokens": 473, "partes": {"alta gama": "orden|mas caro"}}
+{"rubro": "cargador", "busqueda": "cargador carga rapida iphone", "tokens": 459, "partes": {"rapida iphone": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook liviana viaje", "tokens": 482, "partes": {"viaje": "ninguno"}}
+{"rubro": "router", "busqueda": "router de largo alcance", "tokens": 484, "partes": {"largo alcance": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "headset para PC con microfono", "tokens": 789, "partes": {"pc con microfono": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado mecánico español", "tokens": 464, "partes": {"espanol": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado mecánico inglés", "tokens": 462, "partes": {"ingles": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video para fortnite 144 fps", "tokens": 596, "partes": {"fortnite": "uso_recomendado|gaming high end"}}
+{"rubro": "cargador", "busqueda": "cargador notebook 65w tipo c", "tokens": 471, "partes": {"tipo": "ninguno"}}
+{"rubro": "impresora", "busqueda": "impresora color wifi tinta continua", "tokens": 746, "partes": {"color": "ninguno", "tinta continua": "ninguno"}}
+{"rubro": "parlante", "busqueda": "parlante portatil potente", "tokens": 490, "partes": {"potente": "ninguno"}}
+{"rubro": "gabinete", "busqueda": "gabinete vidrio templado", "tokens": 467, "partes": {"templado": "material|acero y vidrio"}}
+{"rubro": "cargador", "busqueda": "cargador rapido tipo c", "tokens": 457, "partes": {"rapido tipo": "ninguno"}}
+{"rubro": "almacenamiento externo", "busqueda": "pendrive o disco duro externo", "tokens": 512, "partes": {"duro": "solo_producto"}}
+{"rubro": "ssd", "busqueda": "disco duro ssd nvme", "tokens": 449, "partes": {"duro": "solo_producto"}}
+{"rubro": "placa de video", "busqueda": "tarjeta grafica gamer warzone", "tokens": 586, "partes": {"warzone": "ninguno"}}
+{"rubro": "cooler", "busqueda": "ventilador cooler microprocesador", "tokens": 470, "partes": {"microprocesador": "uso_recomendado|refrigeracion"}}
+{"rubro": "tablet", "busqueda": "tablet para dibujar", "tokens": 518, "partes": {"dibujar": "uso_recomendado|multimedia y estudio"}}
+{"rubro": "teclado", "busqueda": "teclados con ñ", "tokens": 591, "partes": {"n": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "cascos con microfono gaming usb", "tokens": 789, "partes": {"microfono": "ninguno"}}
+{"rubro": "microfono", "busqueda": "microfono de mesa para podcast usb", "tokens": 471, "partes": {"mesa para podcast": "ninguno"}}
+{"rubro": "tablet", "busqueda": "tablets niños antigolpes", "tokens": 490, "partes": {"ninos antigolpes": "ninguno"}}
+{"rubro": "silla gamer", "busqueda": "silla ergonomica economica", "tokens": 589, "partes": {"economica": "orden|mas barato"}}
+{"rubro": "cargador", "busqueda": "cargador notebook universal", "tokens": 455, "partes": {"universal": "ninguno"}}
+{"rubro": "cooler", "busqueda": "coolers rgb 120mm", "tokens": 461, "partes": {"rgb": "ninguno"}}
+{"rubro": "motherboard", "busqueda": "motherboard compatible procesador intel", "tokens": 680, "partes": {"compatible procesador": "procesador|socket lga1700, para intel 12a, 13a y 14a generacion"}}
+{"rubro": "mouse", "busqueda": "mouse inalambrico compacto", "tokens": 576, "partes": {"compacto": "ninguno"}}
+{"rubro": "impresora", "busqueda": "impresora laser", "tokens": 508, "partes": {"laser": "ninguno"}}
+{"rubro": "cargador", "busqueda": "cargador rapido", "tokens": 452, "partes": {"rapido": "ninguno"}}
+{"rubro": "parlante", "busqueda": "parlante para smart tv", "tokens": 539, "partes": {"smart tv": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares gamer sonido envolvente", "tokens": 590, "partes": {"sonido envolvente": "ninguno"}}
+{"rubro": "cooler", "busqueda": "cooler para procesador", "tokens": 896, "partes": {"procesador": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares vincha", "tokens": 575, "partes": {"vincha": "ninguno"}}
+{"rubro": "monitor", "busqueda": "monitor para computadora de escritorio", "tokens": 475, "partes": {"computadora de escritorio": "solo_producto"}}
+{"rubro": "router", "busqueda": "repetidor wifi potente mesh", "tokens": 487, "partes": {"potente": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook portatil bateria larga duracion", "tokens": 471, "partes": {"larga duracion": "bateria|si, bateria recargable integrada"}}
+{"rubro": "gabinete", "busqueda": "gabinete pc gamer luces", "tokens": 623, "partes": {"gamer luces": "retroiluminacion|si"}}
+{"rubro": "procesador", "busqueda": "procesador mas rapido", "tokens": 487, "partes": {"mas rapido": "ninguno"}}
+{"rubro": "impresora", "busqueda": "impresora wifi celular", "tokens": 510, "partes": {"celular": "ninguno"}}
+{"rubro": "gabinete", "busqueda": "gabinete amplio placa madre", "tokens": 469, "partes": {"amplio placa madre": "formato|atx"}}
+{"rubro": "tablet", "busqueda": "tableta para leer libros", "tokens": 511, "partes": {"leer libros": "solo_producto"}}
+{"rubro": "cargador", "busqueda": "cargador para tableta", "tokens": 464, "partes": {"tableta": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares con microfono call center", "tokens": 592, "partes": {"microfono call center": "ninguno"}}
+{"rubro": "cooler", "busqueda": "cooler pc", "tokens": 447, "partes": {"pc": "solo_producto"}}
+{"rubro": "notebook", "busqueda": "notebook con windows", "tokens": 512, "partes": {"windows": "ninguno"}}
+{"rubro": "impresora", "busqueda": "epson tinta continua", "tokens": 509, "partes": {"tinta continua": "ninguno"}}
+{"rubro": "webcam", "busqueda": "webcam con microfono", "tokens": 498, "partes": {"microfono": "ninguno"}}
+{"rubro": "teclado", "busqueda": "artículo para escribir barato", "tokens": 466, "partes": {"escribir": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auricular mouse", "tokens": 613, "partes": {"mouse": "solo_producto"}}
+{"rubro": "teclado", "busqueda": "teclado mouse", "tokens": 588, "partes": {"mouse": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse monitor", "tokens": 565, "partes": {"monitor": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse teclado", "tokens": 476, "partes": {"teclado": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse con luces", "tokens": 489, "partes": {"luces": "retroiluminacion|si"}}
+{"rubro": "auriculares", "busqueda": "auriculares económicos", "tokens": 588, "partes": {"economicos": "orden|mas barato"}}
+{"rubro": "auriculares", "busqueda": "auriculares PS5", "tokens": 581, "partes": {"ps5": "uso_recomendado|gaming"}}
+{"rubro": "monitor", "busqueda": "monitor economico", "tokens": 463, "partes": {"economico": "orden|mas barato"}}
+{"rubro": "memoria ram", "busqueda": "memoria ram ddr4 vs ddr5", "tokens": 583, "partes": {"vs": "solo_producto"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM DDR5 escritorio", "tokens": 520, "partes": {"escritorio": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria ram notebook", "tokens": 516, "partes": {"notebook": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria ram para notebook", "tokens": 518, "partes": {"notebook": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM para notebook", "tokens": 518, "partes": {"notebook": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook 64gb ram menos 200 mil", "tokens": 470, "partes": {"ram menos": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook 64gb ram 200000", "tokens": 500, "partes": {"ram 200000": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video fuente 550w", "tokens": 514, "partes": {"fuente": "solo_producto"}}
+{"rubro": "placa de video", "busqueda": "placa de video compatible fuente 550w", "tokens": 590, "partes": {"compatible fuente": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video fuente 550 watts", "tokens": 514, "partes": {"fuente": "solo_producto"}}
+{"rubro": "teclado", "busqueda": "teclado y auricular", "tokens": 464, "partes": {"auricular": "solo_producto"}}
+{"rubro": "teclado", "busqueda": "teclado auricular", "tokens": 462, "partes": {"auricular": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse teclado auricular", "tokens": 467, "partes": {"teclado auricular": "solo_producto"}}
+{"rubro": "teclado", "busqueda": "teclado auriculares", "tokens": 594, "partes": {"auriculares": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares con micrófono", "tokens": 788, "partes": {"microfono": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado oficina", "tokens": 461, "partes": {"oficina": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse oficina", "tokens": 566, "partes": {"oficina": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auricular y mouse", "tokens": 615, "partes": {"mouse": "solo_producto"}}
+{"rubro": "teclado", "busqueda": "teclado y mouse", "tokens": 590, "partes": {"mouse": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares mouse", "tokens": 613, "partes": {"mouse": "solo_producto"}}
