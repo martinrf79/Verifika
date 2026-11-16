@@ -289,3 +289,34 @@ dólar en la llamada 0, anotado en el libro, y menos de un centavo en vectores. 
 ```bash
 python3 banco_pruebas/reales.py [--ver]      # califica, sin gasto
 ```
+
+### Las 525 de traduccion58, sin las que requieren memoria, 16-nov
+
+`python3 banco_pruebas/reales.py --525`. Las 525 son 105 turnos de las 58 y las K en cinco formas, `traduccion58.formas_de`:
+original, plano, WhatsApp con un error de tipeo, redactada y coloquial. La vara sale sola de la agenda a mano de cada turno,
+`agendas58.py`. Entra el primer turno de cada charla; uno posterior solo si se entiende solo. Quedan 73 turnos, 365
+mensajes; 32 turnos salen por memoria. Con la paga: 4,6 centavos de dólar en la llamada 0, anotados en el libro.
+
+| | Primera corrida | Arreglada la prueba y el tipeo |
+| --- | --- | --- |
+| Mensajes sin ninguna falla | 244 de 365 | 305 de 365 |
+| Rubros pedidos | 315 de 315 | 320 de 320 |
+| Modelos nombrados | 127 de 135, 6 con otro modelo | 132 de 135, 1 con otro modelo |
+| Temas pedidos | 34 de 55, 23 inventados | 36 de 55, 24 inventados |
+
+- **Dos fallas eran de la prueba**, de mi conversión de la agenda: el nombre se buscaba como texto seguido, y "Kingston
+  Fury Beast DDR4 16GB" es "Fury Beast DDR4 3200 16GB"; y los productos de una compra no contaban. Eran 5 de los 6 "con
+  otro modelo" y 80 de los 100 rubros de más. Los 20 rubros de más que quedan también son de la agenda: el teclado que
+  el cliente nombra en el mensaje del 70/30, la memoria de "DDR4 o DDR5".
+- **Una era del nexo de tema:** el tipeo de WhatsApp, "fatcura", rompía la palabra clave. Ahora vale con dos letras
+  seguidas dadas vuelta, desde cinco letras. Una letra cambiada no: confunde "vieja" con "viaja".
+- **Lo que queda, por causa:**
+  - temas que la agenda pide por producto y el nexo contesta con la FAQ, garantía, stock, DPI: 17, son respuestas
+    correctas;
+  - tema equivalente, "factura a" con datos fiscales, "descuento" con promociones: 9;
+  - dato de la FAQ, "off" no es palabra clave de promociones: 7;
+  - la llamada 0: "entre el G305 y el G203" deja un solo modelo, 3, igual que en los reales; y en un mensaje largo
+    no deja línea para la pregunta de pago, 3;
+  - del nexo: "q parlantes hay" da especificaciones, 1.
+- **Lectura:** en 365 mensajes que nunca vieron, ningún rubro pedido falta y un solo modelo cambiado, que es de la
+  llamada 0. Lo que más falla es la llamada 0 con dos modelos en una frase.

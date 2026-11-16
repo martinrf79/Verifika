@@ -30,9 +30,12 @@ sys.path[:0] = [REPO, AQUI]
 
 import nexo_rubro as NR  # noqa: E402
 
-LLAMADA0 = os.path.join(AQUI, "reales_llamada0.jsonl")
-PUNTAJES = os.path.join(AQUI, "reales_puntajes.json")
-JEV = os.path.join(AQUI, "reales_jev.jsonl")
+# Dos bancos: las charlas reales de WhatsApp, y las 525 de `traduccion58`, `--525`.
+B525 = "--525" in sys.argv
+_SUF = "reales525" if B525 else "reales"
+LLAMADA0 = os.path.join(AQUI, f"{_SUF}_llamada0.jsonl")
+PUNTAJES = os.path.join(AQUI, f"{_SUF}_puntajes.json")
+JEV = os.path.join(AQUI, f"{_SUF}_jev.jsonl")
 
 _70_30 = ("Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que "
           "necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. "
@@ -125,6 +128,79 @@ CASOS = [
     ("R40", "hola el teclado K120 inalambrico ese cuanto sale? creo que se llama asi",
      {"rubros": {"teclado"}, "nombrados": [("k120", "exists", {"K120"})]}),
 ]
+
+
+# ══ LAS 525 DE traduccion58, SIN LAS QUE REQUIEREN MEMORIA ═══════════════════
+# 16-nov, Martin: las 525 son 105 turnos de las 58 y las K en cinco formas, `traduccion58.formas_de`. La vara sale de la
+# agenda a mano de cada turno, `agendas58.py`: buscar da el rubro, producto el nombrado, politica el tema. Entra el
+# primer turno de cada charla; uno posterior solo si se entiende solo: sin "M-1" ni "L-1", sin "entre lo mostrado", y
+# con lo que pide escrito en su propio texto. "y alguno mecanico?" pide teclado sin decirlo: es de memoria.
+def _rubro_en_texto(rubro, texto, alias):
+    ws = NR.n(texto).split()
+    formas = [rubro] + alias.get(rubro, [])
+    return any(all(any(w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w))) for w in ws)
+                   for p in NR.n(f).split()) for f in formas if f)
+
+
+def casos_525():
+    from banco_pruebas import agendas58 as A
+    from banco_pruebas import traduccion58 as T
+    NR.instalar()
+    filas, alias, _, modelos = NR.fuente()
+    vara = {c["id"]: c for c in json.load(open(os.path.join(AQUI, "vara_58.json"), encoding="utf-8"))["charlas"]}
+    prot = T._protegidas()
+    out, fuera = [], collections.Counter()
+    for clave in T_FORMAS():
+        cid, t = clave.split("|")
+        t = int(t)
+        texto = vara[cid]["turnos"][t]["texto"]
+        ps = A.AGENDAS[cid][t]["preguntas"]
+        crudo = json.dumps(ps, ensure_ascii=False)
+        if t > 0 and (re.search(r'"[MLP]-\d', crudo) or '"entre_lo_mostrado": true' in crudo
+                      or any(p["accion"] == "buscar" and not _rubro_en_texto(p["rubro"], texto, alias) for p in ps)
+                      or not any(p["accion"] in ("buscar", "producto", "politica") for p in ps)):
+            fuera[clave] += 1
+            continue
+        v = {"rubros": set(), "no_vende": set(), "temas": [], "tolerados": set(), "nombrados": []}
+        for p in ps:
+            a = p["accion"]
+            if a == "buscar" and p["rubro"] == "toda la tienda":
+                v["tolerados"].add("*")
+            elif a == "buscar" and p["rubro"] in {f["categoria"] for f in filas}:
+                v["rubros"].add(p["rubro"])
+            elif a == "buscar":
+                v["no_vende"].add(p["rubro"])
+            elif a == "producto" and isinstance(p.get("producto"), str) and not re.match(r"[MLP]-\d", p["producto"]):
+                nombre = NR.n(p["producto"])
+                # Por palabras, no como texto seguido: "Kingston Fury Beast DDR4 16GB" es "Fury Beast DDR4 3200 16GB".
+                mods = {k[2] for k in modelos if set(nombre.split()) <= set(NR.n(f"{k[1]} {k[2]}").split())}
+                rub = {k[0] for k in modelos if k[2] in mods}
+                v["rubros"] |= rub
+                v["nombrados"].append((nombre.split()[0], "exists" if len(mods) == 1 else "ambiguous", mods))
+            elif a == "politica":
+                v["temas"].append({p["tema"]})
+            elif a == "compatibilidad":
+                v["tolerados"] |= {"compatibilidad"}
+            elif a == "explicar":
+                v["tolerados"] |= {"especificaciones", "mouse_dpi", "teclado_mecanico_membrana", "asesoramiento"}
+            elif a in ("envio", "comprar", "cuenta"):
+                v["tolerados"] |= {"costo_envio", "envios", "plazo_envio"} | _PAGO
+        # Los productos que nombra una compra o una cuenta no son pregunta, pero si salen no son de mas.
+        for x in re.findall(r'"producto": "([^"]+)"', crudo):
+            if not re.match(r"[MLP]-\d", x):
+                v["tolerados"] |= {k[0] for k in modelos if set(NR.n(x).split()) <= set(NR.n(f"{k[1]} {k[2]}").split())}
+        for forma, txt in T.formas_de(cid, t, texto, prot).items():
+            out.append((f"{cid}.{t}.{forma}", txt, v))
+    return out, fuera
+
+
+def T_FORMAS():
+    from banco_pruebas.traduccion58_formas import FORMAS
+    return list(FORMAS)
+
+
+if B525:
+    CASOS, FUERA_525 = casos_525()
 
 
 # ══ LA CORRIDA, CON LA PAGA ══════════════════════════════════════════════════
@@ -239,11 +315,13 @@ def correr_jev():
     """Jev sobre lo dudoso del tema y del producto, con las mismas preguntas que en los nexos."""
     import nexo_tema as NT
     idx = indices()
-    hechas = {r["id"] for r in map(json.loads, open(JEV))} if os.path.exists(JEV) else set()
+    hechas = {}
+    if os.path.exists(JEV):
+        for r in map(json.loads, open(JEV)):
+            hechas[r["id"]] = r["respuestas"]
+    l0 = llamada0()
     for cid, texto, _ in CASOS:
-        if cid in hechas:
-            continue
-        ls = llamada0().get(cid, [])
+        ls = l0.get(cid, [])
         qs = {}
         for i, l in enumerate(ls):
             t = idx.temas.tema(l.fragmento)
@@ -263,6 +341,9 @@ def correr_jev():
                                                    f"significa \"{l.busqueda}\", cual de estos productos de la tienda es "
                                                    "del tipo que pide el cliente? Si la tienda no tiene ese tipo de "
                                                    "producto, ninguno."}
+        # Se pregunta solo si falta alguna linea dudosa: un cambio en un nexo puede volver dudosa una linea nueva.
+        if cid in hechas and set(qs) <= set(hechas[cid]):
+            continue
         r = NT.llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "reales")[0] if qs else {}
         with open(JEV, "a", encoding="utf-8") as fh:
             fh.write(json.dumps({"id": cid, "respuestas": r}, ensure_ascii=False) + "\n")
@@ -343,7 +424,8 @@ def calificar(ver=False):
         c["mensajes sin falla"] += not mal
         if mal or ver:
             fallas.append((cid, texto[:70], [(l.busqueda, l.fragmento[:40]) for l in ls], mal, resp))
-    print("\nLOS NEXOS SOBRE MENSAJES REALES QUE NUNCA VIERON · examen_real/charlas.json")
+    print("\nLOS NEXOS SOBRE MENSAJES QUE NUNCA VIERON · " + (
+        f"las 525 de traduccion58, sin las {sum(FUERA_525.values())} claves de memoria" if B525 else "examen_real/charlas.json"))
     print(f"\n  mensajes {c['mensajes']} · sin ninguna falla {c['mensajes sin falla']} · sin llamada 0 {c['sin llamada 0']}")
     print(f"  rubros pedidos {c['rubros']} · salen {c['rubros bien']} · rubro de mas {c['rubro de mas']}")
     print(f"  no se vende {c['no vende']} · dice no hay {c['no vende bien']}")
@@ -362,6 +444,8 @@ if __name__ == "__main__":
     if "--correr" in sys.argv:
         correr_llamada0()
         embeddings()
+        correr_jev()
+    elif "--jev" in sys.argv:
         correr_jev()
     else:
         calificar("--ver" in sys.argv)

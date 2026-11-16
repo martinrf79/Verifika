@@ -138,6 +138,15 @@ def embeddings():
 
 
 # ══ EL NEXO ══════════════════════════════════════════════════════════════════
+def _una_letra(a, b):
+    """Dos letras seguidas dadas vuelta, el error de tipeo de WhatsApp: "fatcura", "tineen". Una letra cambiada no:
+    medido el 16-nov, confunde palabras reales, "vieja" con "viaja" y "tiene" con "viene"."""
+    if len(a) != len(b) or a == b:
+        return False
+    d = [i for i in range(len(a)) if a[i] != b[i]]
+    return len(d) == 2 and d[1] == d[0] + 1 and a[d[0]] == b[d[1]] and a[d[1]] == b[d[0]]
+
+
 class Nexo:
     def __init__(self):
         from app.core.flujo.agenda import _VACIAS
@@ -160,8 +169,12 @@ class Nexo:
 
     @staticmethod
     def _igual(w, p):
-        """Igual, o una empieza con la otra desde cuatro letras, por el plural."""
-        return w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w)))
+        """Igual, o una empieza con la otra desde cuatro letras, por el plural; o, desde cinco letras, dos letras
+        seguidas dadas vuelta, por el tipeo: "fatcura" es "factura". Medido el 16-nov en las formas de WhatsApp de las
+        525."""
+        if w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w))):
+            return True
+        return min(len(w), len(p)) >= 5 and _una_letra(w, p)
 
     def candidatos(self, fragmento):
         """PIEZA 1: los tres temas cuyo alias mas se parece al fragmento."""
