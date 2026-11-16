@@ -1,0 +1,3971 @@
+[
+{
+"id": "M01",
+"rubro": "mouse",
+"texto": "un mouse",
+"traduccion": "mouse baratito",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Genius DX-110"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+}
+},
+{
+"id": "M01",
+"rubro": "auriculares",
+"texto": "unos auris",
+"traduccion": "auriculares baratito",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Logitech G Pro X"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Redragon Pandora"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Redragon Pandora"
+}
+},
+{
+"id": "M02",
+"rubro": "monitor",
+"texto": "2 monitores de 24",
+"traduccion": "monitor 24 pulgadas",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+}
+},
+{
+"id": "M02",
+"rubro": "teclado",
+"texto": "2 teclados mecanicos",
+"traduccion": "teclado mecanico",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron K2"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron K2"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron K2"
+}
+},
+{
+"id": "M03",
+"rubro": "notebook",
+"texto": "una note para la facu de mi hija",
+"traduccion": "notebook para facu",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Dell Inspiron 15 3520 Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Dell G15 Core i5 16GB 512GB SSD"
+}
+},
+{
+"id": "M03",
+"rubro": "mouse",
+"texto": "un mouse inalambrico",
+"traduccion": "mouse inalambrico",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+}
+},
+{
+"id": "M04",
+"rubro": "memoria ram",
+"texto": "2 memorias de 8 gigas ddr4",
+"traduccion": "memoria ram ddr4 8gb",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Patriot Viper DDR4 3200 8GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Patriot Viper DDR4 3200 8GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Patriot Viper DDR4 3200 8GB"
+}
+},
+{
+"id": "M04",
+"rubro": "ssd",
+"texto": "2 discos solidos de 1 tera",
+"traduccion": "disco solido 1tb",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Crucial P5 Plus 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 2,
+"primero": "ssd Kingston KC3000 1TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Crucial P5 Plus 1TB"
+}
+},
+{
+"id": "M05",
+"rubro": "auriculares",
+"texto": "5 auriculares con microfono",
+"traduccion": "auriculares con microfono",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony WH-1000XM5"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares HyperX Cloud II"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony WH-1000XM5"
+}
+},
+{
+"id": "M05",
+"rubro": "webcam",
+"texto": "5 webcams",
+"traduccion": "webcam",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+}
+},
+{
+"id": "M05",
+"rubro": "impresora",
+"texto": "1 impresora multifuncion",
+"traduccion": "impresora multifuncion precio menor a 600000",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3560"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3560"
+}
+},
+{
+"id": "M06",
+"rubro": "silla gamer",
+"texto": "dame dos sillas gamer",
+"traduccion": "silla gamer",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer DT3 Elise"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Cougar Fusion"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon Coeus"
+}
+},
+{
+"id": "M06",
+"rubro": "monitor",
+"texto": "dos monitores curvos",
+"traduccion": "monitor curvo",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+}
+},
+{
+"id": "M07",
+"rubro": "cargador",
+"texto": "3 cargadores tipo c rapidos",
+"traduccion": "cargador tipo c rapido",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador Anker PowerPort III 20W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador Xiaomi Mi 33W"
+}
+},
+{
+"id": "M07",
+"rubro": "parlante",
+"texto": "3 parlantitos bluetooth",
+"traduccion": "parlante bluetooth",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Go 3"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante Logitech Z207 Bluetooth"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Go 3"
+}
+},
+{
+"id": "M08",
+"rubro": "procesador",
+"texto": "un micro ryzen 5",
+"traduccion": "microprocesador ryzen 5",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 5 5500"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 5 8400F"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 5 8400F"
+}
+},
+{
+"id": "M08",
+"rubro": "motherboard",
+"texto": "una mother que lo banque",
+"traduccion": "motherboard compatible ryzen 5",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus Prime B550M-A"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus Prime B550M-A"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus Prime B550M-A"
+}
+},
+{
+"id": "M08",
+"rubro": "memoria ram",
+"texto": "16 de ram",
+"traduccion": "memoria ram 16gb",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram TeamGroup T-Force Delta RGB DDR5 16GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram G.Skill Flare X5 DDR5 6000 16GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram TeamGroup T-Force Delta RGB DDR5 16GB"
+}
+},
+{
+"id": "M08",
+"rubro": "fuente",
+"texto": "una fuente de 650",
+"traduccion": "fuente de alimentacion 650w",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Gigabyte P650B"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Gigabyte P650B"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Cooler Master MWE 650 Bronze"
+}
+},
+{
+"id": "M09",
+"rubro": "router",
+"texto": "2 routers wifi 6",
+"traduccion": "router wifi 6 lo mas barato posible",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router Tenda Nova MW6 Mesh"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer C6"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer C6"
+}
+},
+{
+"id": "M09",
+"rubro": "router",
+"texto": "1 mesh",
+"traduccion": "mesh lo mas barato posible",
+"fragmento": {
+"producto": 1,
+"rubro": 28,
+"primero": "router TP-Link Deco M4 Mesh"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco X50 Mesh"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco M4 Mesh"
+}
+},
+{
+"id": "M10",
+"rubro": "tablet",
+"texto": "quiero 2 tablets para los chicos",
+"traduccion": "tablet chicos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Lenovo Tab M10"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Samsung Galaxy Tab S6 Lite"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Redmi Pad SE"
+}
+},
+{
+"id": "M11",
+"rubro": "microfono",
+"texto": "3 microfonos para streaming",
+"traduccion": "microfono para streaming",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Razer Seiren V3 Mini"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Shure MV7"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Razer Seiren V3 Mini"
+}
+},
+{
+"id": "M12",
+"rubro": "mouse",
+"texto": "10 mouse",
+"traduccion": "mouse economico maximo 300000",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Genius DX-110"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G502 X"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G502 X"
+}
+},
+{
+"id": "M12",
+"rubro": "teclado",
+"texto": "10 teclados",
+"traduccion": "teclado economico maximo 300000",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Corsair K70 RGB Pro"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Genius Slimstar 130"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Genius Slimstar 130"
+}
+},
+{
+"id": "M13",
+"rubro": "monitor",
+"texto": "un monitor 27 de 144hz",
+"traduccion": "monitor 27 144hz",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 27GP850 UltraGear"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 27G2"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 27G2"
+}
+},
+{
+"id": "M13",
+"rubro": "placa de video",
+"texto": "una placa de video que lo aproveche",
+"traduccion": "placa de video para monitor 144hz",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video ASRock Challenger RX 7600 XT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video XFX Speedster RX 7700 XT"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video XFX Speedster RX 7700 XT"
+}
+},
+{
+"id": "M13",
+"rubro": "gabinete",
+"texto": "un gabinete con buen aire",
+"traduccion": "gabinete buen flujo de aire",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Montech Air 903"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete NZXT H5 Flow"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Corsair 5000D Airflow"
+}
+},
+{
+"id": "M14",
+"rubro": "almacenamiento externo",
+"texto": "dos discos externos de 2 teras para backup, uno a mi casa en Lanus",
+"traduccion": "disco externo 2tb backup",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 2TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Western Digital My Passport 2TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Seagate Expansion 2TB"
+}
+},
+{
+"id": "M15",
+"rubro": "auriculares",
+"texto": "tres auris inalambricos sony",
+"traduccion": "auriculares sony inalambricos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony WH-CH520"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+}
+},
+{
+"id": "M15",
+"rubro": "parlante",
+"texto": "un parlante jbl grande",
+"traduccion": "parlante jbl grande",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+}
+},
+{
+"id": "M16",
+"rubro": "impresora",
+"texto": "impresora",
+"traduccion": "impresora",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+}
+},
+{
+"id": "M16",
+"rubro": "silla gamer",
+"texto": "una silla comoda",
+"traduccion": "silla comoda",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Corsair TC100 Relaxed"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Corsair TC100 Relaxed"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Corsair TC100 Relaxed"
+}
+},
+{
+"id": "M17",
+"rubro": "cooler",
+"texto": "1 cooler para el micro",
+"traduccion": "cooler micro",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+}
+},
+{
+"id": "M17",
+"rubro": "fuente",
+"texto": "1 fuente modular",
+"traduccion": "fuente modular",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 500 W1"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Gigabyte P650B"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 500 W1"
+}
+},
+{
+"id": "M18",
+"rubro": "webcam",
+"texto": "3 a Neuquen capital",
+"traduccion": "webcam full hd",
+"fragmento": {
+"producto": 407,
+"rubro": 42,
+"primero": "notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Genius QCam 6000"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+}
+},
+{
+"id": "R01",
+"rubro": "microfono",
+"texto": "la cosa esa que se enchufa a la compu para hablar en zoom y que se me escuche bien",
+"traduccion": "auriculares con microfono pc usb",
+"fragmento": {
+"producto": 1,
+"rubro": 2,
+"primero": "microfono Blue Yeti Nano"
+},
+"busqueda": {
+"producto": 22,
+"rubro": 2,
+"primero": "auriculares Redragon Pandora"
+},
+"las dos": {
+"producto": 6,
+"rubro": 2,
+"primero": "auriculares Razer Kraken V3"
+}
+},
+{
+"id": "R02",
+"rubro": "router",
+"texto": "el aparatito que se pone en la pared para que el wifi llegue al patio",
+"traduccion": "repetidor wifi para pared",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router Tenda AC10"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco M4 Mesh"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router Tenda AC10"
+}
+},
+{
+"id": "R03",
+"rubro": "monitor",
+"texto": "necesito la pantalla grande para enchufar la notebook en el escritorio",
+"traduccion": "pantalla grande para notebook",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 29WP60G UltraWide"
+},
+"busqueda": {
+"producto": 7,
+"rubro": 1,
+"primero": "notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD"
+},
+"las dos": {
+"producto": 6,
+"rubro": 1,
+"primero": "notebook HP 245 G9 Core i7 16GB 1TB SSD"
+}
+},
+{
+"id": "R04",
+"rubro": "notebook",
+"texto": "una compu que se pliegue",
+"traduccion": "computadora plegable",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD"
+}
+},
+{
+"id": "R05",
+"rubro": "almacenamiento externo",
+"texto": "algo donde guardar las fotos del celu que no sea la nube",
+"traduccion": "dispositivo almacenamiento externo fotos celular",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Seagate One Touch 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Seagate Expansion 2TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Seagate Expansion 2TB"
+}
+},
+{
+"id": "R06",
+"rubro": "impresora",
+"texto": "el aparato para sacar copias de los papeles de la escuela",
+"traduccion": "fotocopiadora impresora multifuncion",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+}
+},
+{
+"id": "R07",
+"rubro": "placa de video",
+"texto": "eso que se pone adentro de la pc para que corran los jueguitos",
+"traduccion": "placa de video gaming",
+"fragmento": {
+"producto": 15,
+"rubro": 1,
+"primero": "procesador Intel Core i3-12100F"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video XFX Speedster RX 7700 XT"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video PowerColor Red Devil RX 7900 XT"
+}
+},
+{
+"id": "R08",
+"rubro": "gabinete",
+"texto": "la caja grande donde va todo lo de la pc",
+"traduccion": "gabinete pc grande",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+}
+},
+{
+"id": "R09",
+"rubro": "cooler",
+"texto": "el ventiladorcito que va arriba del procesador",
+"traduccion": "ventilador procesador",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler Noctua NH-U12S Redux"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+}
+},
+{
+"id": "R10",
+"rubro": "auriculares",
+"texto": "lo que va en la oreja para escuchar musica",
+"traduccion": "auriculares",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+}
+},
+{
+"id": "R11",
+"rubro": "webcam",
+"texto": "la camarita que va arriba del monitor",
+"traduccion": "camara web monitor",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+}
+},
+{
+"id": "R12",
+"rubro": "fuente",
+"texto": "lo que le da la corriente a la pc",
+"traduccion": "fuente de alimentacion pc",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Corsair RM750e"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Gigabyte P650B"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Corsair RM750e"
+}
+},
+{
+"id": "R13",
+"rubro": "motherboard",
+"texto": "la plaqueta madre donde enchufas todo",
+"traduccion": "placa madre",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus TUF B760-Plus WiFi"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Gigabyte A520M K"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus TUF B760-Plus WiFi"
+}
+},
+{
+"id": "R14",
+"rubro": "procesador",
+"texto": "el cerebro de la compu, uno bueno para editar videos",
+"traduccion": "procesador para editar videos bueno",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i5-13600KF"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i5-13600KF"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i5-13600KF"
+}
+},
+{
+"id": "R15",
+"rubro": "tablet",
+"texto": "una pantallita tactil para que mi abuela lea el diario",
+"traduccion": "tablet tactil",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Samsung Galaxy Tab A8"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Samsung Galaxy Tab A8"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Samsung Galaxy Tab A8"
+}
+},
+{
+"id": "R16",
+"rubro": "memoria ram",
+"texto": "el chiche que le pones a la notebook para que vaya mas rapido, memoria se llama?",
+"traduccion": "memoria notebook",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram ADATA XPG Spectrix DDR4 3600 8GB"
+},
+"busqueda": {
+"producto": 57,
+"rubro": 2,
+"primero": "notebook Lenovo Legion 5 Ryzen 7 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram ADATA XPG Spectrix DDR4 3600 32GB"
+}
+},
+{
+"id": "R17",
+"rubro": "parlante",
+"texto": "la cajita de musica que llevas a la playa",
+"traduccion": "cajita de musica portatil playa",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Clip 4"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Clip 4"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Clip 4"
+}
+},
+{
+"id": "R18",
+"rubro": "silla gamer",
+"texto": "el trono ese de los gamers",
+"traduccion": "silla gamer",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon King of War"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Cougar Fusion"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon King of War"
+}
+},
+{
+"id": "O01",
+"rubro": "mouse",
+"texto": "un mouse que no me funda el bolsillo",
+"traduccion": "mouse barato",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G502 X"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+}
+},
+{
+"id": "O02",
+"rubro": "teclado",
+"texto": "un teclado que no haga ruido",
+"traduccion": "teclado silencioso",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech MX Keys S"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech MX Keys S"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech MX Keys S"
+}
+},
+{
+"id": "O03",
+"rubro": "notebook",
+"texto": "la mejor notebook que tengan",
+"traduccion": "notebook mejor",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Dell G15 Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Acer Aspire 5 Core i5 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Dell G15 Core i7 16GB 1TB SSD"
+}
+},
+{
+"id": "O04",
+"rubro": "auriculares",
+"texto": "auriculares que no tengan cable",
+"traduccion": "auriculares inalambricos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares JBL Tune 520BT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares JBL Tune 520BT"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony WH-CH520"
+}
+},
+{
+"id": "O05",
+"rubro": "monitor",
+"texto": "un monitor que no pase los 200 lucas",
+"traduccion": "monitor hasta 200000",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 29WP60G UltraWide"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+}
+},
+{
+"id": "O06",
+"rubro": "placa de video",
+"texto": "la placa de video mas bestia que tengan",
+"traduccion": "placa de video gama alta",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video PowerColor Red Devil RX 7900 XT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Sapphire Nitro+ RX 7800 XT"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video PowerColor Red Devil RX 7900 XT"
+}
+},
+{
+"id": "O07",
+"rubro": "silla gamer",
+"texto": "una silla que aguante 120 kilos",
+"traduccion": "silla capacidad 120 kilos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Corsair TC100 Relaxed"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer ProSeat Ergo Mesh"
+}
+},
+{
+"id": "O08",
+"rubro": "almacenamiento externo",
+"texto": "un disco externo chiquito que entre en el bolsillo",
+"traduccion": "disco externo pequeño bolsillo",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Flair 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Flair 1TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Flair 2TB"
+}
+},
+{
+"id": "O09",
+"rubro": "parlante",
+"texto": "un parlante que se banque el agua de la pileta",
+"traduccion": "parlante resistente al agua pileta",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Flip 6"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Flip 6"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Flip 6"
+}
+},
+{
+"id": "O10",
+"rubro": "cargador",
+"texto": "un cargador que le de rapido al iphone",
+"traduccion": "cargador iphone carga rapida",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+}
+},
+{
+"id": "O11",
+"rubro": "notebook",
+"texto": "la notebook mas liviana para viajar",
+"traduccion": "notebook liviana para viajar",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Acer Swift Go 14 Ryzen 7 16GB 512GB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Acer Swift Go 14 Ryzen 7 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Acer Swift Go 14 Ryzen 7 16GB 512GB SSD"
+}
+},
+{
+"id": "O12",
+"rubro": "router",
+"texto": "un router que llegue a los 3 pisos de la casa",
+"traduccion": "router alcance 3 pisos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco X50 Mesh"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco X50 Mesh"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco X50 Mesh"
+}
+},
+{
+"id": "A01",
+"rubro": "mouse",
+"texto": "cuanto sale un mause gamer de esos con luces rgb",
+"traduccion": "mouse gamer rgb",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G203 Lightsync"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Redragon Predator"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G203 Lightsync"
+}
+},
+{
+"id": "A02",
+"rubro": "notebook",
+"texto": "notebooks con dieciseis de ram y que sean livianas para la facultad",
+"traduccion": "notebook 16gb ram liviana",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook HP Omen 16 Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Vivobook 15 Core i5 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook HP Omen 16 Core i5 16GB 512GB SSD"
+}
+},
+{
+"id": "A03",
+"rubro": "auriculares",
+"texto": "necesito un headset para jugar a la play bueno no la play la compu eh que tenga micro",
+"traduccion": "headset pc microfono",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Redragon Pandora"
+}
+},
+{
+"id": "A04",
+"rubro": "teclado",
+"texto": "necesito dos teclados uno en español",
+"traduccion": "teclado mecanico español",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron K2"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron V3"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron K2"
+}
+},
+{
+"id": "A05",
+"rubro": "ssd",
+"texto": "un ssd de quinientos gigas eme punto dos",
+"traduccion": "ssd 500gb m.2",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Crucial P5 Plus 500GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Samsung 980 500GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Samsung 980 500GB"
+}
+},
+{
+"id": "A06",
+"rubro": "monitor",
+"texto": "monitor ese de veintisiete pulgadas que vi en instagram el que es curvo",
+"traduccion": "monitor 27 pulgadas curvo",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 27G2"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+}
+},
+{
+"id": "A07",
+"rubro": "placa de video",
+"texto": "necesita una placa de video que le corra a ciento cuarenta y cuatro",
+"traduccion": "placa de video 144hz",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video XFX Speedster RX 7700 XT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video XFX Speedster RX 7700 XT"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video XFX Speedster RX 7700 XT"
+}
+},
+{
+"id": "A08",
+"rubro": "parlante",
+"texto": "quisiera saber el precio del parlante jbl flip",
+"traduccion": "parlante jbl flip precio",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Flip 6"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Flip 6"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Flip 6"
+}
+},
+{
+"id": "A09",
+"rubro": "cargador",
+"texto": "charger de sesenta y cinco watts para la notebook tipo ce",
+"traduccion": "cargador notebook 65w tipo c",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+}
+},
+{
+"id": "A10",
+"rubro": "silla gamer",
+"texto": "dos sillas gamers negras",
+"traduccion": "silla gamer negra",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon Gaia"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+}
+},
+{
+"id": "A11",
+"rubro": "impresora",
+"texto": "una impresora a color con wifi y que sea de tinta continua",
+"traduccion": "impresora color wifi tinta continua",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3250"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3250"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3250"
+}
+},
+{
+"id": "B01",
+"rubro": "mouse",
+"texto": "el bicho para mover la flechita en la pantalla",
+"traduccion": "mouse inalambrico",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Razer Cobra"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+}
+},
+{
+"id": "B01",
+"rubro": "teclado",
+"texto": "la tabla con letras para tipear",
+"traduccion": "teclado inalambrico",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech MX Keys S"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech G915 TKL"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech K380"
+}
+},
+{
+"id": "B02",
+"rubro": "auriculares",
+"texto": "vinchas con musica para el gym que no se caigan",
+"traduccion": "vincha musica gym",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony WH-1000XM5"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+}
+},
+{
+"id": "B02",
+"rubro": "parlante",
+"texto": "aparatito que tire musica fuerte para el asado del domingo",
+"traduccion": "parlante musica fuerte",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Clip 4"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Clip 4"
+}
+},
+{
+"id": "B03",
+"rubro": "fuente",
+"texto": "quiero la cajita que le da corriente a la pc, de 650",
+"traduccion": "fuente de alimentacion pc 650w",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Gigabyte P650B"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Gigabyte P650B"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Gigabyte P650B"
+}
+},
+{
+"id": "B03",
+"rubro": "gabinete",
+"texto": "la caja metalica donde va todo adentro con vidrio templado",
+"traduccion": "gabinete pc metalico vidrio templado",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master TD500 Mesh V2"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Thermaltake S100 TG"
+}
+},
+{
+"id": "B04",
+"rubro": "procesador",
+"texto": "el cerebro de la compu, un ryzen 5",
+"traduccion": "procesador ryzen 5",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 5 8400F"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 5 8400F"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 5 8400F"
+}
+},
+{
+"id": "B04",
+"rubro": "motherboard",
+"texto": "la placa grande donde se enchufa todo",
+"traduccion": "placa madre",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus TUF B650-Plus WiFi"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Gigabyte A520M K"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus TUF B760-Plus WiFi"
+}
+},
+{
+"id": "B05",
+"rubro": "webcam",
+"texto": "necesito el ojito para las clases por meet",
+"traduccion": "webcam para clases meet",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech C270 HD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech C270 HD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech Brio 100"
+}
+},
+{
+"id": "B05",
+"rubro": "microfono",
+"texto": "algo para que me escuchen clarito",
+"traduccion": "microfono para clases meet",
+"fragmento": {
+"producto": 4,
+"rubro": 3,
+"primero": "auriculares HyperX Cloud Alpha"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Blue Yeti Nano"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Blue Yeti Nano"
+}
+},
+{
+"id": "B06",
+"rubro": "router",
+"texto": "el chirimbolo que tira el wifi por toda la casa",
+"traduccion": "repetidor wifi alcance casa",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX73"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco X50 Mesh"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco X50 Mesh"
+}
+},
+{
+"id": "B06",
+"rubro": "cargador",
+"texto": "enchufe ese rapido para el celu tipo c",
+"traduccion": "cargador celular carga rapida tipo c",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+}
+},
+{
+"id": "B07",
+"rubro": "impresora",
+"texto": "la maquinita para imprimir las tareas de los pibes",
+"traduccion": "impresora tareas pibes",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+}
+},
+{
+"id": "B07",
+"rubro": "almacenamiento externo",
+"texto": "un pendrive grandote",
+"traduccion": "pendrive grandote",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Kingston DataTraveler Max 2TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 1TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Kingston DataTraveler Max 2TB"
+}
+},
+{
+"id": "B08",
+"rubro": "memoria ram",
+"texto": "quiero mas memoria para que la compu no se tilde con mil pestañas, 16 gigas",
+"traduccion": "memoria ram 16 gigas",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram G.Skill Trident Z5 DDR5 6000 16GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram TeamGroup T-Force Delta RGB DDR5 16GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Crucial Pro DDR5 5600 16GB"
+}
+},
+{
+"id": "B08",
+"rubro": "ssd",
+"texto": "y un disco rapido de esos nvme para que arranque volando",
+"traduccion": "disco duro nvme rapido",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Kingston NV2 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Kingston NV2 1TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Kingston NV2 1TB"
+}
+},
+{
+"id": "B09",
+"rubro": "placa de video",
+"texto": "la grafica para jugar al warzone en alto",
+"traduccion": "tarjeta grafica gamer warzone calidad alta",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video PowerColor Hellhound RX 7800 XT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Eagle RTX 4060"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Eagle RTX 4060"
+}
+},
+{
+"id": "B09",
+"rubro": "cooler",
+"texto": "un ventilador para el micro que esta recalentando",
+"traduccion": "ventilador microprocesador cooler",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+}
+},
+{
+"id": "B10",
+"rubro": "notebook",
+"texto": "una compu portatil para la oficina",
+"traduccion": "computadora portatil oficina",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Zenbook 14 OLED Core i5 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook HP Omen 16 Core i7 16GB 1TB SSD"
+}
+},
+{
+"id": "B10",
+"rubro": "monitor",
+"texto": "la pantalla grande para enchufarle al costado",
+"traduccion": "pantalla grande",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 29WP60G UltraWide"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 2,
+"primero": "monitor LG 29WP60G UltraWide"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 29WP60G UltraWide"
+}
+},
+{
+"id": "B11",
+"rubro": "silla gamer",
+"texto": "un sillon de esos de streamer con apoyabrazos",
+"traduccion": "sillon streamer apoyabrazos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Corsair TC100 Relaxed"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Cougar Armor S"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Cougar Armor S"
+}
+},
+{
+"id": "B11",
+"rubro": "tablet",
+"texto": "la tablita para dibujar, bueno la tablet",
+"traduccion": "tablet para dibujar",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Pad 6"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Samsung Galaxy Tab S6 Lite"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Samsung Galaxy Tab S6 Lite"
+}
+},
+{
+"id": "B12",
+"rubro": "mouse",
+"texto": "5 mouses con cable",
+"traduccion": "mouse con cable 5 unidades",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G502 X"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G502 X"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G502 X"
+}
+},
+{
+"id": "B12",
+"rubro": "teclado",
+"texto": "5 teclados con ñ",
+"traduccion": "teclado con ñ 5 unidades",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Corsair K55 RGB Pro"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Corsair K55 RGB Pro"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Corsair K55 RGB Pro"
+}
+},
+{
+"id": "B12",
+"rubro": "webcam",
+"texto": "5 camaritas web",
+"traduccion": "camara web 5 unidades",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+}
+},
+{
+"id": "B13",
+"rubro": "auriculares",
+"texto": "los cascos con micro para jugar online... los dos usb",
+"traduccion": "cascos con microfono usb para jugar",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+}
+},
+{
+"id": "B13",
+"rubro": "microfono",
+"texto": "el mic de mesa para grabar podcast, los dos usb",
+"traduccion": "microfono de mesa usb para podcast",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Rode NT-USB Mini"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Rode NT-USB Mini"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Rode NT-USB Mini"
+}
+},
+{
+"id": "B14",
+"rubro": "fuente",
+"texto": "necesito una fuente certificada oro de 750",
+"traduccion": "fuente certificada 750 oro",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Asus TUF Gaming 750W Gold"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Cooler Master MWE 750 Gold V2"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Asus TUF Gaming 750W Gold"
+}
+},
+{
+"id": "B14",
+"rubro": "placa de video",
+"texto": "una placa de video de 8 gigas",
+"traduccion": "placa de video 8 gigas",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Eagle RTX 4060"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Gaming OC RTX 4070 Ti Super"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Eagle RTX 4060"
+}
+},
+{
+"id": "B15",
+"rubro": "tablet",
+"texto": "dos tablets para los chicos que aguanten golpes",
+"traduccion": "tablet resistente golpes",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Pad 6"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Pad 6"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Redmi Pad SE"
+}
+},
+{
+"id": "B15",
+"rubro": "parlante",
+"texto": "un parlantito bluetooth para la pileta",
+"traduccion": "parlante bluetooth resistente agua",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Clip 4"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Clip 4"
+}
+},
+{
+"id": "B16",
+"rubro": "monitor",
+"texto": "busco un monitor gamer de 144 para el cuarto",
+"traduccion": "monitor gamer 144hz lo mas barato posible",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 27G2"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 27G2"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 27G2"
+}
+},
+{
+"id": "B16",
+"rubro": "silla gamer",
+"texto": "y una silla que no me destruya la espalda, lo mas barato posible",
+"traduccion": "silla ergonomica lo mas barato posible",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon Gaia"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon Gaia"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon Gaia"
+}
+},
+{
+"id": "B17",
+"rubro": "router",
+"texto": "el modem ese que se pone en la pared para que llegue señal al fondo",
+"traduccion": "modem pared señal fondo",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router Tenda AC10"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router Tenda AC10"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router Tenda AC10"
+}
+},
+{
+"id": "B17",
+"rubro": "cargador",
+"texto": "un cargador de notebook universal",
+"traduccion": "cargador notebook universal",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+}
+},
+{
+"id": "B18",
+"rubro": "gabinete",
+"texto": "quiero cambiar el gabo",
+"traduccion": "gabinete",
+"fragmento": {
+"producto": 23,
+"rubro": 2,
+"primero": "cooler Lian Li Galahad II 240"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Lian Li Lancool 216"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+}
+},
+{
+"id": "B18",
+"rubro": "cooler",
+"texto": "ponerle mas coolers con luces",
+"traduccion": "coolers con luces",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler Noctua NH-U12S Redux"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler Cooler Master ML240L V2"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler Noctua NH-U12S Redux"
+}
+},
+{
+"id": "B19",
+"rubro": "impresora",
+"texto": "una impresora multifuncion para el negocio",
+"traduccion": "impresora multifuncion negocio",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3560"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+}
+},
+{
+"id": "B19",
+"rubro": "almacenamiento externo",
+"texto": "un disco externo de 2 teras",
+"traduccion": "disco externo 2 teras",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Seagate Expansion 2TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Seagate Expansion 2TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo Seagate Expansion 2TB"
+}
+},
+{
+"id": "B20",
+"rubro": "procesador",
+"texto": "un procesador intel de los nuevos",
+"traduccion": "procesador intel nuevo",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i7-13700KF"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i9-14900K"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i9-14900K"
+}
+},
+{
+"id": "B20",
+"rubro": "motherboard",
+"texto": "su mother que sea compatible",
+"traduccion": "motherboard compatible intel nuevo",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus ROG Strix B550-F"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Gigabyte A520M K"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus TUF B760-Plus WiFi"
+}
+},
+{
+"id": "B20",
+"rubro": "memoria ram",
+"texto": "32 de ram ddr5",
+"traduccion": "memoria ram 32gb ddr5",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram TeamGroup T-Force Delta RGB DDR5 32GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram TeamGroup T-Force Delta RGB DDR5 32GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram G.Skill Trident Z5 DDR5 6000 32GB"
+}
+},
+{
+"id": "B21",
+"rubro": "notebook",
+"texto": "necesito una notebook",
+"traduccion": "notebook",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Vivobook 15 Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Lenovo LOQ 15 Core i5 16GB 512GB SSD"
+}
+},
+{
+"id": "B21",
+"rubro": "mouse",
+"texto": "un mouse inalambrico chiquito",
+"traduccion": "mouse inalambrico chiquito",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+}
+},
+{
+"id": "B22",
+"rubro": "impresora",
+"texto": "una impresora laser",
+"traduccion": "impresora laser",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+}
+},
+{
+"id": "B23",
+"rubro": "cargador",
+"texto": "un cargador rapido",
+"traduccion": "cargador rapido",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador Xiaomi 67W Turbo"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+}
+},
+{
+"id": "B23",
+"rubro": "auriculares",
+"texto": "unos auriculares inalambricos",
+"traduccion": "auriculares inalambricos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares JBL Tune 510BT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares JBL Tune 520BT"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares JBL Tune 510BT"
+}
+},
+{
+"id": "B24",
+"rubro": "parlante",
+"texto": "y un parlante para conectarle",
+"traduccion": "parlante para smart tv",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante Genius SP-HF180"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante Logitech Z207 Bluetooth"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante Logitech Z207 Bluetooth"
+}
+},
+{
+"id": "B25",
+"rubro": "webcam",
+"texto": "y una webcam para streamear",
+"traduccion": "webcam para streamear",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+}
+},
+{
+"id": "B26",
+"rubro": "silla gamer",
+"texto": "una silla gamer",
+"traduccion": "silla gamer",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Cougar Fusion"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+}
+},
+{
+"id": "B27",
+"rubro": "auriculares",
+"texto": "unos auriculares gamer con sonido envolvente",
+"traduccion": "auriculares gamer sonido envolvente",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Razer Kraken V3"
+}
+},
+{
+"id": "B28",
+"rubro": "cooler",
+"texto": "y un cooler para el procesador",
+"traduccion": "cooler para procesador",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+}
+},
+{
+"id": "B29",
+"rubro": "fuente",
+"texto": "una fuente de 600",
+"traduccion": "fuente 600",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 600 BR"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 600 BR"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 600 BR"
+}
+},
+{
+"id": "B30",
+"rubro": "placa de video",
+"texto": "una placa de video que los mueva",
+"traduccion": "placa de video para lentes de realidad virtual",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video PowerColor Red Devil RX 7900 XT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Asus Dual RTX 4060"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Asus Dual RTX 4060"
+}
+},
+{
+"id": "B31",
+"rubro": "auriculares",
+"texto": "lo que se pone en la cabeza para escuchar sin molestar a nadie de noche",
+"traduccion": "auriculares inalambricos para dormir",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares JBL Tune 770NC"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+}
+},
+{
+"id": "B32",
+"rubro": "monitor",
+"texto": "la pantallita aparte que se conecta a la compu de escritorio para ver mas grande",
+"traduccion": "monitor computadora escritorio",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor ViewSonic VA2406"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor ViewSonic VX2718"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+}
+},
+{
+"id": "B33",
+"rubro": "almacenamiento externo",
+"texto": "eso que se enchufa por usb para guardar las pelis y llevarlas a lo de mi vieja",
+"traduccion": "pendrive usb para guardar peliculas",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 2TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 2TB"
+}
+},
+{
+"id": "B34",
+"rubro": "router",
+"texto": "el coso que hace que la compu tenga internet sin cable en toda la casa, que no se corte",
+"traduccion": "repetidor wifi potente inalambrico",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX23"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Deco X50 Mesh"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router Tenda AC8"
+}
+},
+{
+"id": "B35",
+"rubro": "placa de video",
+"texto": "la tarjeta que hace que los juegos se vean lindos",
+"traduccion": "tarjeta grafica juegos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Sapphire Pulse RX 7700 XT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Eagle RTX 4060"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Sapphire Pulse RX 7700 XT"
+}
+},
+{
+"id": "B36",
+"rubro": "cooler",
+"texto": "la parte que enfria al procesador para que no se apague solo",
+"traduccion": "cooler para procesador",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool AG400"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+}
+},
+{
+"id": "B37",
+"rubro": "memoria ram",
+"texto": "lo que va adentro de la pc que tiene los programas abiertos, que se me queda corta",
+"traduccion": "memoria ram",
+"fragmento": {
+"producto": 6,
+"rubro": 2,
+"primero": "procesador Intel Core i9-14900K"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram G.Skill Flare X5 DDR5 6000 32GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Crucial Pro DDR5 5600 32GB"
+}
+},
+{
+"id": "B38",
+"rubro": "webcam",
+"texto": "algo para que mi abuelo vea a los nietos por videollamada desde la compu",
+"traduccion": "webcam para computadora videollamada",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+}
+},
+{
+"id": "B39",
+"rubro": "mouse",
+"texto": "la cosa plana con boton que se usa con la mano derecha para jugar al lol",
+"traduccion": "mouse gamer mano derecha",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Redragon Predator"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+}
+},
+{
+"id": "B40",
+"rubro": "impresora",
+"texto": "el aparato que saca las hojas con lo que escribis en la compu",
+"traduccion": "impresora",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+}
+},
+{
+"id": "B41",
+"rubro": "notebook",
+"texto": "una compu que se pueda llevar en la mochila al cole y que la bateria dure todo el dia",
+"traduccion": "computadora portatil liviana bateria larga duracion",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD"
+}
+},
+{
+"id": "B42",
+"rubro": "gabinete",
+"texto": "la caja grande donde van todas las piezas de la pc gamer, con luces",
+"traduccion": "gabinete pc gamer grande luces",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+}
+},
+{
+"id": "B43",
+"rubro": "fuente",
+"texto": "lo que convierte la corriente de la pared para alimentar todas las piezas de la pc",
+"traduccion": "fuente de poder pc",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 500 W1"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 600 BR"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente EVGA 500 W1"
+}
+},
+{
+"id": "B44",
+"rubro": "motherboard",
+"texto": "la placa principal donde se enchufan el micro, la memoria y todo lo demas",
+"traduccion": "placa madre motherboard",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus Prime B650-Plus"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Gigabyte A520M K"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Asus TUF B760-Plus WiFi"
+}
+},
+{
+"id": "B45",
+"rubro": "procesador",
+"texto": "el chip que hace todos los calculos de la compu, el mas rapido que tengan",
+"traduccion": "procesador mas rapido",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i9-14900K"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 9 7900X"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i9-14900K"
+}
+},
+{
+"id": "B46",
+"rubro": "ssd",
+"texto": "un disco que no hace ruido y es rapidisimo para instalar windows",
+"traduccion": "disco ssd rapido silencioso",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Kingston NV2 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Crucial P3 Plus 500GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Crucial P3 Plus 500GB"
+}
+},
+{
+"id": "B47",
+"rubro": "auriculares",
+"texto": "quiero un headset",
+"traduccion": "headset para streaming",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Redragon Pandora"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares HyperX Cloud II"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares HyperX Cloud II"
+}
+},
+{
+"id": "B47",
+"rubro": "microfono",
+"texto": "un micro aparte",
+"traduccion": "microfono para streaming",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Rode NT-USB Mini"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Shure MV7"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "microfono Blue Yeti Nano"
+}
+},
+{
+"id": "B47",
+"rubro": "webcam",
+"texto": "una webcam full hd",
+"traduccion": "webcam full hd para streaming",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+}
+},
+{
+"id": "B48",
+"rubro": "notebook",
+"texto": "dos notebuks para mis hijos",
+"traduccion": "notebook",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Asus Vivobook 15 Ryzen 7 16GB 512GB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook HP Victus 15 Ryzen 7 16GB 512GB SSD"
+}
+},
+{
+"id": "B48",
+"rubro": "impresora",
+"texto": "una impresora que ande con el celular",
+"traduccion": "impresora celular",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Brother HL-1212W"
+}
+},
+{
+"id": "B49",
+"rubro": "router",
+"texto": "necesito un routercito",
+"traduccion": "router",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX55"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX73"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX55"
+}
+},
+{
+"id": "B50",
+"rubro": "memoria ram",
+"texto": "memorias de ocho gigas de las ddr cuatro",
+"traduccion": "memoria ram 8gb ddr4",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Kingston Fury Renegade DDR5 6400 8GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Patriot Viper DDR4 3200 8GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Patriot Viper DDR4 3200 8GB"
+}
+},
+{
+"id": "B50",
+"rubro": "ssd",
+"texto": "un esesede de un tera",
+"traduccion": "ssd 1tb",
+"fragmento": {
+"producto": 16,
+"rubro": 2,
+"primero": "almacenamiento externo SanDisk Extreme Portable SSD 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Crucial P5 Plus 1TB"
+},
+"las dos": {
+"producto": 2,
+"rubro": 1,
+"primero": "almacenamiento externo Samsung T7 SSD 1TB"
+}
+},
+{
+"id": "B51",
+"rubro": "mouse",
+"texto": "un mause",
+"traduccion": "mouse logitech",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Genius DX-110"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech M170"
+}
+},
+{
+"id": "B51",
+"rubro": "teclado",
+"texto": "un teclado",
+"traduccion": "teclado logitech",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Corsair K70 RGB Pro"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech K120"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Logitech K120"
+}
+},
+{
+"id": "B51",
+"rubro": "auriculares",
+"texto": "unos auris",
+"traduccion": "auriculares logitech",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Logitech G Pro X"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Logitech G435"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Logitech G435"
+}
+},
+{
+"id": "B52",
+"rubro": "fuente",
+"texto": "una fuente de setecientos cincuenta watts",
+"traduccion": "fuente 750w",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Thermaltake Toughpower GF1 750W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Thermaltake Toughpower GF1 750W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "fuente Cooler Master MWE 750 Gold V2"
+}
+},
+{
+"id": "B52",
+"rubro": "gabinete",
+"texto": "un gabinete que entre una placa grande",
+"traduccion": "gabinete para placa grande",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Thermaltake Versa H18"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "gabinete Cooler Master MasterBox Q300L"
+}
+},
+{
+"id": "B53",
+"rubro": "tablet",
+"texto": "una tableta para leer libros",
+"traduccion": "tableta para leer libros",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Pad 6"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Pad 6"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "tablet Xiaomi Redmi Pad SE"
+}
+},
+{
+"id": "B53",
+"rubro": "cargador",
+"texto": "un cargador de repuesto para la misma",
+"traduccion": "cargador tableta repuesto",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador UGREEN Nexode 65W"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cargador Xiaomi Mi 33W"
+}
+},
+{
+"id": "B54",
+"rubro": "silla gamer",
+"texto": "una silla de gamer",
+"traduccion": "silla gamer",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Cougar Fusion"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+}
+},
+{
+"id": "B54",
+"rubro": "monitor",
+"texto": "monitor curvo de treinta y dos",
+"traduccion": "monitor curvo 32 pulgadas",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor LG 34WP65C Curvo"
+}
+},
+{
+"id": "B55",
+"rubro": "parlante",
+"texto": "3 parlantes, uno a Jujuy... que no pase los 50 lucas cada uno",
+"traduccion": "parlante hasta 50000",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Go 3"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Go 3"
+}
+},
+{
+"id": "B56",
+"rubro": "ssd",
+"texto": "4 discos solidos de 480",
+"traduccion": "disco solido 480gb",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Samsung 980 500GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Samsung 980 500GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "ssd Samsung 980 500GB"
+}
+},
+{
+"id": "B56",
+"rubro": "memoria ram",
+"texto": "4 memorias de 8",
+"traduccion": "memoria ram 8gb",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Patriot Viper DDR4 3200 8GB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram TeamGroup T-Force Delta RGB DDR5 8GB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "memoria ram Patriot Viper DDR4 3200 8GB"
+}
+},
+{
+"id": "B57",
+"rubro": "silla gamer",
+"texto": "2 sillas",
+"traduccion": "sillas",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon Coeus"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Noblechairs Epic"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "silla gamer Redragon Coeus"
+}
+},
+{
+"id": "B58",
+"rubro": "auriculares",
+"texto": "10 auriculares baratos para un call center en Rosario, con microfono incorporado",
+"traduccion": "auriculares con microfono incorporado baratos",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Redragon Pandora"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Redragon Pandora"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Redragon Pandora"
+}
+},
+{
+"id": "B59",
+"rubro": "motherboard",
+"texto": "una placa madre",
+"traduccion": "placa madre combo mas economico pc oficina",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Gigabyte B650 Gaming X AX"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Gigabyte A520M K"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "motherboard Gigabyte A520M K"
+}
+},
+{
+"id": "B59",
+"rubro": "procesador",
+"texto": "un micro",
+"traduccion": "microprocesador combo mas economico pc oficina",
+"fragmento": {
+"producto": 13,
+"rubro": 3,
+"primero": "microfono Blue Yeti Nano"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i3-12100F"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador Intel Core i3-12100F"
+}
+},
+{
+"id": "B59",
+"rubro": "cooler",
+"texto": "un cooler",
+"traduccion": "cooler combo mas economico pc oficina",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "cooler DeepCool LE500"
+}
+},
+{
+"id": "B60",
+"rubro": "monitor",
+"texto": "un monitor a Salta... de 27",
+"traduccion": "monitor 27",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor Gigabyte M27Q"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor Gigabyte M27Q"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor Gigabyte M27Q"
+}
+},
+{
+"id": "B60",
+"rubro": "teclado",
+"texto": "dos teclados que van a Salta",
+"traduccion": "teclado",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron K2"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Genius Slimstar 130"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Keychron K2"
+}
+},
+{
+"id": "B61",
+"rubro": "impresora",
+"texto": "necesito 3 impresoras",
+"traduccion": "impresora 3 unidades",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora HP DeskJet 2775"
+}
+},
+{
+"id": "B62",
+"rubro": "placa de video",
+"texto": "tienen garantia oficial las placas de video?",
+"traduccion": "placas de video garantia oficial",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Eagle RTX 4060"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video ASRock Challenger RX 7600 XT"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video Gigabyte Eagle RTX 4060"
+}
+},
+{
+"id": "B63",
+"rubro": "notebook",
+"texto": "si compro una notebook me la arman con windows?",
+"traduccion": "notebook con windows",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook HP Victus 15 Ryzen 7 16GB 512GB SSD"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "notebook HP Victus 15 Ryzen 7 16GB 512GB SSD"
+}
+},
+{
+"id": "B64",
+"rubro": "webcam",
+"texto": "hay descuento si llevo 5 webcams",
+"traduccion": "webcam 5 unidades",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam Logitech StreamCam"
+}
+},
+{
+"id": "B65",
+"rubro": "router",
+"texto": "quiero un router",
+"traduccion": "router",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX23"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX73"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "router TP-Link Archer AX23"
+}
+},
+{
+"id": "B66",
+"rubro": "mouse",
+"texto": "un mouse",
+"traduccion": "mouse",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Genius DX-110"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Genius DX-110"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "mouse Logitech G Pro Wireless"
+}
+},
+{
+"id": "B66",
+"rubro": "teclado",
+"texto": "un keyboard gamer con switches red",
+"traduccion": "keyboard gamer switches red",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Redragon Vata K580"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Redragon Kumara K552"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "teclado Redragon Kumara K552"
+}
+},
+{
+"id": "B67",
+"rubro": "parlante",
+"texto": "jbl o algo parecido para escuchar musica en el living",
+"traduccion": "parlante jbl living",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "parlante JBL Charge 5"
+}
+},
+{
+"id": "B67",
+"rubro": "auriculares",
+"texto": "unos airpods o similar",
+"traduccion": "auriculares airpods",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares JBL Tune 520BT"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "auriculares Sony ULT Wear"
+}
+},
+{
+"id": "B68",
+"rubro": "placa de video",
+"texto": "quiero una rtx",
+"traduccion": "rtx",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video MSI Ventus 2X RTX 4070 Super"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video MSI Ventus 2X RTX 4070 Super"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "placa de video MSI Ventus 2X RTX 4070 Super"
+}
+},
+{
+"id": "B68",
+"rubro": "procesador",
+"texto": "un ryzen 7",
+"traduccion": "ryzen 7",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 7 5800X3D"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 7 7800X3D"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "procesador AMD Ryzen 7 7700X"
+}
+},
+{
+"id": "B69",
+"rubro": "impresora",
+"texto": "una epson de tinta continua",
+"traduccion": "impresora epson tinta continua",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3250"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3250"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "impresora Epson EcoTank L3250"
+}
+},
+{
+"id": "B69",
+"rubro": "almacenamiento externo",
+"texto": "un pen de 64",
+"traduccion": "pendrive 64gb",
+"fragmento": {
+"producto": 1,
+"rubro": 31,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 1TB"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 1TB"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "almacenamiento externo SanDisk Ultra Dual Drive 1TB"
+}
+},
+{
+"id": "B70",
+"rubro": "monitor",
+"texto": "nesecito un monitr de 24",
+"traduccion": "monitor 24 pulgadas",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "monitor AOC 24B2XH"
+}
+},
+{
+"id": "B70",
+"rubro": "webcam",
+"texto": "una vebcam con micrfono",
+"traduccion": "webcam con microfono",
+"fragmento": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"busqueda": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+},
+"las dos": {
+"producto": 1,
+"rubro": 1,
+"primero": "webcam AverMedia PW313"
+}
+}
+]

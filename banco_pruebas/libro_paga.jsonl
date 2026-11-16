@@ -29726,3 +29726,15 @@
 {"dia": "2026-11-16", "hora": "16:26:05", "modelo": "gemini-3.8-flash", "entrada": 289, "salida": 44, "dolares": 0.00038, "proceso": 2102}
 {"dia": "2026-11-16", "hora": "16:26:12", "modelo": "gemini-3.8-flash", "entrada": 286, "salida": 53, "dolares": 0.00041, "proceso": 2102}
 {"dia": "2026-11-16", "hora": "16:26:18", "modelo": "gemini-3.8-flash", "entrada": 296, "salida": 51, "dolares": 0.00041, "proceso": 2102}
+{"dia": "2026-11-16", "hora": "17:04:25", "modelo": "gemini-embedding-001", "entrada": 7674, "salida": 0, "dolares": 0.001151, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:27", "modelo": "gemini-embedding-001", "entrada": 8711, "salida": 0, "dolares": 0.001307, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:29", "modelo": "gemini-embedding-001", "entrada": 7436, "salida": 0, "dolares": 0.001115, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:31", "modelo": "gemini-embedding-001", "entrada": 6477, "salida": 0, "dolares": 0.000972, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:35", "modelo": "gemini-embedding-001", "entrada": 6893, "salida": 0, "dolares": 0.001034, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:37", "modelo": "gemini-embedding-001", "entrada": 320, "salida": 0, "dolares": 4.8e-05, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:40", "modelo": "gemini-embedding-001", "entrada": 926, "salida": 0, "dolares": 0.000139, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:44", "modelo": "gemini-embedding-001", "entrada": 864, "salida": 0, "dolares": 0.00013, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:48", "modelo": "gemini-embedding-001", "entrada": 601, "salida": 0, "dolares": 9e-05, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:04:57", "modelo": "gemini-embedding-001", "entrada": 775, "salida": 0, "dolares": 0.000116, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:05:22", "modelo": "gemini-embedding-001", "entrada": 1723, "salida": 0, "dolares": 0.000258, "proceso": 930}
+{"dia": "2026-11-16", "hora": "17:05:32", "modelo": "gemini-embedding-001", "entrada": 743, "salida": 0, "dolares": 0.000111, "proceso": 930}
