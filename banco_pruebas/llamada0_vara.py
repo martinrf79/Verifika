@@ -15,6 +15,9 @@ QUE MIDE, lo que la FICHA 99 le pide a la llamada 0:
 
 COMO SE ASIGNA UNA LINEA: a la cosa cuya raiz aparece primero en la busqueda, que es el producto y no el accesorio:
 "parlante para smart tv" es del parlante. Si empatan, a la de raiz mas larga, y si siguen empatadas, a todas: es junta.
+LA PRUEBA ROTA, corregida el mismo 16-nov al revisar las fallas: las raices no tomaban las formas de las palabras del
+propio cliente, "parlantitos", "chiquito", "grandote" y el plural "placas de video". Se cambiaron por la raiz que las
+toma. No se sumo ningun sinonimo: "reposabrazos" por "apoyabrazos" sigue contando como perdida.
 LO QUE NO MIDE: los usos, "para la facu", y los topes del total, "tengo 300 mil": no son condiciones de una linea.
 """
 
@@ -26,14 +29,14 @@ NOTE = ["notebook", "notebuk", "laptop", "computadora portatil", "compu portatil
 RAM = ["memoria", "ram", "ddr"]
 SSD = ["ssd", "solido", "nvme", "m.2", "esesede"]
 EXT = ["disco externo", "externo", "pendrive", "pen drive", "disquito", "almacenamiento"]
-PAR = ["parlante", "altavoz", "bocina", "speaker", "cajita"]
+PAR = ["parlant", "altavoz", "bocina", "speaker", "cajita"]
 WEB = ["webcam", "camara web", "camarita", "camara", "vebcam"]
 IMP = ["impresora", "multifuncion", "fotocopiadora"]
 SIL = ["silla", "sillon", "trono"]
 CAR = ["cargador", "charger"]
-GPU = ["placa de video", "grafica", "gpu", "tarjeta de video", "tarjeta grafica"]
+GPU = ["placa de video", "placas de video", "grafica", "gpu", "tarjeta de video", "tarjeta grafica", "tarjetas de video"]
 CPU = ["procesador", "micro", "cpu"]
-MOTHER = ["mother", "placa madre", "placa base", "placa principal"]
+MOTHER = ["mother", "placa madre", "placas madre", "placa base", "placa principal"]
 COOLER = ["cooler", "ventilador", "disipador", "refrigeracion"]
 WIFI = ["router", "repetidor", "extensor", "mesh", "wifi"]
 
@@ -123,7 +126,7 @@ VARA = {
     "B04": [C(CPU + ["ryzen"], ("ryzen",)), C(MOTHER)],
     "B05": [C(WEB), C(["microfono", "mic"])],
     "B06": [C(WIFI), C(CAR, ("rapid",), TIPO_C)],
-    "B07": [C(IMP), C(EXT + ["disco"], ("grande", "capacidad", "tb", "gb", "tera"))],
+    "B07": [C(IMP), C(EXT + ["disco"], ("grand", "capacidad", "tb", "gb", "tera"))],
     "B08": [C(RAM, ("16",)), C(SSD + ["disco"], ("nvme", "m.2"))],
     "B09": [C(GPU, ("warzone", "alto", "gamer", "potente", "gama")), C(COOLER)],
     "B10": [C(NOTE), C(MON)],
@@ -139,7 +142,7 @@ VARA = {
     "B18": [C(["gabinete", "gabo"]), C(["cooler", "ventilador"], ("rgb", "luces", "led"), ("120",))],
     "B19": [C(IMP, ("multifuncion",)), C(EXT + ["disco"], ("2tb", "2 tb", "2 tera", "2000"))],
     "B20": [C(CPU, ("intel",)), C(MOTHER, ("intel", "lga", "compatible")), C(RAM, ("32",), ("ddr5", "ddr 5"))],
-    "B21": [C(NOTE), C(["funda"]), C(MOU, INAL, ("chic", "compact", "mini", "pequen", "portatil"))],
+    "B21": [C(NOTE), C(["funda"]), C(MOU, INAL, ("chic", "chiq", "compact", "mini", "pequen", "portatil"))],
     "B22": [C(IMP, ("laser",)), C(["resma", "hoja"]), C(["toner"])],
     "B23": [C(["celular"]), C(CAR, ("rapid",)), C(AUR, INAL)],
     "B24": [C(["tv", "televisor"], ("50",)), C(PAR)],
