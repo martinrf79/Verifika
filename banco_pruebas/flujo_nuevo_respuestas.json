@@ -8362,10 +8362,29 @@
     "nexos": [
      {
       "nexo": "producto",
-      "candidatos": [],
+      "candidatos": [
+       "IMP0019",
+       "IMP0007",
+       "IMP0017",
+       "TAB0010",
+       "MBO0011"
+      ],
       "elegido": null,
       "veredicto": "no hay",
-      "datos": []
+      "datos": [
+       {
+        "id": "IMP0019",
+        "nombre": "Impresora Brother HL-1212W Negro",
+        "rubro": "impresora",
+        "precio": 192000,
+        "stock": 12,
+        "modelo": [
+         "impresora",
+         "Brother",
+         "HL-1212W"
+        ]
+       }
+      ]
      },
      {
       "nexo": "condicion",
@@ -8388,7 +8407,7 @@
     ]
    }
   ],
-  "respuesta": "Service lavarropas no hay.\nSi falla dentro de la garantia, escribinos con tu numero de pedido y una descripcion de la falla, y coordinamos el service oficial o el cambio segun corresponda, sin costo de gestion. El plazo de tu producto figura en su ficha.",
+  "respuesta": "Service lavarropas no hay. Lo mas cercano: Impresora Brother HL-1212W Negro a $192.000.\nSi falla dentro de la garantia, escribinos con tu numero de pedido y una descripcion de la falla, y coordinamos el service oficial o el cambio segun corresponda, sin costo de gestion. El plazo de tu producto figura en su ficha.",
   "memoria": []
  },
  "nuevas70 F06": {
@@ -8606,10 +8625,29 @@
     "nexos": [
      {
       "nexo": "producto",
-      "candidatos": [],
+      "candidatos": [
+       "PAR0028",
+       "AUR0010",
+       "AUR0013",
+       "AUR0029",
+       "TAB0004"
+      ],
       "elegido": null,
       "veredicto": "no hay",
-      "datos": []
+      "datos": [
+       {
+        "id": "PAR0028",
+        "nombre": "Parlante JBL Charge 5 Negro",
+        "rubro": "parlante",
+        "precio": 210000,
+        "stock": 2,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Charge 5"
+        ]
+       }
+      ]
      },
      {
       "nexo": "condicion",
@@ -8632,7 +8670,7 @@
     ]
    }
   ],
-  "respuesta": "Play 5 no hay.",
+  "respuesta": "Play 5 no hay. Lo mas cercano: Parlante JBL Charge 5 Negro a $210.000.",
   "memoria": []
  },
  "nuevas70 A01": {

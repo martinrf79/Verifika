@@ -8323,16 +8323,89 @@
      "tablet",
      "motherboard"
     ],
-    "candidatos": [],
-    "pedido": "",
+    "candidatos": [
+     {
+      "id": "IMP0019",
+      "nombre": "Impresora Brother HL-1212W Negro",
+      "rubro": "impresora",
+      "precio": 192000,
+      "stock": 12,
+      "modelo": [
+       "impresora",
+       "Brother",
+       "HL-1212W"
+      ]
+     },
+     {
+      "id": "IMP0007",
+      "nombre": "Impresora Brother DCP-T520W Negro",
+      "rubro": "impresora",
+      "precio": 327500,
+      "stock": 22,
+      "modelo": [
+       "impresora",
+       "Brother",
+       "DCP-T520W"
+      ]
+     },
+     {
+      "id": "IMP0017",
+      "nombre": "Impresora HP Smart Tank 720 Negro",
+      "rubro": "impresora",
+      "precio": 418500,
+      "stock": 14,
+      "modelo": [
+       "impresora",
+       "HP",
+       "Smart Tank 720"
+      ]
+     },
+     {
+      "id": "TAB0010",
+      "nombre": "Tablet Xiaomi Redmi Pad SE Gris",
+      "rubro": "tablet",
+      "precio": 256000,
+      "stock": 12,
+      "modelo": [
+       "tablet",
+       "Xiaomi",
+       "Redmi Pad SE"
+      ]
+     },
+     {
+      "id": "MBO0011",
+      "nombre": "Motherboard Gigabyte B550M DS3H",
+      "rubro": "motherboard",
+      "precio": 125000,
+      "stock": 23,
+      "modelo": [
+       "motherboard",
+       "Gigabyte",
+       "B550M DS3H"
+      ]
+     }
+    ],
+    "pedido": "service",
     "elegido": null,
     "no_hay": true,
-    "dudoso": false,
-    "cercano": null
+    "dudoso": true,
+    "cercano": {
+     "id": "IMP0019",
+     "nombre": "Impresora Brother HL-1212W Negro",
+     "rubro": "impresora",
+     "precio": 192000,
+     "stock": 12,
+     "modelo": [
+      "impresora",
+      "Brother",
+      "HL-1212W"
+     ]
+    },
+    "jev": null
    }
   ],
   "envios": [],
-  "respuesta": "Service lavarropas no hay."
+  "respuesta": "Service lavarropas no hay. Lo mas cercano: Impresora Brother HL-1212W Negro a $192.000."
  },
  "nuevas70 gemini F06": {
   "mensaje": "vi en mercado libre la misma notebook mas barata, me igualan el precio?",
@@ -8568,16 +8641,89 @@
      "auriculares",
      "tablet"
     ],
-    "candidatos": [],
-    "pedido": "",
+    "candidatos": [
+     {
+      "id": "PAR0028",
+      "nombre": "Parlante JBL Charge 5 Negro",
+      "rubro": "parlante",
+      "precio": 210000,
+      "stock": 2,
+      "modelo": [
+       "parlante",
+       "JBL",
+       "Charge 5"
+      ]
+     },
+     {
+      "id": "AUR0010",
+      "nombre": "Auriculares Sony WH-1000XM5 Blanco",
+      "rubro": "auriculares",
+      "precio": 680500,
+      "stock": 1,
+      "modelo": [
+       "auriculares",
+       "Sony",
+       "WH-1000XM5"
+      ]
+     },
+     {
+      "id": "AUR0013",
+      "nombre": "Auriculares JBL Tune 510BT Negro",
+      "rubro": "auriculares",
+      "precio": 78000,
+      "stock": 24,
+      "modelo": [
+       "auriculares",
+       "JBL",
+       "Tune 510BT"
+      ]
+     },
+     {
+      "id": "AUR0029",
+      "nombre": "Auriculares Logitech G535 Negro",
+      "rubro": "auriculares",
+      "precio": 159500,
+      "stock": 4,
+      "modelo": [
+       "auriculares",
+       "Logitech",
+       "G535"
+      ]
+     },
+     {
+      "id": "TAB0004",
+      "nombre": "Tablet Samsung Galaxy Tab S6 Lite Gris",
+      "rubro": "tablet",
+      "precio": 466000,
+      "stock": 24,
+      "modelo": [
+       "tablet",
+       "Samsung",
+       "Galaxy Tab S6 Lite"
+      ]
+     }
+    ],
+    "pedido": "play",
     "elegido": null,
     "no_hay": true,
-    "dudoso": false,
-    "cercano": null
+    "dudoso": true,
+    "cercano": {
+     "id": "PAR0028",
+     "nombre": "Parlante JBL Charge 5 Negro",
+     "rubro": "parlante",
+     "precio": 210000,
+     "stock": 2,
+     "modelo": [
+      "parlante",
+      "JBL",
+      "Charge 5"
+     ]
+    },
+    "jev": null
    }
   ],
   "envios": [],
-  "respuesta": "Play 5 no hay."
+  "respuesta": "Play 5 no hay. Lo mas cercano: Parlante JBL Charge 5 Negro a $210.000."
  },
  "nuevas70 gemini A01": {
   "mensaje": "ehh hola si mira te queria preguntar eh cuanto sale un mause gamer de esos con luces rgb y si me lo mandan a cordoba",
@@ -18262,16 +18408,89 @@
      "tablet",
      "motherboard"
     ],
-    "candidatos": [],
-    "pedido": "",
+    "candidatos": [
+     {
+      "id": "IMP0019",
+      "nombre": "Impresora Brother HL-1212W Negro",
+      "rubro": "impresora",
+      "precio": 192000,
+      "stock": 12,
+      "modelo": [
+       "impresora",
+       "Brother",
+       "HL-1212W"
+      ]
+     },
+     {
+      "id": "IMP0007",
+      "nombre": "Impresora Brother DCP-T520W Negro",
+      "rubro": "impresora",
+      "precio": 327500,
+      "stock": 22,
+      "modelo": [
+       "impresora",
+       "Brother",
+       "DCP-T520W"
+      ]
+     },
+     {
+      "id": "IMP0017",
+      "nombre": "Impresora HP Smart Tank 720 Negro",
+      "rubro": "impresora",
+      "precio": 418500,
+      "stock": 14,
+      "modelo": [
+       "impresora",
+       "HP",
+       "Smart Tank 720"
+      ]
+     },
+     {
+      "id": "TAB0010",
+      "nombre": "Tablet Xiaomi Redmi Pad SE Gris",
+      "rubro": "tablet",
+      "precio": 256000,
+      "stock": 12,
+      "modelo": [
+       "tablet",
+       "Xiaomi",
+       "Redmi Pad SE"
+      ]
+     },
+     {
+      "id": "MBO0011",
+      "nombre": "Motherboard Gigabyte B550M DS3H",
+      "rubro": "motherboard",
+      "precio": 125000,
+      "stock": 23,
+      "modelo": [
+       "motherboard",
+       "Gigabyte",
+       "B550M DS3H"
+      ]
+     }
+    ],
+    "pedido": "service",
     "elegido": null,
     "no_hay": true,
-    "dudoso": false,
-    "cercano": null
+    "dudoso": true,
+    "cercano": {
+     "id": "IMP0019",
+     "nombre": "Impresora Brother HL-1212W Negro",
+     "rubro": "impresora",
+     "precio": 192000,
+     "stock": 12,
+     "modelo": [
+      "impresora",
+      "Brother",
+      "HL-1212W"
+     ]
+    },
+    "jev": null
    }
   ],
   "envios": [],
-  "respuesta": "Service lavarropas no hay."
+  "respuesta": "Service lavarropas no hay. Lo mas cercano: Impresora Brother HL-1212W Negro a $192.000."
  },
  "nuevas70 haiku F06": {
   "mensaje": "vi en mercado libre la misma notebook mas barata, me igualan el precio?",
@@ -27902,16 +28121,89 @@
      "tablet",
      "motherboard"
     ],
-    "candidatos": [],
-    "pedido": "",
+    "candidatos": [
+     {
+      "id": "IMP0019",
+      "nombre": "Impresora Brother HL-1212W Negro",
+      "rubro": "impresora",
+      "precio": 192000,
+      "stock": 12,
+      "modelo": [
+       "impresora",
+       "Brother",
+       "HL-1212W"
+      ]
+     },
+     {
+      "id": "IMP0007",
+      "nombre": "Impresora Brother DCP-T520W Negro",
+      "rubro": "impresora",
+      "precio": 327500,
+      "stock": 22,
+      "modelo": [
+       "impresora",
+       "Brother",
+       "DCP-T520W"
+      ]
+     },
+     {
+      "id": "IMP0017",
+      "nombre": "Impresora HP Smart Tank 720 Negro",
+      "rubro": "impresora",
+      "precio": 418500,
+      "stock": 14,
+      "modelo": [
+       "impresora",
+       "HP",
+       "Smart Tank 720"
+      ]
+     },
+     {
+      "id": "TAB0010",
+      "nombre": "Tablet Xiaomi Redmi Pad SE Gris",
+      "rubro": "tablet",
+      "precio": 256000,
+      "stock": 12,
+      "modelo": [
+       "tablet",
+       "Xiaomi",
+       "Redmi Pad SE"
+      ]
+     },
+     {
+      "id": "MBO0011",
+      "nombre": "Motherboard Gigabyte B550M DS3H",
+      "rubro": "motherboard",
+      "precio": 125000,
+      "stock": 23,
+      "modelo": [
+       "motherboard",
+       "Gigabyte",
+       "B550M DS3H"
+      ]
+     }
+    ],
+    "pedido": "service",
     "elegido": null,
     "no_hay": true,
-    "dudoso": false,
-    "cercano": null
+    "dudoso": true,
+    "cercano": {
+     "id": "IMP0019",
+     "nombre": "Impresora Brother HL-1212W Negro",
+     "rubro": "impresora",
+     "precio": 192000,
+     "stock": 12,
+     "modelo": [
+      "impresora",
+      "Brother",
+      "HL-1212W"
+     ]
+    },
+    "jev": null
    }
   ],
   "envios": [],
-  "respuesta": "Service lavarropas no hay."
+  "respuesta": "Service lavarropas no hay. Lo mas cercano: Impresora Brother HL-1212W Negro a $192.000."
  },
  "nuevas70 deepseek F06": {
   "mensaje": "vi en mercado libre la misma notebook mas barata, me igualan el precio?",
@@ -28147,16 +28439,89 @@
      "auriculares",
      "tablet"
     ],
-    "candidatos": [],
-    "pedido": "",
+    "candidatos": [
+     {
+      "id": "PAR0028",
+      "nombre": "Parlante JBL Charge 5 Negro",
+      "rubro": "parlante",
+      "precio": 210000,
+      "stock": 2,
+      "modelo": [
+       "parlante",
+       "JBL",
+       "Charge 5"
+      ]
+     },
+     {
+      "id": "AUR0010",
+      "nombre": "Auriculares Sony WH-1000XM5 Blanco",
+      "rubro": "auriculares",
+      "precio": 680500,
+      "stock": 1,
+      "modelo": [
+       "auriculares",
+       "Sony",
+       "WH-1000XM5"
+      ]
+     },
+     {
+      "id": "AUR0013",
+      "nombre": "Auriculares JBL Tune 510BT Negro",
+      "rubro": "auriculares",
+      "precio": 78000,
+      "stock": 24,
+      "modelo": [
+       "auriculares",
+       "JBL",
+       "Tune 510BT"
+      ]
+     },
+     {
+      "id": "AUR0029",
+      "nombre": "Auriculares Logitech G535 Negro",
+      "rubro": "auriculares",
+      "precio": 159500,
+      "stock": 4,
+      "modelo": [
+       "auriculares",
+       "Logitech",
+       "G535"
+      ]
+     },
+     {
+      "id": "TAB0004",
+      "nombre": "Tablet Samsung Galaxy Tab S6 Lite Gris",
+      "rubro": "tablet",
+      "precio": 466000,
+      "stock": 24,
+      "modelo": [
+       "tablet",
+       "Samsung",
+       "Galaxy Tab S6 Lite"
+      ]
+     }
+    ],
+    "pedido": "play",
     "elegido": null,
     "no_hay": true,
-    "dudoso": false,
-    "cercano": null
+    "dudoso": true,
+    "cercano": {
+     "id": "PAR0028",
+     "nombre": "Parlante JBL Charge 5 Negro",
+     "rubro": "parlante",
+     "precio": 210000,
+     "stock": 2,
+     "modelo": [
+      "parlante",
+      "JBL",
+      "Charge 5"
+     ]
+    },
+    "jev": null
    }
   ],
   "envios": [],
-  "respuesta": "Play 5 no hay."
+  "respuesta": "Play 5 no hay. Lo mas cercano: Parlante JBL Charge 5 Negro a $210.000."
  },
  "nuevas70 deepseek A01": {
   "mensaje": "ehh hola si mira te queria preguntar eh cuanto sale un mause gamer de esos con luces rgb y si me lo mandan a cordoba",

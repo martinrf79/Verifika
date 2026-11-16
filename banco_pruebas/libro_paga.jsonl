@@ -29549,3 +29549,4 @@
 {"dia": "2026-11-14", "modelo": "gemini-embedding-001", "entrada": 1257, "salida": 0, "dolares": 0.00019, "proceso": 1282}
 {"dia": "2026-11-14", "modelo": "gemini-embedding-001", "entrada": 802, "salida": 0, "dolares": 0.00012, "proceso": 1454}
 {"dia": "2026-11-14", "modelo": "gemini-embedding-001", "entrada": 683, "salida": 0, "dolares": 0.0001, "proceso": 1454}
+{"dia": "2026-11-16", "hora": "01:25:16", "modelo": "gemini-3.1-flash-lite", "entrada": 6372, "salida": 2525, "dolares": 0.00538, "proceso": 705}

@@ -264,3 +264,28 @@ auriculares; una empeora, "keyboard gamer switches red" queda en "no hay" porque
 python3 banco_pruebas/nexo_rubro.py --jev                 # califica con lo grabado, sin gasto
 python3 banco_pruebas/nexo_rubro.py --correr-jev [--flujo]  # Jev sobre lo dudoso que falte
 ```
+
+## 11. Los nexos sobre mensajes reales que nunca vieron, 16-nov
+
+`banco_pruebas/reales.py`: 40 mensajes únicos de las charlas reales de WhatsApp de Martín, `examen_real/charlas.json`,
+los que se entienden solos. La vara, escrita antes de correr. Llamada 0, embeddings y Jev con la paga: medio centavo de
+dólar en la llamada 0, anotado en el libro, y menos de un centavo en vectores. Los nexos no se tocaron para correrla.
+
+| | Primera corrida | Con el arreglo |
+| --- | --- | --- |
+| Mensajes sin ninguna falla | 37 de 40 | 38 de 40 |
+| Rubros pedidos | 44 de 45, ninguno de más | 45 de 45 |
+| Lo que no se vende | 1 de 1 | 1 de 1 |
+| Temas de la tienda | 12 de 13, ninguno inventado | igual |
+| Modelos nombrados | 15 de 16, ninguno cambiado | igual |
+
+- **El arreglo:** "auriculares que anden con la PS5" daba no hay, porque "ps5" está en lo que no se vende. Lo no vendido
+  gana ahora solo si es lo primero de la búsqueda, lo pedido, como en la función que elige. Las 140, el nombrado y el
+  flujo dan lo mismo.
+- **Lo que queda no es de los nexos:** "el G502 Hero y el G305" pierde el G502 en la llamada 0, que deja una línea sola;
+  "tienen 50 off" no da tema porque "off" es alias de promociones y no palabra clave de la FAQ.
+- **Lectura:** en mensajes nuevos los nexos rinden como en los bancos. Lo que sigue es el nexo de condición.
+
+```bash
+python3 banco_pruebas/reales.py [--ver]      # califica, sin gasto
+```

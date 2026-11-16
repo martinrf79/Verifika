@@ -185,11 +185,13 @@ class Nexo:
 
     @staticmethod
     def _lo_dice(busqueda, negativo):
-        """Lo que no se vende gana solo si la busqueda lo dice: los embeddings proponen y el codigo confirma. "sony xm5"
-        queda cerca de "play 5" por Sony, y son auriculares que la tienda vende."""
-        ws = n(busqueda).split()
-        return all(any(w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w))) for w in ws)
-                   for p in n(negativo[len(NO_SE_VENDE):]).split())
+        """Lo que no se vende gana solo si es lo que pide la busqueda, su primera palabra, como en la funcion que elige:
+        los embeddings proponen y el codigo confirma. "sony xm5" queda cerca de "play 5" por Sony, y en "auriculares
+        ps5" lo pedido son auriculares: la PS5 es con que se usan. Medido el 16-nov en los mensajes reales."""
+        ws = [w for w in n(busqueda).split() if not w.isdigit()]
+        ps = n(negativo[len(NO_SE_VENDE):]).split()
+        return bool(ws) and all(any(w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w)))
+                                    for w in ws[:len(ps)]) for p in ps)
 
     def busqueda2(self, linea, rubros):
         """PIEZA 2: los cinco candidatos, el mejor de cada rubro y los dos que siguen, en el orden de los embeddings."""
