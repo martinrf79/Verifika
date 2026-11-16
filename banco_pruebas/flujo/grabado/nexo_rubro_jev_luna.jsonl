@@ -1,0 +1,55 @@
+{"banco": "nuevas70", "modelo": "flujo", "id": "M03", "tokens": 773, "lineas": {"mochila": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "M04", "tokens": 777, "lineas": {"disco sólido 1 TB, cantidad 2": "SSD0011"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "M07", "tokens": 776, "lineas": {"parlantitos 3 Bluetooth": "PAR0010"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "M08", "tokens": 748, "lineas": {"micro Ryzen 5": "CPU0005"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "M10", "tokens": 749, "lineas": {"fundas para tablets, cantidad 2": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "M11", "tokens": 1666, "lineas": {"brazo articulado": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "M14", "tokens": 1287, "lineas": {"disco externo, 2 teras, para backup": "EXT0003"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "M16", "tokens": 795, "lineas": {"cartuchos, cantidad 2": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R02", "tokens": 726, "lineas": {"repetidor wifi de pared para ampliar la señal hasta el patio": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R03", "tokens": 738, "lineas": {"pantalla grande para conectar notebook": "MON0007"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R04", "tokens": 773, "lineas": {"computadora plegable portátil": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R06", "tokens": 747, "lineas": {"fotocopiadora": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R07", "tokens": 787, "lineas": {"componente para PC para correr juegos": "GPU0007"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R09", "tokens": 738, "lineas": {"ventilador para procesador": "COO0002"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R11", "tokens": 721, "lineas": {"camarita para monitor": "WEB0007"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R13", "tokens": 697, "lineas": {"plaqueta madre": "MBO0001"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R15", "tokens": 724, "lineas": {"pantalla táctil": "TAB0001"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "R17", "tokens": 740, "lineas": {"cajita de música para llevar a la playa": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "O08", "tokens": 778, "lineas": {"disco externo chiquito, que entre en el bolsillo": "EXT0027"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "F02", "tokens": 772, "lineas": {"zapatillas Nike talle 42": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "F05", "tokens": 761, "lineas": {"service de lavarropas": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "F11", "tokens": 726, "lineas": {"PlayStation 5": "ninguno"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "A03", "tokens": 826, "lineas": {"headset para computadora con micrófono": "AUR0001"}}
+{"banco": "nuevas70", "modelo": "flujo", "id": "A09", "tokens": 782, "lineas": {"charger para notebook, 65 watts, tipo CE": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B02", "tokens": 827, "lineas": {"vinchas con música, para gym, que no se caigan": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B04", "tokens": 727, "lineas": {"placa madre": "MBO0010"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B05", "tokens": 777, "lineas": {"cámara web para clases por Meet": "WEB0001"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B06", "tokens": 730, "lineas": {"repetidor de wifi para toda la casa": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B07", "tokens": 1270, "lineas": {"pendrive de gran capacidad para respaldar fotos": "EXT0065", "disco de gran capacidad para respaldar fotos": "EXT0003"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B08", "tokens": 768, "lineas": {"disco NVMe rápido": "SSD0010"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B09", "tokens": 1238, "lineas": {"tarjeta gráfica para jugar Warzone en alto": "GPU0009", "ventilador para microprocesador": "COO0002"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B10", "tokens": 1222, "lineas": {"computadora portátil para oficina": "NOT0145", "pantalla grande": "MON0003"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B11", "tokens": 771, "lineas": {"sillón gamer o de streamer con apoyabrazos": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B12", "tokens": 747, "lineas": {"cámara web, cantidad 5": "WEB0001"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B13", "tokens": 812, "lineas": {"cascos con micrófono para jugar online, USB": "AUR0019"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B17", "tokens": 721, "lineas": {"extensor de señal Wi-Fi de pared": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B19", "tokens": 791, "lineas": {"disco externo de 2 TB para guardar facturas": "EXT0003"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B21", "tokens": 772, "lineas": {"funda acolchada para notebook": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B22", "tokens": 1244, "lineas": {"resma de hojas A4": "ninguno", "tóner de repuesto": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B26", "tokens": 748, "lineas": {"pad de mouse gigante": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B27", "tokens": 750, "lineas": {"joystick para PC": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B29", "tokens": 1199, "lineas": {"estabilizadora de tensión para PC": "ninguno", "UPS": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B30", "tokens": 797, "lineas": {"lentes de realidad virtual": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B33", "tokens": 779, "lineas": {"pendrive USB para guardar películas": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B35", "tokens": 755, "lineas": {"tarjeta gráfica para juegos": "GPU0002"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B41", "tokens": 798, "lineas": {"computadora portátil para llevar en la mochila al colegio, batería que dure todo el día": "NOT0151"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B44", "tokens": 724, "lineas": {"placa madre": "MBO0001"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B46", "tokens": 750, "lineas": {"disco silencioso, muy rápido, para instalar Windows": "SSD0011"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B47", "tokens": 812, "lineas": {"headset para empezar a streamear en Twitch": "AUR0001"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B49", "tokens": 728, "lineas": {"repetidor de señal para el primer piso": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B56", "tokens": 774, "lineas": {"4 discos sólidos de 480": "SSD0001"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B59", "tokens": 1164, "lineas": {"placa madre, combo más económico, para PC de oficina": "MBO0006", "microprocesador, combo más económico, para PC de oficina": "CPU0010"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B65", "tokens": 696, "lineas": {"repetidor": "ninguno"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B66", "tokens": 750, "lineas": {"keyboard gamer con switches red": "TEC0015"}}
+{"banco": "nuevas70b", "modelo": "flujo", "id": "B69", "tokens": 759, "lineas": {"pen drive de 64": "ninguno"}}

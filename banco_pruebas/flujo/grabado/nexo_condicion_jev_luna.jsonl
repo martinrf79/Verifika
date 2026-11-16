@@ -1,0 +1,247 @@
+{"rubro": "motherboard", "busqueda": "mother compatible con Ryzen 5", "tokens": 721, "partes": {"compatible": "procesador|socket am4, para ryzen de 1a a 5a generacion"}}
+{"rubro": "auriculares", "busqueda": "auriculares inalámbricos Sony, cantidad 3, precio total con envío", "tokens": 519, "partes": {"cantidad 3, precio total con envio": "solo_producto"}}
+{"rubro": "parlante", "busqueda": "parlante JBL grande, precio total con envío", "tokens": 518, "partes": {"grande, precio total con envio": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares inalámbricos, no chinos", "tokens": 742, "partes": {"inalambricos,": "conexion|inalambrico"}}
+{"rubro": "teclado", "busqueda": "teclado mecánico en español", "tokens": 466, "partes": {"espanol": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado mecánico en inglés", "tokens": 464, "partes": {"ingles": "ninguno"}}
+{"rubro": "motherboard", "busqueda": "placa madre, combo más económico, para PC de oficina", "tokens": 772, "partes": {"combo mas economico,": "orden|mas barato", "oficina": "ninguno"}}
+{"rubro": "procesador", "busqueda": "microprocesador, combo más económico, para PC de oficina", "tokens": 791, "partes": {"combo mas economico, para pc de oficina": "ninguno"}}
+{"rubro": "cooler", "busqueda": "cooler, combo más económico, para PC de oficina", "tokens": 929, "partes": {"combo mas economico, para pc de oficina": "orden|mas barato"}}
+{"rubro": "teclado", "busqueda": "keyboard gamer con switches red", "tokens": 667, "partes": {"switches red": "switch_teclado|mecanico"}}
+{"rubro": "monitor", "busqueda": "monitores, 2 unidades, 24 pulgadas", "tokens": 585, "partes": {"2 unidades,": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclados mecánicos, 2 unidades", "tokens": 791, "partes": {"mecanicos,": "switch_teclado|mecanico"}}
+{"rubro": "notebook", "busqueda": "notebook para la facultad", "tokens": 487, "partes": {"facultad": "uso_recomendado|trabajo y estudio"}}
+{"rubro": "memoria ram", "busqueda": "memoria 8 GB DDR4, cantidad 2", "tokens": 587, "partes": {"cantidad 2": "ninguno"}}
+{"rubro": "ssd", "busqueda": "disco sólido 1 TB, cantidad 2", "tokens": 581, "partes": {"1 tb, cantidad 2": "almacenamiento|1tb"}}
+{"rubro": "auriculares", "busqueda": "auriculares con micrófono, 5 unidades, para la oficina, hasta 600 lucas en total", "tokens": 739, "partes": {"microfono, 5 unidades, para la oficina, en total": "ninguno"}}
+{"rubro": "webcam", "busqueda": "webcams, 5 unidades, para la oficina, hasta 600 lucas en total", "tokens": 485, "partes": {"5 unidades, para la oficina, en total": "solo_producto"}}
+{"rubro": "impresora", "busqueda": "impresora multifunción, 1 unidad, para la oficina, solo si el total no supera 600 lucas", "tokens": 766, "partes": {"multifuncion, 1 unidad,": "caracteristicas_extra|multifuncion", "si el total no supera": "orden|mas barato"}}
+{"rubro": "cargador", "busqueda": "cargadores 3 tipo C rápidos", "tokens": 470, "partes": {"rapidos": "ninguno"}}
+{"rubro": "router", "busqueda": "routers wifi 6, 2 unidades, lo mas barato posible", "tokens": 515, "partes": {"6, 2 unidades,": "ninguno"}}
+{"rubro": "router", "busqueda": "mesh, 1 unidad, lo mas barato posible", "tokens": 495, "partes": {"1 unidad,": "ninguno"}}
+{"rubro": "tablet", "busqueda": "tablets, cantidad 2, para chicos", "tokens": 535, "partes": {"cantidad 2, para chicos": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, 10 unidades, lo más económico posible, tope total 300 mil", "tokens": 638, "partes": {"10 unidades, lo mas economico posible, tope total": "orden|mas barato"}}
+{"rubro": "teclado", "busqueda": "teclados, 10 unidades, lo más económico posible, tope total 300 mil", "tokens": 536, "partes": {"10 unidades, lo mas economico posible, tope total": "orden|mas barato"}}
+{"rubro": "placa de video", "busqueda": "placa de video adecuada para monitor de 27 pulgadas y 144 Hz", "tokens": 607, "partes": {"adecuada para monitor": "ninguno"}}
+{"rubro": "gabinete", "busqueda": "gabinete con buena ventilación", "tokens": 481, "partes": {"buena ventilacion": "ninguno"}}
+{"rubro": "almacenamiento externo", "busqueda": "disco externo, 2 teras, para backup", "tokens": 577, "partes": {"2 teras,": "almacenamiento|2tb"}}
+{"rubro": "silla gamer", "busqueda": "silla cómoda", "tokens": 566, "partes": {"comoda": "ninguno"}}
+{"rubro": "cooler", "busqueda": "cooler para el micro", "tokens": 451, "partes": {"micro": "ninguno"}}
+{"rubro": "fuente", "busqueda": "fuente modular", "tokens": 439, "partes": {"modular": "ninguno"}}
+{"rubro": "webcam", "busqueda": "webcam Full HD, 6 unidades, para aulas", "tokens": 462, "partes": {"6 unidades, para aulas": "ninguno"}}
+{"rubro": "microfono", "busqueda": "micrófono para computadora para hablar en Zoom y que se escuche bien", "tokens": 701, "partes": {"computadora para hablar en zoom": "solo_producto", "escuche bien": "ninguno"}}
+{"rubro": "monitor", "busqueda": "pantalla grande para conectar notebook", "tokens": 575, "partes": {"grande para conectar notebook": "ninguno"}}
+{"rubro": "almacenamiento externo", "busqueda": "almacenamiento para fotos del celular, que no sea la nube", "tokens": 494, "partes": {"fotos del celular, que no sea la nube": "uso_recomendado|backup y portabilidad"}}
+{"rubro": "placa de video", "busqueda": "componente para PC para correr juegos", "tokens": 589, "partes": {"pc para correr juegos": "uso_recomendado|gaming high end"}}
+{"rubro": "gabinete", "busqueda": "gabinete para PC, caja grande donde va todo lo de la PC", "tokens": 482, "partes": {"grande donde va todo": "ninguno"}}
+{"rubro": "cooler", "busqueda": "ventilador para procesador", "tokens": 898, "partes": {"procesador": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares para escuchar música", "tokens": 525, "partes": {"escuchar musica": "solo_producto"}}
+{"rubro": "webcam", "busqueda": "camarita para monitor", "tokens": 449, "partes": {"monitor": "solo_producto"}}
+{"rubro": "procesador", "busqueda": "procesador bueno para editar videos", "tokens": 482, "partes": {"bueno para editar videos": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria para notebook para que vaya mas rápido", "tokens": 531, "partes": {"notebook para que vaya mas rapido": "solo_producto"}}
+{"rubro": "teclado", "busqueda": "teclado silencioso", "tokens": 590, "partes": {"silencioso": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook la mejor disponible sin límite de precio", "tokens": 548, "partes": {"mejor disponible sin limite de precio": "orden|mas caro"}}
+{"rubro": "placa de video", "busqueda": "placa de video más bestia que tengan", "tokens": 496, "partes": {"mas bestia que tengan": "ninguno"}}
+{"rubro": "silla gamer", "busqueda": "silla que aguante 120 kilos", "tokens": 476, "partes": {"aguante": "ninguno"}}
+{"rubro": "almacenamiento externo", "busqueda": "disco externo chiquito, que entre en el bolsillo", "tokens": 494, "partes": {"chiquito, que entre en el bolsillo": "uso_recomendado|backup y portabilidad"}}
+{"rubro": "cargador", "busqueda": "cargador rápido para iPhone", "tokens": 462, "partes": {"rapido para iphone": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook más liviana para viajar", "tokens": 486, "partes": {"viajar": "ninguno"}}
+{"rubro": "router", "busqueda": "router para cubrir una casa de 3 pisos", "tokens": 473, "partes": {"cubrir una casa": "uso_recomendado|redes hogar"}}
+{"rubro": "notebook", "busqueda": "notebook más barata que la misma publicada en Mercado Libre", "tokens": 555, "partes": {"misma publicada en mercado libre": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse gamer con luces RGB, precio", "tokens": 613, "partes": {"luces rgb, precio": "retroiluminacion|si"}}
+{"rubro": "auriculares", "busqueda": "headset para computadora con micrófono", "tokens": 728, "partes": {"computadora con microfono": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video para Fortnite que corra a ciento cuarenta y cuatro", "tokens": 614, "partes": {"fortnite que corra a ciento cuarenta y cuatro": "ninguno"}}
+{"rubro": "silla gamer", "busqueda": "2 sillas gamers negras, precio total con envío", "tokens": 718, "partes": {"2": "ninguno", "negras, precio total con envio": "color|negro"}}
+{"rubro": "silla gamer", "busqueda": "1 silla gamer roja, precio total con envío", "tokens": 715, "partes": {"1": "ninguno", "roja, precio total con envio": "ninguno"}}
+{"rubro": "impresora", "busqueda": "impresora a color con wifi de tinta continua", "tokens": 755, "partes": {"color": "ninguno", "tinta continua": "ninguno"}}
+{"rubro": "parlante", "busqueda": "parlante que reproduzca música fuerte, para asado", "tokens": 508, "partes": {"reproduzca musica fuerte, para asado": "ninguno"}}
+{"rubro": "gabinete", "busqueda": "gabinete para PC metálico con vidrio templado", "tokens": 675, "partes": {"metalico": "material|acero y vidrio", "templado": "material|acero y vidrio"}}
+{"rubro": "webcam", "busqueda": "cámara web para clases por Meet", "tokens": 461, "partes": {"clases por meet": "uso_recomendado|videoconferencias y streaming"}}
+{"rubro": "microfono", "busqueda": "micrófono para notebook, buena calidad de audio", "tokens": 493, "partes": {"notebook, buena calidad de audio": "ninguno"}}
+{"rubro": "cargador", "busqueda": "cargador rápido USB-C para celular", "tokens": 647, "partes": {"rapido": "ninguno", "celular": "solo_producto"}}
+{"rubro": "impresora", "busqueda": "impresora para imprimir tareas", "tokens": 512, "partes": {"tareas": "solo_producto"}}
+{"rubro": "almacenamiento externo", "busqueda": "pendrive de gran capacidad para respaldar fotos", "tokens": 529, "partes": {"gran capacidad para respaldar fotos": "uso_recomendado|backup y portabilidad"}}
+{"rubro": "almacenamiento externo", "busqueda": "disco de gran capacidad para respaldar fotos", "tokens": 528, "partes": {"gran capacidad para respaldar fotos": "ninguno"}}
+{"rubro": "ssd", "busqueda": "disco NVMe rápido", "tokens": 445, "partes": {"rapido": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "tarjeta gráfica para jugar Warzone en alto", "tokens": 594, "partes": {"jugar warzone en alto": "uso_recomendado|gaming high end"}}
+{"rubro": "cooler", "busqueda": "ventilador para microprocesador", "tokens": 470, "partes": {"microprocesador": "solo_producto"}}
+{"rubro": "monitor", "busqueda": "pantalla grande", "tokens": 447, "partes": {"grande": "ninguno"}}
+{"rubro": "tablet", "busqueda": "tablet para dibujar", "tokens": 518, "partes": {"dibujar": "uso_recomendado|multimedia y estudio"}}
+{"rubro": "mouse", "busqueda": "mouse, con cable, cantidad 5", "tokens": 607, "partes": {"cantidad 5": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, con ñ, cantidad 5", "tokens": 472, "partes": {"n, cantidad 5": "ninguno"}}
+{"rubro": "webcam", "busqueda": "cámara web, cantidad 5", "tokens": 455, "partes": {"cantidad 5": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "cascos con micrófono para jugar online, USB", "tokens": 800, "partes": {"microfono para jugar online,": "uso_recomendado|gaming"}}
+{"rubro": "microfono", "busqueda": "micrófono de mesa para grabar podcast, USB", "tokens": 474, "partes": {"mesa para grabar podcast,": "ninguno"}}
+{"rubro": "fuente", "busqueda": "fuente certificada oro de 750", "tokens": 459, "partes": {"certificada oro": "material|metal"}}
+{"rubro": "tablet", "busqueda": "tablets, dos, para chicos, resistentes a golpes", "tokens": 542, "partes": {"dos, para chicos, resistentes a golpes": "ninguno"}}
+{"rubro": "parlante", "busqueda": "parlante bluetooth para la pileta", "tokens": 494, "partes": {"pileta": "ninguno"}}
+{"rubro": "cargador", "busqueda": "cargador universal para notebook", "tokens": 457, "partes": {"universal": "ninguno"}}
+{"rubro": "cooler", "busqueda": "coolers con luces, 120 mm, cantidad 3", "tokens": 588, "partes": {"luces, 120 mm, cantidad 3": "ninguno"}}
+{"rubro": "impresora", "busqueda": "impresora multifunción para negocio", "tokens": 518, "partes": {"negocio": "ninguno"}}
+{"rubro": "almacenamiento externo", "busqueda": "disco externo de 2 TB para guardar facturas", "tokens": 485, "partes": {"guardar facturas": "solo_producto"}}
+{"rubro": "procesador", "busqueda": "procesador Intel de los nuevos compatible con motherboard", "tokens": 779, "partes": {"nuevos compatible con motherboard": "ninguno"}}
+{"rubro": "motherboard", "busqueda": "motherboard compatible con procesador Intel de los nuevos y memoria DDR5", "tokens": 1031, "partes": {"compatible con procesador": "procesador|socket lga1700, para intel 12a, 13a y 14a generacion", "nuevos y memoria": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM 32 GB DDR5 compatible con motherboard", "tokens": 630, "partes": {"compatible con motherboard": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse inalámbrico chiquito", "tokens": 488, "partes": {"chiquito": "ninguno"}}
+{"rubro": "impresora", "busqueda": "impresora láser", "tokens": 512, "partes": {"laser": "ninguno"}}
+{"rubro": "cargador", "busqueda": "cargador rápido", "tokens": 452, "partes": {"rapido": "ninguno"}}
+{"rubro": "parlante", "busqueda": "parlante para conectar a smart TV", "tokens": 791, "partes": {"conectar a smart tv": "ninguno"}}
+{"rubro": "webcam", "busqueda": "webcam para streamear", "tokens": 457, "partes": {"streamear": "uso_recomendado|videoconferencias y streaming"}}
+{"rubro": "auriculares", "busqueda": "auriculares gamer con sonido envolvente", "tokens": 592, "partes": {"sonido envolvente": "ninguno"}}
+{"rubro": "cooler", "busqueda": "cooler para procesador", "tokens": 896, "partes": {"procesador": "solo_producto"}}
+{"rubro": "placa de video", "busqueda": "placa de video compatible con lentes de realidad virtual", "tokens": 824, "partes": {"compatible con lentes": "ninguno", "realidad virtual": "ninguno"}}
+{"rubro": "monitor", "busqueda": "monitor para computadora de escritorio", "tokens": 475, "partes": {"computadora de escritorio": "solo_producto"}}
+{"rubro": "router", "busqueda": "router Wi-Fi para toda la casa, conexión inalámbrica estable que no se corte", "tokens": 747, "partes": {"wi-fi para toda la casa, conexion inalambrica estable": "ninguno", "corte": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "tarjeta gráfica para juegos", "tokens": 583, "partes": {"juegos": "uso_recomendado|gaming high end"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM para PC", "tokens": 508, "partes": {"pc": "solo_producto"}}
+{"rubro": "webcam", "busqueda": "webcam para videollamadas", "tokens": 460, "partes": {"videollamadas": "uso_recomendado|videoconferencias y streaming"}}
+{"rubro": "mouse", "busqueda": "mouse para jugar al LoL, para mano derecha", "tokens": 590, "partes": {"jugar al lol, para mano derecha": "uso_recomendado|gaming"}}
+{"rubro": "notebook", "busqueda": "computadora portátil para llevar en la mochila al colegio, batería que dure todo el día", "tokens": 750, "partes": {"llevar en la mochila al colegio,": "ninguno", "dure todo el dia": "bateria|si, bateria recargable integrada"}}
+{"rubro": "gabinete", "busqueda": "gabinete para PC gamer grande con luces", "tokens": 607, "partes": {"gamer grande con luces": "ninguno"}}
+{"rubro": "procesador", "busqueda": "procesador de computadora, el más rápido disponible", "tokens": 483, "partes": {"computadora, el mas rapido disponible": "ninguno"}}
+{"rubro": "ssd", "busqueda": "disco silencioso, muy rápido, para instalar Windows", "tokens": 579, "partes": {"silencioso, muy rapido, para instalar windows": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "headset para empezar a streamear en Twitch", "tokens": 597, "partes": {"empezar a streamear en twitch": "uso_recomendado|gaming"}}
+{"rubro": "microfono", "busqueda": "micrófono para empezar a streamear en Twitch", "tokens": 569, "partes": {"empezar a streamear en twitch": "uso_recomendado|streaming"}}
+{"rubro": "webcam", "busqueda": "webcam Full HD para empezar a streamear en Twitch", "tokens": 531, "partes": {"empezar a streamear en twitch": "uso_recomendado|videoconferencias y streaming"}}
+{"rubro": "impresora", "busqueda": "impresora compatible con celular", "tokens": 509, "partes": {"compatible con celular": "ninguno"}}
+{"rubro": "gabinete", "busqueda": "gabinete compatible con placa grande", "tokens": 462, "partes": {"compatible con placa grande": "formato|atx"}}
+{"rubro": "tablet", "busqueda": "tableta para leer libros", "tokens": 511, "partes": {"leer libros": "solo_producto"}}
+{"rubro": "cargador", "busqueda": "cargador de repuesto para tableta", "tokens": 466, "partes": {"repuesto para tableta": "solo_producto"}}
+{"rubro": "parlante", "busqueda": "parlante hasta 50 lucas cada uno", "tokens": 500, "partes": {"cada uno": "ninguno"}}
+{"rubro": "ssd", "busqueda": "4 discos sólidos de 480", "tokens": 631, "partes": {"4": "ninguno", "480": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "4 memorias de 8", "tokens": 520, "partes": {"4": "ninguno"}}
+{"rubro": "silla gamer", "busqueda": "sillas, cantidad 2", "tokens": 501, "partes": {"cantidad 2": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 10 unidades, baratos, para call center, con micrófono incorporado", "tokens": 543, "partes": {"10 unidades, baratos, para call center, con microfono incorporado": "orden|mas barato"}}
+{"rubro": "placa de video", "busqueda": "placas de video, garantía oficial", "tokens": 588, "partes": {"garantia oficial": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook con Windows instalado", "tokens": 523, "partes": {"windows instalado": "ninguno"}}
+{"rubro": "parlante", "busqueda": "parlante JBL o similar para escuchar música en el living", "tokens": 526, "partes": {"similar para escuchar musica en el living": "uso_recomendado|multimedia"}}
+{"rubro": "auriculares", "busqueda": "auriculares AirPods o similares", "tokens": 691, "partes": {"airpods o similares": "caracteristicas_extra|inalambrico por bluetooth"}}
+{"rubro": "impresora", "busqueda": "impresora Epson de tinta continua", "tokens": 515, "partes": {"tinta continua": "ninguno"}}
+{"rubro": "webcam", "busqueda": "webcam con micrófono", "tokens": 500, "partes": {"microfono": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebooks, 2 unidades, lo más económico posible", "tokens": 553, "partes": {"2 unidades, lo mas economico": "orden|mas barato"}}
+{"rubro": "microfono", "busqueda": "micrófono, 1 unidad, lo más económico posible", "tokens": 493, "partes": {"1 unidad, lo mas economico": "orden|mas barato"}}
+{"rubro": "memoria ram", "busqueda": "memorias, 4 unidades, lo más económico posible", "tokens": 638, "partes": {"4 unidades, lo mas economico": "orden|mas barato"}}
+{"rubro": "teclado", "busqueda": "artículo para escribir, bueno, barato, con mucha garantía", "tokens": 508, "partes": {"escribir, bueno, barato, con mucha garantia": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video que caliente menos", "tokens": 490, "partes": {"caliente menos": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, con la menor cantidad posible de partes chinas", "tokens": 513, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, con la menor cantidad posible de partes chinas", "tokens": 497, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, con la menor cantidad posible de partes chinas", "tokens": 528, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, con la menor cantidad posible de partes chinas", "tokens": 497, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 3 unidades, que lleven las menos partes de Estados Unidos posibles", "tokens": 1193, "partes": {"3 unidades, que lleven las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, 2 unidades, que lleven las menos partes de Estados Unidos posibles", "tokens": 780, "partes": {"2 unidades, que lleven las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, 4 unidades, que lleven las menos partes de Estados Unidos posibles", "tokens": 996, "partes": {"4 unidades, que lleven las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 2 unidades, que lleven las menos partes de Estados Unidos posibles", "tokens": 1193, "partes": {"2 unidades, que lleven las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, 1 unidad, que lleve las menos partes de Estados Unidos posibles", "tokens": 706, "partes": {"1 unidad, que lleve las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, 3 unidades, que lleven las menos partes de Estados Unidos posibles", "tokens": 996, "partes": {"3 unidades, que lleven las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 1 unidad, que lleven las menos partes de Estados Unidos posibles", "tokens": 1228, "partes": {"1 unidad, que lleven las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, 1 unidad, que lleven las menos partes de Estados Unidos posibles", "tokens": 955, "partes": {"1 unidad, que lleven las menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cantidad 2, presupuesto total máximo 600 mil", "tokens": 835, "partes": {"cantidad": "ninguno", "presupuesto total": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cantidad 1, presupuesto total máximo 600 mil", "tokens": 612, "partes": {"cantidad 1, presupuesto total": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, cantidad 1, presupuesto total máximo 600 mil", "tokens": 497, "partes": {"cantidad 1, presupuesto total": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, cantidad 1 par, presupuesto total máximo 600 mil", "tokens": 718, "partes": {"cantidad 1 par, presupuesto total": "ninguno"}}
+{"rubro": "webcam", "busqueda": "webcam, presupuesto total máximo 600 mil", "tokens": 482, "partes": {"presupuesto total": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cantidad 2, no más de 600 mil", "tokens": 526, "partes": {"cantidad": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cantidad 1, no más de 600 mil", "tokens": 619, "partes": {"cantidad 1,": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, cantidad 1, no más de 600 mil", "tokens": 482, "partes": {"cantidad 1,": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares, cantidad 1 par, no más de 600 mil", "tokens": 711, "partes": {"cantidad 1 par,": "ninguno"}}
+{"rubro": "webcam", "busqueda": "webcam, cantidad 1, no más de 600 mil", "tokens": 470, "partes": {"cantidad 1,": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse con luces psicodélicas", "tokens": 500, "partes": {"luces psicodelicas": "retroiluminacion|si"}}
+{"rubro": "auriculares", "busqueda": "auriculares accesibles", "tokens": 700, "partes": {"accesibles": "orden|mas barato"}}
+{"rubro": "teclado", "busqueda": "teclado con cuotas", "tokens": 595, "partes": {"cuotas": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares compatibles con PS5", "tokens": 789, "partes": {"compatibles con ps5": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse marca distinta de Genius", "tokens": 649, "partes": {"marca distinta": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cualquier marca excepto Genius", "tokens": 658, "partes": {"cualquier marca": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, marca distinta de Genius", "tokens": 651, "partes": {"marca distinta": "ninguno"}}
+{"rubro": "tablet", "busqueda": "tablet con lo menos posible de fabricación china", "tokens": 495, "partes": {"menos posible de fabricacion": "pais_fabricacion|china"}}
+{"rubro": "monitor", "busqueda": "monitor lo más económico posible", "tokens": 594, "partes": {"mas economico": "orden|mas barato"}}
+{"rubro": "teclado", "busqueda": "teclado lo más económicos posible", "tokens": 619, "partes": {"mas economicos": "orden|mas barato"}}
+{"rubro": "mouse", "busqueda": "mouse lo más económicos posible", "tokens": 578, "partes": {"mas economicos": "orden|mas barato"}}
+{"rubro": "mouse", "busqueda": "mouse G305 negro si no hay mouse G502 Hero negro", "tokens": 542, "partes": {"si no hay": "color|negro"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM DDR5 para PC de escritorio", "tokens": 624, "partes": {"pc de escritorio": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM Kingston Fury Beast DDR4 16GB compatible con PC de escritorio con DDR5", "tokens": 609, "partes": {"compatible con pc de escritorio": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM DDR5 de 16GB para PC de escritorio, alternativa a Kingston Fury Beast DDR4 16GB", "tokens": 619, "partes": {"pc de escritorio, alternativa": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM Kingston Fury Beast DDR4 16 GB para PC de escritorio con placa DDR5", "tokens": 648, "partes": {"pc de escritorio con placa": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM DDR5 para PC de escritorio con placa DDR5", "tokens": 634, "partes": {"pc de escritorio con placa": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM DDR5 compatible", "tokens": 616, "partes": {"compatible": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria Kingston Fury Beast DDR4 16GB para PC de escritorio con placa DDR5", "tokens": 646, "partes": {"pc de escritorio con placa": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria para PC de escritorio con placa DDR5", "tokens": 628, "partes": {"pc de escritorio con placa": "ninguno"}}
+{"rubro": "mouse", "busqueda": "2 G305 negros", "tokens": 485, "partes": {"2": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM compatible con notebook", "tokens": 520, "partes": {"compatible con notebook": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM para notebook", "tokens": 518, "partes": {"notebook": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM para notebook compatible", "tokens": 619, "partes": {"notebook compatible": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria RAM compatible con mi notebook", "tokens": 523, "partes": {"compatible con mi notebook": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "RAM para notebook compatible", "tokens": 616, "partes": {"notebook compatible": "ninguno"}}
+{"rubro": "notebook", "busqueda": "notebook, 64 GB de RAM, menos de 200 mil", "tokens": 499, "partes": {"ram,": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado cualquier marca menos Redragon", "tokens": 677, "partes": {"cualquier marca": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, cualquier marca excepto Redragon", "tokens": 683, "partes": {"cualquier marca": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video más potente compatible con una fuente de 550 watts", "tokens": 622, "partes": {"mas potente compatible con una fuente": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video, la más potente posible, compatible con fuente de 550 watts", "tokens": 615, "partes": {"mas potente posible, compatible con fuente": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video más potente compatible con fuente de 550 watts", "tokens": 619, "partes": {"mas potente compatible con fuente": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video compatible con fuente de 550 watts, la más potente posible", "tokens": 927, "partes": {"compatible con fuente": "ninguno", "550 watts, la mas potente": "ninguno"}}
+{"rubro": "placa de video", "busqueda": "placa de video más potente compatible con fuente de 550w", "tokens": 619, "partes": {"mas potente compatible con fuente": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "2 auriculares, los más baratos", "tokens": 479, "partes": {"2": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "2 mouse, los más baratos", "tokens": 483, "partes": {"2": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, cantidad 2, lo más baratos posible", "tokens": 698, "partes": {"cantidad": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cantidad 2, lo más baratos posible", "tokens": 518, "partes": {"cantidad": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 2 unidades, los más baratos", "tokens": 697, "partes": {"2 unidades,": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, 2 unidades, los más baratos", "tokens": 608, "partes": {"2 unidades,": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 2 unidades, lo más barato posible", "tokens": 699, "partes": {"2 unidades,": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, 2 unidades, lo más barato posible", "tokens": 610, "partes": {"2 unidades,": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, 2 unidades, lo más barato posible", "tokens": 481, "partes": {"2 unidades,": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, el más barato disponible, precio", "tokens": 599, "partes": {"disponible, precio": "orden|mas barato"}}
+{"rubro": "teclado", "busqueda": "teclado, el más barato disponible, precio", "tokens": 496, "partes": {"disponible, precio": "orden|mas barato"}}
+{"rubro": "auriculares", "busqueda": "auriculares, los más baratos disponibles, precio", "tokens": 610, "partes": {"disponibles, precio": "orden|mas barato"}}
+{"rubro": "mouse", "busqueda": "mouse, 2 unidades, los más baratos disponibles", "tokens": 904, "partes": {"2 unidades,": "ninguno", "disponibles": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, los más baratos disponibles", "tokens": 569, "partes": {"disponibles": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, 2 unidades, los más baratos disponibles", "tokens": 804, "partes": {"2 unidades,": "ninguno", "disponibles": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, los más baratos disponibles", "tokens": 598, "partes": {"disponibles": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 2 unidades, los más baratos disponibles", "tokens": 1220, "partes": {"2 unidades,": "ninguno", "disponibles": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, los más baratos disponibles", "tokens": 800, "partes": {"disponibles": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, los más baratos que tengan", "tokens": 467, "partes": {"tengan": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, los más baratos que tengan", "tokens": 599, "partes": {"tengan": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, los más baratos que tengan", "tokens": 589, "partes": {"tengan": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, 1 unidad, lo más barato posible", "tokens": 610, "partes": {"1 unidad,": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, 1 unidad, lo más barato posible", "tokens": 473, "partes": {"1 unidad,": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 1 unidad, lo más barato posible", "tokens": 513, "partes": {"1 unidad,": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares con micrófono", "tokens": 788, "partes": {"microfono": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares con microfono", "tokens": 786, "partes": {"microfono": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse para oficina", "tokens": 568, "partes": {"oficina": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado para oficina", "tokens": 463, "partes": {"oficina": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse para la oficina", "tokens": 570, "partes": {"oficina": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado para la oficina", "tokens": 465, "partes": {"oficina": "solo_producto"}}
+{"rubro": "mouse", "busqueda": "mouse para la ofi", "tokens": 457, "partes": {"ofi": "solo_producto"}}
+{"rubro": "teclado", "busqueda": "teclado para la ofi", "tokens": 466, "partes": {"ofi": "solo_producto"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario", "tokens": 622, "partes": {"2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, 2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario", "tokens": 591, "partes": {"2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, 2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario", "tokens": 636, "partes": {"2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario": "pais_fabricacion|taiwan o china segun linea"}}
+{"rubro": "auriculares", "busqueda": "auriculares, con la menor cantidad posible de partes chinas; precio no prioritario", "tokens": 710, "partes": {"menor cantidad posible de partes chinas; precio no prioritario": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, con la menor cantidad posible de partes chinas; precio no prioritario", "tokens": 676, "partes": {"menor cantidad posible de partes chinas; precio no prioritario": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, con la menor cantidad posible de partes chinas; precio no prioritario", "tokens": 697, "partes": {"menor cantidad posible de partes chinas; precio no prioritario": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auricular, con la menor cantidad posible de partes chinas", "tokens": 513, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, lo menos de fabricación china posible", "tokens": 577, "partes": {"menos de fabricacion": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, lo menos de fabricación china posible", "tokens": 538, "partes": {"menos de fabricacion": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, lo menos de fabricación china posible", "tokens": 508, "partes": {"menos de fabricacion": "pais_fabricacion|taiwan o china segun linea"}}
+{"rubro": "teclado", "busqueda": "teclado, lo menos de fabricación china posible", "tokens": 538, "partes": {"menos de fabricacion": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 2 unidades, con la menor cantidad posible de partes chinas", "tokens": 717, "partes": {"2 unidades, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, 1 unidad, con la menor cantidad posible de partes chinas", "tokens": 509, "partes": {"1 unidad, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, 2 unidades, con la menor cantidad posible de partes chinas", "tokens": 558, "partes": {"2 unidades, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, 1 unidad, con la menor cantidad posible de partes chinas", "tokens": 566, "partes": {"1 unidad, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares x2, con la menor cantidad posible de partes chinas", "tokens": 713, "partes": {"x2, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse x2, con la menor cantidad posible de partes chinas", "tokens": 487, "partes": {"x2, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias x2, con la menor cantidad posible de partes chinas", "tokens": 536, "partes": {"x2, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, con las menos partes chinas posibles", "tokens": 969, "partes": {"menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auricular, con las menos partes chinas posibles", "tokens": 969, "partes": {"menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, con las menos partes chinas posibles", "tokens": 724, "partes": {"menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, con las menos partes chinas posibles", "tokens": 862, "partes": {"menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, con las menos partes chinas posibles", "tokens": 678, "partes": {"menos partes": "ninguno", "posibles": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memoria, con la menor cantidad posible de partes chinas", "tokens": 527, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, menor cantidad posible de partes chinas", "tokens": 509, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, menor cantidad posible de partes chinas", "tokens": 493, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, menor cantidad posible de partes chinas", "tokens": 524, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, menor cantidad posible de partes chinas", "tokens": 493, "partes": {"menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, cantidad 2, con la menor cantidad posible de partes chinas", "tokens": 937, "partes": {"cantidad": "ninguno", "menor cantidad posible de partes": "ninguno"}}
+{"rubro": "auriculares", "busqueda": "auriculares, cantidad 1, con la menor cantidad posible de partes chinas", "tokens": 732, "partes": {"cantidad 1, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cantidad 2, con la menor cantidad posible de partes chinas", "tokens": 745, "partes": {"cantidad": "ninguno", "menor cantidad posible de partes": "ninguno"}}
+{"rubro": "mouse", "busqueda": "mouse, cantidad 1, con la menor cantidad posible de partes chinas", "tokens": 510, "partes": {"cantidad 1, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "memoria ram", "busqueda": "memorias, cantidad 2, con la menor cantidad posible de partes chinas", "tokens": 559, "partes": {"cantidad 2, con la menor cantidad posible de partes": "ninguno"}}
+{"rubro": "teclado", "busqueda": "teclado, cantidad 1, con la menor cantidad posible de partes chinas", "tokens": 510, "partes": {"cantidad 1, con la menor cantidad posible de partes": "ninguno"}}

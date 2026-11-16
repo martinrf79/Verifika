@@ -26,7 +26,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from entorno import BANCOS, GRABADO  # noqa: E402
+from entorno import BANCOS, GRABADO, filas_llamada0, grabado, sin_llamada0_vieja  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
 
@@ -34,8 +34,8 @@ import nexo_rubro as NR  # noqa: E402
 B525 = "--525" in sys.argv
 _SUF = "reales525" if B525 else "reales"
 LLAMADA0 = os.path.join(GRABADO, f"{_SUF}_llamada0.jsonl")
-PUNTAJES = os.path.join(GRABADO, f"{_SUF}_puntajes.json")
-JEV = os.path.join(GRABADO, f"{_SUF}_jev.jsonl")
+PUNTAJES = grabado(f"{_SUF}_puntajes.json")
+JEV = grabado(f"{_SUF}_jev.jsonl")
 
 _70_30 = ("Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que "
           "necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. "
@@ -130,6 +130,29 @@ CASOS = [
 ]
 
 
+# LOS DESTINOS DE LOS 40 REALES, escritos a mano el 16-nov antes de correr, leyendo solo el mensaje: cada lugar a donde
+# el cliente dice que se manda algo o por cuyo envio pregunta. "luego te dire a donde" no nombra ninguno.
+DESTINOS_REALES = {
+    "R07": ["La Plata", "Villa Maria", "Toledo"],
+    "R14": ["Cordoba", "Concordia", "Posadas"],
+    "R18": ["Cordoba", "Concordia", "Posadas"],
+    "R19": ["Rosario", "Mendoza"],
+    "R21": ["Rosario", "Neuquen"],
+    "R22": ["Neuquen"],
+    "R24": ["Rosario", "Neuquen"],
+    "R25": ["Posadas"],
+}
+
+
+def destinos_esperados(cid):
+    """Los lugares que el mensaje nombra como destino: en los reales, `DESTINOS_REALES`; en las 365, todo `destino` de
+    las preguntas de su agenda a mano, tambien el de cada producto de una compra."""
+    if "." not in cid:
+        return DESTINOS_REALES.get(cid, [])
+    c, t, _ = cid.split(".")
+    return sorted(set(re.findall(r'"destino": "([^"]+)"', json.dumps(preguntas_525(c, t), ensure_ascii=False))))
+
+
 # ══ LAS 525 DE traduccion58, SIN LAS QUE REQUIEREN MEMORIA ═══════════════════
 # 16-nov, Martin: las 525 son 105 turnos de las 58 y las K en cinco formas, `traduccion58.formas_de`. La vara sale de la
 # agenda a mano de cada turno, `agendas58.py`: buscar da el rubro, producto el nombrado, politica el tema. Entra el
@@ -177,6 +200,7 @@ def _paga():
 
 
 def correr_llamada0():
+    sin_llamada0_vieja()
     import flujo_nuevo as F
     from openai import OpenAI
     from app.config import get_settings
@@ -218,10 +242,9 @@ def correr_llamada0():
 def llamada0():
     import flujo_nuevo as F
     out = {}
-    if os.path.exists(LLAMADA0):
-        for r in map(json.loads, open(LLAMADA0)):
-            out[r["id"]] = [F.Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
-                                    str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
+    for r in filas_llamada0(f"{_SUF}_llamada0.jsonl", (_SUF,)):
+        out[r["id"]] = [F.Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
+                                str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
     return out
 
 
@@ -382,8 +405,32 @@ def calificar(ver=False):
             c["nombrado con otro modelo"] += bool(hit) and hit["veredicto"] == "exists" and not set(hit["modelos"]) <= mods
             if not ok:
                 mal.append(f"nombrado {raiz}: {hit and (hit['veredicto'], sorted(hit['modelos'])[:4])}")
+        # LOS DESTINOS, sumados el 16-nov: el lugar que halla el nexo de destino contra el que nombra el mensaje, como en
+        # `llamada0_modelos`; y si lo cotiza. Van aparte: "sin ninguna falla" sigue siendo lo de antes.
+        dest = [x for l in lineas for x in l.nexos if x.nexo == "destino" and x.candidatos]
+        hallados = {NR.n(x.datos["lugar"]): x for x in dest}
+        esperados = {NR.n(d) for d in destinos_esperados(cid)}
+        mal_d = []
+        for e in esperados:
+            h = next((x for k, x in hallados.items() if e in k or k in e), None)
+            c["destinos"] += 1
+            c["destinos bien"] += h is not None
+            c["destinos cotizados"] += h is not None and h.veredicto == "coincide"
+            if h is None:
+                mal_d.append(f"no halla destino {e}")
+        for k in hallados:
+            if not any(e in k or k in e for e in esperados):
+                c["destinos inventados"] += 1
+                mal_d.append(f"inventa destino {k}")
+        # Los mensajes complejos: los que mueven tres nexos distintos o mas, contando el tema solo si eligio uno.
+        usados = {x.nexo for l in lineas for x in l.nexos if not (x.nexo == "tema" and x.veredicto != "coincide")}
         c["mensajes"] += 1
         c["mensajes sin falla"] += not mal
+        c["mensajes sin falla, con destinos"] += not mal and not mal_d
+        if len(usados) >= 3:
+            c["con tres nexos o mas"] += 1
+            c["con tres nexos o mas, sin falla"] += not mal and not mal_d
+        mal += mal_d
         if mal or ver:
             fallas.append((cid, texto[:70], [(l.busqueda, l.fragmento[:40]) for l in ls], mal, resp))
     print("\nLOS NEXOS SOBRE MENSAJES QUE NUNCA VIERON · " + (
@@ -393,6 +440,10 @@ def calificar(ver=False):
     print(f"  no se vende {c['no vende']} · dice no hay {c['no vende bien']}")
     print(f"  temas pedidos {c['temas']} · salen {c['temas bien']} · inventados {c['tema inventado']}")
     print(f"  nombrados {c['nombrados']} · bien {c['nombrados bien']} · con otro modelo {c['nombrado con otro modelo']}")
+    print(f"  destinos {c['destinos']} · los halla {c['destinos bien']} · los cotiza {c['destinos cotizados']} · "
+          f"inventados {c['destinos inventados']}")
+    print(f"  sin ninguna falla, contando destinos {c['mensajes sin falla, con destinos']} · con tres nexos o mas "
+          f"{c['con tres nexos o mas']}, sin falla {c['con tres nexos o mas, sin falla']}")
     for cid, t, ls, mal, resp in fallas:
         print(f"\n  {cid} '{t}'")
         print(f"     lineas {ls}")

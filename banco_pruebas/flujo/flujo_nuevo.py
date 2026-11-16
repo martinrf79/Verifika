@@ -43,13 +43,13 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from entorno import GRABADO  # noqa: E402
+from entorno import GRABADO, L0, filas_llamada0, grabado, sin_llamada0_vieja  # noqa: E402
 
 import engranaje0 as E  # noqa: E402
 import nexo_rubro as NR  # noqa: E402
 
 LLAMADA0 = os.path.join(GRABADO, "flujo_nuevo_llamada0.jsonl")
-PUNTAJES = os.path.join(GRABADO, "flujo_nuevo_puntajes.json")
+PUNTAJES = grabado("flujo_nuevo_puntajes.json")
 PROMPT = E.PROMPT["v1"].replace("No contestes", """- destino: el lugar a donde hay que enviarlo, solo si el cliente lo
   dijo; si no, vacio.
 No contestes""")
@@ -98,6 +98,7 @@ def bancos():
 
 # ══ PASO 1, LA LLAMADA 0 ═════════════════════════════════════════════════════
 def correr_llamada0():
+    sin_llamada0_vieja()
     from openai import OpenAI
     from app.config import get_settings
     s = get_settings()
@@ -134,12 +135,11 @@ def correr_llamada0():
 
 
 def llamada0():
-    """{(banco, id): [Linea]} de lo grabado."""
+    """{(banco, id): [Linea]} de lo grabado, con la llamada 0 de FLUJO_L0, `entorno.filas_llamada0`."""
     out = {}
-    if os.path.exists(LLAMADA0):
-        for r in map(json.loads, open(LLAMADA0)):
-            out[(r["banco"], r["id"])] = [Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
-                                                str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
+    for r in filas_llamada0("flujo_nuevo_llamada0.jsonl", ("nuevas70", "nuevas70b")):
+        out[(r["banco"], r["id"])] = [Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
+                                            str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
     return out
 
 
@@ -456,7 +456,8 @@ def calificar(ver=False):
                         c["filas fuera del catalogo"] += 1
         salida[f"{banco} {cid}"] = {"mensaje": texto, "lineas": [dataclasses.asdict(l) for l in lineas],
                                     "respuesta": resp, "memoria": mem}
-    print("\nEL FLUJO NUEVO DE PUNTA A PUNTA · contrato de la FICHA 96 · llamada 0 con tres campos, gemini")
+    print("\nEL FLUJO NUEVO DE PUNTA A PUNTA · contrato de la FICHA 96 · " +
+          ("llamada 0 con tres campos, gemini" if L0 == "base" else f"llamada 0 {L0}, prompt v2"))
     for b in ("nuevas70", "nuevas70b"):
         print(f"\n  {b}: {c[b + ' mensajes']} mensajes")
         print(f"    llamada 0, rubros con el primero: {c[b + ' rubros traidos']} de {c[b + ' rubros pedidos']}")
@@ -472,7 +473,7 @@ def calificar(ver=False):
         print(f"    {nexo}: {c['nexo ' + nexo + ' repreguntar']} lineas · por ejemplo {xs}")
     for x in cortes:
         print(f"    corte {x}")
-    json.dump(salida, open(os.path.join(GRABADO, "flujo_nuevo_respuestas.json"), "w", encoding="utf-8"),
+    json.dump(salida, open(grabado("flujo_nuevo_respuestas.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1, default=str)
 
 

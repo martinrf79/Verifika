@@ -1,0 +1,181 @@
+{
+ "140 nuevas70 M01 mouse barato": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M01 auriculares baratos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70 M06 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 M17 fuente modular": {
+  "rubro": "fuente",
+  "items": [
+   {
+    "parte": "modular",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "modular",
+    [
+     "campo|material",
+     "campo|formato",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 R18 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70 O02 teclado silencioso": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "silencioso",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "silencioso",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70 O09 parlante resistente al agua": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "resistente al agua",
+    "veredicto": "ata",
+    "campo": "resistencia_agua",
+    "valor": "si",
+    "niega": false,
+    "si_no": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 nuevas70b B04 placa madre": {
+  "rubro": "motherboard",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B11 tablet para dibujar": {
+  "rubro": "tablet",
+  "items": [],
+  "dudosas": [
+   [
+    "dibujar",
+    [
+     "campo|uso_recomendado",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B26 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B28 cooler para procesador": {
+  "rubro": "cooler",
+  "items": [],
+  "dudosas": [
+   [
+    "procesador",
+    [
+     "campo|uso_recomendado",
+     "campo|potencia",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B32 monitor para computadora de escritorio": {
+  "rubro": "monitor",
+  "items": [],
+  "dudosas": [
+   [
+    "computadora de escritorio",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|tactil"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B36 cooler para procesador": {
+  "rubro": "cooler",
+  "items": [],
+  "dudosas": [
+   [
+    "procesador",
+    [
+     "campo|uso_recomendado",
+     "campo|potencia",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B44 placa madre": {
+  "rubro": "motherboard",
+  "items": [],
+  "dudosas": []
+ },
+ "140 nuevas70b B53 tableta para leer libros": {
+  "rubro": "tablet",
+  "items": [],
+  "dudosas": [
+   [
+    "leer libros",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 nuevas70b B54 silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ }
+}

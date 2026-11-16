@@ -36,7 +36,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from entorno import GRABADO, REPO  # noqa: E402
+from entorno import GRABADO, REPO, grabado  # noqa: E402
 TID = "verifika_prod"
 PUNTAJES = os.path.join(GRABADO, "nexo_rubro_puntajes.json")
 MODELOS = ("gemini", "haiku", "deepseek")
@@ -261,27 +261,37 @@ def instalar():
 
 
 # ══ LA VARA ══════════════════════════════════════════════════════════════════
-def bancos():
-    """[(nombre, modelo, [(id, mensaje, [(raices, rubro esperado o "ninguno")])], lineas)]: lo vendido y lo no vendido."""
+def bancos(flujo=False):
+    """[(nombre, modelo, [(id, mensaje, [(raices, rubro esperado o "ninguno")])], lineas)]: lo vendido y lo no vendido.
+    Con `flujo`, 16-nov: las mismas varas sobre las lineas de la llamada 0 del flujo, la de FLUJO_L0."""
     import engranaje0 as E
     from nuevas70 import CASOS as C1
     from nuevas70b import CASOS as C2
     esp = E._esperado()
     c1 = [(cid, t, [(c["en"], esp[(cid, i)]) for i, c in enumerate(cosas) if (cid, i) in esp]) for cid, t, cosas in C1]
     c2 = [(cid, t, [(r, x) for r, x in cosas if x]) for cid, t, cosas in C2]
+    if flujo:
+        lf = {k: v for _, _, _, ls in _bancos_flujo() for k, v in ls.items()}
+        return [("nuevas70", "flujo", c1, lf), ("nuevas70b", "flujo", c2, lf)]
     l1, l2 = lineas_v2(), lineas_b()
     return [("nuevas70", m, c1, l1) for m in MODELOS] + [("nuevas70b", "gemini", c2, l2)]
 
 
-def calificar(ver=False, nx=None, callado=False, con_jev=False):
+def calificar(ver=False, nx=None, callado=False, con_jev=False, flujo=False):
     instalar()
+    if flujo:
+        import flujo_nuevo as F
+        nx = F.Indice()
     nx = nx or Nexo()
     nj = NexoJev(None) if con_jev else None
+    if nj and flujo:
+        # Los puntajes de las busquedas del flujo, no los del banco del nexo.
+        nj.rubros, nj.ms, nj.q = nx.rubros, nx.ms, nx.q
     por_id = {f["id"]: f for f in nx.filas}
     salida, total = {}, collections.Counter()
     if not callado:
         print("\nEL NEXO DE RUBRO · llamada 0 con tres rubros, segunda busqueda con cinco productos, el codigo elige")
-    for banco, m, casos, lineas in bancos():
+    for banco, m, casos, lineas in bancos(flujo):
         c = collections.Counter()
         fallas = []
         for cid, texto, cosas in casos:
@@ -335,7 +345,7 @@ def calificar(ver=False, nx=None, callado=False, con_jev=False):
         for x in fallas:
             print(f"    {x[0]} '{x[1]}': esperado {x[2]} · {x[3]}")
     if not callado:
-        json.dump(salida, open(os.path.join(GRABADO, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
+        json.dump(salida, open(grabado("nexo_rubro_flujo_respuestas.json") if flujo else os.path.join(GRABADO, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1, default=str)
     return total
 
@@ -343,7 +353,7 @@ def calificar(ver=False, nx=None, callado=False, con_jev=False):
 # ══ LO DUDOSO, CON JEV ═══════════════════════════════════════════════════════
 # 16-nov, Martin: Jev en lo dudoso, como en el nexo de tema. Una pregunta por mensaje; cada linea dudosa elige entre sus
 # cinco candidatos o ninguno. Lo firme lo sigue eligiendo el codigo.
-JEV = os.path.join(GRABADO, "nexo_rubro_jev.jsonl")
+JEV = grabado("nexo_rubro_jev.jsonl")
 NINGUNO = "ninguno"
 DESC_NINGUNO = "la tienda no tiene ese tipo de producto: ninguno de estos es lo que pide"
 
@@ -504,4 +514,4 @@ if __name__ == "__main__":
     elif "--embeddings" in sys.argv:
         embeddings()
     else:
-        calificar("--ver" in sys.argv, con_jev="--jev" in sys.argv)
+        calificar("--ver" in sys.argv, con_jev="--jev" in sys.argv, flujo="--flujo" in sys.argv)

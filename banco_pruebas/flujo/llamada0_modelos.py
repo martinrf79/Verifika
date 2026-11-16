@@ -191,6 +191,9 @@ def casos_de(banco):
     """[(banco, id, mensaje)]: "140", las de `flujo_nuevo`; "reales" y "reales525", las de `reales.py`."""
     if banco == "140":
         return [(b, cid, t) for b, cid, t, _, _ in F.bancos()]
+    if banco == "nombrados38":
+        from nombrados38 import CASOS
+        return [(banco, cid, t) for cid, t, _ in CASOS]
     import reales as RE
     return [(banco, c[0], c[1]) for c in (RE.CASOS if banco == "reales" else RE.casos_525()[0])]
 

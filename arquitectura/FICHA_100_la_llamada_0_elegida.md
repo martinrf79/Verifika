@@ -133,3 +133,54 @@ bancos de mensajes, en `bancos/`.
   llamada, pasos 4 y 5. La llamada 0 del flujo sigue con el modelo de hoy hasta que se cambie con su medición, paso 2.
 - **Una segunda pasada completa**, con el tope cambiado, da lo mismo. La única diferencia es de orden: dos temas
   inventados de una línea de las 365 se listan en otro orden, porque salen de un conjunto; el contenido es igual.
+
+## 7. La cadena entera con las dos llamadas 0, 16-nov, orden de Martín
+
+Los cinco nexos encadenados por mensaje, como en producción: la llamada 0 separa, cada línea va a los nexos que le
+tocan, Jev resuelve lo dudoso y el filtro deja solo lo que está en la fuente. Dos mediciones con el mismo código: la
+llamada 0 de hoy y la elegida, `FLUJO_L0=luna`. Lo de la elegida se graba aparte, `grabado/*_luna.*`; lo de hoy no
+cambió. Embeddings por la paga de Gemini y Jev en vivo sobre lo dudoso nuevo; la elegida corrió solo en los 38
+nombrados, por la clave directa de OpenAI; en los demás bancos ya estaba grabada. Gasto: menos de un centavo de la paga,
+menos de un centavo de Jev, y unos 16 mil tokens de OpenAI.
+
+| Banco y nexo | Llamada 0 de hoy | La elegida |
+| --- | --- | --- |
+| 140, rubro sobre las líneas del flujo, elige bien | 180 de 188 | 178 de 189 |
+| 140, lo que no se vende, dice no hay | 21 de 21 | 21 de 21 |
+| 140, destinos | 47 de 48, 0 inventados | 47 de 48, 0 inventados |
+| 140, tema con Jev | 15 de 15, 3 inventados | 13 de 14, 1 inventado |
+| 38 nombrados | 39 de 40 | 39 de 40 |
+| 40 reales, mensajes sin falla, con destinos | 39 | 38 |
+| 40 reales, nombrados | 15 de 16 | 13 de 16 |
+| 40 reales, condiciones bien | 10 de 17 | 13 de 17, 8 filtros inventados |
+| 40 reales, destinos | 17 de 17 | 17 de 17 |
+| 40 reales, con tres nexos o más, sin falla | 7 de 7 | 12 de 13 |
+| 365, mensajes sin falla, con destinos | 294 | 302 |
+| 365, rubros, de más | 320 de 320, 20 | 320 de 320, 18 |
+| 365, temas, inventados | 43 de 55, 24 | 47 de 55, 23 |
+| 365, nombrados | 132 de 135 | 125 de 135 |
+| 365, condiciones bien | 136 de 215 | 169 de 215 |
+| 365, condiciones: perdidas en la llamada 0, repregunta de más, filtro inventado | 58, 4, 0 | 5, 115, 13 |
+| 365, destinos, inventados | 89 de 110, 5 | 94 de 110, 0 |
+| 365, con tres nexos o más, sin falla | 72 de 102 | 86 de 128 |
+
+- **No se pisan:** cero cortes y cero filas fuera del catálogo en las dos. Cada nexo lee su campo y su índice.
+- **Lo que mejora con la elegida:** las condiciones llegan, 169 contra 136 en las 365, y los destinos, 94 contra 89 sin
+  inventar. Los mensajes con tres nexos o más pasan de 72 a 86 sin falla.
+- **Lo que empeora, por causa:**
+  - **Nombrado:** la elegida junta dos modelos en una línea cuando el cliente elige entre ellos, "mouse G305 o G203
+    inalámbrico", y el nombrado, que pide que las palabras calcen con un solo modelo, da no encontrado. R04, C28, C32.
+  - **Condición:** con las condiciones en cada línea, el nexo repregunta de más, 115, e inventa 13 filtros: el nexo se
+    calibró con las búsquedas cortas de hoy.
+  - **Rubro:** búsquedas largas con la condición, "repetidor wifi de pared para ampliar la señal hasta el patio", caen
+    en no hay donde la corta acertaba.
+- **Lo que esta vara no mide con la elegida:** la condición y el nombrado de las 140 tienen la vara escrita sobre las
+  búsquedas de Gemini y no reconocen otras; con la elegida solo cuentan los reales y las 365.
+- **Las varas sumadas el 16-nov, antes de correr la elegida:** los destinos de los 40 reales a mano, `DESTINOS_REALES`, y
+  los de las 365 de la agenda a mano, también los de cada producto de una compra; y los mensajes con tres nexos o más.
+  El nexo de rubro también se califica sobre las líneas del flujo, `nexo_rubro.py --flujo`.
+
+```bash
+FLUJO_L0=luna python3 banco_pruebas/flujo/reales.py [--525]   # cualquier calificación, con la llamada 0 elegida
+python3 banco_pruebas/flujo/nexo_rubro.py --flujo --jev        # el rubro sobre las líneas del flujo
+```

@@ -1,0 +1,365 @@
+{"id": "C01.0.original", "respuestas": {}}
+{"id": "C01.0.plano", "respuestas": {}}
+{"id": "C01.0.whatsapp", "respuestas": {}}
+{"id": "C01.0.redactada", "respuestas": {"t0": "stock_disponibilidad"}}
+{"id": "C01.0.coloquial", "respuestas": {}}
+{"id": "C02.0.original", "respuestas": {}}
+{"id": "C02.0.plano", "respuestas": {}}
+{"id": "C02.0.whatsapp", "respuestas": {}}
+{"id": "C02.0.redactada", "respuestas": {}}
+{"id": "C02.0.coloquial", "respuestas": {"t0": "especificaciones"}}
+{"id": "C03.0.original", "respuestas": {"t0": "mouse_dpi"}}
+{"id": "C03.0.plano", "respuestas": {"t0": "mouse_dpi"}}
+{"id": "C03.0.whatsapp", "respuestas": {"t0": "mouse_dpi"}}
+{"id": "C03.0.redactada", "respuestas": {"t0": "mouse_dpi"}}
+{"id": "C03.0.coloquial", "respuestas": {"t0": "mouse_dpi"}}
+{"id": "C04.0.original", "respuestas": {"t0": "ninguno"}}
+{"id": "C04.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C04.0.whatsapp", "respuestas": {"t0": "ninguno"}}
+{"id": "C04.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C04.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "C05.0.original", "respuestas": {}}
+{"id": "C05.0.plano", "respuestas": {}}
+{"id": "C05.0.whatsapp", "respuestas": {}}
+{"id": "C05.0.redactada", "respuestas": {}}
+{"id": "C05.0.coloquial", "respuestas": {}}
+{"id": "C06.0.original", "respuestas": {}}
+{"id": "C06.0.plano", "respuestas": {}}
+{"id": "C06.0.whatsapp", "respuestas": {}}
+{"id": "C06.0.redactada", "respuestas": {}}
+{"id": "C06.0.coloquial", "respuestas": {}}
+{"id": "C07.0.original", "respuestas": {}}
+{"id": "C07.0.plano", "respuestas": {}}
+{"id": "C07.0.whatsapp", "respuestas": {}}
+{"id": "C07.0.redactada", "respuestas": {}}
+{"id": "C07.0.coloquial", "respuestas": {}}
+{"id": "C08.0.original", "respuestas": {}}
+{"id": "C08.0.plano", "respuestas": {}}
+{"id": "C08.0.whatsapp", "respuestas": {}}
+{"id": "C08.0.redactada", "respuestas": {"t0": "fabricacion"}}
+{"id": "C08.0.coloquial", "respuestas": {}}
+{"id": "C09.0.original", "respuestas": {}}
+{"id": "C09.0.plano", "respuestas": {}}
+{"id": "C09.0.whatsapp", "respuestas": {}}
+{"id": "C09.0.redactada", "respuestas": {}}
+{"id": "C09.0.coloquial", "respuestas": {}}
+{"id": "C10.0.original", "respuestas": {"t0": "costo_envio"}}
+{"id": "C10.0.plano", "respuestas": {"t0": "costo_envio"}}
+{"id": "C10.0.whatsapp", "respuestas": {"t0": "plazo_envio"}}
+{"id": "C10.0.redactada", "respuestas": {"t0": "costo_envio"}}
+{"id": "C10.0.coloquial", "respuestas": {"t0": "costo_envio"}}
+{"id": "C11.0.original", "respuestas": {"t0": "factura"}}
+{"id": "C11.0.plano", "respuestas": {"t0": "factura"}}
+{"id": "C11.0.whatsapp", "respuestas": {"t0": "factura"}}
+{"id": "C11.0.redactada", "respuestas": {"t0": "factura"}}
+{"id": "C11.0.coloquial", "respuestas": {"t0": "factura"}}
+{"id": "C12.0.original", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.plano", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.whatsapp", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.redactada", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.coloquial", "respuestas": {"t0": "promociones"}}
+{"id": "C13.0.original", "respuestas": {"t0": "mayoristas"}}
+{"id": "C13.0.plano", "respuestas": {"t0": "mayoristas"}}
+{"id": "C13.0.whatsapp", "respuestas": {"t0": "mayoristas"}}
+{"id": "C13.0.redactada", "respuestas": {"t0": "mayoristas", "p0": "ninguno"}}
+{"id": "C13.0.coloquial", "respuestas": {"t0": "mayoristas"}}
+{"id": "C14.0.original", "respuestas": {"p0": "RAM0029"}}
+{"id": "C14.0.plano", "respuestas": {}}
+{"id": "C14.0.whatsapp", "respuestas": {}}
+{"id": "C14.0.redactada", "respuestas": {}}
+{"id": "C14.0.coloquial", "respuestas": {}}
+{"id": "C15.0.original", "respuestas": {}}
+{"id": "C15.0.plano", "respuestas": {}}
+{"id": "C15.0.whatsapp", "respuestas": {}}
+{"id": "C15.0.redactada", "respuestas": {}}
+{"id": "C15.0.coloquial", "respuestas": {}}
+{"id": "C16.0.original", "respuestas": {"t1": "ninguno"}}
+{"id": "C16.0.plano", "respuestas": {"t1": "ninguno"}}
+{"id": "C16.0.whatsapp", "respuestas": {}}
+{"id": "C16.0.redactada", "respuestas": {"t1": "ninguno"}}
+{"id": "C16.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "C17.0.original", "respuestas": {"t0": "ninguno"}}
+{"id": "C17.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C17.0.whatsapp", "respuestas": {}}
+{"id": "C17.0.redactada", "respuestas": {"t1": "ninguno"}}
+{"id": "C17.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "C18.0.original", "respuestas": {"t1": "costo_envio"}}
+{"id": "C18.0.plano", "respuestas": {"t0": "costo_envio"}}
+{"id": "C18.0.whatsapp", "respuestas": {"t0": "costo_envio"}}
+{"id": "C18.0.redactada", "respuestas": {"t0": "costo_envio"}}
+{"id": "C18.0.coloquial", "respuestas": {"t1": "costo_envio"}}
+{"id": "C19.0.original", "respuestas": {"t0": "stock_disponibilidad", "p0": "ninguno", "t1": "factura"}}
+{"id": "C19.0.plano", "respuestas": {"t0": "datos_fiscales", "p0": "ninguno"}}
+{"id": "C19.0.whatsapp", "respuestas": {"t0": "ninguno", "p0": "ninguno", "t1": "factura"}}
+{"id": "C19.0.redactada", "respuestas": {"t0": "stock_disponibilidad", "t1": "factura"}}
+{"id": "C19.0.coloquial", "respuestas": {"t0": "stock_disponibilidad", "p0": "ninguno", "t1": "factura"}}
+{"id": "C20.0.original", "respuestas": {}}
+{"id": "C20.0.plano", "respuestas": {}}
+{"id": "C20.0.whatsapp", "respuestas": {}}
+{"id": "C20.0.redactada", "respuestas": {}}
+{"id": "C20.0.coloquial", "respuestas": {}}
+{"id": "C21.0.original", "respuestas": {}}
+{"id": "C21.0.plano", "respuestas": {}}
+{"id": "C21.0.whatsapp", "respuestas": {}}
+{"id": "C21.0.redactada", "respuestas": {}}
+{"id": "C21.0.coloquial", "respuestas": {}}
+{"id": "C22.0.original", "respuestas": {"t1": "ninguno"}}
+{"id": "C22.0.plano", "respuestas": {}}
+{"id": "C22.0.whatsapp", "respuestas": {"t1": "ninguno"}}
+{"id": "C22.0.redactada", "respuestas": {"t0": "ninguno", "t1": "ninguno"}}
+{"id": "C22.0.coloquial", "respuestas": {}}
+{"id": "C23.0.original", "respuestas": {}}
+{"id": "C23.0.plano", "respuestas": {}}
+{"id": "C23.0.whatsapp", "respuestas": {}}
+{"id": "C23.0.redactada", "respuestas": {}}
+{"id": "C23.0.coloquial", "respuestas": {}}
+{"id": "C24.0.original", "respuestas": {}}
+{"id": "C24.0.plano", "respuestas": {}}
+{"id": "C24.0.whatsapp", "respuestas": {}}
+{"id": "C24.0.redactada", "respuestas": {}}
+{"id": "C24.0.coloquial", "respuestas": {}}
+{"id": "C25.0.original", "respuestas": {"t0": "ninguno"}}
+{"id": "C25.0.plano", "respuestas": {}}
+{"id": "C25.0.whatsapp", "respuestas": {}}
+{"id": "C25.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C25.0.coloquial", "respuestas": {"t1": "ninguno"}}
+{"id": "C26.0.original", "respuestas": {"p0": "ninguno", "t1": "ninguno", "p1": "ninguno", "t2": "costo_envio"}}
+{"id": "C26.0.plano", "respuestas": {"p0": "ninguno", "t1": "ninguno", "p1": "ninguno", "t2": "costo_envio"}}
+{"id": "C26.0.whatsapp", "respuestas": {"p0": "ninguno", "t1": "costo_envio", "p1": "ninguno"}}
+{"id": "C26.0.redactada", "respuestas": {"p0": "ninguno", "t1": "ninguno", "p1": "ninguno", "t2": "costo_envio"}}
+{"id": "C26.0.coloquial", "respuestas": {"p0": "ninguno", "t1": "ninguno", "p1": "ninguno", "t2": "costo_envio"}}
+{"id": "C27.0.original", "respuestas": {}}
+{"id": "C27.0.plano", "respuestas": {}}
+{"id": "C27.0.whatsapp", "respuestas": {}}
+{"id": "C27.0.redactada", "respuestas": {}}
+{"id": "C27.0.coloquial", "respuestas": {}}
+{"id": "C28.0.original", "respuestas": {"t0": "stock_disponibilidad"}}
+{"id": "C28.0.plano", "respuestas": {"t0": "stock_disponibilidad"}}
+{"id": "C28.0.whatsapp", "respuestas": {}}
+{"id": "C28.0.redactada", "respuestas": {}}
+{"id": "C28.0.coloquial", "respuestas": {}}
+{"id": "C29.0.original", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C29.0.plano", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C29.0.whatsapp", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C29.0.redactada", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C29.0.coloquial", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C30.0.original", "respuestas": {}}
+{"id": "C30.0.plano", "respuestas": {"t0": "compatibilidad", "t1": "ninguno"}}
+{"id": "C30.0.whatsapp", "respuestas": {"t0": "compatibilidad", "t1": "ninguno"}}
+{"id": "C30.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C30.0.coloquial", "respuestas": {"t2": "ninguno"}}
+{"id": "C31.0.original", "respuestas": {}}
+{"id": "C31.0.plano", "respuestas": {}}
+{"id": "C31.0.whatsapp", "respuestas": {}}
+{"id": "C31.0.redactada", "respuestas": {}}
+{"id": "C31.0.coloquial", "respuestas": {}}
+{"id": "C32.0.original", "respuestas": {}}
+{"id": "C32.0.plano", "respuestas": {}}
+{"id": "C32.0.whatsapp", "respuestas": {}}
+{"id": "C32.0.redactada", "respuestas": {}}
+{"id": "C32.0.coloquial", "respuestas": {}}
+{"id": "C33.0.original", "respuestas": {}}
+{"id": "C33.0.plano", "respuestas": {}}
+{"id": "C33.0.whatsapp", "respuestas": {}}
+{"id": "C33.0.redactada", "respuestas": {}}
+{"id": "C33.0.coloquial", "respuestas": {}}
+{"id": "C34.0.original", "respuestas": {"t0": "costo_envio"}}
+{"id": "C34.0.plano", "respuestas": {"t0": "costo_envio", "p0": "ninguno"}}
+{"id": "C34.0.whatsapp", "respuestas": {"t0": "costo_envio"}}
+{"id": "C34.0.redactada", "respuestas": {"t0": "costo_envio", "p0": "ninguno"}}
+{"id": "C34.0.coloquial", "respuestas": {"t0": "costo_envio", "p0": "ninguno"}}
+{"id": "C35.0.original", "respuestas": {}}
+{"id": "C35.0.plano", "respuestas": {}}
+{"id": "C35.0.whatsapp", "respuestas": {}}
+{"id": "C35.0.redactada", "respuestas": {}}
+{"id": "C35.0.coloquial", "respuestas": {}}
+{"id": "C36.0.original", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C36.0.plano", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C36.0.whatsapp", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C36.0.redactada", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C36.0.coloquial", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C37.0.original", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C37.0.plano", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C37.0.whatsapp", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C37.0.redactada", "respuestas": {"t0": "compatibilidad"}}
+{"id": "C37.0.coloquial", "respuestas": {}}
+{"id": "C38.0.original", "respuestas": {"t0": "ninguno"}}
+{"id": "C38.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C38.0.whatsapp", "respuestas": {}}
+{"id": "C38.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C38.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "C39.0.original", "respuestas": {}}
+{"id": "C39.0.plano", "respuestas": {}}
+{"id": "C39.0.whatsapp", "respuestas": {}}
+{"id": "C39.0.redactada", "respuestas": {}}
+{"id": "C39.0.coloquial", "respuestas": {}}
+{"id": "C40.0.original", "respuestas": {"t0": "costo_envio"}}
+{"id": "C40.0.plano", "respuestas": {"t0": "costo_envio"}}
+{"id": "C40.0.whatsapp", "respuestas": {"t0": "costo_envio"}}
+{"id": "C40.0.redactada", "respuestas": {"t0": "costo_envio"}}
+{"id": "C40.0.coloquial", "respuestas": {"t0": "costo_envio"}}
+{"id": "C41.0.original", "respuestas": {"t0": "ninguno"}}
+{"id": "C41.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C41.0.whatsapp", "respuestas": {"t0": "ninguno"}}
+{"id": "C41.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C41.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "C42.0.original", "respuestas": {}}
+{"id": "C42.0.plano", "respuestas": {}}
+{"id": "C42.0.whatsapp", "respuestas": {}}
+{"id": "C42.0.redactada", "respuestas": {}}
+{"id": "C42.0.coloquial", "respuestas": {}}
+{"id": "C43.0.original", "respuestas": {"t0": "ninguno"}}
+{"id": "C43.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C43.0.whatsapp", "respuestas": {"t0": "ninguno"}}
+{"id": "C43.0.redactada", "respuestas": {"t0": "ninguno", "p0": "TEC0029"}}
+{"id": "C43.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "C44.0.original", "respuestas": {"t0": "ninguno", "p1": "ninguno"}}
+{"id": "C44.0.plano", "respuestas": {"t0": "ninguno", "t1": "ninguno"}}
+{"id": "C44.0.whatsapp", "respuestas": {}}
+{"id": "C44.0.redactada", "respuestas": {"t0": "ninguno", "p0": "ninguno"}}
+{"id": "C44.0.coloquial", "respuestas": {}}
+{"id": "C45.0.original", "respuestas": {}}
+{"id": "C45.0.plano", "respuestas": {}}
+{"id": "C45.0.whatsapp", "respuestas": {}}
+{"id": "C45.0.redactada", "respuestas": {}}
+{"id": "C45.0.coloquial", "respuestas": {}}
+{"id": "C46.0.original", "respuestas": {}}
+{"id": "C46.0.plano", "respuestas": {}}
+{"id": "C46.0.whatsapp", "respuestas": {}}
+{"id": "C46.0.redactada", "respuestas": {}}
+{"id": "C46.0.coloquial", "respuestas": {}}
+{"id": "C47.0.original", "respuestas": {}}
+{"id": "C47.0.plano", "respuestas": {}}
+{"id": "C47.0.whatsapp", "respuestas": {}}
+{"id": "C47.0.redactada", "respuestas": {}}
+{"id": "C47.0.coloquial", "respuestas": {}}
+{"id": "C47.1.original", "respuestas": {"t0": "costo_envio"}}
+{"id": "C47.1.plano", "respuestas": {"t0": "costo_envio"}}
+{"id": "C47.1.whatsapp", "respuestas": {"t0": "ninguno"}}
+{"id": "C47.1.redactada", "respuestas": {}}
+{"id": "C47.1.coloquial", "respuestas": {"t0": "costo_envio"}}
+{"id": "C48.0.original", "respuestas": {}}
+{"id": "C48.0.plano", "respuestas": {}}
+{"id": "C48.0.whatsapp", "respuestas": {}}
+{"id": "C48.0.redactada", "respuestas": {}}
+{"id": "C48.0.coloquial", "respuestas": {}}
+{"id": "C49.0.original", "respuestas": {}}
+{"id": "C49.0.plano", "respuestas": {}}
+{"id": "C49.0.whatsapp", "respuestas": {}}
+{"id": "C49.0.redactada", "respuestas": {}}
+{"id": "C49.0.coloquial", "respuestas": {}}
+{"id": "C49.1.original", "respuestas": {}}
+{"id": "C49.1.plano", "respuestas": {}}
+{"id": "C49.1.whatsapp", "respuestas": {}}
+{"id": "C49.1.redactada", "respuestas": {"t0": "stock_disponibilidad"}}
+{"id": "C49.1.coloquial", "respuestas": {"t0": "stock_disponibilidad"}}
+{"id": "C49.2.original", "respuestas": {}}
+{"id": "C49.2.plano", "respuestas": {}}
+{"id": "C49.2.whatsapp", "respuestas": {}}
+{"id": "C49.2.redactada", "respuestas": {}}
+{"id": "C49.2.coloquial", "respuestas": {}}
+{"id": "C50.0.original", "respuestas": {"p0": "ninguno"}}
+{"id": "C50.0.plano", "respuestas": {}}
+{"id": "C50.0.whatsapp", "respuestas": {}}
+{"id": "C50.0.redactada", "respuestas": {}}
+{"id": "C50.0.coloquial", "respuestas": {}}
+{"id": "C51.0.original", "respuestas": {}}
+{"id": "C51.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C51.0.whatsapp", "respuestas": {}}
+{"id": "C51.0.redactada", "respuestas": {}}
+{"id": "C51.0.coloquial", "respuestas": {}}
+{"id": "C52.0.original", "respuestas": {}}
+{"id": "C52.0.plano", "respuestas": {}}
+{"id": "C52.0.whatsapp", "respuestas": {}}
+{"id": "C52.0.redactada", "respuestas": {}}
+{"id": "C52.0.coloquial", "respuestas": {}}
+{"id": "C53.0.original", "respuestas": {"t0": "ninguno"}}
+{"id": "C53.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C53.0.whatsapp", "respuestas": {"t0": "ninguno"}}
+{"id": "C53.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C53.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "C54.0.original", "respuestas": {}}
+{"id": "C54.0.plano", "respuestas": {}}
+{"id": "C54.0.whatsapp", "respuestas": {}}
+{"id": "C54.0.redactada", "respuestas": {}}
+{"id": "C54.0.coloquial", "respuestas": {}}
+{"id": "C55.0.original", "respuestas": {"t0": "ninguno", "t1": "ninguno"}}
+{"id": "C55.0.plano", "respuestas": {"t0": "ninguno"}}
+{"id": "C55.0.whatsapp", "respuestas": {}}
+{"id": "C55.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C55.0.coloquial", "respuestas": {}}
+{"id": "C55.1.original", "respuestas": {}}
+{"id": "C55.1.plano", "respuestas": {}}
+{"id": "C55.1.whatsapp", "respuestas": {}}
+{"id": "C55.1.redactada", "respuestas": {}}
+{"id": "C55.1.coloquial", "respuestas": {}}
+{"id": "C56.0.original", "respuestas": {"t0": "promociones"}}
+{"id": "C56.0.plano", "respuestas": {"t0": "promociones"}}
+{"id": "C56.0.whatsapp", "respuestas": {"t0": "promociones"}}
+{"id": "C56.0.redactada", "respuestas": {"t0": "ninguno"}}
+{"id": "C56.0.coloquial", "respuestas": {"t0": "promociones"}}
+{"id": "C57.0.original", "respuestas": {}}
+{"id": "C57.0.plano", "respuestas": {}}
+{"id": "C57.0.whatsapp", "respuestas": {}}
+{"id": "C57.0.redactada", "respuestas": {}}
+{"id": "C57.0.coloquial", "respuestas": {}}
+{"id": "C58.0.original", "respuestas": {"t0": "garantia"}}
+{"id": "C58.0.plano", "respuestas": {"t0": "garantia"}}
+{"id": "C58.0.whatsapp", "respuestas": {"t0": "garantia"}}
+{"id": "C58.0.redactada", "respuestas": {"t0": "garantia"}}
+{"id": "C58.0.coloquial", "respuestas": {"t0": "garantia"}}
+{"id": "K03.0.original", "respuestas": {"t2": "ninguno"}}
+{"id": "K03.0.plano", "respuestas": {}}
+{"id": "K03.0.whatsapp", "respuestas": {"t2": "ninguno"}}
+{"id": "K03.0.redactada", "respuestas": {"t2": "costo_envio"}}
+{"id": "K03.0.coloquial", "respuestas": {"t2": "ninguno"}}
+{"id": "K06.0.original", "respuestas": {"t2": "ninguno"}}
+{"id": "K06.0.plano", "respuestas": {"t2": "ninguno"}}
+{"id": "K06.0.whatsapp", "respuestas": {}}
+{"id": "K06.0.redactada", "respuestas": {"t2": "ninguno", "t4": "ninguno"}}
+{"id": "K06.0.coloquial", "respuestas": {}}
+{"id": "K07.0.original", "respuestas": {"t6": "ninguno", "t7": "formas_pago"}}
+{"id": "K07.0.plano", "respuestas": {"t6": "ninguno", "t7": "formas_pago"}}
+{"id": "K07.0.whatsapp", "respuestas": {"t1": "ninguno", "t3": "ninguno", "t4": "ninguno", "t6": "ninguno", "t7": "ninguno", "t8": "formas_pago"}}
+{"id": "K07.0.redactada", "respuestas": {"t6": "ninguno", "t7": "formas_pago"}}
+{"id": "K07.0.coloquial", "respuestas": {"t7": "formas_pago"}}
+{"id": "K10.0.original", "respuestas": {}}
+{"id": "K10.0.plano", "respuestas": {}}
+{"id": "K10.0.whatsapp", "respuestas": {}}
+{"id": "K10.0.redactada", "respuestas": {}}
+{"id": "K10.0.coloquial", "respuestas": {"t0": "stock_disponibilidad"}}
+{"id": "K10.2.original", "respuestas": {}}
+{"id": "K10.2.plano", "respuestas": {}}
+{"id": "K10.2.whatsapp", "respuestas": {}}
+{"id": "K10.2.redactada", "respuestas": {}}
+{"id": "K10.2.coloquial", "respuestas": {}}
+{"id": "K10.4.original", "respuestas": {"t0": "cuotas", "t1": "formas_pago"}}
+{"id": "K10.4.plano", "respuestas": {"t0": "cuotas", "t1": "formas_pago"}}
+{"id": "K10.4.whatsapp", "respuestas": {"t0": "cuotas", "t1": "formas_pago"}}
+{"id": "K10.4.redactada", "respuestas": {"t0": "cuotas", "t1": "formas_pago"}}
+{"id": "K10.4.coloquial", "respuestas": {"t0": "cuotas", "t1": "formas_pago"}}
+{"id": "K11.0.original", "respuestas": {}}
+{"id": "K11.0.plano", "respuestas": {}}
+{"id": "K11.0.whatsapp", "respuestas": {}}
+{"id": "K11.0.redactada", "respuestas": {}}
+{"id": "K11.0.coloquial", "respuestas": {}}
+{"id": "K11.3.original", "respuestas": {"t0": "factura"}}
+{"id": "K11.3.plano", "respuestas": {"t0": "factura"}}
+{"id": "K11.3.whatsapp", "respuestas": {"t0": "factura"}}
+{"id": "K11.3.redactada", "respuestas": {"t0": "factura"}}
+{"id": "K11.3.coloquial", "respuestas": {"t0": "datos_fiscales"}}
+{"id": "K20.0.original", "respuestas": {"t0": "ninguno", "t3": "ninguno", "t4": "ninguno", "t5": "ninguno", "t6": "ninguno", "t7": "ninguno"}}
+{"id": "K20.0.plano", "respuestas": {"t3": "ninguno", "t4": "ninguno", "t5": "ninguno", "t6": "ninguno", "t7": "ninguno"}}
+{"id": "K20.0.whatsapp", "respuestas": {}}
+{"id": "K20.0.redactada", "respuestas": {}}
+{"id": "K20.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "K21.0.original", "respuestas": {"t2": "ninguno", "t4": "ninguno", "t5": "ninguno", "t7": "ninguno", "t8": "ninguno"}}
+{"id": "K21.0.plano", "respuestas": {"t7": "ninguno"}}
+{"id": "K21.0.whatsapp", "respuestas": {"t7": "ninguno"}}
+{"id": "K21.0.redactada", "respuestas": {}}
+{"id": "K21.0.coloquial", "respuestas": {"t0": "ninguno"}}
+{"id": "K21.1.original", "respuestas": {}}
+{"id": "K21.1.plano", "respuestas": {}}
+{"id": "K21.1.whatsapp", "respuestas": {"t0": "ninguno"}}
+{"id": "K21.1.redactada", "respuestas": {}}
+{"id": "K21.1.coloquial", "respuestas": {"p0": "ninguno"}}

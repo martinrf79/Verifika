@@ -37,13 +37,13 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from entorno import GRABADO, REPO  # noqa: E402
+from entorno import GRABADO, REPO, filas_llamada0, grabado, sin_llamada0_vieja  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
 
 TID = NR.TID
 LLAMADA0 = os.path.join(GRABADO, "nexo_nombrado_llamada0.jsonl")
-PUNTAJES = os.path.join(GRABADO, "nexo_nombrado_puntajes.json")
+PUNTAJES = grabado("nexo_nombrado_puntajes.json")
 import embeddings as EMB  # noqa: E402
 
 # Lo nombrado de las 140: (banco, id, raiz de la busqueda, veredicto, modelos que valen).
@@ -106,6 +106,7 @@ SONDA = [
 # ══ LA LLAMADA 0 Y LOS EMBEDDINGS DEL BANCO NUEVO ════════════════════════════
 def correr_llamada0():
     """La misma llamada 0 de tres campos del flujo nuevo, Gemini de produccion por la gratis."""
+    sin_llamada0_vieja()
     import flujo_nuevo as F
     from openai import OpenAI
     from app.config import get_settings
@@ -144,10 +145,9 @@ def llamada0():
     """{("nombrados38", id): [Linea]} de lo grabado."""
     import flujo_nuevo as F
     out = {}
-    if os.path.exists(LLAMADA0):
-        for r in map(json.loads, open(LLAMADA0)):
-            out[(r["banco"], r["id"])] = [F.Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
-                                                  str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
+    for r in filas_llamada0("nexo_nombrado_llamada0.jsonl", ("nombrados38",)):
+        out[(r["banco"], r["id"])] = [F.Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
+                                              str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
     return out
 
 

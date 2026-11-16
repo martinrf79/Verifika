@@ -45,13 +45,13 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from entorno import GRABADO, REPO  # noqa: E402
+from entorno import REPO, grabado  # noqa: E402
 from jev import llamar_jev  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
 
 TID = NR.TID
-PUNTAJES = os.path.join(GRABADO, "nexo_tema_puntajes.json")
+PUNTAJES = grabado("nexo_tema_puntajes.json")
 import embeddings as EMB  # noqa: E402
 from embeddings import NEXOS as _B  # noqa: E402
 CANDIDATOS = _B["tema de la FAQ"]["candidatos"]["temas"]
@@ -199,7 +199,7 @@ class Nexo:
 # Dudosa es toda linea donde el codigo eligio un tema: la palabra compartida puede ser un homonimo, "guardar las
 # facturas" en un disco. Una pregunta por mensaje, con todas sus lineas dudosas. Cada una elige entre sus tres temas
 # candidatos o ninguno: lista cerrada, el texto de la FAQ lo sigue poniendo el codigo.
-DUDOSO = os.path.join(GRABADO, "nexo_tema_dudoso.jsonl")
+DUDOSO = grabado("nexo_tema_dudoso.jsonl")
 NINGUNO = "ninguno"
 DESC_NINGUNO = ("esa parte no pregunta por esta regla de la tienda: pide un producto o un dato del producto, dice a "
                 "donde mandarlo, o pregunta algo que la tienda no contesta")

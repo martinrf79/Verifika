@@ -49,15 +49,15 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from entorno import GRABADO  # noqa: E402
+from entorno import filas_llamada0, grabado  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
 import embeddings as EMB  # noqa: E402
 from embeddings import NEXOS as _B  # noqa: E402
 
 TID = NR.TID
-PUNTAJES = os.path.join(GRABADO, "nexo_condicion_puntajes.json")
-JEV = os.path.join(GRABADO, "nexo_condicion_jev.jsonl")
+PUNTAJES = grabado("nexo_condicion_puntajes.json")
+JEV = grabado("nexo_condicion_jev.jsonl")
 _CONF = _B["condicion"]
 CANDIDATOS = _CONF["candidatos"].get("campos", 3)
 VARIANTE = _CONF.get("variante", "segmento con rubro, documento por campo")
@@ -582,15 +582,15 @@ def banco_reales(suf):
     """Las lineas de `reales.py`, "reales" o "reales525", con sus grabaciones."""
     import flujo_nuevo as F
     idx = F.Indice()
-    p = json.load(open(os.path.join(GRABADO, f"{suf}_puntajes.json"), encoding="utf-8"))
+    p = json.load(open(grabado(f"{suf}_puntajes.json"), encoding="utf-8"))
     idx.q = dict(idx.q, **p["producto"])
     idx.temas.q = dict(idx.temas.q, **p["tema"])
     por_id = {f["id"]: f for f in idx.filas}
     l0 = {}
-    for r in map(json.loads, open(os.path.join(GRABADO, f"{suf}_llamada0.jsonl"), encoding="utf-8")):
+    for r in filas_llamada0(f"{suf}_llamada0.jsonl", (suf,)):
         l0[r["id"]] = [F.Linea(str(x.get("fragmento") or ""), str(x.get("busqueda") or "").strip(),
                                str(x.get("destino") or "").strip()) for x in r["salida"]["lineas"]]
-    jp = os.path.join(GRABADO, f"{suf}_jev.jsonl")
+    jp = grabado(f"{suf}_jev.jsonl")
     jv = {r["id"]: r["respuestas"] for r in map(json.loads, open(jp))} if os.path.exists(jp) else {}
     return _lineas_flujo(l0, idx, por_id, lambda c, i: jv.get(c, {}).get(f"t{i}"),
                          lambda c, i, b: jv.get(c, {}).get(f"p{i}"))
@@ -752,7 +752,7 @@ def calificar(nx=None, ver=False, callado=False, motor="nexo"):
         if not callado:
             _imprimir(nombre + ", con la vara por mensaje y rubro", c, fallas, ver)
     if not callado and motor == "nexo":
-        json.dump(salida, open(os.path.join(GRABADO, "nexo_condicion_respuestas.json"), "w", encoding="utf-8"),
+        json.dump(salida, open(grabado("nexo_condicion_respuestas.json"), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1, default=str)
     return tot
 
