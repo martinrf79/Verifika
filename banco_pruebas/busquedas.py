@@ -75,7 +75,7 @@ NEXOS = {
                  "saca; lo atado sin ningun producto con stock es no hay",
         "calibrado": "16-nov, `nexo_condicion.py --calibrar` con Jev perfecto: V1, V2 y V3 dan 150 de 188 en las 140; "
                      "V2 con 3 candidatos, la elegida. La busqueda no es el cuello: el codigo solo da 144. V4, un "
-                     "documento por valor, sin medir: la gratis se trabo",
+                     "documento por valor, con la paga: 151 con 2 candidatos, una linea mas, no alcanza para cambiar",
         "puntajes": ["banco_pruebas/nexo_condicion_puntajes.json", "banco_pruebas/nexo_condicion_jev.jsonl"],
     },
 }

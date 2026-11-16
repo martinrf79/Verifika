@@ -54,8 +54,8 @@ y rubro en los reales y las 365, estas desde `agendas58.py`.
 | las 365, 210 rubros con condición | 100, 59 repreguntas de más | 127 | 131, 4 |
 
 **La calibración**, `--calibrar`, con un Jev perfecto: V1, V2 y V3 dan 150 en las 140. La búsqueda no es el cuello de
-botella. Se eligió V2 con tres candidatos, y Jev real queda a uno del techo. V4, un documento por valor, no se midió:
-la clave gratis se trabó.
+botella. Se eligió V2 con tres candidatos, y Jev real queda a uno del techo. V4, un documento por valor, se midió con la
+paga: 151 con dos candidatos, una línea más, que no alcanza para cambiar de variante.
 
 **Lo que no está en ningún campo** sale no se ata, como corresponde: el tamaño de los monitores, el peso que aguanta una
 silla, el idioma de un teclado, si un auricular trae micrófono.

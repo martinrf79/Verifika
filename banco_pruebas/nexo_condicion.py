@@ -783,6 +783,17 @@ def _todas_las_lineas():
     return list(dict.fromkeys(out))
 
 
+def _anotar_paga(textos):
+    """Los vectores con la paga, en `libro_paga.jsonl`: unos cuatro caracteres por token, a 0,15 dolares el millon."""
+    import datetime
+    from banco_pruebas import libro_paga as LP
+    tok = sum(len(t) for t in textos) // 4 + 1
+    with open(LP.LIBRO, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"dia": LP._hoy(), "hora": datetime.datetime.now(datetime.timezone.utc).strftime("%H:%M:%S"),
+                             "modelo": "gemini-embedding-001", "entrada": tok, "salida": 0,
+                             "dolares": round(tok * 0.15 / 1e6, 6), "proceso": os.getpid()}) + "\n")
+
+
 def _emb_con_espera(L, falta, tarea, clave, cache):
     """De a lotes chicos, guardando cada uno: la gratis cuenta cada texto como un pedido, contesta 429 a un lote de
     cien, y se reintenta con espera."""
@@ -793,7 +804,10 @@ def _emb_con_espera(L, falta, tarea, clave, cache):
         for intento in range(8):
             try:
                 L._emb(falta[i:i + lote], tarea, clave, cache)
-                time.sleep(float(os.environ.get("NEXO_CONDICION_PAUSA", "25")))
+                if os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
+                    _anotar_paga(falta[i:i + lote])
+                else:
+                    time.sleep(float(os.environ.get("NEXO_CONDICION_PAUSA", "25")))
                 break
             except urllib.error.HTTPError as e:
                 if e.code != 429 or intento == 7:
