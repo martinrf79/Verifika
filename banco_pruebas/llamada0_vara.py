@@ -205,3 +205,34 @@ INVENTABLES = [BAR, INAL, ("gamer", "gaming"), ("rgb", "luces", "led"), ("alta g
                ("silencios",), ("ergonom",), ("sumerg", "resistente al agua", "waterproof"), ("compact", "mini")]
 # Lo que el cliente dijo y corrigio: una busqueda con esto, sobra.
 NO = {"B66": ("mousepad", "pad de mouse")}
+
+
+# ══ LOS 40 REALES Y LAS 365, POR MENSAJE Y RUBRO, PARA LA LLAMADA 0 (16-nov) ══════════════════════════════════════════
+# Escrita antes de correr los modelos nuevos sobre esos bancos. Las condiciones que espera la vara del nexo de condicion,
+# `nexo_condicion_vara.REALES` y la agenda a mano de las 365, como raices que la busqueda de cada linea de ese rubro
+# tiene que traer. Las raices llevan tambien las palabras del cliente, "crisis" o "el mas eco", para saber si la
+# condicion esta en el fragmento cuando falta en la busqueda.
+BARATO = BAR + ("crisis", "mas eco", "no gastar")
+RAICES_AGENDA = {
+    "ORDEN mas barato": BARATO, "ORDEN mas potente": ("potent", "mejor", "alta gama", "gama alta", "rendimiento"),
+    "ORDEN mas caro": ("caro", "premium", "alta gama", "gama alta"), "ORDEN mas liviano": ("livian", "liger", "peso"),
+    "menos partes chinas posibles": ("chin",), "lo menos china posible": ("chin",),
+    "Logitech": ("logitech", "logi"), "preferentemente Logitech": ("logitech", "logi"), "JBL": ("jbl",),
+    "para la oficina": ("ofi",), "16 GB de RAM": ("16",), "64 GB de RAM": ("64",), "inalambrico": INAL,
+    "que no sea Genius": ("genius",), "que no sea Redragon": ("redragon",), "mecanico": ("mecanic",),
+    "DDR5": ("ddr5", "ddr 5"), "gamer": ("gamer", "gaming", "jugar", "juego"), "menos de 200 mil": ("200",),
+    "con cable": ("cable", "alambric"), "que aguante una fuente de 550 watts": ("550",),
+    "con microfono": ("microfono", "mic"),
+}
+REALES = {
+    "R07": {"notebook": [BARATO], "microfono": [BARATO], "memoria ram": [BARATO]},
+    "R10": {"teclado": [BARATO]},
+    "R12": {"placa de video": [("calient", "temperatura", "fresc", "frio", "refriger")]},
+    "R14": {r: [("chin",)] for r in ("auriculares", "mouse", "memoria ram")},
+    "R18": {r: [("estados unidos", "eeuu", "usa", "americ")] for r in ("auriculares", "mouse", "memoria ram")},
+    "R31": {"mouse": [("luz", "luces", "rgb", "led", "retroilumin", "psicodel", "cicodel")]},
+    "R35": {"auriculares": [BARATO]},
+    "R36": {"teclado": [BARATO]},
+    "R37": {"auriculares": [("ps5", "playstation", "play")]},
+    "R39": {"mouse": [("livian", "liger", "peso")]},
+}

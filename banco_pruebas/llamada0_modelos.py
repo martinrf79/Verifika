@@ -43,6 +43,9 @@ MODELOS = {
     "gemini-38": ("gemini", "gemini-3.8-flash", "low", 0.75, 3.75, 0.0),
     "haiku": ("anthropic", "claude-haiku-5-5", "high", 0.10, 0.50, 0.20),
     "deepseek": ("deepseek", "deepseek-flash", "max", 0.15, 0.60, 0.20),
+    # Como se uso en el banco, `engranaje0`: deepseek-chat, sin razonamiento, temperatura 0. Y Haiku con el bajo.
+    "deepseek-chat": ("deepseek", "deepseek-chat", "none", 0.15, 0.60, 0.10),
+    "haiku-bajo": ("anthropic", "claude-haiku-5-5", "low", 0.10, 0.50, 0.15),
     "luna": ("openrouter", "openai/gpt-6-luna", "low", 0.10, 0.50, 0.12),
     "qwen": ("openrouter", "qwen/qwen3.8-flash", "none", 0.15, 0.47, 0.06),
     "qwen-low": ("openrouter", "qwen/qwen3.8-flash", "low", 0.15, 0.47, 0.02),
@@ -139,7 +142,10 @@ def pedir(corrida, prompt, texto):
         elif prov == "deepseek":
             # DeepSeek no toma json_schema: el esquema va escrito y el modo es JSON, como en `engranaje0`.
             cli = OpenAI(api_key=_clave("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
-            k["reasoning_effort"] = esfuerzo
+            if esfuerzo == "none":
+                k["temperature"] = 0
+            else:
+                k["reasoning_effort"] = esfuerzo
             k["response_format"] = {"type": "json_object"}
             k["messages"][0]["content"] += "\nDevolve solo el JSON, con este esquema: " + json.dumps(esquema)
         else:
@@ -174,14 +180,23 @@ def gastado(pred):
     return sum(r.get("dolares") or 0 for r in filas() if pred(r))
 
 
-def correr(corrida, prompt, piloto=False):
+def casos_de(banco):
+    """[(banco, id, mensaje)]: "140", las de `flujo_nuevo`; "reales" y "reales525", las de `reales.py`."""
+    if banco == "140":
+        return [(b, cid, t) for b, cid, t, _, _ in F.bancos()]
+    import reales as RE
+    return [(banco, c[0], c[1]) for c in (RE.CASOS if banco == "reales" else RE.casos_525()[0])]
+
+
+def correr(corrida, prompt, piloto=False, banco="140"):
     prov = MODELOS[corrida][0]
-    hechas = {r["id"] for r in filas() if r["corrida"] == corrida and r["prompt"] == prompt and r.get("salida")}
-    casos = [(b, cid, t) for b, cid, t, _, _ in F.bancos()]
+    # Los ids de los reales, R01 a R40, chocan con los de nuevas70: lo hecho se cuenta por banco.
+    hechas = {(r["banco"], r["id"]) for r in filas() if r["corrida"] == corrida and r["prompt"] == prompt and r.get("salida")}
+    casos = casos_de(banco)
     if piloto:
         # Diez de los dos bancos, de todos los tipos: los primeros de cada letra.
         casos = [c for c in casos if c[1] in ("M01", "M08", "M15", "R17", "O04", "F03", "A04", "B01", "B59", "B66")]
-    falta = [c for c in casos if c[1] not in hechas]
+    falta = [c for c in casos if (c[0], c[1]) not in hechas]
     print(f"[{corrida} {prompt}, {MODELOS[corrida][1]}: {len(falta)} por correr]", flush=True)
     for banco, cid, texto in falta:
         if MODELOS[corrida][5] and gastado(lambda r: r["corrida"] == corrida) >= MODELOS[corrida][5]:
@@ -299,6 +314,8 @@ def corridas():
     for r in map(json.loads, open(F.LLAMADA0, encoding="utf-8")):
         out[("gemini-lite", "v1")][r["id"]] = r
     for r in filas():
+        if r["banco"] not in ("nuevas70", "nuevas70b"):
+            continue
         if r.get("salida") or r["id"] not in out[(r["corrida"], r["prompt"])]:
             out[(r["corrida"], r["prompt"])][r["id"]] = r
     return out
@@ -335,10 +352,104 @@ def calificar(ver=None):
                     print(f"      · {l.get('busqueda')!r} @{l.get('destino') or ''}")
 
 
+
+# ══ LOS REALES Y LAS 365: DONDE SE PIERDE CADA CONDICION ═════════════════════
+def _sing(t):
+    """Sin la s del plural, para que "memorias" y "memoria" sean lo mismo."""
+    return " ".join(w[:-1] if len(w) > 3 and w.endswith("s") else w for w in E.n(t).split())
+
+
+def esperado_reales(banco):
+    """{id: {rubro: [raices]}}: los reales a mano; las 365 desde la agenda, como `nexo_condicion.esperado_525`."""
+    if banco == "reales":
+        return V.REALES
+    import reales as RE
+    from banco_pruebas import agendas58 as A
+    out = {}
+    for cid, _, _ in RE.casos_525()[0]:
+        c, t, _ = cid.split(".")
+        esp = collections.defaultdict(list)
+        for p in A.AGENDAS[c][int(t)]["preguntas"]:
+            if p["accion"] != "buscar" or p["rubro"] == "toda la tienda" or p.get("entre_lo_mostrado"):
+                continue
+            esp[p["rubro"]] += [V.RAICES_AGENDA[x] for x in p.get("condiciones", []) if x in V.RAICES_AGENDA]
+            if p.get("orden") and p["orden"] != "nada" and "ORDEN " + p["orden"] in V.RAICES_AGENDA:
+                esp[p["rubro"]].append(V.RAICES_AGENDA["ORDEN " + p["orden"]])
+        out[cid] = {r: cs for r, cs in esp.items() if cs}
+    return out
+
+
+def donde_se_pierde(texto, lineas, esperado, alias, memoria=False):
+    """Cuenta de un mensaje: cada condicion esperada, en la busqueda de cada linea de su rubro, o donde se perdio."""
+    c = collections.Counter()
+    raices = {r: [_sing(x) for x in [r] + alias.get(r, [])] for r in esperado}
+    de = collections.defaultdict(list)
+    for l in lineas:
+        b = _sing(l.get("busqueda"))
+        cand = [(min(b.find(x) for x in xs if x and x in b), r) for r, xs in raices.items() if any(x and x in b for x in xs)]
+        if cand:
+            de[min(cand)[1]].append(l)
+    msj = E.n(texto)
+    for rubro, conds in esperado.items():
+        for cond in conds:
+            c["condiciones"] += 1
+            mias = de.get(rubro, [])
+            if memoria:
+                k = "memoria"
+            elif mias and all(_tiene(E.n(l.get("busqueda")), cond) for l in mias):
+                k = "en la busqueda"
+            elif any(_tiene(E.n(l.get("fragmento")), cond) for l in mias):
+                k = "perdida al traducir"
+            elif _tiene(msj, cond):
+                k = "perdida al separar" if mias else "perdida al separar, sin linea del rubro"
+            else:
+                k = "no se ve en el mensaje"
+            c[k] += 1
+    return c
+
+
+def corridas_reales(banco):
+    out = collections.defaultdict(dict)
+    for r in map(json.loads, open(os.path.join(AQUI, f"{banco}_llamada0.jsonl"), encoding="utf-8")):
+        out[("gemini-lite", "v1")][r["id"]] = r
+    for r in filas():
+        if r["banco"] == banco and (r.get("salida") or r["id"] not in out[(r["corrida"], r["prompt"])]):
+            out[(r["corrida"], r["prompt"])][r["id"]] = r
+    return out
+
+
+def calificar_reales():
+    import nexo_rubro as NR
+    alias = NR.fuente()[1]
+    claves = ("en la busqueda", "perdida al separar", "perdida al separar, sin linea del rubro", "perdida al traducir",
+              "no se ve en el mensaje", "memoria")
+    for banco, nombre in (("reales", "LOS 40 REALES"), ("reales525", "LAS 365")):
+        textos = {cid: t for _, cid, t in casos_de(banco)}
+        esp = esperado_reales(banco)
+        print(f"\n{nombre} · donde se pierde cada condicion, `llamada0_vara.py`")
+        print(f"  {'corrida':16} {'conds':>6} " + " ".join(f"{k[:22]:>22}" for k in claves) + f" {'seg':>5} {'dolares':>8}")
+        for (corrida, prompt), rs in sorted(corridas_reales(banco).items()):
+            c = collections.Counter()
+            for cid, e in esp.items():
+                r = rs.get(cid)
+                if not e:
+                    continue
+                if not r or not r.get("salida"):
+                    c["sin salida"] += 1
+                    continue
+                c.update(donde_se_pierde(textos[cid], r["salida"]["lineas"], e, alias, memoria=".0." not in cid and "." in cid))
+            segs = [r.get("segundos") or 0 for r in rs.values()]
+            dol = sum(r.get("dolares") or 0 for r in rs.values())
+            print(f"  {corrida + ' ' + prompt:16} {c['condiciones']:>6} " + " ".join(f"{c[k]:>22}" for k in claves)
+                  + f" {statistics.mean(segs):>5.1f} {dol:>8.4f}" + (f"  sin salida {c['sin salida']}" if c["sin salida"] else ""))
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if "--correr" in a:
         i = a.index("--correr")
-        correr(a[i + 1], a[i + 2], "--piloto" in a)
+        correr(a[i + 1], a[i + 2], "--piloto" in a, a[a.index("--banco") + 1] if "--banco" in a else "140")
+    elif "--reales" in a:
+        calificar_reales()
     else:
         calificar(a[a.index("--ver") + 1:a.index("--ver") + 3] if "--ver" in a else None)
