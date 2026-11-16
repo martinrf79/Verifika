@@ -197,6 +197,10 @@ def correr(corrida, prompt, piloto=False, banco="140"):
         # Diez de los dos bancos, de todos los tipos: los primeros de cada letra.
         casos = [c for c in casos if c[1] in ("M01", "M08", "M15", "R17", "O04", "F03", "A04", "B01", "B59", "B66")]
     falta = [c for c in casos if (c[0], c[1]) not in hechas]
+    if "--parte" in sys.argv:
+        # "--parte 2/4": este proceso corre uno de cada cuatro, para repartir una corrida lenta.
+        i, n = map(int, sys.argv[sys.argv.index("--parte") + 1].split("/"))
+        falta = falta[i::n]
     print(f"[{corrida} {prompt}, {MODELOS[corrida][1]}: {len(falta)} por correr]", flush=True)
     for banco, cid, texto in falta:
         if MODELOS[corrida][5] and gastado(lambda r: r["corrida"] == corrida) >= MODELOS[corrida][5]:
@@ -220,7 +224,7 @@ def correr(corrida, prompt, piloto=False, banco="140"):
                 time.sleep(15 * (intento + 1) if "429" in fila["error"] else 5)
         with open(SALIDA, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(fila, ensure_ascii=False) + "\n")
-        if prov == "gemini":
+        if prov == "gemini" and not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
             time.sleep(4)
     rs = [r for r in filas() if r["corrida"] == corrida and r["prompt"] == prompt]
     if rs:
