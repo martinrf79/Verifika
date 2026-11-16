@@ -367,3 +367,10 @@
 {"id": "C44.0.whatsapp", "respuestas": {"t0": "ninguno"}}
 {"id": "C55.0.whatsapp", "respuestas": {"t0": "stock_disponibilidad"}}
 {"id": "C56.0.whatsapp", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.original", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.plano", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.whatsapp", "respuestas": {"t0": "promociones"}}
+{"id": "C12.0.coloquial", "respuestas": {"t0": "promociones"}}
+{"id": "C56.0.original", "respuestas": {"t0": "promociones"}}
+{"id": "C56.0.plano", "respuestas": {"t0": "promociones"}}
+{"id": "C56.0.coloquial", "respuestas": {"t0": "promociones"}}

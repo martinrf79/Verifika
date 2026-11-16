@@ -313,18 +313,6 @@
     ],
     "candidatos": [
      {
-      "id": "TEC0045",
-      "nombre": "Teclado Keychron V3 Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 3,
-      "modelo": [
-       "teclado",
-       "Keychron",
-       "V3"
-      ]
-     },
-     {
       "id": "TEC0024",
       "nombre": "Teclado Keychron K2 Blanco",
       "rubro": "teclado",
@@ -337,15 +325,27 @@
       ]
      },
      {
-      "id": "TEC0007",
-      "nombre": "Teclado Razer BlackWidow V4 Negro",
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
       "rubro": "teclado",
-      "precio": 287500,
-      "stock": 17,
+      "precio": 162500,
+      "stock": 3,
       "modelo": [
        "teclado",
-       "Razer",
-       "BlackWidow V4"
+       "Keychron",
+       "V3"
+      ]
+     },
+     {
+      "id": "TEC0013",
+      "nombre": "Teclado HyperX Alloy Origins 60 Negro",
+      "rubro": "teclado",
+      "precio": 144000,
+      "stock": 1,
+      "modelo": [
+       "teclado",
+       "HyperX",
+       "Alloy Origins 60"
       ]
      },
      {
@@ -375,29 +375,29 @@
     ],
     "pedido": "teclado",
     "elegido": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     },
     "no_hay": false,
     "dudoso": false,
     "cercano": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     }
    }
@@ -442,7 +442,7 @@
     }
    ]
   ],
-  "respuesta": "Por monitor 24 pulgadas tengo: Monitor AOC 24B2XH a $163.500, quedan 15; Monitor LG 24MK430H a $167.500, quedan 7; Monitor Samsung T35F 24 a $151.000, quedan 7.\nPor teclado mecanico tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nEl envio a Rosario sale $7.000.\nEl envio a Neuquen sale $9.500."
+  "respuesta": "Por monitor 24 pulgadas tengo: Monitor AOC 24B2XH a $163.500, quedan 15; Monitor LG 24MK430H a $167.500, quedan 7; Monitor Samsung T35F 24 a $151.000, quedan 7.\nPor teclado mecanico tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1.\nEl envio a Rosario sale $7.000.\nEl envio a Neuquen sale $9.500."
  },
  "nuevas70 gemini M03": {
   "mensaje": "che q sale una note para la facu de mi hija + un mouse inalambrico y una mochila? todo a Bahia Blanca",
@@ -1105,7 +1105,7 @@
     "rubros": [
      "webcam",
      "motherboard",
-     "monitor"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -1145,15 +1145,15 @@
       ]
      },
      {
-      "id": "MON0011",
-      "nombre": "Monitor ViewSonic VX2718",
-      "rubro": "monitor",
-      "precio": 238500,
-      "stock": 14,
+      "id": "TEC0029",
+      "nombre": "Teclado Logitech K120 Negro",
+      "rubro": "teclado",
+      "precio": 14500,
+      "stock": 4,
       "modelo": [
-       "monitor",
-       "ViewSonic",
-       "VX2718"
+       "teclado",
+       "Logitech",
+       "K120"
       ]
      },
      {
@@ -3151,18 +3151,6 @@
       ]
      },
      {
-      "id": "TEC0027",
-      "nombre": "Teclado Logitech MX Keys S Negro",
-      "rubro": "teclado",
-      "precio": 257500,
-      "stock": 25,
-      "modelo": [
-       "teclado",
-       "Logitech",
-       "MX Keys S"
-      ]
-     },
-     {
       "id": "TEC0022",
       "nombre": "Teclado Corsair K70 RGB Pro Blanco",
       "rubro": "teclado",
@@ -3172,6 +3160,18 @@
        "teclado",
        "Corsair",
        "K70 RGB Pro"
+      ]
+     },
+     {
+      "id": "TEC0013",
+      "nombre": "Teclado HyperX Alloy Origins 60 Negro",
+      "rubro": "teclado",
+      "precio": 144000,
+      "stock": 1,
+      "modelo": [
+       "teclado",
+       "HyperX",
+       "Alloy Origins 60"
       ]
      },
      {
@@ -3249,7 +3249,7 @@
     }
    ]
   ],
-  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor teclados tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Logitech MX Keys S Negro a $257.500, quedan 25; Teclado Corsair K70 RGB Pro Blanco a $314.000, quedan 8.\nEl envio a Resistencia sale $9.000."
+  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor teclados tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Corsair K70 RGB Pro Blanco a $314.000, quedan 8; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1.\nEl envio a Resistencia sale $9.000."
  },
  "nuevas70 gemini M13": {
   "mensaje": "un monitor 27 de 144hz, una placa de video que lo aproveche y un gabinete con buen aire, a Comodoro",
@@ -6958,15 +6958,15 @@
       ]
      },
      {
-      "id": "TEC0032",
-      "nombre": "Teclado Razer Ornata V3 Blanco",
+      "id": "TEC0001",
+      "nombre": "Teclado Logitech G915 TKL Negro",
       "rubro": "teclado",
-      "precio": 111000,
-      "stock": 3,
+      "precio": 512500,
+      "stock": 8,
       "modelo": [
        "teclado",
-       "Razer",
-       "Ornata V3"
+       "Logitech",
+       "G915 TKL"
       ]
      },
      {
@@ -7036,7 +7036,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Por teclado silencioso tengo: Teclado Logitech MX Keys S Negro a $257.500, quedan 25; Teclado Razer Ornata V3 Blanco a $111.000, quedan 3; Teclado Logitech K380 Negro a $55.000, quedan 3."
+  "respuesta": "Por teclado silencioso tengo: Teclado Logitech MX Keys S Negro a $257.500, quedan 25; Teclado Logitech G915 TKL Negro a $512.500, quedan 8; Teclado Logitech K380 Negro a $55.000, quedan 3."
  },
  "nuevas70 gemini O03": {
   "mensaje": "la mejor notebook que tengan, la plata no es problema",
@@ -8733,8 +8733,8 @@
     "fragmento": "cuanto sale un mause gamer de esos con luces rgb",
     "rubros": [
      "mouse",
-     "cooler",
-     "teclado"
+     "teclado",
+     "cooler"
     ],
     "candidatos": [
      {
@@ -9157,18 +9157,6 @@
     ],
     "candidatos": [
      {
-      "id": "TEC0045",
-      "nombre": "Teclado Keychron V3 Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 3,
-      "modelo": [
-       "teclado",
-       "Keychron",
-       "V3"
-      ]
-     },
-     {
       "id": "TEC0024",
       "nombre": "Teclado Keychron K2 Blanco",
       "rubro": "teclado",
@@ -9178,6 +9166,18 @@
        "teclado",
        "Keychron",
        "K2"
+      ]
+     },
+     {
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
+      "rubro": "teclado",
+      "precio": 162500,
+      "stock": 3,
+      "modelo": [
+       "teclado",
+       "Keychron",
+       "V3"
       ]
      },
      {
@@ -9219,35 +9219,35 @@
     ],
     "pedido": "teclado",
     "elegido": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     },
     "no_hay": false,
     "dudoso": false,
     "cercano": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     }
    }
   ],
   "envios": [],
-  "respuesta": "Por teclado mecanico español tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nPor teclado mecanico ingles tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17."
+  "respuesta": "Por teclado mecanico español tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nPor teclado mecanico ingles tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17."
  },
  "nuevas70 gemini A05": {
   "mensaje": "che tenes un ssd de quinientos gigas eme punto dos",
@@ -9882,7 +9882,7 @@
     "rubros": [
      "silla gamer",
      "monitor",
-     "cooler"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -9934,15 +9934,15 @@
       ]
      },
      {
-      "id": "COO0003",
-      "nombre": "Cooler Cooler Master Hyper 212",
-      "rubro": "cooler",
-      "precio": 53000,
-      "stock": 11,
+      "id": "TEC0039",
+      "nombre": "Teclado Redragon Vara K551 Negro",
+      "rubro": "teclado",
+      "precio": 47500,
+      "stock": 13,
       "modelo": [
-       "cooler",
-       "Cooler Master",
-       "Hyper 212"
+       "teclado",
+       "Redragon",
+       "Vara K551"
       ]
      }
     ],
@@ -9979,8 +9979,8 @@
     "fragmento": "una roja",
     "rubros": [
      "silla gamer",
-     "cooler",
-     "monitor"
+     "teclado",
+     "cooler"
     ],
     "candidatos": [
      {
@@ -10020,15 +10020,15 @@
       ]
      },
      {
-      "id": "MON0002",
-      "nombre": "Monitor LG 27GP850 UltraGear",
-      "rubro": "monitor",
-      "precio": 594000,
-      "stock": 10,
+      "id": "TEC0039",
+      "nombre": "Teclado Redragon Vara K551 Negro",
+      "rubro": "teclado",
+      "precio": 47500,
+      "stock": 13,
       "modelo": [
-       "monitor",
-       "LG",
-       "27GP850 UltraGear"
+       "teclado",
+       "Redragon",
+       "Vara K551"
       ]
      },
      {
@@ -10407,18 +10407,6 @@
     ],
     "candidatos": [
      {
-      "id": "TEC0045",
-      "nombre": "Teclado Keychron V3 Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 3,
-      "modelo": [
-       "teclado",
-       "Keychron",
-       "V3"
-      ]
-     },
-     {
       "id": "TEC0024",
       "nombre": "Teclado Keychron K2 Blanco",
       "rubro": "teclado",
@@ -10431,15 +10419,27 @@
       ]
      },
      {
-      "id": "TEC0007",
-      "nombre": "Teclado Razer BlackWidow V4 Negro",
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
       "rubro": "teclado",
-      "precio": 287500,
-      "stock": 17,
+      "precio": 162500,
+      "stock": 3,
       "modelo": [
        "teclado",
-       "Razer",
-       "BlackWidow V4"
+       "Keychron",
+       "V3"
+      ]
+     },
+     {
+      "id": "TEC0013",
+      "nombre": "Teclado HyperX Alloy Origins 60 Negro",
+      "rubro": "teclado",
+      "precio": 144000,
+      "stock": 1,
+      "modelo": [
+       "teclado",
+       "HyperX",
+       "Alloy Origins 60"
       ]
      },
      {
@@ -10469,29 +10469,29 @@
     ],
     "pedido": "teclado",
     "elegido": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     },
     "no_hay": false,
     "dudoso": false,
     "cercano": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     }
    }
@@ -10536,7 +10536,7 @@
     }
    ]
   ],
-  "respuesta": "Por monitor 24 pulgadas tengo: Monitor AOC 24B2XH a $163.500, quedan 15; Monitor LG 24MK430H a $167.500, quedan 7; Monitor Samsung T35F 24 a $151.000, quedan 7.\nPor teclado mecanico tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nEl envio a Rosario sale $7.000.\nEl envio a Neuquen sale $9.500."
+  "respuesta": "Por monitor 24 pulgadas tengo: Monitor AOC 24B2XH a $163.500, quedan 15; Monitor LG 24MK430H a $167.500, quedan 7; Monitor Samsung T35F 24 a $151.000, quedan 7.\nPor teclado mecanico tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1.\nEl envio a Rosario sale $7.000.\nEl envio a Neuquen sale $9.500."
  },
  "nuevas70 haiku M03": {
   "mensaje": "che q sale una note para la facu de mi hija + un mouse inalambrico y una mochila? todo a Bahia Blanca",
@@ -13433,15 +13433,15 @@
       ]
      },
      {
-      "id": "TEC0027",
-      "nombre": "Teclado Logitech MX Keys S Negro",
+      "id": "TEC0022",
+      "nombre": "Teclado Corsair K70 RGB Pro Blanco",
       "rubro": "teclado",
-      "precio": 257500,
-      "stock": 25,
+      "precio": 314000,
+      "stock": 8,
       "modelo": [
        "teclado",
-       "Logitech",
-       "MX Keys S"
+       "Corsair",
+       "K70 RGB Pro"
       ]
      },
      {
@@ -13519,7 +13519,7 @@
     }
    ]
   ],
-  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor teclado tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Logitech K120 Negro a $14.500, quedan 4; Teclado Logitech MX Keys S Negro a $257.500, quedan 25.\nEl envio a Resistencia sale $9.000."
+  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor teclado tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Logitech K120 Negro a $14.500, quedan 4; Teclado Corsair K70 RGB Pro Blanco a $314.000, quedan 8.\nEl envio a Resistencia sale $9.000."
  },
  "nuevas70 haiku M13": {
   "mensaje": "un monitor 27 de 144hz, una placa de video que lo aproveche y un gabinete con buen aire, a Comodoro",
@@ -17137,15 +17137,15 @@
       ]
      },
      {
-      "id": "TEC0032",
-      "nombre": "Teclado Razer Ornata V3 Blanco",
+      "id": "TEC0001",
+      "nombre": "Teclado Logitech G915 TKL Negro",
       "rubro": "teclado",
-      "precio": 111000,
-      "stock": 3,
+      "precio": 512500,
+      "stock": 8,
       "modelo": [
        "teclado",
-       "Razer",
-       "Ornata V3"
+       "Logitech",
+       "G915 TKL"
       ]
      },
      {
@@ -17215,7 +17215,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Por teclado silencioso tengo: Teclado Logitech MX Keys S Negro a $257.500, quedan 25; Teclado Razer Ornata V3 Blanco a $111.000, quedan 3; Teclado Logitech K380 Negro a $55.000, quedan 3."
+  "respuesta": "Por teclado silencioso tengo: Teclado Logitech MX Keys S Negro a $257.500, quedan 25; Teclado Logitech G915 TKL Negro a $512.500, quedan 8; Teclado Logitech K380 Negro a $55.000, quedan 3."
  },
  "nuevas70 haiku O03": {
   "mensaje": "la mejor notebook que tengan, la plata no es problema",
@@ -18813,8 +18813,8 @@
     "fragmento": "cuanto sale un mause gamer de esos con luces rgb",
     "rubros": [
      "mouse",
-     "cooler",
-     "teclado"
+     "teclado",
+     "cooler"
     ],
     "candidatos": [
      {
@@ -19029,7 +19029,7 @@
     "rubros": [
      "auriculares",
      "microfono",
-     "silla gamer"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -19081,15 +19081,15 @@
       ]
      },
      {
-      "id": "SIL0001",
-      "nombre": "Silla gamer Redragon Coeus Negro y rojo",
-      "rubro": "silla gamer",
-      "precio": 405000,
-      "stock": 17,
+      "id": "TEC0015",
+      "nombre": "Teclado Redragon Kumara K552 Negro",
+      "rubro": "teclado",
+      "precio": 36000,
+      "stock": 18,
       "modelo": [
-       "silla gamer",
+       "teclado",
        "Redragon",
-       "Coeus"
+       "Kumara K552"
       ]
      }
     ],
@@ -19144,18 +19144,6 @@
     ],
     "candidatos": [
      {
-      "id": "TEC0045",
-      "nombre": "Teclado Keychron V3 Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 3,
-      "modelo": [
-       "teclado",
-       "Keychron",
-       "V3"
-      ]
-     },
-     {
       "id": "TEC0024",
       "nombre": "Teclado Keychron K2 Blanco",
       "rubro": "teclado",
@@ -19165,6 +19153,18 @@
        "teclado",
        "Keychron",
        "K2"
+      ]
+     },
+     {
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
+      "rubro": "teclado",
+      "precio": 162500,
+      "stock": 3,
+      "modelo": [
+       "teclado",
+       "Keychron",
+       "V3"
       ]
      },
      {
@@ -19206,29 +19206,29 @@
     ],
     "pedido": "teclado",
     "elegido": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     },
     "no_hay": false,
     "dudoso": false,
     "cercano": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     }
    },
@@ -19332,7 +19332,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Por teclado mecánico español tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nPor teclado mecánico inglés tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1."
+  "respuesta": "Por teclado mecánico español tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nPor teclado mecánico inglés tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1."
  },
  "nuevas70 haiku A05": {
   "mensaje": "che tenes un ssd de quinientos gigas eme punto dos",
@@ -20074,7 +20074,7 @@
     "rubros": [
      "silla gamer",
      "monitor",
-     "cooler"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -20126,15 +20126,15 @@
       ]
      },
      {
-      "id": "COO0003",
-      "nombre": "Cooler Cooler Master Hyper 212",
-      "rubro": "cooler",
-      "precio": 53000,
-      "stock": 11,
+      "id": "TEC0039",
+      "nombre": "Teclado Redragon Vara K551 Negro",
+      "rubro": "teclado",
+      "precio": 47500,
+      "stock": 13,
       "modelo": [
-       "cooler",
-       "Cooler Master",
-       "Hyper 212"
+       "teclado",
+       "Redragon",
+       "Vara K551"
       ]
      }
     ],
@@ -20171,8 +20171,8 @@
     "fragmento": "una roja",
     "rubros": [
      "silla gamer",
-     "cooler",
-     "monitor"
+     "teclado",
+     "cooler"
     ],
     "candidatos": [
      {
@@ -20212,15 +20212,15 @@
       ]
      },
      {
-      "id": "MON0002",
-      "nombre": "Monitor LG 27GP850 UltraGear",
-      "rubro": "monitor",
-      "precio": 594000,
-      "stock": 10,
+      "id": "TEC0039",
+      "nombre": "Teclado Redragon Vara K551 Negro",
+      "rubro": "teclado",
+      "precio": 47500,
+      "stock": 13,
       "modelo": [
-       "monitor",
-       "LG",
-       "27GP850 UltraGear"
+       "teclado",
+       "Redragon",
+       "Vara K551"
       ]
      },
      {
@@ -20687,18 +20687,6 @@
     ],
     "candidatos": [
      {
-      "id": "TEC0045",
-      "nombre": "Teclado Keychron V3 Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 3,
-      "modelo": [
-       "teclado",
-       "Keychron",
-       "V3"
-      ]
-     },
-     {
       "id": "TEC0024",
       "nombre": "Teclado Keychron K2 Blanco",
       "rubro": "teclado",
@@ -20711,15 +20699,27 @@
       ]
      },
      {
-      "id": "TEC0007",
-      "nombre": "Teclado Razer BlackWidow V4 Negro",
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
       "rubro": "teclado",
-      "precio": 287500,
-      "stock": 17,
+      "precio": 162500,
+      "stock": 3,
       "modelo": [
        "teclado",
-       "Razer",
-       "BlackWidow V4"
+       "Keychron",
+       "V3"
+      ]
+     },
+     {
+      "id": "TEC0013",
+      "nombre": "Teclado HyperX Alloy Origins 60 Negro",
+      "rubro": "teclado",
+      "precio": 144000,
+      "stock": 1,
+      "modelo": [
+       "teclado",
+       "HyperX",
+       "Alloy Origins 60"
       ]
      },
      {
@@ -20749,29 +20749,29 @@
     ],
     "pedido": "teclado",
     "elegido": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     },
     "no_hay": false,
     "dudoso": false,
     "cercano": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     }
    }
@@ -20816,7 +20816,7 @@
     }
    ]
   ],
-  "respuesta": "Por monitor 24 tengo: Monitor AOC 24B2XH a $163.500, quedan 15; Monitor LG 24MK430H a $167.500, quedan 7; Monitor AOC 24G2 a $230.500, quedan 9.\nPor teclado mecanico tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nEl envio a Rosario sale $7.000.\nEl envio a Neuquen sale $9.500."
+  "respuesta": "Por monitor 24 tengo: Monitor AOC 24B2XH a $163.500, quedan 15; Monitor LG 24MK430H a $167.500, quedan 7; Monitor AOC 24G2 a $230.500, quedan 9.\nPor teclado mecanico tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1.\nEl envio a Rosario sale $7.000.\nEl envio a Neuquen sale $9.500."
  },
  "nuevas70 deepseek M03": {
   "mensaje": "che q sale una note para la facu de mi hija + un mouse inalambrico y una mochila? todo a Bahia Blanca",
@@ -21440,7 +21440,7 @@
     "rubros": [
      "webcam",
      "motherboard",
-     "monitor"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -21480,15 +21480,15 @@
       ]
      },
      {
-      "id": "MON0011",
-      "nombre": "Monitor ViewSonic VX2718",
-      "rubro": "monitor",
-      "precio": 238500,
-      "stock": 14,
+      "id": "TEC0029",
+      "nombre": "Teclado Logitech K120 Negro",
+      "rubro": "teclado",
+      "precio": 14500,
+      "stock": 4,
       "modelo": [
-       "monitor",
-       "ViewSonic",
-       "VX2718"
+       "teclado",
+       "Logitech",
+       "K120"
       ]
      },
      {
@@ -23439,15 +23439,15 @@
       ]
      },
      {
-      "id": "TEC0027",
-      "nombre": "Teclado Logitech MX Keys S Negro",
+      "id": "TEC0022",
+      "nombre": "Teclado Corsair K70 RGB Pro Blanco",
       "rubro": "teclado",
-      "precio": 257500,
-      "stock": 25,
+      "precio": 314000,
+      "stock": 8,
       "modelo": [
        "teclado",
-       "Logitech",
-       "MX Keys S"
+       "Corsair",
+       "K70 RGB Pro"
       ]
      },
      {
@@ -23505,7 +23505,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor teclado tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Logitech K120 Negro a $14.500, quedan 4; Teclado Logitech MX Keys S Negro a $257.500, quedan 25."
+  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor teclado tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Logitech K120 Negro a $14.500, quedan 4; Teclado Corsair K70 RGB Pro Blanco a $314.000, quedan 8."
  },
  "nuevas70 deepseek M13": {
   "mensaje": "un monitor 27 de 144hz, una placa de video que lo aproveche y un gabinete con buen aire, a Comodoro",
@@ -23923,7 +23923,7 @@
     "rubros": [
      "auriculares",
      "parlante",
-     "mouse"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -23975,15 +23975,15 @@
       ]
      },
      {
-      "id": "MOU0033",
-      "nombre": "Mouse Logitech G Pro Wireless Negro",
-      "rubro": "mouse",
-      "precio": 186000,
-      "stock": 24,
+      "id": "TEC0001",
+      "nombre": "Teclado Logitech G915 TKL Negro",
+      "rubro": "teclado",
+      "precio": 512500,
+      "stock": 8,
       "modelo": [
-       "mouse",
+       "teclado",
        "Logitech",
-       "G Pro Wireless"
+       "G915 TKL"
       ]
      }
     ],
@@ -24659,7 +24659,7 @@
     "rubros": [
      "webcam",
      "monitor",
-     "auriculares"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -24711,15 +24711,15 @@
       ]
      },
      {
-      "id": "AUR0021",
-      "nombre": "Auriculares Sennheiser HD 560S Negro",
-      "rubro": "auriculares",
-      "precio": 317500,
-      "stock": 13,
+      "id": "TEC0033",
+      "nombre": "Teclado Razer Huntsman V3 Pro Negro",
+      "rubro": "teclado",
+      "precio": 402000,
+      "stock": 16,
       "modelo": [
-       "auriculares",
-       "Sennheiser",
-       "HD 560S"
+       "teclado",
+       "Razer",
+       "Huntsman V3 Pro"
       ]
      }
     ],
@@ -26756,15 +26756,15 @@
       ]
      },
      {
-      "id": "TEC0032",
-      "nombre": "Teclado Razer Ornata V3 Blanco",
+      "id": "TEC0001",
+      "nombre": "Teclado Logitech G915 TKL Negro",
       "rubro": "teclado",
-      "precio": 111000,
-      "stock": 3,
+      "precio": 512500,
+      "stock": 8,
       "modelo": [
        "teclado",
-       "Razer",
-       "Ornata V3"
+       "Logitech",
+       "G915 TKL"
       ]
      },
      {
@@ -26834,7 +26834,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Por teclado silencioso tengo: Teclado Logitech MX Keys S Negro a $257.500, quedan 25; Teclado Razer Ornata V3 Blanco a $111.000, quedan 3; Teclado Logitech K380 Negro a $55.000, quedan 3."
+  "respuesta": "Por teclado silencioso tengo: Teclado Logitech MX Keys S Negro a $257.500, quedan 25; Teclado Logitech G915 TKL Negro a $512.500, quedan 8; Teclado Logitech K380 Negro a $55.000, quedan 3."
  },
  "nuevas70 deepseek O03": {
   "mensaje": "la mejor notebook que tengan, la plata no es problema",
@@ -28531,8 +28531,8 @@
     "fragmento": "cuanto sale un mause gamer de esos con luces rgb",
     "rubros": [
      "mouse",
-     "cooler",
-     "teclado"
+     "teclado",
+     "cooler"
     ],
     "candidatos": [
      {
@@ -28955,18 +28955,6 @@
     ],
     "candidatos": [
      {
-      "id": "TEC0045",
-      "nombre": "Teclado Keychron V3 Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 3,
-      "modelo": [
-       "teclado",
-       "Keychron",
-       "V3"
-      ]
-     },
-     {
       "id": "TEC0024",
       "nombre": "Teclado Keychron K2 Blanco",
       "rubro": "teclado",
@@ -28976,6 +28964,18 @@
        "teclado",
        "Keychron",
        "K2"
+      ]
+     },
+     {
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
+      "rubro": "teclado",
+      "precio": 162500,
+      "stock": 3,
+      "modelo": [
+       "teclado",
+       "Keychron",
+       "V3"
       ]
      },
      {
@@ -29017,35 +29017,35 @@
     ],
     "pedido": "teclado",
     "elegido": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     },
     "no_hay": false,
     "dudoso": false,
     "cercano": {
-     "id": "TEC0045",
-     "nombre": "Teclado Keychron V3 Negro",
+     "id": "TEC0024",
+     "nombre": "Teclado Keychron K2 Blanco",
      "rubro": "teclado",
-     "precio": 162500,
-     "stock": 3,
+     "precio": 178500,
+     "stock": 25,
      "modelo": [
       "teclado",
       "Keychron",
-      "V3"
+      "K2"
      ]
     }
    }
   ],
   "envios": [],
-  "respuesta": "Por teclado mecanico español tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nPor teclado mecanico ingles tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17."
+  "respuesta": "Por teclado mecanico español tengo: Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nPor teclado mecanico ingles tengo: Teclado Keychron K2 Blanco a $178.500, quedan 25; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17."
  },
  "nuevas70 deepseek A05": {
   "mensaje": "che tenes un ssd de quinientos gigas eme punto dos",
@@ -29680,7 +29680,7 @@
     "rubros": [
      "silla gamer",
      "monitor",
-     "cooler"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -29732,15 +29732,15 @@
       ]
      },
      {
-      "id": "COO0003",
-      "nombre": "Cooler Cooler Master Hyper 212",
-      "rubro": "cooler",
-      "precio": 53000,
-      "stock": 11,
+      "id": "TEC0039",
+      "nombre": "Teclado Redragon Vara K551 Negro",
+      "rubro": "teclado",
+      "precio": 47500,
+      "stock": 13,
       "modelo": [
-       "cooler",
-       "Cooler Master",
-       "Hyper 212"
+       "teclado",
+       "Redragon",
+       "Vara K551"
       ]
      }
     ],
@@ -29777,8 +29777,8 @@
     "fragmento": "una roja",
     "rubros": [
      "silla gamer",
-     "cooler",
-     "monitor"
+     "teclado",
+     "cooler"
     ],
     "candidatos": [
      {
@@ -29818,15 +29818,15 @@
       ]
      },
      {
-      "id": "MON0002",
-      "nombre": "Monitor LG 27GP850 UltraGear",
-      "rubro": "monitor",
-      "precio": 594000,
-      "stock": 10,
+      "id": "TEC0039",
+      "nombre": "Teclado Redragon Vara K551 Negro",
+      "rubro": "teclado",
+      "precio": 47500,
+      "stock": 13,
       "modelo": [
-       "monitor",
-       "LG",
-       "27GP850 UltraGear"
+       "teclado",
+       "Redragon",
+       "Vara K551"
       ]
      },
      {
@@ -30102,18 +30102,6 @@
       ]
      },
      {
-      "id": "TEC0045",
-      "nombre": "Teclado Keychron V3 Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 3,
-      "modelo": [
-       "teclado",
-       "Keychron",
-       "V3"
-      ]
-     },
-     {
       "id": "TEC0003",
       "nombre": "Teclado Logitech K380 Negro",
       "rubro": "teclado",
@@ -30123,6 +30111,18 @@
        "teclado",
        "Logitech",
        "K380"
+      ]
+     },
+     {
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
+      "rubro": "teclado",
+      "precio": 162500,
+      "stock": 3,
+      "modelo": [
+       "teclado",
+       "Keychron",
+       "V3"
       ]
      },
      {
@@ -30199,7 +30199,7 @@
     }
    ]
   ],
-  "respuesta": "Por mouse inalambrico tengo: Mouse Logitech G Pro Wireless Negro a $186.000, quedan 24; Mouse Logitech G305 Lightspeed Negro a $80.500, quedan 9; Mouse Logitech G502 X Negro a $140.500, quedan 13.\nPor teclado inalambrico tengo: Teclado Logitech G915 TKL Negro a $512.500, quedan 8; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Logitech K380 Negro a $55.000, quedan 3.\nEl envio a Lomas de Zamora sale $3.000."
+  "respuesta": "Por mouse inalambrico tengo: Mouse Logitech G Pro Wireless Negro a $186.000, quedan 24; Mouse Logitech G305 Lightspeed Negro a $80.500, quedan 9; Mouse Logitech G502 X Negro a $140.500, quedan 13.\nPor teclado inalambrico tengo: Teclado Logitech G915 TKL Negro a $512.500, quedan 8; Teclado Logitech K380 Negro a $55.000, quedan 3; Teclado Keychron V3 Negro a $162.500, quedan 3.\nEl envio a Lomas de Zamora sale $3.000."
  },
  "nuevas70b gemini B02": {
   "mensaje": "busco unas vinchas con musica para el gym que no se caigan y un aparatito que tire musica fuerte para el asado del domingo",
@@ -31642,7 +31642,7 @@
     "rubros": [
      "placa de video",
      "monitor",
-     "gabinete"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -31694,15 +31694,15 @@
       ]
      },
      {
-      "id": "GAB0029",
-      "nombre": "Gabinete Antec NX410 Negro",
-      "rubro": "gabinete",
-      "precio": 97500,
-      "stock": 3,
+      "id": "TEC0015",
+      "nombre": "Teclado Redragon Kumara K552 Negro",
+      "rubro": "teclado",
+      "precio": 36000,
+      "stock": 18,
       "modelo": [
-       "gabinete",
-       "Antec",
-       "NX410"
+       "teclado",
+       "Redragon",
+       "Kumara K552"
       ]
      }
     ],
@@ -32268,7 +32268,7 @@
     "rubros": [
      "mouse",
      "motherboard",
-     "microfono"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -32308,18 +32308,6 @@
       ]
      },
      {
-      "id": "MIC0023",
-      "nombre": "Microfono Shure MV7 Negro",
-      "rubro": "microfono",
-      "precio": 498000,
-      "stock": 7,
-      "modelo": [
-       "microfono",
-       "Shure",
-       "MV7"
-      ]
-     },
-     {
       "id": "MBO0013",
       "nombre": "Motherboard MSI MAG B650 Tomahawk WiFi",
       "rubro": "motherboard",
@@ -32329,6 +32317,18 @@
        "motherboard",
        "MSI",
        "MAG B650 Tomahawk WiFi"
+      ]
+     },
+     {
+      "id": "TEC0025",
+      "nombre": "Teclado Logitech G213 Prodigy Negro",
+      "rubro": "teclado",
+      "precio": 61500,
+      "stock": 16,
+      "modelo": [
+       "teclado",
+       "Logitech",
+       "G213 Prodigy"
       ]
      }
     ],
@@ -32382,18 +32382,6 @@
       ]
      },
      {
-      "id": "TEC0013",
-      "nombre": "Teclado HyperX Alloy Origins 60 Negro",
-      "rubro": "teclado",
-      "precio": 144000,
-      "stock": 1,
-      "modelo": [
-       "teclado",
-       "HyperX",
-       "Alloy Origins 60"
-      ]
-     },
-     {
       "id": "TEC0011",
       "nombre": "Teclado HyperX Alloy Origins Core Negro",
       "rubro": "teclado",
@@ -32403,6 +32391,18 @@
        "teclado",
        "HyperX",
        "Alloy Origins Core"
+      ]
+     },
+     {
+      "id": "TEC0013",
+      "nombre": "Teclado HyperX Alloy Origins 60 Negro",
+      "rubro": "teclado",
+      "precio": 144000,
+      "stock": 1,
+      "modelo": [
+       "teclado",
+       "HyperX",
+       "Alloy Origins 60"
       ]
      },
      {
@@ -32564,7 +32564,7 @@
     {}
    ]
   ],
-  "respuesta": "Por mouses con cable tengo: Mouse Logitech G Pro Wireless Negro a $186.000, quedan 24; Mouse Razer Cobra Negro a $60.000, quedan 24; Mouse Microsoft Classic IntelliMouse Negro a $47.500, quedan 20.\nPor teclados con ñ tengo: Teclado HyperX Alloy Core RGB Negro a $60.000, quedan 10; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1; Teclado HyperX Alloy Origins Core Negro a $162.500, quedan 4.\nPor camaritas web tengo: Webcam Logitech StreamCam a $246.000, quedan 24; Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech C920 HD Pro a $141.000, quedan 21.\nPara el envio a oficina necesito la provincia."
+  "respuesta": "Por mouses con cable tengo: Mouse Logitech G Pro Wireless Negro a $186.000, quedan 24; Mouse Razer Cobra Negro a $60.000, quedan 24; Mouse Microsoft Classic IntelliMouse Negro a $47.500, quedan 20.\nPor teclados con ñ tengo: Teclado HyperX Alloy Core RGB Negro a $60.000, quedan 10; Teclado HyperX Alloy Origins Core Negro a $162.500, quedan 4; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1.\nPor camaritas web tengo: Webcam Logitech StreamCam a $246.000, quedan 24; Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech C920 HD Pro a $141.000, quedan 21.\nPara el envio a oficina necesito la provincia."
  },
  "nuevas70b gemini B13": {
   "mensaje": "che, los cascos con micro para jugar online y el mic de mesa para grabar podcast, los dos usb",
@@ -33002,7 +33002,7 @@
     "rubros": [
      "tablet",
      "auriculares",
-     "motherboard"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -33054,15 +33054,15 @@
       ]
      },
      {
-      "id": "MBO0006",
-      "nombre": "Motherboard Gigabyte A520M K",
-      "rubro": "motherboard",
-      "precio": 106500,
-      "stock": 9,
+      "id": "TEC0025",
+      "nombre": "Teclado Logitech G213 Prodigy Negro",
+      "rubro": "teclado",
+      "precio": 61500,
+      "stock": 16,
       "modelo": [
-       "motherboard",
-       "Gigabyte",
-       "A520M K"
+       "teclado",
+       "Logitech",
+       "G213 Prodigy"
       ]
      }
     ],
@@ -33712,8 +33712,8 @@
     "fragmento": "ponerle mas coolers con luces, que entren 3 de 120",
     "rubros": [
      "cooler",
-     "gabinete",
-     "teclado"
+     "teclado",
+     "gabinete"
     ],
     "candidatos": [
      {
@@ -34558,18 +34558,6 @@
       ]
      },
      {
-      "id": "TEC0009",
-      "nombre": "Teclado Razer Huntsman Mini Negro",
-      "rubro": "teclado",
-      "precio": 172500,
-      "stock": 20,
-      "modelo": [
-       "teclado",
-       "Razer",
-       "Huntsman Mini"
-      ]
-     },
-     {
       "id": "AUR0007",
       "nombre": "Auriculares Logitech G435 Negro",
       "rubro": "auriculares",
@@ -34579,6 +34567,18 @@
        "auriculares",
        "Logitech",
        "G435"
+      ]
+     },
+     {
+      "id": "TEC0009",
+      "nombre": "Teclado Razer Huntsman Mini Negro",
+      "rubro": "teclado",
+      "precio": 172500,
+      "stock": 20,
+      "modelo": [
+       "teclado",
+       "Razer",
+       "Huntsman Mini"
       ]
      }
     ],
@@ -35244,85 +35244,12 @@
      "impresora",
      "almacenamiento externo"
     ],
-    "candidatos": [
-     {
-      "id": "WEB0002",
-      "nombre": "Webcam Logitech C922 Pro",
-      "rubro": "webcam",
-      "precio": 178000,
-      "stock": 11,
-      "modelo": [
-       "webcam",
-       "Logitech",
-       "C922 Pro"
-      ]
-     },
-     {
-      "id": "WEB0001",
-      "nombre": "Webcam Logitech C920 HD Pro",
-      "rubro": "webcam",
-      "precio": 141000,
-      "stock": 21,
-      "modelo": [
-       "webcam",
-       "Logitech",
-       "C920 HD Pro"
-      ]
-     },
-     {
-      "id": "WEB0008",
-      "nombre": "Webcam Razer Kiyo Pro",
-      "rubro": "webcam",
-      "precio": 235500,
-      "stock": 7,
-      "modelo": [
-       "webcam",
-       "Razer",
-       "Kiyo Pro"
-      ]
-     },
-     {
-      "id": "IMP0021",
-      "nombre": "Impresora Canon Pixma G2160 Negro",
-      "rubro": "impresora",
-      "precio": 260000,
-      "stock": 23,
-      "modelo": [
-       "impresora",
-       "Canon",
-       "Pixma G2160"
-      ]
-     },
-     {
-      "id": "EXT0057",
-      "nombre": "Almacenamiento externo SanDisk Extreme Portable SSD 2TB Negro",
-      "rubro": "almacenamiento externo",
-      "precio": 210000,
-      "stock": 4,
-      "modelo": [
-       "almacenamiento externo",
-       "SanDisk",
-       "Extreme Portable SSD 2TB"
-      ]
-     }
-    ],
-    "pedido": "camara",
+    "candidatos": [],
+    "pedido": "",
     "elegido": null,
     "no_hay": true,
-    "dudoso": true,
-    "cercano": {
-     "id": "WEB0002",
-     "nombre": "Webcam Logitech C922 Pro",
-     "rubro": "webcam",
-     "precio": 178000,
-     "stock": 11,
-     "modelo": [
-      "webcam",
-      "Logitech",
-      "C922 Pro"
-     ]
-    },
-    "jev": "ninguno"
+    "dudoso": false,
+    "cercano": null
    },
    {
     "busqueda": "webcam para streamear",
@@ -35424,7 +35351,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Camara de fotos profesional no hay. Lo mas cercano: Webcam Logitech C922 Pro a $178.000.\nPor webcam para streamear tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Genius FaceCam 2000X a $45.000, quedan 16."
+  "respuesta": "Camara de fotos profesional no hay.\nPor webcam para streamear tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Genius FaceCam 2000X a $45.000, quedan 16."
  },
  "nuevas70b gemini B26": {
   "mensaje": "un escritorio en L para el setup, una silla gamer y un pad de mouse gigante",
@@ -35434,88 +35361,15 @@
     "fragmento": "un escritorio en L para el setup",
     "rubros": [
      "notebook",
-     "silla gamer",
-     "teclado"
+     "teclado",
+     "silla gamer"
     ],
-    "candidatos": [
-     {
-      "id": "NOT0016",
-      "nombre": "Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris",
-      "rubro": "notebook",
-      "precio": 1974500,
-      "stock": 10,
-      "modelo": [
-       "notebook",
-       "Lenovo",
-       "LOQ 15 Core i7 16GB 1TB SSD"
-      ]
-     },
-     {
-      "id": "NOT0014",
-      "nombre": "Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro",
-      "rubro": "notebook",
-      "precio": 1768000,
-      "stock": 12,
-      "modelo": [
-       "notebook",
-       "Lenovo",
-       "LOQ 15 Ryzen 7 16GB 512GB SSD"
-      ]
-     },
-     {
-      "id": "NOT0133",
-      "nombre": "Notebook Dell Latitude 3540 Core i7 16GB 1TB SSD Gris",
-      "rubro": "notebook",
-      "precio": 1584500,
-      "stock": 8,
-      "modelo": [
-       "notebook",
-       "Dell",
-       "Latitude 3540 Core i7 16GB 1TB SSD"
-      ]
-     },
-     {
-      "id": "SIL0025",
-      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
-      "rubro": "silla gamer",
-      "precio": 438500,
-      "stock": 10,
-      "modelo": [
-       "silla gamer",
-       "Cougar",
-       "Fusion"
-      ]
-     },
-     {
-      "id": "TEC0001",
-      "nombre": "Teclado Logitech G915 TKL Negro",
-      "rubro": "teclado",
-      "precio": 512500,
-      "stock": 8,
-      "modelo": [
-       "teclado",
-       "Logitech",
-       "G915 TKL"
-      ]
-     }
-    ],
-    "pedido": "escritorio",
+    "candidatos": [],
+    "pedido": "",
     "elegido": null,
     "no_hay": true,
-    "dudoso": true,
-    "cercano": {
-     "id": "NOT0016",
-     "nombre": "Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris",
-     "rubro": "notebook",
-     "precio": 1974500,
-     "stock": 10,
-     "modelo": [
-      "notebook",
-      "Lenovo",
-      "LOQ 15 Core i7 16GB 1TB SSD"
-     ]
-    },
-    "jev": "ninguno"
+    "dudoso": false,
+    "cercano": null
    },
    {
     "busqueda": "silla gamer",
@@ -35620,8 +35474,8 @@
     "fragmento": "un pad de mouse gigante",
     "rubros": [
      "mouse",
-     "tablet",
-     "teclado"
+     "teclado",
+     "tablet"
     ],
     "candidatos": [
      {
@@ -35705,7 +35559,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Escritorio en l no hay. Lo mas cercano: Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris a $1.974.500.\nPor silla gamer tengo: Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer DT3 Elise Negro y rojo a $474.500, quedan 5.\nPad de mouse gigante no hay. Lo mas cercano: Mouse Genius NX-7000 Negro a $14.000."
+  "respuesta": "Escritorio en l no hay.\nPor silla gamer tengo: Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer DT3 Elise Negro y rojo a $474.500, quedan 5.\nPad de mouse gigante no hay. Lo mas cercano: Mouse Genius NX-7000 Negro a $14.000."
  },
  "nuevas70b gemini B27": {
   "mensaje": "busco un joystick para la pc y unos auriculares gamer con sonido envolvente",
@@ -35715,8 +35569,8 @@
     "fragmento": "busco un joystick para la pc",
     "rubros": [
      "mouse",
-     "motherboard",
-     "procesador"
+     "teclado",
+     "motherboard"
     ],
     "candidatos": [
      {
@@ -35744,6 +35598,18 @@
       ]
      },
      {
+      "id": "TEC0018",
+      "nombre": "Teclado Redragon Vata K580 Blanco",
+      "rubro": "teclado",
+      "precio": 65500,
+      "stock": 3,
+      "modelo": [
+       "teclado",
+       "Redragon",
+       "Vata K580"
+      ]
+     },
+     {
       "id": "MOU0017",
       "nombre": "Mouse Redragon Cobra M711 Negro",
       "rubro": "mouse",
@@ -35756,27 +35622,15 @@
       ]
      },
      {
-      "id": "MOU0025",
-      "nombre": "Mouse Microsoft Classic IntelliMouse Negro",
-      "rubro": "mouse",
-      "precio": 47500,
-      "stock": 20,
+      "id": "TEC0029",
+      "nombre": "Teclado Logitech K120 Negro",
+      "rubro": "teclado",
+      "precio": 14500,
+      "stock": 4,
       "modelo": [
-       "mouse",
-       "Microsoft",
-       "Classic IntelliMouse"
-      ]
-     },
-     {
-      "id": "CPU0015",
-      "nombre": "Procesador AMD Ryzen 5 5600X",
-      "rubro": "procesador",
-      "precio": 212000,
-      "stock": 15,
-      "modelo": [
-       "procesador",
-       "AMD",
-       "Ryzen 5 5600X"
+       "teclado",
+       "Logitech",
+       "K120"
       ]
      }
     ],
@@ -37351,7 +37205,7 @@
     "rubros": [
      "mouse",
      "silla gamer",
-     "monitor"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -37403,15 +37257,15 @@
       ]
      },
      {
-      "id": "MON0022",
-      "nombre": "Monitor MSI G274F",
-      "rubro": "monitor",
-      "precio": 324500,
-      "stock": 8,
+      "id": "TEC0025",
+      "nombre": "Teclado Logitech G213 Prodigy Negro",
+      "rubro": "teclado",
+      "precio": 61500,
+      "stock": 16,
       "modelo": [
-       "monitor",
-       "MSI",
-       "G274F"
+       "teclado",
+       "Logitech",
+       "G213 Prodigy"
       ]
      }
     ],
@@ -37712,18 +37566,6 @@
       ]
      },
      {
-      "id": "COO0010",
-      "nombre": "Cooler Cooler Master Hyper 212 Halo",
-      "rubro": "cooler",
-      "precio": 76500,
-      "stock": 11,
-      "modelo": [
-       "cooler",
-       "Cooler Master",
-       "Hyper 212 Halo"
-      ]
-     },
-     {
       "id": "TEC0041",
       "nombre": "Teclado Corsair K55 RGB Pro Negro",
       "rubro": "teclado",
@@ -37733,6 +37575,18 @@
        "teclado",
        "Corsair",
        "K55 RGB Pro"
+      ]
+     },
+     {
+      "id": "COO0010",
+      "nombre": "Cooler Cooler Master Hyper 212 Halo",
+      "rubro": "cooler",
+      "precio": 76500,
+      "stock": 11,
+      "modelo": [
+       "cooler",
+       "Cooler Master",
+       "Hyper 212 Halo"
       ]
      }
     ],
@@ -40725,85 +40579,12 @@
      "teclado",
      "silla gamer"
     ],
-    "candidatos": [
-     {
-      "id": "NOT0151",
-      "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
-      "rubro": "notebook",
-      "precio": 1971500,
-      "stock": 20,
-      "modelo": [
-       "notebook",
-       "Asus",
-       "Zenbook 14 OLED Core i7 16GB 1TB SSD"
-      ]
-     },
-     {
-      "id": "SIL0025",
-      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
-      "rubro": "silla gamer",
-      "precio": 438500,
-      "stock": 10,
-      "modelo": [
-       "silla gamer",
-       "Cougar",
-       "Fusion"
-      ]
-     },
-     {
-      "id": "NOT0025",
-      "nombre": "Notebook HP 245 G9 Core i7 16GB 1TB SSD Gris",
-      "rubro": "notebook",
-      "precio": 904000,
-      "stock": 4,
-      "modelo": [
-       "notebook",
-       "HP",
-       "245 G9 Core i7 16GB 1TB SSD"
-      ]
-     },
-     {
-      "id": "NOT0034",
-      "nombre": "Notebook HP Victus 15 Core i7 16GB 1TB SSD Gris",
-      "rubro": "notebook",
-      "precio": 1954000,
-      "stock": 3,
-      "modelo": [
-       "notebook",
-       "HP",
-       "Victus 15 Core i7 16GB 1TB SSD"
-      ]
-     },
-     {
-      "id": "TEC0011",
-      "nombre": "Teclado HyperX Alloy Origins Core Negro",
-      "rubro": "teclado",
-      "precio": 162500,
-      "stock": 4,
-      "modelo": [
-       "teclado",
-       "HyperX",
-       "Alloy Origins Core"
-      ]
-     }
-    ],
-    "pedido": "escritorios",
+    "candidatos": [],
+    "pedido": "",
     "elegido": null,
     "no_hay": true,
-    "dudoso": true,
-    "cercano": {
-     "id": "NOT0151",
-     "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
-     "rubro": "notebook",
-     "precio": 1971500,
-     "stock": 20,
-     "modelo": [
-      "notebook",
-      "Asus",
-      "Zenbook 14 OLED Core i7 16GB 1TB SSD"
-     ]
-    },
-    "jev": "ninguno"
+    "dudoso": false,
+    "cercano": null
    }
   ],
   "envios": [
@@ -40827,7 +40608,7 @@
     }
    ]
   ],
-  "respuesta": "Por sillas tengo: Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19.\nEscritorios no hay. Lo mas cercano: Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris a $1.971.500.\nEl envio a Cordoba sale $7.500."
+  "respuesta": "Por sillas tengo: Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19.\nEscritorios no hay.\nEl envio a Cordoba sale $7.500."
  },
  "nuevas70b gemini B58": {
   "mensaje": "10 auriculares baratos para un call center en Rosario, con microfono incorporado",
@@ -41490,15 +41271,15 @@
       ]
      },
      {
-      "id": "TEC0027",
-      "nombre": "Teclado Logitech MX Keys S Negro",
+      "id": "TEC0022",
+      "nombre": "Teclado Corsair K70 RGB Pro Blanco",
       "rubro": "teclado",
-      "precio": 257500,
-      "stock": 25,
+      "precio": 314000,
+      "stock": 8,
       "modelo": [
        "teclado",
-       "Logitech",
-       "MX Keys S"
+       "Corsair",
+       "K70 RGB Pro"
       ]
      },
      {
@@ -41595,7 +41376,7 @@
     }
    ]
   ],
-  "respuesta": "Por monitor tengo: Monitor Philips 242V8A a $174.500, quedan 21; Monitor Philips 271E1 a $202.500, quedan 24; Monitor Asus TUF VG279Q1A a $363.500, quedan 22.\nPor monitor tengo: Monitor Philips 242V8A a $174.500, quedan 21; Monitor Philips 271E1 a $202.500, quedan 24; Monitor Asus TUF VG279Q1A a $363.500, quedan 22.\nPor teclado tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Logitech K120 Negro a $14.500, quedan 4; Teclado Logitech MX Keys S Negro a $257.500, quedan 25.\nEl envio a Salta sale $10.500.\nEl envio a Tucuman sale $9.500."
+  "respuesta": "Por monitor tengo: Monitor Philips 242V8A a $174.500, quedan 21; Monitor Philips 271E1 a $202.500, quedan 24; Monitor Asus TUF VG279Q1A a $363.500, quedan 22.\nPor monitor tengo: Monitor Philips 242V8A a $174.500, quedan 21; Monitor Philips 271E1 a $202.500, quedan 24; Monitor Asus TUF VG279Q1A a $363.500, quedan 22.\nPor teclado tengo: Teclado Genius Slimstar 130 Negro a $16.500, quedan 5; Teclado Logitech K120 Negro a $14.500, quedan 4; Teclado Corsair K70 RGB Pro Blanco a $314.000, quedan 8.\nEl envio a Salta sale $10.500.\nEl envio a Tucuman sale $9.500."
  },
  "nuevas70b gemini B61": {
   "mensaje": "hacen factura A? necesito 3 impresoras para el estudio contable y cuanto tarda a La Plata",
@@ -41921,7 +41702,7 @@
     "rubros": [
      "webcam",
      "motherboard",
-     "monitor"
+     "teclado"
     ],
     "candidatos": [
      {
@@ -41961,15 +41742,15 @@
       ]
      },
      {
-      "id": "MON0011",
-      "nombre": "Monitor ViewSonic VX2718",
-      "rubro": "monitor",
-      "precio": 238500,
-      "stock": 14,
+      "id": "TEC0029",
+      "nombre": "Teclado Logitech K120 Negro",
+      "rubro": "teclado",
+      "precio": 14500,
+      "stock": 4,
       "modelo": [
-       "monitor",
-       "ViewSonic",
-       "VX2718"
+       "teclado",
+       "Logitech",
+       "K120"
       ]
      },
      {
@@ -42333,15 +42114,15 @@
       ]
      },
      {
-      "id": "TEC0037",
-      "nombre": "Teclado Redragon K617 Fizz Negro",
+      "id": "TEC0045",
+      "nombre": "Teclado Keychron V3 Negro",
       "rubro": "teclado",
-      "precio": 38000,
-      "stock": 15,
+      "precio": 162500,
+      "stock": 3,
       "modelo": [
        "teclado",
-       "Redragon",
-       "K617 Fizz"
+       "Keychron",
+       "V3"
       ]
      },
      {
@@ -42412,7 +42193,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor keyboard gamer switches red tengo: Teclado Redragon Kumara K552 Negro a $36.000, quedan 18; Teclado Redragon K617 Fizz Negro a $38.000, quedan 15; Teclado Redragon Vata K580 Blanco a $65.500, quedan 3."
+  "respuesta": "Por mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor keyboard gamer switches red tengo: Teclado Redragon Kumara K552 Negro a $36.000, quedan 18; Teclado Keychron V3 Negro a $162.500, quedan 3; Teclado Redragon Vata K580 Blanco a $65.500, quedan 3."
  },
  "nuevas70b gemini B67": {
   "mensaje": "tenes alguna jbl o algo parecido para escuchar musica en el living y unos airpods o similar",

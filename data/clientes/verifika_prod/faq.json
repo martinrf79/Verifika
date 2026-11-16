@@ -805,7 +805,8 @@
       "ofertas",
       "oferta",
       "hay promo",
-      "oferta vigente"
+      "oferta vigente",
+      "off"
     ],
     "respuesta": "Tenemos 10 por ciento de descuento pagando por transferencia y cuotas sin interes con tarjeta. Las promos puntuales por producto te las confirmo en el momento segun lo que estes mirando. Decime que buscas y te digo si tiene algo especial.",
     "tipo": "informativo",

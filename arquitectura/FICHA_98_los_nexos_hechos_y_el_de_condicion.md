@@ -29,13 +29,17 @@ dudoso; el código redacta. Todavía no hay segunda llamada al modelo: se hace c
 | --- | --- | --- |
 | las 140, `nuevas70` y `nuevas70b` | donde se armaron | rubro elige bien 74, 72, 73 y 106; lo que no se vende 14 de 14 |
 | `nombrados38.py` | modelos gemelos | 39 de 40, ningún modelo cambiado |
-| `reales.py` | 40 mensajes reales de WhatsApp | 38 sin falla, 45 de 45 rubros |
-| `reales.py --525` | las 525 de `traduccion58` sin las de memoria, 365 | 320 de 320 rubros, 132 de 135 modelos |
+| `reales.py` | 40 mensajes reales de WhatsApp | 39 sin falla, 45 de 45 rubros, 13 de 13 temas |
+| `reales.py --525` | las 525 de `traduccion58` sin las de memoria, 365 | 312 sin falla, 320 de 320 rubros, 132 de 135 modelos |
 
 Lo que falla en los bancos nuevos casi no es de los nexos: es la llamada 0, que con dos modelos en una frase,
-"entre el G305 y el G203", deja uno solo, y datos de la fuente que no se tocan sin Martín: "off" no es palabra clave de
-promociones en la FAQ, "keyboard" no es alias de teclado, la tienda no declara que no vende escritorios ni cámaras de
-fotos.
+"entre el G305 y el G203", deja uno solo.
+
+**Datos de la fuente, decididos el 16-nov con el criterio que Martín delegó:** "off" pasa a palabra clave de promociones
+en `faq.json`; "keyboard" y "keyboard gamer", a alias de teclado en `alias.json`; escritorio y cámara de fotos, a
+`no_vendidas.json`. Los reales pasan de 38 a 39 sin falla y las 365 de 305 a 312; las 140 y la batería, 532 tests, igual.
+Los números romanos, "hyperx cloud 2", no: sería una lista en el código, y hoy pregunta entre los Cloud en vez de
+equivocarse.
 
 ## 3. Lo que decidió Martín y vale para el de condición
 
