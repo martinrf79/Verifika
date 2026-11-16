@@ -10,7 +10,9 @@ LAS CORRIDAS, una por modelo y prompt. La base, Gemini con el prompt de hoy, es 
   haiku         claude-haiku-5-5, razonamiento alto, clave de Anthropic.
   deepseek      deepseek-flash, la V4.1, razonamiento max, el mas alto, clave de DeepSeek.
   luna          openai/gpt-6-luna por OpenRouter, razonamiento bajo por la latencia.
-  qwen          qwen/qwen3.8-flash por OpenRouter, razonamiento bajo.
+  qwen          qwen/qwen3.8-flash por OpenRouter, sin razonamiento: con el bajo piensa igual, hasta 16 mil tokens y
+                210 segundos en un mensaje, medido en el piloto como qwen-low, y se corto.
+  luna-medio    lo mismo que luna con razonamiento medio, para ver cuanto agrega pensar.
 EL GASTO: OpenRouter tiene un tope de 20 centavos entre luna y qwen, orden de Martin; cada corrida corta en su tope.
 `--piloto` corre 10 mensajes y estima las 140 con lo medido.
 
@@ -42,7 +44,9 @@ MODELOS = {
     "haiku": ("anthropic", "claude-haiku-5-5", "high", 0.10, 0.50, 0.20),
     "deepseek": ("deepseek", "deepseek-flash", "max", 0.15, 0.60, 0.20),
     "luna": ("openrouter", "openai/gpt-6-luna", "low", 0.10, 0.50, 0.12),
-    "qwen": ("openrouter", "qwen/qwen3.8-flash", "low", 0.15, 0.47, 0.08),
+    "qwen": ("openrouter", "qwen/qwen3.8-flash", "none", 0.15, 0.47, 0.06),
+    "qwen-low": ("openrouter", "qwen/qwen3.8-flash", "low", 0.15, 0.47, 0.02),
+    "luna-medio": ("openrouter", "openai/gpt-6-luna", "medium", 0.10, 0.50, 0.08),
 }
 TOPE_OPENROUTER = 0.20
 
@@ -89,20 +93,33 @@ def pedir(corrida, prompt, texto):
         k = {"model": modelo, "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}],
              "response_format": fmt}
         if prov == "gemini":
-            cli = OpenAI(api_key=_clave("GEMINI_API_KEY"), base_url=get_settings().GEMINI_BASE_URL)
+            # La gratis; la paga solo con la orden de Martin, mirando el tope del dia y anotada en `libro_paga`.
+            paga = bool(os.environ.get("MARTIN_AUTORIZO_LA_PAGA"))
+            if paga:
+                from banco_pruebas import libro_paga
+                libro_paga.puede()
+            cli = OpenAI(api_key=_clave("GEMINI_API_KEY_PROD" if paga else "GEMINI_API_KEY"),
+                         base_url=get_settings().GEMINI_BASE_URL, timeout=120, max_retries=0)
             k["reasoning_effort"] = esfuerzo
         elif prov == "deepseek":
+            # DeepSeek no toma json_schema: el esquema va escrito y el modo es JSON, como en `engranaje0`.
             cli = OpenAI(api_key=_clave("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
             k["reasoning_effort"] = esfuerzo
+            k["response_format"] = {"type": "json_object"}
+            k["messages"][0]["content"] += "\nDevolve solo el JSON, con este esquema: " + json.dumps(F.ESQUEMA)
         else:
             cli = OpenAI(api_key=_clave("OPENROUTER_API_KEY"), base_url=OPENROUTER)
-            k["extra_body"] = {"reasoning": {"effort": esfuerzo}, "usage": {"include": True}}
+            k["extra_body"] = {"reasoning": {"enabled": False} if esfuerzo == "none" else {"effort": esfuerzo},
+                               "usage": {"include": True}}
         r = cli.chat.completions.create(**k)
         crudo = r.choices[0].message.content or ""
         u = r.usage
         e, s = int(u.prompt_tokens or 0), int(u.completion_tokens or 0)
         if prov == "openrouter":
             dol = float(getattr(u, "cost", None) or (u.model_extra or {}).get("cost") or 0)
+        if prov == "gemini" and os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
+            from banco_pruebas import libro_paga
+            dol = libro_paga.anotar(modelo, e, s)
     seg = round(time.time() - t0, 2)
     if dol is None:
         dol = (e * pe + s * ps) / 1e6
