@@ -53,8 +53,7 @@ en las mismas charlas. Hasta entonces no se toca producción. Para que no se pie
 2. **Los nexos sobre la llamada 0 elegida.**
    - Cambiar la llamada 0 de `flujo_nuevo.py` al modelo de `llamada0_modelos.MODELOS["luna"]` con el prompt v2. Desde el
      16-nov ese modelo ya va por la clave directa de OpenAI; el nombre se confirmó en la lista de modelos, sin correrlo.
-   - **Antes de correr, Martín decide el tope:** `MODELOS["luna"]` tiene un tope de 12 centavos para todo lo que corre con
-     ese modelo en el banco, y ya lleva 11. Subirlo es un umbral: su propio commit, con las cuentas.
+   - **El tope:** Martín lo subió de 12 centavos a un dólar el 16-nov, en su propio commit; llevaba 11 centavos.
    - Correr los cinco nexos sobre lo nuevo: las búsquedas nuevas piden sus vectores y lo dudoso nuevo pide Jev.
    - El nexo de rubro con lo medido en `embeddings_candidatos.py`: consulta con el fragmento y la búsqueda juntos, y 8
      candidatos en vez de 5; Jev elige entre ellos en lo dudoso.
@@ -129,5 +128,8 @@ bancos de mensajes, en `bancos/`.
   solo en teclado, porque el 16-nov se le sumó el alias "keyboard". Quedan como se grabaron.
 - **Lo que no coincide con una nota vieja, y ya estaba así antes de mover:** la calibración de condición da 148 de 188
   con la V3, no 150 como dice el registro; el resto, igual.
-- **Lo que queda para el paso 2:** el tope del modelo elegido, sección 3; y la llamada 0 del flujo, que sigue con el
-  modelo de hoy hasta que se cambie con su medición.
+- **Lo que decidió Martín al cerrar:** el tope del modelo elegido sube a un dólar; el índice de 14 MB queda en el repo;
+  las dos grabaciones del 15-nov y el 148 de la V3 se ven sobre la marcha. Lo que sigue son la memoria y la segunda
+  llamada, pasos 4 y 5. La llamada 0 del flujo sigue con el modelo de hoy hasta que se cambie con su medición, paso 2.
+- **Una segunda pasada completa**, con el tope cambiado, da lo mismo. La única diferencia es de orden: dos temas
+  inventados de una línea de las 365 se listan en otro orden, porque salen de un conjunto; el contenido es igual.
