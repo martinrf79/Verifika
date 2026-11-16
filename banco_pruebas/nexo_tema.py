@@ -224,13 +224,11 @@ def _desc(nx, t):
     return f"{t.replace('_', ' ')}: {nx.faq[t]['respuesta']}"
 
 
-def _jev(nx, texto, ds):
+def llamar_jev(state, qs, prueba):
+    """Una llamada a Jev con preguntas de lista cerrada; anota el gasto en `jev/gasto_jev.jsonl`. {pregunta: elegido}."""
     import urllib.request
     import urllib.error
-    qs = {f"l{i}": {"type": "choice", "criteria": {t: _desc(nx, t) for t in cands} | {NINGUNO: DESC_NINGUNO},
-                    "instructions": f"En la parte \"{frag}\" del mensaje, el cliente pregunta por alguna de estas "
-                                    "reglas de la tienda?"} for i, frag, cands in ds}
-    body = {"state": f"MENSAJE DEL CLIENTE: {texto}", "model": "jev-latest", "questions": qs}
+    body = {"state": state, "model": "jev-latest", "questions": qs}
     req = urllib.request.Request("https://api.typesafe.ai/v1/systemone", data=json.dumps(body).encode(), headers={
         "Authorization": "Bearer " + os.environ["TYPESAFE_API_KEY"].strip(), "Content-Type": "application/json"})
     for intento in range(5):
@@ -243,10 +241,18 @@ def _jev(nx, texto, ds):
                 continue
             raise
     with open(os.path.join(AQUI, "jev", "gasto_jev.jsonl"), "a") as fh:
-        fh.write(json.dumps({"cuando": time.strftime("%Y-%m-%dT%H:%M:%S"), "prueba": "nexo_tema",
+        fh.write(json.dumps({"cuando": time.strftime("%Y-%m-%dT%H:%M:%S"), "prueba": prueba,
                              "tokens": r["usage"]["input_tokens"],
                              "usd": round(r["usage"]["input_tokens"] * 0.042 / 1e6, 5)}) + "\n")
-    return {i: r["answers"][f"l{i}"]["choice"] for i, _, _ in ds}, r["usage"]["input_tokens"]
+    return {k: v["choice"] for k, v in r["answers"].items()}, r["usage"]["input_tokens"]
+
+
+def _jev(nx, texto, ds):
+    qs = {f"l{i}": {"type": "choice", "criteria": {t: _desc(nx, t) for t in cands} | {NINGUNO: DESC_NINGUNO},
+                    "instructions": f"En la parte \"{frag}\" del mensaje, el cliente pregunta por alguna de estas "
+                                    "reglas de la tienda?"} for i, frag, cands in ds}
+    r, tok = llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "nexo_tema")
+    return {i: r[f"l{i}"] for i, _, _ in ds}, tok
 
 
 def _corta(nx, texto, ds, cli, modelo):

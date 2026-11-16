@@ -1675,7 +1675,7 @@
        "EXT0019",
        "RAM0057"
       ],
-      "elegido": "SSD0014",
+      "elegido": "SSD0002",
       "veredicto": "coincide",
       "datos": [
        {
@@ -4291,7 +4291,7 @@
        "SSD0045",
        "NOT0034"
       ],
-      "elegido": "EXT0045",
+      "elegido": "EXT0003",
       "veredicto": "coincide",
       "datos": [
        {
@@ -4380,7 +4380,7 @@
        "SSD0045",
        "NOT0034"
       ],
-      "elegido": "EXT0045",
+      "elegido": "EXT0003",
       "veredicto": "coincide",
       "datos": [
        {
@@ -5947,7 +5947,7 @@
        "SSD0016",
        "AUR0045"
       ],
-      "elegido": "EXT0069",
+      "elegido": "EXT0067",
       "veredicto": "coincide",
       "datos": [
        {
@@ -6033,8 +6033,8 @@
        "TAB0016",
        "MBO0006"
       ],
-      "elegido": null,
-      "veredicto": "no hay",
+      "elegido": "IMP0013",
+      "veredicto": "coincide",
       "datos": [
        {
         "id": "IMP0019",
@@ -6046,6 +6046,30 @@
          "impresora",
          "Brother",
          "HL-1212W"
+        ]
+       },
+       {
+        "id": "IMP0007",
+        "nombre": "Impresora Brother DCP-T520W Negro",
+        "rubro": "impresora",
+        "precio": 327500,
+        "stock": 22,
+        "modelo": [
+         "impresora",
+         "Brother",
+         "DCP-T520W"
+        ]
+       },
+       {
+        "id": "IMP0013",
+        "nombre": "Impresora Epson EcoTank L5590 Negro",
+        "rubro": "impresora",
+        "precio": 532500,
+        "stock": 18,
+        "modelo": [
+         "impresora",
+         "Epson",
+         "EcoTank L5590"
         ]
        }
       ]
@@ -6071,8 +6095,12 @@
     ]
    }
   ],
-  "respuesta": "Fotocopiadora o impresora multifuncion no hay. Lo mas cercano: Impresora Brother HL-1212W Negro a $192.000.",
-  "memoria": []
+  "respuesta": "Por fotocopiadora o impresora multifuncion tengo: Impresora Brother HL-1212W Negro a $192.000, quedan 12; Impresora Brother DCP-T520W Negro a $327.500, quedan 22; Impresora Epson EcoTank L5590 Negro a $532.500, quedan 18.",
+  "memoria": [
+   "IMP0019",
+   "IMP0007",
+   "IMP0013"
+  ]
  },
  "nuevas70 R07": {
   "mensaje": "eso que se pone adentro de la pc para que corran los jueguitos",
@@ -6263,7 +6291,7 @@
        "CPU0010",
        "GAB0013"
       ],
-      "elegido": "COO0005",
+      "elegido": "COO0002",
       "veredicto": "coincide",
       "datos": [
        {
@@ -6514,19 +6542,19 @@
        "CAR0019",
        "MBO0006"
       ],
-      "elegido": "CAR0019",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "no hay",
       "datos": [
        {
-        "id": "CAR0019",
-        "nombre": "Cargador UGREEN Nexode 65W Negro",
-        "rubro": "cargador",
-        "precio": 80500,
-        "stock": 1,
+        "id": "FUE0001",
+        "nombre": "Fuente Corsair CV550",
+        "rubro": "fuente",
+        "precio": 77000,
+        "stock": 8,
         "modelo": [
-         "cargador",
-         "UGREEN",
-         "Nexode 65W"
+         "fuente",
+         "Corsair",
+         "CV550"
         ]
        }
       ]
@@ -6552,10 +6580,8 @@
     ]
    }
   ],
-  "respuesta": "Por cable de alimentacion pc tengo: Cargador UGREEN Nexode 65W Negro a $80.500, quedan 1.",
-  "memoria": [
-   "CAR0019"
-  ]
+  "respuesta": "Cable de alimentacion pc no hay. Lo mas cercano: Fuente Corsair CV550 a $77.000.",
+  "memoria": []
  },
  "nuevas70 R13": {
   "mensaje": "la plaqueta madre donde enchufas todo",
@@ -6904,19 +6930,43 @@
        "FUE0003",
        "MBO0011"
       ],
-      "elegido": "FUE0003",
+      "elegido": "PAR0031",
       "veredicto": "coincide",
       "datos": [
        {
-        "id": "FUE0003",
-        "nombre": "Fuente EVGA 600 BR",
-        "rubro": "fuente",
-        "precio": 85000,
-        "stock": 2,
+        "id": "PAR0031",
+        "nombre": "Parlante JBL Clip 4 Negro",
+        "rubro": "parlante",
+        "precio": 75500,
+        "stock": 7,
         "modelo": [
-         "fuente",
-         "EVGA",
-         "600 BR"
+         "parlante",
+         "JBL",
+         "Clip 4"
+        ]
+       },
+       {
+        "id": "PAR0013",
+        "nombre": "Parlante JBL Flip 6 Negro",
+        "rubro": "parlante",
+        "precio": 168500,
+        "stock": 20,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Flip 6"
+        ]
+       },
+       {
+        "id": "PAR0016",
+        "nombre": "Parlante Genius SP-HF180 Negro",
+        "rubro": "parlante",
+        "precio": 29000,
+        "stock": 4,
+        "modelo": [
+         "parlante",
+         "Genius",
+         "SP-HF180"
         ]
        }
       ]
@@ -6955,8 +7005,8 @@
        "AUR0013",
        "TAB0010"
       ],
-      "elegido": null,
-      "veredicto": "no hay",
+      "elegido": "PAR0010",
+      "veredicto": "coincide",
       "datos": [
        {
         "id": "PAR0031",
@@ -6968,6 +7018,30 @@
          "parlante",
          "JBL",
          "Clip 4"
+        ]
+       },
+       {
+        "id": "PAR0013",
+        "nombre": "Parlante JBL Flip 6 Negro",
+        "rubro": "parlante",
+        "precio": 168500,
+        "stock": 20,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Flip 6"
+        ]
+       },
+       {
+        "id": "PAR0010",
+        "nombre": "Parlante JBL Go 3 Negro",
+        "rubro": "parlante",
+        "precio": 57000,
+        "stock": 4,
+        "modelo": [
+         "parlante",
+         "JBL",
+         "Go 3"
         ]
        }
       ]
@@ -7003,9 +7077,14 @@
     ]
    }
   ],
-  "respuesta": "Por cajita de musica tengo: Fuente EVGA 600 BR a $85.000, quedan 2.\nCajita de musica para playa no hay. Lo mas cercano: Parlante JBL Clip 4 Negro a $75.500.",
+  "respuesta": "Por cajita de musica tengo: Parlante JBL Clip 4 Negro a $75.500, quedan 7; Parlante JBL Flip 6 Negro a $168.500, quedan 20; Parlante Genius SP-HF180 Negro a $29.000, quedan 4.\nPor cajita de musica para playa tengo: Parlante JBL Clip 4 Negro a $75.500, quedan 7; Parlante JBL Flip 6 Negro a $168.500, quedan 20; Parlante JBL Go 3 Negro a $57.000, quedan 4.",
   "memoria": [
-   "FUE0003"
+   "PAR0031",
+   "PAR0013",
+   "PAR0016",
+   "PAR0031",
+   "PAR0013",
+   "PAR0010"
   ]
  },
  "nuevas70 R18": {
@@ -8759,7 +8838,7 @@
        "MIC0013",
        "PAR0016"
       ],
-      "elegido": "AUR0045",
+      "elegido": "AUR0001",
       "veredicto": "coincide",
       "datos": [
        {
@@ -10979,7 +11058,7 @@
        "SSD0052",
        "RAM0053"
       ],
-      "elegido": "EXT0069",
+      "elegido": "EXT0071",
       "veredicto": "coincide",
       "datos": [
        {
@@ -11157,7 +11236,7 @@
        "EXT0019",
        "RAM0053"
       ],
-      "elegido": "SSD0011",
+      "elegido": "SSD0010",
       "veredicto": "coincide",
       "datos": [
        {
@@ -11246,7 +11325,7 @@
        "RAM0053",
        "MON0009"
       ],
-      "elegido": "GPU0014",
+      "elegido": "GPU0001",
       "veredicto": "coincide",
       "datos": [
        {
@@ -11321,7 +11400,7 @@
        "CPU0010",
        "MBO0014"
       ],
-      "elegido": "COO0008",
+      "elegido": "COO0002",
       "veredicto": "coincide",
       "datos": [
        {
@@ -11974,7 +12053,7 @@
        "MIC0007",
        "MOU0021"
       ],
-      "elegido": "AUR0045",
+      "elegido": "AUR0017",
       "veredicto": "coincide",
       "datos": [
        {
@@ -14366,8 +14445,8 @@
        "IMP0021",
        "EXT0057"
       ],
-      "elegido": "WEB0002",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "no hay",
       "datos": [
        {
         "id": "WEB0002",
@@ -14379,30 +14458,6 @@
          "webcam",
          "Logitech",
          "C922 Pro"
-        ]
-       },
-       {
-        "id": "WEB0001",
-        "nombre": "Webcam Logitech C920 HD Pro",
-        "rubro": "webcam",
-        "precio": 141000,
-        "stock": 21,
-        "modelo": [
-         "webcam",
-         "Logitech",
-         "C920 HD Pro"
-        ]
-       },
-       {
-        "id": "WEB0008",
-        "nombre": "Webcam Razer Kiyo Pro",
-        "rubro": "webcam",
-        "precio": 235500,
-        "stock": 7,
-        "modelo": [
-         "webcam",
-         "Razer",
-         "Kiyo Pro"
         ]
        }
       ]
@@ -14503,11 +14558,8 @@
     ]
    }
   ],
-  "respuesta": "Por camara de fotos profesional tengo: Webcam Logitech C922 Pro a $178.000, quedan 11; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Razer Kiyo Pro a $235.500, quedan 7.\nPor webcam para streaming tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Logitech C270 HD a $47.500, quedan 1.",
+  "respuesta": "Camara de fotos profesional no hay. Lo mas cercano: Webcam Logitech C922 Pro a $178.000.\nPor webcam para streaming tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Logitech C270 HD a $47.500, quedan 1.",
   "memoria": [
-   "WEB0002",
-   "WEB0001",
-   "WEB0008",
    "WEB0010",
    "WEB0001",
    "WEB0006"
@@ -14530,8 +14582,8 @@
        "SIL0025",
        "TEC0001"
       ],
-      "elegido": "NOT0016",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "no hay",
       "datos": [
        {
         "id": "NOT0016",
@@ -14543,30 +14595,6 @@
          "notebook",
          "Lenovo",
          "LOQ 15 Core i7 16GB 1TB SSD"
-        ]
-       },
-       {
-        "id": "NOT0014",
-        "nombre": "Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro",
-        "rubro": "notebook",
-        "precio": 1768000,
-        "stock": 12,
-        "modelo": [
-         "notebook",
-         "Lenovo",
-         "LOQ 15 Ryzen 7 16GB 512GB SSD"
-        ]
-       },
-       {
-        "id": "NOT0133",
-        "nombre": "Notebook Dell Latitude 3540 Core i7 16GB 1TB SSD Gris",
-        "rubro": "notebook",
-        "precio": 1584500,
-        "stock": 8,
-        "modelo": [
-         "notebook",
-         "Dell",
-         "Latitude 3540 Core i7 16GB 1TB SSD"
         ]
        }
       ]
@@ -14680,8 +14708,8 @@
        "TAB0010",
        "TEC0025"
       ],
-      "elegido": "MOU0049",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "no hay",
       "datos": [
        {
         "id": "MOU0049",
@@ -14693,30 +14721,6 @@
          "mouse",
          "Genius",
          "NX-7000"
-        ]
-       },
-       {
-        "id": "MOU0023",
-        "nombre": "Mouse Genius DX-110 Negro",
-        "rubro": "mouse",
-        "precio": 8500,
-        "stock": 11,
-        "modelo": [
-         "mouse",
-         "Genius",
-         "DX-110"
-        ]
-       },
-       {
-        "id": "MOU0031",
-        "nombre": "Mouse Logitech G502 X Negro",
-        "rubro": "mouse",
-        "precio": 140500,
-        "stock": 13,
-        "modelo": [
-         "mouse",
-         "Logitech",
-         "G502 X"
         ]
        }
       ]
@@ -14742,17 +14746,11 @@
     ]
    }
   ],
-  "respuesta": "Por escritorio en L tengo: Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris a $1.974.500, quedan 10; Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro a $1.768.000, quedan 12; Notebook Dell Latitude 3540 Core i7 16GB 1TB SSD Gris a $1.584.500, quedan 8.\nPor silla gamer tengo: Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer DT3 Elise Negro y rojo a $474.500, quedan 5.\nPor pad de mouse gigante tengo: Mouse Genius NX-7000 Negro a $14.000, quedan 18; Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Logitech G502 X Negro a $140.500, quedan 13.",
+  "respuesta": "Escritorio en l no hay. Lo mas cercano: Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris a $1.974.500.\nPor silla gamer tengo: Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer DT3 Elise Negro y rojo a $474.500, quedan 5.\nPad de mouse gigante no hay. Lo mas cercano: Mouse Genius NX-7000 Negro a $14.000.",
   "memoria": [
-   "NOT0016",
-   "NOT0014",
-   "NOT0133",
    "SIL0025",
    "SIL0037",
-   "SIL0031",
-   "MOU0049",
-   "MOU0023",
-   "MOU0031"
+   "SIL0031"
   ]
  },
  "nuevas70b B27": {
@@ -15535,7 +15533,7 @@
        "SSD0052",
        "RAM0053"
       ],
-      "elegido": "EXT0069",
+      "elegido": "EXT0067",
       "veredicto": "coincide",
       "datos": [
        {
@@ -15649,8 +15647,8 @@
        "IMP0019",
        "SSD0025"
       ],
-      "elegido": null,
-      "veredicto": "no hay",
+      "elegido": "ROU0009",
+      "veredicto": "coincide",
       "datos": [
        {
         "id": "ROU0015",
@@ -15662,6 +15660,30 @@
          "router",
          "TP-Link",
          "Deco X50 Mesh"
+        ]
+       },
+       {
+        "id": "ROU0009",
+        "nombre": "Router TP-Link Deco M4 Mesh Negro",
+        "rubro": "router",
+        "precio": 148500,
+        "stock": 15,
+        "modelo": [
+         "router",
+         "TP-Link",
+         "Deco M4 Mesh"
+        ]
+       },
+       {
+        "id": "ROU0021",
+        "nombre": "Router Tenda Nova MW6 Mesh Negro",
+        "rubro": "router",
+        "precio": 172000,
+        "stock": 2,
+        "modelo": [
+         "router",
+         "Tenda",
+         "Nova MW6 Mesh"
         ]
        }
       ]
@@ -15687,8 +15709,12 @@
     ]
    }
   ],
-  "respuesta": "Repetidor wifi potente mesh no hay. Lo mas cercano: Router TP-Link Deco X50 Mesh Negro a $288.500.",
-  "memoria": []
+  "respuesta": "Por repetidor wifi potente mesh tengo: Router TP-Link Deco X50 Mesh Negro a $288.500, quedan 18; Router TP-Link Deco M4 Mesh Negro a $148.500, quedan 15; Router Tenda Nova MW6 Mesh Negro a $172.000, quedan 2.",
+  "memoria": [
+   "ROU0015",
+   "ROU0009",
+   "ROU0021"
+  ]
  },
  "nuevas70b B35": {
   "mensaje": "la tarjeta que hace que los juegos se vean lindos",
@@ -16467,7 +16493,7 @@
        "GPU0010",
        "CPU0015"
       ],
-      "elegido": "MBO0006",
+      "elegido": "MBO0001",
       "veredicto": "coincide",
       "datos": [
        {
@@ -16639,7 +16665,7 @@
        "EXT0019",
        "MBO0011"
       ],
-      "elegido": "SSD0038",
+      "elegido": "SSD0003",
       "veredicto": "coincide",
       "datos": [
        {
@@ -19305,8 +19331,8 @@
        "NOT0034",
        "TEC0011"
       ],
-      "elegido": "NOT0151",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "no hay",
       "datos": [
        {
         "id": "NOT0151",
@@ -19318,30 +19344,6 @@
          "notebook",
          "Asus",
          "Zenbook 14 OLED Core i7 16GB 1TB SSD"
-        ]
-       },
-       {
-        "id": "NOT0025",
-        "nombre": "Notebook HP 245 G9 Core i7 16GB 1TB SSD Gris",
-        "rubro": "notebook",
-        "precio": 904000,
-        "stock": 4,
-        "modelo": [
-         "notebook",
-         "HP",
-         "245 G9 Core i7 16GB 1TB SSD"
-        ]
-       },
-       {
-        "id": "NOT0034",
-        "nombre": "Notebook HP Victus 15 Core i7 16GB 1TB SSD Gris",
-        "rubro": "notebook",
-        "precio": 1954000,
-        "stock": 3,
-        "modelo": [
-         "notebook",
-         "HP",
-         "Victus 15 Core i7 16GB 1TB SSD"
         ]
        }
       ]
@@ -19374,14 +19376,11 @@
     ]
    }
   ],
-  "respuesta": "Por sillas tengo: Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19.\nEl envio a Cordoba sale $7.500.\nPor escritorios tengo: Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris a $1.971.500, quedan 20; Notebook HP 245 G9 Core i7 16GB 1TB SSD Gris a $904.000, quedan 4; Notebook HP Victus 15 Core i7 16GB 1TB SSD Gris a $1.954.000, quedan 3.\nEl envio a Cordoba sale $7.500.",
+  "respuesta": "Por sillas tengo: Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19.\nEl envio a Cordoba sale $7.500.\nEscritorios no hay. Lo mas cercano: Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris a $1.971.500.\nEl envio a Cordoba sale $7.500.",
   "memoria": [
    "SIL0037",
    "SIL0001",
-   "SIL0007",
-   "NOT0151",
-   "NOT0025",
-   "NOT0034"
+   "SIL0007"
   ]
  },
  "nuevas70b B58": {
@@ -19501,7 +19500,7 @@
        "GPU0018",
        "CPU0015"
       ],
-      "elegido": "MBO0006",
+      "elegido": "MBO0001",
       "veredicto": "coincide",
       "datos": [
        {
@@ -20799,8 +20798,8 @@
        "SIL0019",
        "MOU0019"
       ],
-      "elegido": "TEC0015",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "no hay",
       "datos": [
        {
         "id": "TEC0015",
@@ -20812,30 +20811,6 @@
          "teclado",
          "Redragon",
          "Kumara K552"
-        ]
-       },
-       {
-        "id": "TEC0037",
-        "nombre": "Teclado Redragon K617 Fizz Negro",
-        "rubro": "teclado",
-        "precio": 38000,
-        "stock": 15,
-        "modelo": [
-         "teclado",
-         "Redragon",
-         "K617 Fizz"
-        ]
-       },
-       {
-        "id": "TEC0018",
-        "nombre": "Teclado Redragon Vata K580 Blanco",
-        "rubro": "teclado",
-        "precio": 65500,
-        "stock": 3,
-        "modelo": [
-         "teclado",
-         "Redragon",
-         "Vata K580"
         ]
        }
       ]
@@ -20861,17 +20836,14 @@
     ]
    }
   ],
-  "respuesta": "Por mousepad tengo: Mouse Microsoft Classic IntelliMouse Negro a $47.500, quedan 20; Mouse Logitech G502 Hero Blanco a $70.000, quedan 2; Mouse Redragon Storm Elite Negro a $43.000, quedan 17.\nPor mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nPor keyboard gamer switches red tengo: Teclado Redragon Kumara K552 Negro a $36.000, quedan 18; Teclado Redragon K617 Fizz Negro a $38.000, quedan 15; Teclado Redragon Vata K580 Blanco a $65.500, quedan 3.",
+  "respuesta": "Por mousepad tengo: Mouse Microsoft Classic IntelliMouse Negro a $47.500, quedan 20; Mouse Logitech G502 Hero Blanco a $70.000, quedan 2; Mouse Redragon Storm Elite Negro a $43.000, quedan 17.\nPor mouse tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Glorious Model O Negro a $89.500, quedan 23; Mouse Genius NX-7000 Negro a $14.000, quedan 18.\nKeyboard gamer switches red no hay. Lo mas cercano: Teclado Redragon Kumara K552 Negro a $36.000.",
   "memoria": [
    "MOU0025",
    "MOU0004",
    "MOU0043",
    "MOU0023",
    "MOU0027",
-   "MOU0049",
-   "TEC0015",
-   "TEC0037",
-   "TEC0018"
+   "MOU0049"
   ]
  },
  "nuevas70b B67": {
@@ -21030,8 +21002,8 @@
        "TAB0001",
        "PAR0013"
       ],
-      "elegido": null,
-      "veredicto": "no hay",
+      "elegido": "AUR0041",
+      "veredicto": "coincide",
       "datos": [
        {
         "id": "AUR0041",
@@ -21043,6 +21015,30 @@
          "auriculares",
          "JBL",
          "Tune 520BT"
+        ]
+       },
+       {
+        "id": "AUR0027",
+        "nombre": "Auriculares Logitech G733 Lightspeed Negro",
+        "rubro": "auriculares",
+        "precio": 250000,
+        "stock": 21,
+        "modelo": [
+         "auriculares",
+         "Logitech",
+         "G733 Lightspeed"
+        ]
+       },
+       {
+        "id": "AUR0015",
+        "nombre": "Auriculares JBL Tune 770NC Negro",
+        "rubro": "auriculares",
+        "precio": 171000,
+        "stock": 8,
+        "modelo": [
+         "auriculares",
+         "JBL",
+         "Tune 770NC"
         ]
        }
       ]
@@ -21061,7 +21057,7 @@
     ]
    }
   ],
-  "respuesta": "Por parlante jbl tengo: Parlante JBL Go 3 Negro a $57.000; Parlante JBL Clip 4 Negro a $75.500; Parlante JBL Flip 6 Negro a $168.500; Parlante JBL Charge 5 Negro a $210.000. Cual te interesa?\nAirpods no hay. Lo mas cercano: Auriculares JBL Tune 520BT Negro a $87.500.",
+  "respuesta": "Por parlante jbl tengo: Parlante JBL Go 3 Negro a $57.000; Parlante JBL Clip 4 Negro a $75.500; Parlante JBL Flip 6 Negro a $168.500; Parlante JBL Charge 5 Negro a $210.000. Cual te interesa?\nPor airpods tengo: Auriculares JBL Tune 520BT Negro a $87.500, quedan 5; Auriculares Logitech G733 Lightspeed Negro a $250.000, quedan 21; Auriculares JBL Tune 770NC Negro a $171.000, quedan 8.",
   "memoria": [
    "PAR0028",
    "PAR0010",
@@ -21069,7 +21065,10 @@
    "PAR0010",
    "PAR0031",
    "PAR0013",
-   "PAR0028"
+   "PAR0028",
+   "AUR0041",
+   "AUR0027",
+   "AUR0015"
   ]
  },
  "nuevas70b B68": {

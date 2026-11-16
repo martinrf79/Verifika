@@ -26,11 +26,13 @@ NEXOS = {
                    "`no_vendidas.json`, como rubro sin productos, `nexo_rubro.indice_rubros`",
                    "modelo de la tienda: rubro con sus alias, marca, modelo y etiquetas, `nexo_rubro.doc_producto`"],
         "candidatos": {"rubros": 3, "productos": 5},
-        "elige": "la primera palabra de la busqueda contra el texto de la tienda de cada candidato; lo que no se vende "
-                 "gana solo si queda primero y la busqueda lo dice",
-        "calibrado": "16-nov, `nexo_rubro.py --calibrar`: elige bien 72, 71, 72 y 104, rubro equivocado 2, lo que no se "
-                     "vende 10 de 14; antes 71, 70, 71 y 104, 5 y 8",
-        "puntajes": ["banco_pruebas/nexo_rubro_puntajes.json", "banco_pruebas/flujo_nuevo_puntajes.json"],
+        "elige": "la primera palabra de la busqueda contra el nombre y el rubro de cada candidato; si solo esta en "
+                 "etiquetas o alias, o no esta, es dudoso y lo confirma Jev entre los cinco candidatos con los alias de "
+                 "su rubro, o ninguno; lo que no se vende gana solo si queda primero y la busqueda lo dice",
+        "calibrado": "16-nov, `nexo_rubro.py --calibrar` y `--jev`: elige bien 74, 72, 73 y 106, rubro equivocado 1, "
+                     "lo que no se vende 14 de 14; antes 71, 70, 71 y 104, 5 y 8",
+        "puntajes": ["banco_pruebas/nexo_rubro_puntajes.json", "banco_pruebas/flujo_nuevo_puntajes.json",
+                     "banco_pruebas/nexo_rubro_jev.jsonl"],
     },
     "destino": {
         "archivo": "banco_pruebas/flujo_nuevo.py, nexo_destino",

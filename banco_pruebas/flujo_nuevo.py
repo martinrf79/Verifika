@@ -14,7 +14,8 @@ lo que pasa entre ellos es el contrato. Un nexo que todavia no existe devuelve "
                          sobre todas las lineas; nombrado, `nexo_nombrado`, cuando la busqueda nombra marca o modelo,
                          y su respuesta reemplaza a la del producto. Condicion todavia no existe: repreguntar.
   paso 5, Jev            decidido el 15-nov en `nexo_tema`, contra la llamada corta de Gemini: lo dudoso del tema lo
-                         confirma Jev, eligiendo entre los tres candidatos o ninguno. En el banco, lo grabado.
+                         confirma Jev, eligiendo entre los tres candidatos o ninguno. Desde el 16-nov tambien lo dudoso
+                         del producto, `nexo_rubro`: entre los cinco candidatos o ninguno. En el banco, lo grabado.
   paso 6, el filtro      lo elegido tiene que estar entre los candidatos y en la fuente.
   paso 7, redactar       el codigo, solo con el contrato.
   paso 8, la memoria     los ids mostrados.
@@ -206,8 +207,13 @@ def ruteo(linea, idx):
     return nexos
 
 
-def nexo_producto(linea, idx):
+def nexo_producto(linea, idx, jev_producto=None):
     p = idx.producto({"busqueda": linea.busqueda, "fragmento": linea.fragmento})
+    if p.get("dudoso") and jev_producto:
+        # Lo dudoso lo confirma Jev, `nexo_rubro`: uno de los cinco candidatos, o no hay.
+        v = jev_producto(linea.busqueda)
+        elegido = next((f for f in p["candidatos"] if f["id"] == v), None)
+        p = dict(p, elegido=elegido, no_hay=elegido is None)
     ids = [f["id"] for f in p["candidatos"]]
     if p["elegido"]:
         mismos = [f for f in p["candidatos"] if f["rubro"] == p["elegido"]["rubro"]][:3]
@@ -259,10 +265,10 @@ def nexo_destino(linea):
     return out
 
 
-def nexos(linea, idx, jev):
+def nexos(linea, idx, jev, jev_producto=None):
     for nexo in ruteo(linea, idx):
         if nexo == "producto":
-            linea.nexos.append(nexo_producto(linea, idx))
+            linea.nexos.append(nexo_producto(linea, idx, jev_producto))
         elif nexo == "tema":
             linea.nexos.append(nexo_tema(linea, idx, jev))
         elif nexo == "nombrado":
@@ -330,9 +336,10 @@ def memoria(lineas):
             for x in [f["id"] for f in r.datos]]
 
 
-def flujo(lineas, idx, por_id, jev):
-    """Los pasos 2 a 8 sobre las lineas de la llamada 0. `jev(fragmento)` da el veredicto de lo dudoso."""
-    lineas = [filtro(nexos(l, idx, jev), por_id) for l in lineas]
+def flujo(lineas, idx, por_id, jev, jev_producto=None):
+    """Los pasos 2 a 8 sobre las lineas de la llamada 0. `jev(fragmento)` y `jev_producto(busqueda)` dan el veredicto de
+    lo dudoso del tema y del producto."""
+    lineas = [filtro(nexos(l, idx, jev, jev_producto), por_id) for l in lineas]
     return lineas, redactar(lineas), memoria(lineas)
 
 
@@ -344,6 +351,7 @@ def calificar(ver=False):
     l0 = llamada0()
     import nexo_tema as NT
     vd = NT.veredictos("jev", "1")
+    vp = NR.veredictos_jev()
     c = collections.Counter()
     cortes, ejemplos, dest_mal = [], collections.defaultdict(list), []
     salida = {}
@@ -357,8 +365,11 @@ def calificar(ver=False):
             def jev(fragmento, banco=banco, cid=cid, frags=frags):
                 # En el banco, lo que Jev contesto grabado en `nexo_tema_dudoso.jsonl`, corrida 1.
                 return vd.get((banco, cid, frags.index(fragmento)))
+            def jev_producto(busqueda, banco=banco, cid=cid):
+                # En el banco, lo que Jev contesto grabado en `nexo_rubro_jev.jsonl`.
+                return vp.get((banco, "flujo", cid, busqueda))
             lineas, resp, mem = flujo([Linea(l.fragmento, l.busqueda, l.destino) for l in l0[(banco, cid)]], idx, por_id,
-                                      jev)
+                                      jev, jev_producto)
         except Exception as ex:  # noqa: BLE001
             cortes.append((banco, cid, f"{type(ex).__name__}: {ex}"))
             continue

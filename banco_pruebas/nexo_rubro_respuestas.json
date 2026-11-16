@@ -86,6 +86,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -183,6 +184,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -287,6 +289,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0017",
      "nombre": "Monitor AOC 24B2XH",
@@ -384,6 +387,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -527,6 +531,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -624,6 +629,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0033",
      "nombre": "Mouse Logitech G Pro Wireless Negro",
@@ -710,6 +716,7 @@
     "pedido": "mochila",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0014",
      "nombre": "Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro",
@@ -721,7 +728,8 @@
       "Lenovo",
       "LOQ 15 Ryzen 7 16GB 512GB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -834,6 +842,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0043",
      "nombre": "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
@@ -919,18 +928,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "SSD0014",
-     "nombre": "Ssd Kingston KC3000 1TB",
+     "id": "SSD0002",
+     "nombre": "Ssd Samsung 980 1TB",
      "rubro": "ssd",
-     "precio": 127000,
-     "stock": 9,
+     "precio": 44000,
+     "stock": 19,
      "modelo": [
       "ssd",
-      "Kingston",
-      "KC3000 1TB"
+      "Samsung",
+      "980 1TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "SSD0014",
      "nombre": "Ssd Kingston KC3000 1TB",
@@ -942,7 +952,8 @@
       "Kingston",
       "KC3000 1TB"
      ]
-    }
+    },
+    "jev": "SSD0002"
    }
   ],
   "envios": [
@@ -1074,6 +1085,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0001",
      "nombre": "Auriculares HyperX Cloud II Negro",
@@ -1171,6 +1183,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -1268,6 +1281,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0019",
      "nombre": "Impresora Brother HL-1212W Negro",
@@ -1392,6 +1406,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -1489,6 +1504,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -1586,6 +1602,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0007",
      "nombre": "Silla gamer Cougar Armor S Negro y rojo",
@@ -1683,6 +1700,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0007",
      "nombre": "Silla gamer Cougar Armor S Negro y rojo",
@@ -1826,6 +1844,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -1923,6 +1942,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0004",
      "nombre": "Parlante Logitech Z207 Bluetooth Negro",
@@ -2015,18 +2035,19 @@
     ],
     "pedido": "microprocesador",
     "elegido": {
-     "id": "CPU0019",
-     "nombre": "Procesador AMD Ryzen 5 8400F",
+     "id": "CPU0009",
+     "nombre": "Procesador AMD Ryzen 5 5500",
      "rubro": "procesador",
-     "precio": 238000,
-     "stock": 15,
+     "precio": 147000,
+     "stock": 14,
      "modelo": [
       "procesador",
       "AMD",
-      "Ryzen 5 8400F"
+      "Ryzen 5 5500"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "CPU0019",
      "nombre": "Procesador AMD Ryzen 5 8400F",
@@ -2038,7 +2059,8 @@
       "AMD",
       "Ryzen 5 8400F"
      ]
-    }
+    },
+    "jev": "CPU0009"
    },
    {
     "busqueda": "motherboard compatible ryzen 5",
@@ -2124,6 +2146,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MBO0001",
      "nombre": "Motherboard Asus Prime B550M-A",
@@ -2221,6 +2244,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0069",
      "nombre": "Memoria ram G.Skill Flare X5 DDR5 6000 16GB Negro",
@@ -2318,6 +2342,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -2442,6 +2467,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0001",
      "nombre": "Router TP-Link Archer C6 Negro",
@@ -2539,6 +2565,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0009",
      "nombre": "Router TP-Link Deco M4 Mesh Negro",
@@ -2682,6 +2709,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TAB0001",
      "nombre": "Tablet Samsung Galaxy Tab A9 Gris",
@@ -2768,6 +2796,7 @@
     "pedido": "fundas",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "COO0005",
      "nombre": "Cooler Noctua NH-U12S Redux",
@@ -2779,7 +2808,8 @@
       "Noctua",
       "NH-U12S Redux"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -2892,6 +2922,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0023",
      "nombre": "Microfono Shure MV7 Negro",
@@ -2978,6 +3009,7 @@
     "pedido": "brazo",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "COO0012",
      "nombre": "Cooler Arctic Liquid Freezer III 360",
@@ -2989,7 +3021,8 @@
       "Arctic",
       "Liquid Freezer III 360"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -3082,6 +3115,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -3179,6 +3213,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0047",
      "nombre": "Teclado Genius Slimstar 130 Negro",
@@ -3303,6 +3338,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0007",
      "nombre": "Monitor AOC 27G2",
@@ -3400,6 +3436,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -3497,6 +3534,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0019",
      "nombre": "Gabinete Lian Li Lancool 216 Negro",
@@ -3594,18 +3632,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0045",
-     "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
+     "id": "EXT0003",
+     "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 149500,
-     "stock": 11,
+     "precio": 113000,
+     "stock": 22,
      "modelo": [
       "almacenamiento externo",
-      "Western Digital",
-      "My Passport 2TB"
+      "Seagate",
+      "Expansion 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0045",
      "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
@@ -3617,7 +3656,8 @@
       "Western Digital",
       "My Passport 2TB"
      ]
-    }
+    },
+    "jev": "EXT0003"
    },
    {
     "busqueda": "disco externo 2tb",
@@ -3691,18 +3731,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0045",
-     "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
+     "id": "EXT0003",
+     "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 149500,
-     "stock": 11,
+     "precio": 113000,
+     "stock": 22,
      "modelo": [
       "almacenamiento externo",
-      "Western Digital",
-      "My Passport 2TB"
+      "Seagate",
+      "Expansion 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0045",
      "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
@@ -3714,7 +3755,8 @@
       "Western Digital",
       "My Passport 2TB"
      ]
-    }
+    },
+    "jev": "EXT0003"
    }
   ],
   "envios": [
@@ -3844,6 +3886,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0011",
      "nombre": "Auriculares Sony WH-CH520 Negro",
@@ -3941,6 +3984,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -4084,6 +4128,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0017",
      "nombre": "Impresora HP Smart Tank 720 Negro",
@@ -4170,6 +4215,7 @@
     "pedido": "cartuchos",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0017",
      "nombre": "Impresora HP Smart Tank 720 Negro",
@@ -4181,7 +4227,8 @@
       "HP",
       "Smart Tank 720"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "silla",
@@ -4267,6 +4314,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0037",
      "nombre": "Silla gamer Noblechairs Epic Negro y rojo",
@@ -4391,6 +4439,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0008",
      "nombre": "Cooler DeepCool LE500",
@@ -4488,6 +4537,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -4631,6 +4681,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0008",
      "nombre": "Webcam Razer Kiyo Pro",
@@ -4728,6 +4779,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0008",
      "nombre": "Webcam Razer Kiyo Pro",
@@ -4825,6 +4877,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0008",
      "nombre": "Webcam Razer Kiyo Pro",
@@ -4968,6 +5021,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0045",
      "nombre": "Auriculares Redragon Pandora Negro",
@@ -5061,6 +5115,7 @@
     "pedido": "repetidor",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -5072,7 +5127,8 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -5170,6 +5226,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0001",
      "nombre": "Monitor LG 24MK430H",
@@ -5279,6 +5336,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0151",
      "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
@@ -5375,8 +5433,20 @@
      }
     ],
     "pedido": "dispositivo",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "EXT0019",
+     "nombre": "Almacenamiento externo Samsung T7 SSD 1TB Negro",
+     "rubro": "almacenamiento externo",
+     "precio": 171000,
+     "stock": 23,
+     "modelo": [
+      "almacenamiento externo",
+      "Samsung",
+      "T7 SSD 1TB"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0019",
      "nombre": "Almacenamiento externo Samsung T7 SSD 1TB Negro",
@@ -5388,11 +5458,12 @@
       "Samsung",
       "T7 SSD 1TB"
      ]
-    }
+    },
+    "jev": "EXT0019"
    }
   ],
   "envios": [],
-  "respuesta": "Dispositivo de almacenamiento fotos celular no hay. Lo mas cercano: Almacenamiento externo Samsung T7 SSD 1TB Negro a $171.000."
+  "respuesta": "Por dispositivo de almacenamiento fotos celular tengo: Almacenamiento externo Samsung T7 SSD 1TB Negro a $171.000, quedan 23; Almacenamiento externo Seagate One Touch 1TB Negro a $109.000, quedan 18; Almacenamiento externo SanDisk Ultra Dual Drive 1TB Negro a $25.000, quedan 23."
  },
  "nuevas70 gemini R06": {
   "mensaje": "el aparato para sacar copias de los papeles de la escuela",
@@ -5470,6 +5541,7 @@
     "pedido": "fotocopiadora",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0007",
      "nombre": "Impresora Brother DCP-T520W Negro",
@@ -5481,7 +5553,8 @@
       "Brother",
       "DCP-T520W"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -5574,6 +5647,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -5678,6 +5752,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0001",
      "nombre": "Gabinete Cooler Master MasterBox Q300L Negro",
@@ -5770,18 +5845,19 @@
     ],
     "pedido": "ventilador",
     "elegido": {
-     "id": "COO0005",
-     "nombre": "Cooler Noctua NH-U12S Redux",
+     "id": "COO0002",
+     "nombre": "Cooler DeepCool AG400",
      "rubro": "cooler",
-     "precio": 97000,
-     "stock": 8,
+     "precio": 49000,
+     "stock": 15,
      "modelo": [
       "cooler",
-      "Noctua",
-      "NH-U12S Redux"
+      "DeepCool",
+      "AG400"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "COO0005",
      "nombre": "Cooler Noctua NH-U12S Redux",
@@ -5793,7 +5869,8 @@
       "Noctua",
       "NH-U12S Redux"
      ]
-    }
+    },
+    "jev": "COO0002"
    }
   ],
   "envios": [],
@@ -5886,6 +5963,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -5990,6 +6068,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0010",
      "nombre": "Webcam AverMedia PW313",
@@ -6094,6 +6173,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -6198,6 +6278,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MBO0007",
      "nombre": "Motherboard Asus TUF B650-Plus WiFi",
@@ -6302,6 +6383,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0010",
      "nombre": "Procesador Intel Core i3-12100F",
@@ -6406,6 +6488,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "TAB0001",
      "nombre": "Tablet Samsung Galaxy Tab A9 Gris",
@@ -6417,7 +6500,8 @@
       "Samsung",
       "Galaxy Tab A9"
      ]
-    }
+    },
+    "jev": "TAB0001"
    }
   ],
   "envios": [],
@@ -6510,6 +6594,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0039",
      "nombre": "Memoria ram ADATA XPG Lancer DDR5 5200 16GB Negro",
@@ -6602,18 +6687,19 @@
     ],
     "pedido": "cajita",
     "elegido": {
-     "id": "FUE0003",
-     "nombre": "Fuente EVGA 600 BR",
-     "rubro": "fuente",
-     "precio": 85000,
-     "stock": 2,
+     "id": "PAR0031",
+     "nombre": "Parlante JBL Clip 4 Negro",
+     "rubro": "parlante",
+     "precio": 75500,
+     "stock": 7,
      "modelo": [
-      "fuente",
-      "EVGA",
-      "600 BR"
+      "parlante",
+      "JBL",
+      "Clip 4"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "PAR0031",
      "nombre": "Parlante JBL Clip 4 Negro",
@@ -6625,7 +6711,8 @@
       "JBL",
       "Clip 4"
      ]
-    }
+    },
+    "jev": "PAR0031"
    }
   ],
   "envios": [
@@ -6634,7 +6721,7 @@
     {}
    ]
   ],
-  "respuesta": "Por cajita de musica tengo: Fuente EVGA 600 BR a $85.000, quedan 2.\nPara el envio a playa necesito la provincia."
+  "respuesta": "Por cajita de musica tengo: Parlante JBL Clip 4 Negro a $75.500, quedan 7; Parlante JBL Flip 6 Negro a $168.500, quedan 20; Parlante Genius SP-HF180 Negro a $29.000, quedan 4.\nPara el envio a playa necesito la provincia."
  },
  "nuevas70 gemini R18": {
   "mensaje": "el trono ese de los gamers",
@@ -6723,6 +6810,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -6827,6 +6915,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -6931,6 +7020,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0027",
      "nombre": "Teclado Logitech MX Keys S Negro",
@@ -7035,6 +7125,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -7139,6 +7230,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0041",
      "nombre": "Auriculares JBL Tune 520BT Negro",
@@ -7243,6 +7335,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -7347,6 +7440,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -7451,6 +7545,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0037",
      "nombre": "Silla gamer Noblechairs Epic Negro y rojo",
@@ -7555,6 +7650,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0045",
      "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
@@ -7566,7 +7662,8 @@
       "Western Digital",
       "My Passport 2TB"
      ]
-    }
+    },
+    "jev": "EXT0045"
    }
   ],
   "envios": [],
@@ -7659,6 +7756,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -7763,6 +7861,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -7867,6 +7966,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0049",
      "nombre": "Notebook Asus Vivobook 15 Ryzen 7 16GB 512GB SSD Gris",
@@ -7976,6 +8076,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0013",
      "nombre": "Router TP-Link Archer AX73 Negro",
@@ -8008,6 +8109,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -8090,6 +8192,7 @@
     "pedido": "zapatillas",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -8101,7 +8204,8 @@
       "Philips",
       "242V8A"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -8189,6 +8293,7 @@
     "pedido": "dolar",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0136",
      "nombre": "Notebook Dell G15 Core i5 16GB 512GB SSD Gris",
@@ -8200,7 +8305,8 @@
       "Dell",
       "G15 Core i5 16GB 512GB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -8221,6 +8327,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -8314,6 +8421,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -8407,6 +8515,7 @@
     "pedido": "pizzeria",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -8418,7 +8527,8 @@
       "Philips",
       "242V8A"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -8462,6 +8572,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -8555,6 +8666,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0045",
      "nombre": "Mouse Redragon Predator Negro",
@@ -8659,6 +8771,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0048",
      "nombre": "Notebook Asus Vivobook 15 Core i5 16GB 512GB SSD Plata",
@@ -8751,18 +8864,19 @@
     ],
     "pedido": "headset",
     "elegido": {
-     "id": "AUR0045",
-     "nombre": "Auriculares Redragon Pandora Negro",
+     "id": "AUR0001",
+     "nombre": "Auriculares HyperX Cloud II Negro",
      "rubro": "auriculares",
-     "precio": 62500,
-     "stock": 15,
+     "precio": 125500,
+     "stock": 23,
      "modelo": [
       "auriculares",
-      "Redragon",
-      "Pandora"
+      "HyperX",
+      "Cloud II"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0045",
      "nombre": "Auriculares Redragon Pandora Negro",
@@ -8774,7 +8888,8 @@
       "Redragon",
       "Pandora"
      ]
-    }
+    },
+    "jev": "AUR0001"
    }
   ],
   "envios": [
@@ -8872,6 +8987,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -8969,6 +9085,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -9073,6 +9190,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SSD0001",
      "nombre": "Ssd Samsung 980 500GB",
@@ -9177,6 +9295,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0002",
      "nombre": "Monitor LG 27GP850 UltraGear",
@@ -9281,6 +9400,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -9385,6 +9505,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0013",
      "nombre": "Parlante JBL Flip 6 Negro",
@@ -9482,6 +9603,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0013",
      "nombre": "Parlante JBL Flip 6 Negro",
@@ -9574,18 +9696,19 @@
     ],
     "pedido": "charger",
     "elegido": {
-     "id": "CAR0019",
-     "nombre": "Cargador UGREEN Nexode 65W Negro",
+     "id": "CAR0001",
+     "nombre": "Cargador Anker Nano II 65W Negro",
      "rubro": "cargador",
-     "precio": 80500,
-     "stock": 1,
+     "precio": 74500,
+     "stock": 13,
      "modelo": [
       "cargador",
-      "UGREEN",
-      "Nexode 65W"
+      "Anker",
+      "Nano II 65W"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -9597,7 +9720,8 @@
       "UGREEN",
       "Nexode 65W"
      ]
-    }
+    },
+    "jev": "CAR0001"
    }
   ],
   "envios": [],
@@ -9690,6 +9814,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0022",
      "nombre": "Silla gamer Redragon Gaia Negro y rojo",
@@ -9787,6 +9912,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0019",
      "nombre": "Silla gamer Redragon King of War Negro y rojo",
@@ -9911,6 +10037,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0001",
      "nombre": "Impresora Epson EcoTank L3250 Negro",
@@ -10004,6 +10131,7 @@
     "pedido": "combo",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0045",
      "nombre": "Auriculares Redragon Pandora Negro",
@@ -10015,7 +10143,8 @@
       "Redragon",
       "Pandora"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -10108,6 +10237,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0017",
      "nombre": "Monitor AOC 24B2XH",
@@ -10205,6 +10335,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -10348,6 +10479,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -10445,6 +10577,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0033",
      "nombre": "Mouse Logitech G Pro Wireless Negro",
@@ -10531,6 +10664,7 @@
     "pedido": "mochila",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0014",
      "nombre": "Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro",
@@ -10542,7 +10676,8 @@
       "Lenovo",
       "LOQ 15 Ryzen 7 16GB 512GB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -10655,6 +10790,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0043",
      "nombre": "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
@@ -10740,18 +10876,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "SSD0014",
-     "nombre": "Ssd Kingston KC3000 1TB",
+     "id": "SSD0002",
+     "nombre": "Ssd Samsung 980 1TB",
      "rubro": "ssd",
-     "precio": 127000,
-     "stock": 9,
+     "precio": 44000,
+     "stock": 19,
      "modelo": [
       "ssd",
-      "Kingston",
-      "KC3000 1TB"
+      "Samsung",
+      "980 1TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "SSD0014",
      "nombre": "Ssd Kingston KC3000 1TB",
@@ -10763,7 +10900,8 @@
       "Kingston",
       "KC3000 1TB"
      ]
-    }
+    },
+    "jev": "SSD0002"
    }
   ],
   "envios": [],
@@ -10856,6 +10994,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0001",
      "nombre": "Auriculares HyperX Cloud II Negro",
@@ -10953,6 +11092,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -11050,6 +11190,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0019",
      "nombre": "Impresora Brother HL-1212W Negro",
@@ -11174,6 +11315,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -11271,6 +11413,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -11368,6 +11511,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -11465,6 +11609,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -11562,6 +11707,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -11659,6 +11805,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -11802,6 +11949,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -11899,6 +12047,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0004",
      "nombre": "Parlante Logitech Z207 Bluetooth Negro",
@@ -12003,6 +12152,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0019",
      "nombre": "Procesador AMD Ryzen 5 8400F",
@@ -12100,6 +12250,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MBO0001",
      "nombre": "Motherboard Asus Prime B550M-A",
@@ -12197,6 +12348,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0069",
      "nombre": "Memoria ram G.Skill Flare X5 DDR5 6000 16GB Negro",
@@ -12294,6 +12446,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -12418,6 +12571,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0001",
      "nombre": "Router TP-Link Archer C6 Negro",
@@ -12502,8 +12656,20 @@
      }
     ],
     "pedido": "sistema",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "ROU0009",
+     "nombre": "Router TP-Link Deco M4 Mesh Negro",
+     "rubro": "router",
+     "precio": 148500,
+     "stock": 15,
+     "modelo": [
+      "router",
+      "TP-Link",
+      "Deco M4 Mesh"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -12515,11 +12681,12 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ROU0009"
    }
   ],
   "envios": [],
-  "respuesta": "Por router wifi 6 tengo: Router TP-Link Archer C6 Negro a $47.500, quedan 14; Router Tenda Nova MW6 Mesh Negro a $172.000, quedan 2; Router TP-Link Archer AX23 Negro a $97.500, quedan 18.\nSistema mesh wifi no hay. Lo mas cercano: Router TP-Link Deco X50 Mesh Negro a $288.500."
+  "respuesta": "Por router wifi 6 tengo: Router TP-Link Archer C6 Negro a $47.500, quedan 14; Router Tenda Nova MW6 Mesh Negro a $172.000, quedan 2; Router TP-Link Archer AX23 Negro a $97.500, quedan 18.\nPor sistema mesh wifi tengo: Router TP-Link Deco X50 Mesh Negro a $288.500, quedan 18; Router TP-Link Deco M4 Mesh Negro a $148.500, quedan 15; Router Tenda Nova MW6 Mesh Negro a $172.000, quedan 2."
  },
  "nuevas70 haiku M10": {
   "mensaje": "quiero 2 tablets para los chicos y 2 fundas, las tablets a Ushuaia, pago 80 transferencia 20 mercado pago",
@@ -12608,6 +12775,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TAB0001",
      "nombre": "Tablet Samsung Galaxy Tab A9 Gris",
@@ -12694,6 +12862,7 @@
     "pedido": "funda",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "TAB0004",
      "nombre": "Tablet Samsung Galaxy Tab S6 Lite Gris",
@@ -12705,7 +12874,8 @@
       "Samsung",
       "Galaxy Tab S6 Lite"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -12818,6 +12988,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0023",
      "nombre": "Microfono Shure MV7 Negro",
@@ -12904,6 +13075,7 @@
     "pedido": "brazo",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MIC0007",
      "nombre": "Microfono FIFINE AmpliGame A6T Negro",
@@ -12915,7 +13087,8 @@
       "FIFINE",
       "AmpliGame A6T"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -13066,6 +13239,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -13163,6 +13337,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0047",
      "nombre": "Teclado Genius Slimstar 130 Negro",
@@ -13287,6 +13462,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0007",
      "nombre": "Monitor AOC 27G2",
@@ -13384,6 +13560,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0016",
      "nombre": "Placa de video XFX Speedster RX 7700 XT",
@@ -13481,6 +13658,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0013",
      "nombre": "Gabinete Montech Air 903 Negro",
@@ -13573,18 +13751,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0045",
-     "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
+     "id": "EXT0003",
+     "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 149500,
-     "stock": 11,
+     "precio": 113000,
+     "stock": 22,
      "modelo": [
       "almacenamiento externo",
-      "Western Digital",
-      "My Passport 2TB"
+      "Seagate",
+      "Expansion 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0045",
      "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
@@ -13596,7 +13775,8 @@
       "Western Digital",
       "My Passport 2TB"
      ]
-    }
+    },
+    "jev": "EXT0003"
    }
   ],
   "envios": [],
@@ -13689,6 +13869,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0011",
      "nombre": "Auriculares Sony WH-CH520 Negro",
@@ -13786,6 +13967,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -13929,6 +14111,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0017",
      "nombre": "Impresora HP Smart Tank 720 Negro",
@@ -14015,6 +14198,7 @@
     "pedido": "cartuchos",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0001",
      "nombre": "Impresora Epson EcoTank L3250 Negro",
@@ -14026,7 +14210,8 @@
       "Epson",
       "EcoTank L3250"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "silla comoda",
@@ -14112,6 +14297,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0034",
      "nombre": "Silla gamer Corsair TC100 Relaxed Negro y rojo",
@@ -14236,6 +14422,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0008",
      "nombre": "Cooler DeepCool LE500",
@@ -14333,6 +14520,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -14430,6 +14618,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -14573,6 +14762,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0010",
      "nombre": "Webcam AverMedia PW313",
@@ -14657,8 +14847,20 @@
      }
     ],
     "pedido": "descuento",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "WEB0001",
+     "nombre": "Webcam Logitech C920 HD Pro",
+     "rubro": "webcam",
+     "precio": 141000,
+     "stock": 21,
+     "modelo": [
+      "webcam",
+      "Logitech",
+      "C920 HD Pro"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -14670,11 +14872,12 @@
       "Logitech",
       "StreamCam"
      ]
-    }
+    },
+    "jev": "WEB0001"
    }
   ],
   "envios": [],
-  "respuesta": "Por webcam full hd aula tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Logitech C270 HD a $47.500, quedan 1.\nDescuento por cantidad webcam no hay. Lo mas cercano: Webcam Logitech StreamCam a $246.000."
+  "respuesta": "Por webcam full hd aula tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Logitech C270 HD a $47.500, quedan 1.\nPor descuento por cantidad webcam tengo: Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam AverMedia PW313 a $109.500, quedan 18."
  },
  "nuevas70 haiku R01": {
   "mensaje": "busco la cosa esa que se enchufa a la compu para hablar en zoom y que se me escuche bien",
@@ -14763,6 +14966,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0015",
      "nombre": "Microfono Blue Yeti Nano Negro",
@@ -14860,6 +15064,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0023",
      "nombre": "Microfono Shure MV7 Negro",
@@ -14953,6 +15158,7 @@
     "pedido": "repetidor",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -14964,7 +15170,8 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -15062,6 +15269,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0001",
      "nombre": "Monitor LG 24MK430H",
@@ -15171,6 +15379,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0151",
      "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
@@ -15263,18 +15472,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0003",
-     "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
+     "id": "EXT0001",
+     "nombre": "Almacenamiento externo Seagate Expansion 1TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 113000,
-     "stock": 22,
+     "precio": 97500,
+     "stock": 14,
      "modelo": [
       "almacenamiento externo",
       "Seagate",
-      "Expansion 2TB"
+      "Expansion 1TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0003",
      "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
@@ -15286,7 +15496,8 @@
       "Seagate",
       "Expansion 2TB"
      ]
-    }
+    },
+    "jev": "EXT0001"
    }
   ],
   "envios": [],
@@ -15368,6 +15579,7 @@
     "pedido": "fotocopiadora",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0007",
      "nombre": "Impresora Brother DCP-T520W Negro",
@@ -15379,7 +15591,8 @@
       "Brother",
       "DCP-T520W"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -15472,6 +15685,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -15576,6 +15790,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0001",
      "nombre": "Gabinete Cooler Master MasterBox Q300L Negro",
@@ -15668,18 +15883,19 @@
     ],
     "pedido": "ventilador",
     "elegido": {
-     "id": "COO0005",
-     "nombre": "Cooler Noctua NH-U12S Redux",
+     "id": "COO0002",
+     "nombre": "Cooler DeepCool AG400",
      "rubro": "cooler",
-     "precio": 97000,
-     "stock": 8,
+     "precio": 49000,
+     "stock": 15,
      "modelo": [
       "cooler",
-      "Noctua",
-      "NH-U12S Redux"
+      "DeepCool",
+      "AG400"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "COO0005",
      "nombre": "Cooler Noctua NH-U12S Redux",
@@ -15691,7 +15907,8 @@
       "Noctua",
       "NH-U12S Redux"
      ]
-    }
+    },
+    "jev": "COO0002"
    }
   ],
   "envios": [],
@@ -15784,6 +16001,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -15893,6 +16111,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0010",
      "nombre": "Webcam AverMedia PW313",
@@ -15997,6 +16216,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0003",
      "nombre": "Fuente EVGA 600 BR",
@@ -16089,18 +16309,19 @@
     ],
     "pedido": "placa",
     "elegido": {
-     "id": "MBO0006",
-     "nombre": "Motherboard Gigabyte A520M K",
+     "id": "MBO0001",
+     "nombre": "Motherboard Asus Prime B550M-A",
      "rubro": "motherboard",
-     "precio": 106500,
-     "stock": 9,
+     "precio": 162500,
+     "stock": 13,
      "modelo": [
       "motherboard",
-      "Gigabyte",
-      "A520M K"
+      "Asus",
+      "Prime B550M-A"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "MBO0006",
      "nombre": "Motherboard Gigabyte A520M K",
@@ -16112,7 +16333,8 @@
       "Gigabyte",
       "A520M K"
      ]
-    }
+    },
+    "jev": "MBO0001"
    }
   ],
   "envios": [],
@@ -16205,6 +16427,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0018",
      "nombre": "Procesador AMD Ryzen 9 7900X",
@@ -16297,18 +16520,19 @@
     ],
     "pedido": "pantalla",
     "elegido": {
-     "id": "TAB0020",
-     "nombre": "Tablet Lenovo Tab M10 Plata",
+     "id": "TAB0001",
+     "nombre": "Tablet Samsung Galaxy Tab A9 Gris",
      "rubro": "tablet",
-     "precio": 223000,
-     "stock": 18,
+     "precio": 211500,
+     "stock": 7,
      "modelo": [
       "tablet",
-      "Lenovo",
-      "Tab M10"
+      "Samsung",
+      "Galaxy Tab A9"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "TAB0020",
      "nombre": "Tablet Lenovo Tab M10 Plata",
@@ -16320,7 +16544,8 @@
       "Lenovo",
       "Tab M10"
      ]
-    }
+    },
+    "jev": "TAB0001"
    }
   ],
   "envios": [
@@ -16418,6 +16643,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0067",
      "nombre": "Memoria ram G.Skill Flare X5 DDR5 6000 8GB Negro",
@@ -16511,6 +16737,7 @@
     "pedido": "cajita",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "PAR0031",
      "nombre": "Parlante JBL Clip 4 Negro",
@@ -16522,7 +16749,8 @@
       "JBL",
       "Clip 4"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -16615,6 +16843,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -16719,6 +16948,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -16823,6 +17053,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0027",
      "nombre": "Teclado Logitech MX Keys S Negro",
@@ -16927,6 +17158,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -17031,6 +17263,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0011",
      "nombre": "Auriculares Sony WH-CH520 Negro",
@@ -17135,6 +17368,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -17239,6 +17473,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -17343,6 +17578,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0034",
      "nombre": "Silla gamer Corsair TC100 Relaxed Negro y rojo",
@@ -17435,18 +17671,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0069",
-     "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 2TB Negro",
+     "id": "EXT0057",
+     "nombre": "Almacenamiento externo SanDisk Extreme Portable SSD 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 29000,
-     "stock": 20,
+     "precio": 210000,
+     "stock": 4,
      "modelo": [
       "almacenamiento externo",
       "SanDisk",
-      "Ultra Dual Drive 2TB"
+      "Extreme Portable SSD 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0069",
      "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 2TB Negro",
@@ -17458,7 +17695,8 @@
       "SanDisk",
       "Ultra Dual Drive 2TB"
      ]
-    }
+    },
+    "jev": "EXT0057"
    }
   ],
   "envios": [],
@@ -17551,6 +17789,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0013",
      "nombre": "Parlante JBL Flip 6 Negro",
@@ -17655,6 +17894,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -17759,6 +17999,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0166",
      "nombre": "Notebook Acer Swift Go 14 Ryzen 7 16GB 512GB SSD Gris",
@@ -17863,6 +18104,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -17895,6 +18137,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -17977,6 +18220,7 @@
     "pedido": "zapatillas",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -17988,7 +18232,8 @@
       "Philips",
       "242V8A"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -18021,6 +18266,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -18114,6 +18360,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -18207,6 +18454,7 @@
     "pedido": "pizzeria",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -18218,7 +18466,8 @@
       "Philips",
       "242V8A"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -18318,6 +18567,7 @@
     "pedido": "playstation",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "SSD0053",
      "nombre": "Ssd Crucial P5 Plus 1TB",
@@ -18329,7 +18579,8 @@
       "Crucial",
       "P5 Plus 1TB"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -18422,6 +18673,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0045",
      "nombre": "Mouse Redragon Predator Negro",
@@ -18526,6 +18778,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0121",
      "nombre": "Notebook HP Omen 16 Ryzen 7 16GB 512GB SSD Gris",
@@ -18623,18 +18876,19 @@
     ],
     "pedido": "headset",
     "elegido": {
-     "id": "AUR0019",
-     "nombre": "Auriculares Redragon Zeus X Negro",
+     "id": "AUR0017",
+     "nombre": "Auriculares Razer Kraken V3 Negro",
      "rubro": "auriculares",
-     "precio": 57500,
-     "stock": 10,
+     "precio": 145500,
+     "stock": 23,
      "modelo": [
       "auriculares",
-      "Redragon",
-      "Zeus X"
+      "Razer",
+      "Kraken V3"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0019",
      "nombre": "Auriculares Redragon Zeus X Negro",
@@ -18646,7 +18900,8 @@
       "Redragon",
       "Zeus X"
      ]
-    }
+    },
+    "jev": "AUR0017"
    }
   ],
   "envios": [
@@ -18744,6 +18999,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -18841,6 +19097,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0024",
      "nombre": "Teclado Keychron K2 Blanco",
@@ -18945,6 +19202,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SSD0001",
      "nombre": "Ssd Samsung 980 500GB",
@@ -19049,6 +19307,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0007",
      "nombre": "Monitor AOC 27G2",
@@ -19146,6 +19405,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -19250,6 +19510,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0016",
      "nombre": "Placa de video XFX Speedster RX 7700 XT",
@@ -19359,6 +19620,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0013",
      "nombre": "Parlante JBL Flip 6 Negro",
@@ -19456,6 +19718,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0013",
      "nombre": "Parlante JBL Flip 6 Negro",
@@ -19560,6 +19823,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -19669,6 +19933,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0022",
      "nombre": "Silla gamer Redragon Gaia Negro y rojo",
@@ -19766,6 +20031,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0019",
      "nombre": "Silla gamer Redragon King of War Negro y rojo",
@@ -19870,6 +20136,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0001",
      "nombre": "Impresora Epson EcoTank L3250 Negro",
@@ -19974,6 +20241,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -20071,6 +20339,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -20175,6 +20444,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0017",
      "nombre": "Monitor AOC 24B2XH",
@@ -20272,6 +20542,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -20415,6 +20686,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -20512,6 +20784,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0033",
      "nombre": "Mouse Logitech G Pro Wireless Negro",
@@ -20598,6 +20871,7 @@
     "pedido": "mochila",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0014",
      "nombre": "Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro",
@@ -20609,7 +20883,8 @@
       "Lenovo",
       "LOQ 15 Ryzen 7 16GB 512GB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -20722,6 +20997,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0043",
      "nombre": "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
@@ -20807,18 +21083,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "SSD0014",
-     "nombre": "Ssd Kingston KC3000 1TB",
+     "id": "SSD0002",
+     "nombre": "Ssd Samsung 980 1TB",
      "rubro": "ssd",
-     "precio": 127000,
-     "stock": 9,
+     "precio": 44000,
+     "stock": 19,
      "modelo": [
       "ssd",
-      "Kingston",
-      "KC3000 1TB"
+      "Samsung",
+      "980 1TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "SSD0014",
      "nombre": "Ssd Kingston KC3000 1TB",
@@ -20830,7 +21107,8 @@
       "Kingston",
       "KC3000 1TB"
      ]
-    }
+    },
+    "jev": "SSD0002"
    }
   ],
   "envios": [],
@@ -20923,6 +21201,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0001",
      "nombre": "Auriculares HyperX Cloud II Negro",
@@ -21020,6 +21299,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -21117,6 +21397,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0019",
      "nombre": "Impresora Brother HL-1212W Negro",
@@ -21241,6 +21522,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -21338,6 +21620,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -21435,6 +21718,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -21532,6 +21816,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -21656,6 +21941,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -21753,6 +22039,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0004",
      "nombre": "Parlante Logitech Z207 Bluetooth Negro",
@@ -21845,18 +22132,19 @@
     ],
     "pedido": "micro",
     "elegido": {
-     "id": "CPU0019",
-     "nombre": "Procesador AMD Ryzen 5 8400F",
+     "id": "CPU0005",
+     "nombre": "Procesador AMD Ryzen 5 5600",
      "rubro": "procesador",
-     "precio": 238000,
-     "stock": 15,
+     "precio": 181000,
+     "stock": 1,
      "modelo": [
       "procesador",
       "AMD",
-      "Ryzen 5 8400F"
+      "Ryzen 5 5600"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "CPU0019",
      "nombre": "Procesador AMD Ryzen 5 8400F",
@@ -21868,7 +22156,8 @@
       "AMD",
       "Ryzen 5 8400F"
      ]
-    }
+    },
+    "jev": "CPU0005"
    },
    {
     "busqueda": "mother compatible Ryzen 5",
@@ -21954,6 +22243,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MBO0001",
      "nombre": "Motherboard Asus Prime B550M-A",
@@ -22051,6 +22341,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0069",
      "nombre": "Memoria ram G.Skill Flare X5 DDR5 6000 16GB Negro",
@@ -22148,6 +22439,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -22252,6 +22544,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0001",
      "nombre": "Router TP-Link Archer C6 Negro",
@@ -22349,6 +22642,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0009",
      "nombre": "Router TP-Link Deco M4 Mesh Negro",
@@ -22492,6 +22786,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TAB0001",
      "nombre": "Tablet Samsung Galaxy Tab A9 Gris",
@@ -22578,6 +22873,7 @@
     "pedido": "fundas",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "COO0005",
      "nombre": "Cooler Noctua NH-U12S Redux",
@@ -22589,7 +22885,8 @@
       "Noctua",
       "NH-U12S Redux"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -22682,6 +22979,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0023",
      "nombre": "Microfono Shure MV7 Negro",
@@ -22768,6 +23066,7 @@
     "pedido": "brazo",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "COO0012",
      "nombre": "Cooler Arctic Liquid Freezer III 360",
@@ -22779,7 +23078,8 @@
       "Arctic",
       "Liquid Freezer III 360"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -22872,6 +23172,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -22969,6 +23270,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0047",
      "nombre": "Teclado Genius Slimstar 130 Negro",
@@ -23073,6 +23375,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0007",
      "nombre": "Monitor AOC 27G2",
@@ -23170,6 +23473,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -23267,6 +23571,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0019",
      "nombre": "Gabinete Lian Li Lancool 216 Negro",
@@ -23359,18 +23664,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0045",
-     "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
+     "id": "EXT0003",
+     "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 149500,
-     "stock": 11,
+     "precio": 113000,
+     "stock": 22,
      "modelo": [
       "almacenamiento externo",
-      "Western Digital",
-      "My Passport 2TB"
+      "Seagate",
+      "Expansion 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0045",
      "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
@@ -23382,7 +23688,8 @@
       "Western Digital",
       "My Passport 2TB"
      ]
-    }
+    },
+    "jev": "EXT0003"
    }
   ],
   "envios": [],
@@ -23475,6 +23782,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -23572,6 +23880,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -23715,6 +24024,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0017",
      "nombre": "Impresora HP Smart Tank 720 Negro",
@@ -23801,6 +24111,7 @@
     "pedido": "cartuchos",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0017",
      "nombre": "Impresora HP Smart Tank 720 Negro",
@@ -23812,7 +24123,8 @@
       "HP",
       "Smart Tank 720"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "silla comoda",
@@ -23898,6 +24210,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0034",
      "nombre": "Silla gamer Corsair TC100 Relaxed Negro y rojo",
@@ -24002,6 +24315,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0008",
      "nombre": "Cooler DeepCool LE500",
@@ -24099,6 +24413,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -24203,6 +24518,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0008",
      "nombre": "Webcam Razer Kiyo Pro",
@@ -24307,6 +24623,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0005",
      "nombre": "Microfono FIFINE K669B Negro",
@@ -24400,6 +24717,7 @@
     "pedido": "repetidor",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0009",
      "nombre": "Router TP-Link Deco M4 Mesh Negro",
@@ -24411,7 +24729,8 @@
       "TP-Link",
       "Deco M4 Mesh"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -24509,6 +24828,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0151",
      "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
@@ -24520,7 +24840,8 @@
       "Asus",
       "Zenbook 14 OLED Core i7 16GB 1TB SSD"
      ]
-    }
+    },
+    "jev": "MON0013"
    }
   ],
   "envios": [
@@ -24605,19 +24926,9 @@
      }
     ],
     "pedido": "compu",
-    "elegido": {
-     "id": "NOT0151",
-     "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
-     "rubro": "notebook",
-     "precio": 1971500,
-     "stock": 20,
-     "modelo": [
-      "notebook",
-      "Asus",
-      "Zenbook 14 OLED Core i7 16GB 1TB SSD"
-     ]
-    },
-    "no_hay": false,
+    "elegido": null,
+    "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0151",
      "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
@@ -24629,7 +24940,8 @@
       "Asus",
       "Zenbook 14 OLED Core i7 16GB 1TB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -24638,7 +24950,7 @@
     {}
    ]
   ],
-  "respuesta": "Por compu que se pliegue tengo: Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris a $1.971.500, quedan 20; Notebook Asus Zenbook 14 OLED Core i5 16GB 512GB SSD Gris a $1.342.500, quedan 22; Notebook Acer Swift Go 14 Core i7 16GB 1TB SSD Gris a $1.465.500, quedan 1.\nPara el envio a al laburo necesito la provincia."
+  "respuesta": "Compu que se pliegue no hay. Lo mas cercano: Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris a $1.971.500.\nPara el envio a al laburo necesito la provincia."
  },
  "nuevas70 deepseek R05": {
   "mensaje": "algo donde guardar las fotos del celu que no sea la nube",
@@ -24727,6 +25039,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "EXT0003",
      "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
@@ -24820,6 +25133,7 @@
     "pedido": "fotocopiadora",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0007",
      "nombre": "Impresora Brother DCP-T520W Negro",
@@ -24831,7 +25145,8 @@
       "Brother",
       "DCP-T520W"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -24924,6 +25239,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -25028,6 +25344,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0019",
      "nombre": "Gabinete Lian Li Lancool 216 Negro",
@@ -25120,18 +25437,19 @@
     ],
     "pedido": "ventilador",
     "elegido": {
-     "id": "COO0005",
-     "nombre": "Cooler Noctua NH-U12S Redux",
+     "id": "COO0002",
+     "nombre": "Cooler DeepCool AG400",
      "rubro": "cooler",
-     "precio": 97000,
-     "stock": 8,
+     "precio": 49000,
+     "stock": 15,
      "modelo": [
       "cooler",
-      "Noctua",
-      "NH-U12S Redux"
+      "DeepCool",
+      "AG400"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "COO0005",
      "nombre": "Cooler Noctua NH-U12S Redux",
@@ -25143,7 +25461,8 @@
       "Noctua",
       "NH-U12S Redux"
      ]
-    }
+    },
+    "jev": "COO0002"
    }
   ],
   "envios": [],
@@ -25236,6 +25555,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -25340,6 +25660,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "WEB0010",
      "nombre": "Webcam AverMedia PW313",
@@ -25351,7 +25672,8 @@
       "AverMedia",
       "PW313"
      ]
-    }
+    },
+    "jev": "WEB0010"
    }
   ],
   "envios": [],
@@ -25444,6 +25766,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -25535,8 +25858,20 @@
      }
     ],
     "pedido": "plaqueta",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "MBO0001",
+     "nombre": "Motherboard Asus Prime B550M-A",
+     "rubro": "motherboard",
+     "precio": 162500,
+     "stock": 13,
+     "modelo": [
+      "motherboard",
+      "Asus",
+      "Prime B550M-A"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "MBO0008",
      "nombre": "Motherboard Asus Prime B650-Plus",
@@ -25548,11 +25883,12 @@
       "Asus",
       "Prime B650-Plus"
      ]
-    }
+    },
+    "jev": "MBO0001"
    }
   ],
   "envios": [],
-  "respuesta": "Plaqueta madre no hay. Lo mas cercano: Motherboard Asus Prime B650-Plus a $380.000."
+  "respuesta": "Por plaqueta madre tengo: Motherboard Asus Prime B650-Plus a $380.000, quedan 17; Motherboard Gigabyte A520M K a $106.500, quedan 9; Motherboard Asus Prime B550M-A a $162.500, quedan 13."
  },
  "nuevas70 deepseek R14": {
   "mensaje": "el cerebro de la compu, uno bueno para editar videos",
@@ -25641,6 +25977,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0018",
      "nombre": "Procesador AMD Ryzen 9 7900X",
@@ -25745,6 +26082,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "TAB0001",
      "nombre": "Tablet Samsung Galaxy Tab A9 Gris",
@@ -25756,7 +26094,8 @@
       "Samsung",
       "Galaxy Tab A9"
      ]
-    }
+    },
+    "jev": "TAB0001"
    }
   ],
   "envios": [],
@@ -25849,6 +26188,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0039",
      "nombre": "Memoria ram ADATA XPG Lancer DDR5 5200 16GB Negro",
@@ -25942,6 +26282,7 @@
     "pedido": "cajita",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "PAR0031",
      "nombre": "Parlante JBL Clip 4 Negro",
@@ -25953,7 +26294,8 @@
       "JBL",
       "Clip 4"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -26033,8 +26375,20 @@
      }
     ],
     "pedido": "trono",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "SIL0019",
+     "nombre": "Silla gamer Redragon King of War Negro y rojo",
+     "rubro": "silla gamer",
+     "precio": 309500,
+     "stock": 15,
+     "modelo": [
+      "silla gamer",
+      "Redragon",
+      "King of War"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "SIL0019",
      "nombre": "Silla gamer Redragon King of War Negro y rojo",
@@ -26046,11 +26400,12 @@
       "Redragon",
       "King of War"
      ]
-    }
+    },
+    "jev": "SIL0019"
    }
   ],
   "envios": [],
-  "respuesta": "Trono gamer no hay. Lo mas cercano: Silla gamer Redragon King of War Negro y rojo a $309.500."
+  "respuesta": "Por trono gamer tengo: Silla gamer Redragon King of War Negro y rojo a $309.500, quedan 15; Silla gamer DT3 Elise Negro y rojo a $474.500, quedan 5; Silla gamer Redragon Gaia Negro y rojo a $369.500, quedan 5."
  },
  "nuevas70 deepseek O01": {
   "mensaje": "un mouse que no me funda el bolsillo",
@@ -26139,6 +26494,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -26243,6 +26599,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0027",
      "nombre": "Teclado Logitech MX Keys S Negro",
@@ -26347,6 +26704,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -26451,6 +26809,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0011",
      "nombre": "Auriculares Sony WH-CH520 Negro",
@@ -26555,6 +26914,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -26659,6 +27019,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -26763,6 +27124,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0034",
      "nombre": "Silla gamer Corsair TC100 Relaxed Negro y rojo",
@@ -26855,18 +27217,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0045",
-     "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
+     "id": "EXT0033",
+     "nombre": "Almacenamiento externo SanDisk Ultra Flair 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 149500,
-     "stock": 11,
+     "precio": 19500,
+     "stock": 4,
      "modelo": [
       "almacenamiento externo",
-      "Western Digital",
-      "My Passport 2TB"
+      "SanDisk",
+      "Ultra Flair 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0045",
      "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
@@ -26878,7 +27241,8 @@
       "Western Digital",
       "My Passport 2TB"
      ]
-    }
+    },
+    "jev": "EXT0033"
    }
   ],
   "envios": [],
@@ -26971,6 +27335,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -27075,6 +27440,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -27179,6 +27545,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0049",
      "nombre": "Notebook Asus Vivobook 15 Ryzen 7 16GB 512GB SSD Gris",
@@ -27283,6 +27650,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0013",
      "nombre": "Router TP-Link Archer AX73 Negro",
@@ -27320,6 +27688,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -27402,6 +27771,7 @@
     "pedido": "zapatillas",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -27413,7 +27783,8 @@
       "Philips",
       "242V8A"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -27501,6 +27872,7 @@
     "pedido": "dolar",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0136",
      "nombre": "Notebook Dell G15 Core i5 16GB 512GB SSD Gris",
@@ -27512,7 +27884,8 @@
       "Dell",
       "G15 Core i5 16GB 512GB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -27533,6 +27906,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -27626,6 +28000,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -27719,6 +28094,7 @@
     "pedido": "pizzeria",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -27730,7 +28106,8 @@
       "Philips",
       "242V8A"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -27774,6 +28151,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    }
   ],
@@ -27867,6 +28245,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0045",
      "nombre": "Mouse Redragon Predator Negro",
@@ -27971,6 +28350,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0121",
      "nombre": "Notebook HP Omen 16 Ryzen 7 16GB 512GB SSD Gris",
@@ -28068,18 +28448,19 @@
     ],
     "pedido": "headset",
     "elegido": {
-     "id": "AUR0045",
-     "nombre": "Auriculares Redragon Pandora Negro",
+     "id": "AUR0001",
+     "nombre": "Auriculares HyperX Cloud II Negro",
      "rubro": "auriculares",
-     "precio": 62500,
-     "stock": 15,
+     "precio": 125500,
+     "stock": 23,
      "modelo": [
       "auriculares",
-      "Redragon",
-      "Pandora"
+      "HyperX",
+      "Cloud II"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0045",
      "nombre": "Auriculares Redragon Pandora Negro",
@@ -28091,7 +28472,8 @@
       "Redragon",
       "Pandora"
      ]
-    }
+    },
+    "jev": "AUR0001"
    }
   ],
   "envios": [],
@@ -28184,6 +28566,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -28281,6 +28664,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0045",
      "nombre": "Teclado Keychron V3 Negro",
@@ -28385,6 +28769,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SSD0052",
      "nombre": "Ssd Crucial P5 Plus 500GB",
@@ -28489,6 +28874,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0002",
      "nombre": "Monitor LG 27GP850 UltraGear",
@@ -28593,6 +28979,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -28697,6 +29084,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0013",
      "nombre": "Parlante JBL Flip 6 Negro",
@@ -28794,6 +29182,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0013",
      "nombre": "Parlante JBL Flip 6 Negro",
@@ -28886,18 +29275,19 @@
     ],
     "pedido": "charger",
     "elegido": {
-     "id": "CAR0019",
-     "nombre": "Cargador UGREEN Nexode 65W Negro",
+     "id": "CAR0001",
+     "nombre": "Cargador Anker Nano II 65W Negro",
      "rubro": "cargador",
-     "precio": 80500,
-     "stock": 1,
+     "precio": 74500,
+     "stock": 13,
      "modelo": [
       "cargador",
-      "UGREEN",
-      "Nexode 65W"
+      "Anker",
+      "Nano II 65W"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -28909,7 +29299,8 @@
       "UGREEN",
       "Nexode 65W"
      ]
-    }
+    },
+    "jev": "CAR0001"
    }
   ],
   "envios": [],
@@ -29002,6 +29393,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0022",
      "nombre": "Silla gamer Redragon Gaia Negro y rojo",
@@ -29099,6 +29491,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0019",
      "nombre": "Silla gamer Redragon King of War Negro y rojo",
@@ -29203,6 +29596,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0001",
      "nombre": "Impresora Epson EcoTank L3250 Negro",
@@ -29307,6 +29701,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0033",
      "nombre": "Mouse Logitech G Pro Wireless Negro",
@@ -29404,6 +29799,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0001",
      "nombre": "Teclado Logitech G915 TKL Negro",
@@ -29516,6 +29912,7 @@
     "pedido": "vinchas",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -29527,7 +29924,8 @@
       "Sony",
       "ULT Wear"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "parlante portatil",
@@ -29613,6 +30011,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -29726,6 +30125,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -29823,6 +30223,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0023",
      "nombre": "Gabinete Thermaltake S100 TG Negro",
@@ -29927,6 +30328,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0019",
      "nombre": "Procesador AMD Ryzen 5 8400F",
@@ -30012,18 +30414,19 @@
     ],
     "pedido": "placa",
     "elegido": {
-     "id": "MBO0006",
-     "nombre": "Motherboard Gigabyte A520M K",
+     "id": "MBO0010",
+     "nombre": "Motherboard Asus TUF B760-Plus WiFi",
      "rubro": "motherboard",
-     "precio": 106500,
-     "stock": 9,
+     "precio": 340500,
+     "stock": 25,
      "modelo": [
       "motherboard",
-      "Gigabyte",
-      "A520M K"
+      "Asus",
+      "TUF B760-Plus WiFi"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "MBO0006",
      "nombre": "Motherboard Gigabyte A520M K",
@@ -30035,7 +30438,8 @@
       "Gigabyte",
       "A520M K"
      ]
-    }
+    },
+    "jev": "MBO0010"
    }
   ],
   "envios": [],
@@ -30128,6 +30532,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -30225,6 +30630,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0015",
      "nombre": "Microfono Blue Yeti Nano Negro",
@@ -30318,6 +30724,7 @@
     "pedido": "repetidor",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -30329,7 +30736,8 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "cargador rapido tipo c",
@@ -30415,6 +30823,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -30519,6 +30928,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0017",
      "nombre": "Impresora HP Smart Tank 720 Negro",
@@ -30604,18 +31014,19 @@
     ],
     "pedido": "pendrive",
     "elegido": {
-     "id": "EXT0069",
-     "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 2TB Negro",
+     "id": "EXT0071",
+     "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 4TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 29000,
-     "stock": 20,
+     "precio": 33000,
+     "stock": 8,
      "modelo": [
       "almacenamiento externo",
       "SanDisk",
-      "Ultra Dual Drive 2TB"
+      "Ultra Dual Drive 4TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0069",
      "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 2TB Negro",
@@ -30627,7 +31038,8 @@
       "SanDisk",
       "Ultra Dual Drive 2TB"
      ]
-    }
+    },
+    "jev": "EXT0071"
    }
   ],
   "envios": [
@@ -30739,6 +31151,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0069",
      "nombre": "Memoria ram G.Skill Flare X5 DDR5 6000 16GB Negro",
@@ -30836,6 +31249,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "SSD0011",
      "nombre": "Ssd Kingston NV2 1TB",
@@ -30847,7 +31261,8 @@
       "Kingston",
       "NV2 1TB"
      ]
-    }
+    },
+    "jev": "SSD0011"
    }
   ],
   "envios": [],
@@ -30940,6 +31355,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "GPU0001",
      "nombre": "Placa de video Asus Dual RTX 4060",
@@ -30951,7 +31367,8 @@
       "Asus",
       "Dual RTX 4060"
      ]
-    }
+    },
+    "jev": "GPU0001"
    },
    {
     "busqueda": "cooler procesador",
@@ -31037,6 +31454,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0008",
      "nombre": "Cooler DeepCool LE500",
@@ -31141,6 +31559,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0151",
      "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
@@ -31152,7 +31571,8 @@
       "Asus",
       "Zenbook 14 OLED Core i7 16GB 1TB SSD"
      ]
-    }
+    },
+    "jev": "NOT0151"
    },
    {
     "busqueda": "pantalla grande",
@@ -31226,18 +31646,19 @@
     ],
     "pedido": "pantalla",
     "elegido": {
-     "id": "MON0013",
-     "nombre": "Monitor LG 29WP60G UltraWide",
+     "id": "MON0003",
+     "nombre": "Monitor LG 32GN600",
      "rubro": "monitor",
-     "precio": 409500,
-     "stock": 22,
+     "precio": 417500,
+     "stock": 10,
      "modelo": [
       "monitor",
       "LG",
-      "29WP60G UltraWide"
+      "32GN600"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "MON0013",
      "nombre": "Monitor LG 29WP60G UltraWide",
@@ -31249,7 +31670,8 @@
       "LG",
       "29WP60G UltraWide"
      ]
-    }
+    },
+    "jev": "MON0003"
    }
   ],
   "envios": [
@@ -31350,6 +31772,7 @@
     "pedido": "sillon",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "SIL0007",
      "nombre": "Silla gamer Cougar Armor S Negro y rojo",
@@ -31361,7 +31784,8 @@
       "Cougar",
       "Armor S"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "tablet dibujo",
@@ -31447,6 +31871,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TAB0004",
      "nombre": "Tablet Samsung Galaxy Tab S6 Lite Gris",
@@ -31556,6 +31981,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0033",
      "nombre": "Mouse Logitech G Pro Wireless Negro",
@@ -31653,6 +32079,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0035",
      "nombre": "Teclado HyperX Alloy Core RGB Negro",
@@ -31737,8 +32164,20 @@
      }
     ],
     "pedido": "camaritas",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "WEB0001",
+     "nombre": "Webcam Logitech C920 HD Pro",
+     "rubro": "webcam",
+     "precio": 141000,
+     "stock": 21,
+     "modelo": [
+      "webcam",
+      "Logitech",
+      "C920 HD Pro"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -31750,7 +32189,8 @@
       "Logitech",
       "StreamCam"
      ]
-    }
+    },
+    "jev": "WEB0001"
    }
   ],
   "envios": [
@@ -31759,7 +32199,7 @@
     {}
    ]
   ],
-  "respuesta": "Por mouses con cable tengo: Mouse Logitech G Pro Wireless Negro a $186.000, quedan 24; Mouse Razer Cobra Negro a $60.000, quedan 24; Mouse Microsoft Classic IntelliMouse Negro a $47.500, quedan 20.\nPor teclados con ñ tengo: Teclado HyperX Alloy Core RGB Negro a $60.000, quedan 10; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1; Teclado HyperX Alloy Origins Core Negro a $162.500, quedan 4.\nCamaritas web no hay. Lo mas cercano: Webcam Logitech StreamCam a $246.000.\nPara el envio a oficina necesito la provincia."
+  "respuesta": "Por mouses con cable tengo: Mouse Logitech G Pro Wireless Negro a $186.000, quedan 24; Mouse Razer Cobra Negro a $60.000, quedan 24; Mouse Microsoft Classic IntelliMouse Negro a $47.500, quedan 20.\nPor teclados con ñ tengo: Teclado HyperX Alloy Core RGB Negro a $60.000, quedan 10; Teclado HyperX Alloy Origins 60 Negro a $144.000, quedan 1; Teclado HyperX Alloy Origins Core Negro a $162.500, quedan 4.\nPor camaritas web tengo: Webcam Logitech StreamCam a $246.000, quedan 24; Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech C920 HD Pro a $141.000, quedan 21.\nPara el envio a oficina necesito la provincia."
  },
  "nuevas70b gemini B13": {
   "mensaje": "che, los cascos con micro para jugar online y el mic de mesa para grabar podcast, los dos usb",
@@ -31836,18 +32276,19 @@
     ],
     "pedido": "cascos",
     "elegido": {
-     "id": "AUR0025",
-     "nombre": "Auriculares HyperX Cloud Alpha Negro",
+     "id": "AUR0001",
+     "nombre": "Auriculares HyperX Cloud II Negro",
      "rubro": "auriculares",
-     "precio": 153000,
-     "stock": 25,
+     "precio": 125500,
+     "stock": 23,
      "modelo": [
       "auriculares",
       "HyperX",
-      "Cloud Alpha"
+      "Cloud II"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0025",
      "nombre": "Auriculares HyperX Cloud Alpha Negro",
@@ -31859,7 +32300,8 @@
       "HyperX",
       "Cloud Alpha"
      ]
-    }
+    },
+    "jev": "AUR0001"
    },
    {
     "busqueda": "microfono de mesa para podcast",
@@ -31945,6 +32387,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0011",
      "nombre": "Microfono Rode NT-USB Mini Negro",
@@ -32049,6 +32492,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0007",
      "nombre": "Fuente Asus TUF Gaming 750W Gold",
@@ -32146,6 +32590,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -32270,6 +32715,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TAB0010",
      "nombre": "Tablet Xiaomi Redmi Pad SE Gris",
@@ -32367,6 +32813,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -32480,6 +32927,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0007",
      "nombre": "Monitor AOC 27G2",
@@ -32577,6 +33025,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0022",
      "nombre": "Silla gamer Redragon Gaia Negro y rojo",
@@ -32675,6 +33124,7 @@
     "pedido": "repetidor",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -32686,7 +33136,8 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "cargador notebook universal",
@@ -32772,6 +33223,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -32876,6 +33328,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0019",
      "nombre": "Gabinete Lian Li Lancool 216 Negro",
@@ -32973,6 +33426,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0006",
      "nombre": "Cooler Thermalright Peerless Assassin 120",
@@ -33077,6 +33531,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0019",
      "nombre": "Impresora Brother HL-1212W Negro",
@@ -33162,18 +33617,19 @@
     ],
     "pedido": "disco",
     "elegido": {
-     "id": "EXT0045",
-     "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
+     "id": "EXT0003",
+     "nombre": "Almacenamiento externo Seagate Expansion 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 149500,
-     "stock": 11,
+     "precio": 113000,
+     "stock": 22,
      "modelo": [
       "almacenamiento externo",
-      "Western Digital",
-      "My Passport 2TB"
+      "Seagate",
+      "Expansion 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0045",
      "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
@@ -33185,7 +33641,8 @@
       "Western Digital",
       "My Passport 2TB"
      ]
-    }
+    },
+    "jev": "EXT0003"
    }
   ],
   "envios": [
@@ -33287,6 +33744,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0014",
      "nombre": "Procesador Intel Core i9-14900K",
@@ -33384,6 +33842,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MBO0006",
      "nombre": "Motherboard Gigabyte A520M K",
@@ -33481,6 +33940,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0083",
      "nombre": "Memoria ram TeamGroup T-Force Delta RGB DDR5 32GB Negro",
@@ -33585,6 +34045,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -33671,6 +34132,7 @@
     "pedido": "funda",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0148",
      "nombre": "Notebook Asus Zenbook 14 OLED Ryzen 7 16GB 512GB SSD Gris",
@@ -33682,7 +34144,8 @@
       "Asus",
       "Zenbook 14 OLED Ryzen 7 16GB 512GB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "mouse inalambrico pequeño",
@@ -33768,6 +34231,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0033",
      "nombre": "Mouse Logitech G Pro Wireless Negro",
@@ -33872,6 +34336,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0019",
      "nombre": "Impresora Brother HL-1212W Negro",
@@ -33958,6 +34423,7 @@
     "pedido": "resma",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0009",
      "nombre": "Impresora Canon Pixma G3110 Negro",
@@ -33969,7 +34435,8 @@
       "Canon",
       "Pixma G3110"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "toner de repuesto",
@@ -34044,6 +34511,7 @@
     "pedido": "toner",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "IMP0006",
      "nombre": "Impresora HP Smart Tank 580 Blanco",
@@ -34055,7 +34523,8 @@
       "HP",
       "Smart Tank 580"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -34076,6 +34545,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    },
    {
@@ -34162,6 +34632,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0017",
      "nombre": "Cargador Xiaomi 67W Turbo Negro",
@@ -34259,6 +34730,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0041",
      "nombre": "Auriculares JBL Tune 520BT Negro",
@@ -34291,6 +34763,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    },
    {
@@ -34377,6 +34850,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0016",
      "nombre": "Parlante Genius SP-HF180 Negro",
@@ -34468,19 +34942,9 @@
      }
     ],
     "pedido": "camara",
-    "elegido": {
-     "id": "WEB0002",
-     "nombre": "Webcam Logitech C922 Pro",
-     "rubro": "webcam",
-     "precio": 178000,
-     "stock": 11,
-     "modelo": [
-      "webcam",
-      "Logitech",
-      "C922 Pro"
-     ]
-    },
-    "no_hay": false,
+    "elegido": null,
+    "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "WEB0002",
      "nombre": "Webcam Logitech C922 Pro",
@@ -34492,7 +34956,8 @@
       "Logitech",
       "C922 Pro"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "webcam para streamear",
@@ -34578,6 +35043,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0010",
      "nombre": "Webcam AverMedia PW313",
@@ -34593,7 +35059,7 @@
    }
   ],
   "envios": [],
-  "respuesta": "Por camara de fotos profesional tengo: Webcam Logitech C922 Pro a $178.000, quedan 11; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Razer Kiyo Pro a $235.500, quedan 7.\nPor webcam para streamear tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Genius FaceCam 2000X a $45.000, quedan 16."
+  "respuesta": "Camara de fotos profesional no hay. Lo mas cercano: Webcam Logitech C922 Pro a $178.000.\nPor webcam para streamear tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Genius FaceCam 2000X a $45.000, quedan 16."
  },
  "nuevas70b gemini B26": {
   "mensaje": "un escritorio en L para el setup, una silla gamer y un pad de mouse gigante",
@@ -34669,19 +35135,9 @@
      }
     ],
     "pedido": "escritorio",
-    "elegido": {
-     "id": "NOT0016",
-     "nombre": "Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris",
-     "rubro": "notebook",
-     "precio": 1974500,
-     "stock": 10,
-     "modelo": [
-      "notebook",
-      "Lenovo",
-      "LOQ 15 Core i7 16GB 1TB SSD"
-     ]
-    },
-    "no_hay": false,
+    "elegido": null,
+    "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0016",
      "nombre": "Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris",
@@ -34693,7 +35149,8 @@
       "Lenovo",
       "LOQ 15 Core i7 16GB 1TB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "silla gamer",
@@ -34779,6 +35236,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -34863,19 +35321,9 @@
      }
     ],
     "pedido": "pad",
-    "elegido": {
-     "id": "MOU0049",
-     "nombre": "Mouse Genius NX-7000 Negro",
-     "rubro": "mouse",
-     "precio": 14000,
-     "stock": 18,
-     "modelo": [
-      "mouse",
-      "Genius",
-      "NX-7000"
-     ]
-    },
-    "no_hay": false,
+    "elegido": null,
+    "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MOU0049",
      "nombre": "Mouse Genius NX-7000 Negro",
@@ -34887,11 +35335,12 @@
       "Genius",
       "NX-7000"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
-  "respuesta": "Por escritorio en L tengo: Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris a $1.974.500, quedan 10; Notebook Lenovo LOQ 15 Ryzen 7 16GB 512GB SSD Negro a $1.768.000, quedan 12; Notebook Dell Latitude 3540 Core i7 16GB 1TB SSD Gris a $1.584.500, quedan 8.\nPor silla gamer tengo: Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer DT3 Elise Negro y rojo a $474.500, quedan 5.\nPor pad de mouse gigante tengo: Mouse Genius NX-7000 Negro a $14.000, quedan 18; Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Logitech G502 X Negro a $140.500, quedan 13."
+  "respuesta": "Escritorio en l no hay. Lo mas cercano: Notebook Lenovo LOQ 15 Core i7 16GB 1TB SSD Gris a $1.974.500.\nPor silla gamer tengo: Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10; Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer DT3 Elise Negro y rojo a $474.500, quedan 5.\nPad de mouse gigante no hay. Lo mas cercano: Mouse Genius NX-7000 Negro a $14.000."
  },
  "nuevas70b gemini B27": {
   "mensaje": "busco un joystick para la pc y unos auriculares gamer con sonido envolvente",
@@ -34969,6 +35418,7 @@
     "pedido": "joystick",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -34980,7 +35430,8 @@
       "Genius",
       "DX-110"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "auriculares gamer sonido envolvente",
@@ -35066,6 +35517,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0017",
      "nombre": "Auriculares Razer Kraken V3 Negro",
@@ -35098,6 +35550,7 @@
     "pedido": "",
     "elegido": null,
     "no_hay": true,
+    "dudoso": false,
     "cercano": null
    },
    {
@@ -35184,6 +35637,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0008",
      "nombre": "Cooler DeepCool LE500",
@@ -35277,6 +35731,7 @@
     "pedido": "estabilizadora",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "FUE0004",
      "nombre": "Fuente Cooler Master MWE 650 Bronze",
@@ -35288,7 +35743,8 @@
       "Cooler Master",
       "MWE 650 Bronze"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "fuente 600w",
@@ -35374,6 +35830,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0003",
      "nombre": "Fuente EVGA 600 BR",
@@ -35460,6 +35917,7 @@
     "pedido": "ups",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "FUE0013",
      "nombre": "Fuente Gigabyte UD750GM",
@@ -35471,7 +35929,8 @@
       "Gigabyte",
       "UD750GM"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -35553,6 +36012,7 @@
     "pedido": "lentes",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0027",
      "nombre": "Auriculares Logitech G733 Lightspeed Negro",
@@ -35564,7 +36024,8 @@
       "Logitech",
       "G733 Lightspeed"
      ]
-    }
+    },
+    "jev": "ninguno"
    },
    {
     "busqueda": "placa de video",
@@ -35650,6 +36111,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0009",
      "nombre": "Placa de video PowerColor Hellhound RX 7800 XT",
@@ -35754,6 +36216,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -35858,6 +36321,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0001",
      "nombre": "Monitor LG 24MK430H",
@@ -35950,18 +36414,19 @@
     ],
     "pedido": "pendrive",
     "elegido": {
-     "id": "EXT0069",
-     "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 2TB Negro",
+     "id": "EXT0045",
+     "nombre": "Almacenamiento externo Western Digital My Passport 2TB Negro",
      "rubro": "almacenamiento externo",
-     "precio": 29000,
-     "stock": 20,
+     "precio": 149500,
+     "stock": 11,
      "modelo": [
       "almacenamiento externo",
-      "SanDisk",
-      "Ultra Dual Drive 2TB"
+      "Western Digital",
+      "My Passport 2TB"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0069",
      "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 2TB Negro",
@@ -35973,7 +36438,8 @@
       "SanDisk",
       "Ultra Dual Drive 2TB"
      ]
-    }
+    },
+    "jev": "EXT0045"
    }
   ],
   "envios": [
@@ -36058,8 +36524,20 @@
      }
     ],
     "pedido": "repetidor",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "ROU0009",
+     "nombre": "Router TP-Link Deco M4 Mesh Negro",
+     "rubro": "router",
+     "precio": 148500,
+     "stock": 15,
+     "modelo": [
+      "router",
+      "TP-Link",
+      "Deco M4 Mesh"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -36071,11 +36549,12 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ROU0009"
    }
   ],
   "envios": [],
-  "respuesta": "Repetidor wifi mesh no hay. Lo mas cercano: Router TP-Link Deco X50 Mesh Negro a $288.500."
+  "respuesta": "Por repetidor wifi mesh tengo: Router TP-Link Deco X50 Mesh Negro a $288.500, quedan 18; Router TP-Link Deco M4 Mesh Negro a $148.500, quedan 15; Router Tenda Nova MW6 Mesh Negro a $172.000, quedan 2."
  },
  "nuevas70b gemini B35": {
   "mensaje": "la tarjeta que hace que los juegos se vean lindos",
@@ -36164,6 +36643,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "GPU0001",
      "nombre": "Placa de video Asus Dual RTX 4060",
@@ -36175,7 +36655,8 @@
       "Asus",
       "Dual RTX 4060"
      ]
-    }
+    },
+    "jev": "GPU0001"
    }
   ],
   "envios": [],
@@ -36268,6 +36749,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0008",
      "nombre": "Cooler DeepCool LE500",
@@ -36372,6 +36854,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0071",
      "nombre": "Memoria ram G.Skill Flare X5 DDR5 6000 32GB Negro",
@@ -36476,6 +36959,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -36580,6 +37064,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0045",
      "nombre": "Mouse Redragon Predator Negro",
@@ -36684,6 +37169,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0017",
      "nombre": "Impresora HP Smart Tank 720 Negro",
@@ -36776,18 +37262,19 @@
     ],
     "pedido": "computadora",
     "elegido": {
-     "id": "NOT0007",
-     "nombre": "Notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD Gris",
+     "id": "NOT0088",
+     "nombre": "Notebook Lenovo IdeaPad Slim 5 Core i7 16GB 1TB SSD Gris",
      "rubro": "notebook",
-     "precio": 1000500,
-     "stock": 8,
+     "precio": 1347500,
+     "stock": 16,
      "modelo": [
       "notebook",
       "Lenovo",
-      "IdeaPad 3 Core i7 16GB 1TB SSD"
+      "IdeaPad Slim 5 Core i7 16GB 1TB SSD"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0007",
      "nombre": "Notebook Lenovo IdeaPad 3 Core i7 16GB 1TB SSD Gris",
@@ -36799,7 +37286,8 @@
       "Lenovo",
       "IdeaPad 3 Core i7 16GB 1TB SSD"
      ]
-    }
+    },
+    "jev": "NOT0088"
    }
   ],
   "envios": [
@@ -36897,6 +37385,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0001",
      "nombre": "Gabinete Cooler Master MasterBox Q300L Negro",
@@ -37001,6 +37490,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0006",
      "nombre": "Fuente Gigabyte P650B",
@@ -37105,6 +37595,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MBO0007",
      "nombre": "Motherboard Asus TUF B650-Plus WiFi",
@@ -37209,6 +37700,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0010",
      "nombre": "Procesador Intel Core i3-12100F",
@@ -37313,6 +37805,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "SSD0025",
      "nombre": "Ssd Crucial P3 Plus 500GB",
@@ -37324,7 +37817,8 @@
       "Crucial",
       "P3 Plus 500GB"
      ]
-    }
+    },
+    "jev": "SSD0025"
    }
   ],
   "envios": [],
@@ -37417,6 +37911,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0045",
      "nombre": "Auriculares Redragon Pandora Negro",
@@ -37428,7 +37923,8 @@
       "Redragon",
       "Pandora"
      ]
-    }
+    },
+    "jev": "AUR0045"
    },
    {
     "busqueda": "microfono",
@@ -37514,6 +38010,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MIC0015",
      "nombre": "Microfono Blue Yeti Nano Negro",
@@ -37611,6 +38108,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0008",
      "nombre": "Webcam Razer Kiyo Pro",
@@ -37734,6 +38232,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -37831,6 +38330,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0019",
      "nombre": "Impresora Brother HL-1212W Negro",
@@ -37940,6 +38440,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0013",
      "nombre": "Router TP-Link Archer AX73 Negro",
@@ -38026,6 +38527,7 @@
     "pedido": "repetidor",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -38037,7 +38539,8 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -38135,6 +38638,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0043",
      "nombre": "Memoria ram Patriot Viper DDR4 3200 8GB Negro",
@@ -38232,6 +38736,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SSD0053",
      "nombre": "Ssd Crucial P5 Plus 1TB",
@@ -38336,6 +38841,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0009",
      "nombre": "Mouse Logitech M170 Negro",
@@ -38433,6 +38939,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0029",
      "nombre": "Teclado Logitech K120 Negro",
@@ -38530,6 +39037,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0007",
      "nombre": "Auriculares Logitech G435 Negro",
@@ -38634,6 +39142,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "FUE0013",
      "nombre": "Fuente Gigabyte UD750GM",
@@ -38731,6 +39240,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GAB0019",
      "nombre": "Gabinete Lian Li Lancool 216 Negro",
@@ -38835,6 +39345,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TAB0025",
      "nombre": "Tablet Xiaomi Pad 6 Gris",
@@ -38932,6 +39443,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CAR0019",
      "nombre": "Cargador UGREEN Nexode 65W Negro",
@@ -39036,6 +39548,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0025",
      "nombre": "Silla gamer Cougar Fusion Negro y rojo",
@@ -39133,6 +39646,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0004",
      "nombre": "Monitor Samsung Odyssey G5 32",
@@ -39242,6 +39756,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0016",
      "nombre": "Parlante Genius SP-HF180 Negro",
@@ -39339,6 +39854,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0016",
      "nombre": "Parlante Genius SP-HF180 Negro",
@@ -39436,6 +39952,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0016",
      "nombre": "Parlante Genius SP-HF180 Negro",
@@ -39598,6 +40115,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "SSD0001",
      "nombre": "Ssd Samsung 980 500GB",
@@ -39609,7 +40127,8 @@
       "Samsung",
       "980 500GB"
      ]
-    }
+    },
+    "jev": "SSD0001"
    },
    {
     "busqueda": "memoria ram 8gb",
@@ -39695,6 +40214,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "RAM0079",
      "nombre": "Memoria ram TeamGroup T-Force Delta RGB DDR5 8GB Negro",
@@ -39818,6 +40338,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "SIL0037",
      "nombre": "Silla gamer Noblechairs Epic Negro y rojo",
@@ -39902,19 +40423,9 @@
      }
     ],
     "pedido": "escritorios",
-    "elegido": {
-     "id": "NOT0151",
-     "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
-     "rubro": "notebook",
-     "precio": 1971500,
-     "stock": 20,
-     "modelo": [
-      "notebook",
-      "Asus",
-      "Zenbook 14 OLED Core i7 16GB 1TB SSD"
-     ]
-    },
-    "no_hay": false,
+    "elegido": null,
+    "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "NOT0151",
      "nombre": "Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris",
@@ -39926,7 +40437,8 @@
       "Asus",
       "Zenbook 14 OLED Core i7 16GB 1TB SSD"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [
@@ -39950,7 +40462,7 @@
     }
    ]
   ],
-  "respuesta": "Por sillas tengo: Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19.\nPor escritorios tengo: Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris a $1.971.500, quedan 20; Notebook HP 245 G9 Core i7 16GB 1TB SSD Gris a $904.000, quedan 4; Notebook HP Victus 15 Core i7 16GB 1TB SSD Gris a $1.954.000, quedan 3.\nEl envio a Cordoba sale $7.500."
+  "respuesta": "Por sillas tengo: Silla gamer Noblechairs Epic Negro y rojo a $718.000, quedan 21; Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Cougar Armor S Negro y rojo a $548.500, quedan 19.\nEscritorios no hay. Lo mas cercano: Notebook Asus Zenbook 14 OLED Core i7 16GB 1TB SSD Gris a $1.971.500.\nEl envio a Cordoba sale $7.500."
  },
  "nuevas70b gemini B58": {
   "mensaje": "10 auriculares baratos para un call center en Rosario, con microfono incorporado",
@@ -40039,6 +40551,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "AUR0001",
      "nombre": "Auriculares HyperX Cloud II Negro",
@@ -40151,18 +40664,19 @@
     ],
     "pedido": "placa",
     "elegido": {
-     "id": "MBO0006",
-     "nombre": "Motherboard Gigabyte A520M K",
+     "id": "MBO0001",
+     "nombre": "Motherboard Asus Prime B550M-A",
      "rubro": "motherboard",
-     "precio": 106500,
-     "stock": 9,
+     "precio": 162500,
+     "stock": 13,
      "modelo": [
       "motherboard",
-      "Gigabyte",
-      "A520M K"
+      "Asus",
+      "Prime B550M-A"
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "MBO0006",
      "nombre": "Motherboard Gigabyte A520M K",
@@ -40174,7 +40688,8 @@
       "Gigabyte",
       "A520M K"
      ]
-    }
+    },
+    "jev": "MBO0001"
    },
    {
     "busqueda": "microprocesador",
@@ -40260,6 +40775,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "CPU0010",
      "nombre": "Procesador Intel Core i3-12100F",
@@ -40271,7 +40787,8 @@
       "Intel",
       "Core i3-12100F"
      ]
-    }
+    },
+    "jev": "CPU0010"
    },
    {
     "busqueda": "cooler",
@@ -40357,6 +40874,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "COO0011",
      "nombre": "Cooler Noctua NH-D15",
@@ -40461,6 +40979,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -40558,6 +41077,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0010",
      "nombre": "Monitor Philips 242V8A",
@@ -40655,6 +41175,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "TEC0047",
      "nombre": "Teclado Genius Slimstar 130 Negro",
@@ -40798,6 +41319,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0001",
      "nombre": "Impresora Epson EcoTank L3250 Negro",
@@ -40902,6 +41424,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0015",
      "nombre": "Placa de video Sapphire Nitro+ RX 7800 XT",
@@ -41006,6 +41529,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "NOT0004",
      "nombre": "Notebook Lenovo IdeaPad 3 Ryzen 7 16GB 512GB SSD Gris",
@@ -41110,6 +41634,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0007",
      "nombre": "Webcam Logitech StreamCam",
@@ -41214,6 +41739,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "ROU0013",
      "nombre": "Router TP-Link Archer AX73 Negro",
@@ -41300,6 +41826,7 @@
     "pedido": "repetidor",
     "elegido": null,
     "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "ROU0015",
      "nombre": "Router TP-Link Deco X50 Mesh Negro",
@@ -41311,7 +41838,8 @@
       "TP-Link",
       "Deco X50 Mesh"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
@@ -41404,6 +41932,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MOU0023",
      "nombre": "Mouse Genius DX-110 Negro",
@@ -41501,6 +42030,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "TEC0015",
      "nombre": "Teclado Redragon Kumara K552 Negro",
@@ -41512,7 +42042,8 @@
       "Redragon",
       "Kumara K552"
      ]
-    }
+    },
+    "jev": "TEC0015"
    }
   ],
   "envios": [],
@@ -41605,6 +42136,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "PAR0028",
      "nombre": "Parlante JBL Charge 5 Negro",
@@ -41689,8 +42221,20 @@
      }
     ],
     "pedido": "airpods",
-    "elegido": null,
-    "no_hay": true,
+    "elegido": {
+     "id": "AUR0041",
+     "nombre": "Auriculares JBL Tune 520BT Negro",
+     "rubro": "auriculares",
+     "precio": 87500,
+     "stock": 5,
+     "modelo": [
+      "auriculares",
+      "JBL",
+      "Tune 520BT"
+     ]
+    },
+    "no_hay": false,
+    "dudoso": true,
     "cercano": {
      "id": "AUR0037",
      "nombre": "Auriculares Sony ULT Wear Negro",
@@ -41702,7 +42246,8 @@
       "Sony",
       "ULT Wear"
      ]
-    }
+    },
+    "jev": "AUR0041"
    }
   ],
   "envios": [
@@ -41711,7 +42256,7 @@
     {}
    ]
   ],
-  "respuesta": "Por parlante jbl tengo: Parlante JBL Charge 5 Negro a $210.000, quedan 2; Parlante JBL Go 3 Negro a $57.000, quedan 4; Parlante JBL Flip 6 Negro a $168.500, quedan 20.\nAirpods auriculares no hay. Lo mas cercano: Auriculares Sony ULT Wear Negro a $444.000.\nPara el envio a living necesito la provincia."
+  "respuesta": "Por parlante jbl tengo: Parlante JBL Charge 5 Negro a $210.000, quedan 2; Parlante JBL Go 3 Negro a $57.000, quedan 4; Parlante JBL Flip 6 Negro a $168.500, quedan 20.\nPor airpods auriculares tengo: Auriculares Sony ULT Wear Negro a $444.000, quedan 7; Auriculares JBL Tune 520BT Negro a $87.500, quedan 5; Auriculares Sony WH-1000XM5 Blanco a $680.500, quedan 1.\nPara el envio a living necesito la provincia."
  },
  "nuevas70b gemini B68": {
   "mensaje": "quiero una rtx y un ryzen 7 para armar una bestia",
@@ -41800,6 +42345,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "GPU0003",
      "nombre": "Placa de video MSI Ventus 2X RTX 4070 Super",
@@ -41897,6 +42443,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "CPU0008",
      "nombre": "Procesador AMD Ryzen 7 7800X3D",
@@ -42001,6 +42548,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "IMP0001",
      "nombre": "Impresora Epson EcoTank L3250 Negro",
@@ -42085,19 +42633,9 @@
      }
     ],
     "pedido": "pendrive",
-    "elegido": {
-     "id": "EXT0067",
-     "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 1TB Negro",
-     "rubro": "almacenamiento externo",
-     "precio": 25000,
-     "stock": 23,
-     "modelo": [
-      "almacenamiento externo",
-      "SanDisk",
-      "Ultra Dual Drive 1TB"
-     ]
-    },
-    "no_hay": false,
+    "elegido": null,
+    "no_hay": true,
+    "dudoso": true,
     "cercano": {
      "id": "EXT0067",
      "nombre": "Almacenamiento externo SanDisk Ultra Dual Drive 1TB Negro",
@@ -42109,11 +42647,12 @@
       "SanDisk",
       "Ultra Dual Drive 1TB"
      ]
-    }
+    },
+    "jev": "ninguno"
    }
   ],
   "envios": [],
-  "respuesta": "Por epson tinta continua tengo: Impresora Epson EcoTank L3250 Negro a $277.000, quedan 1; Impresora Epson EcoTank L4260 Negro a $366.500, quedan 20; Impresora Epson EcoTank L3560 Negro a $381.000, quedan 14.\nPor pendrive 64gb tengo: Almacenamiento externo SanDisk Ultra Dual Drive 1TB Negro a $25.000, quedan 23; Almacenamiento externo Kingston DataTraveler Max 2TB Negro a $46.000, quedan 14; Almacenamiento externo Kingston DataTraveler Max 1TB Negro a $37.500, quedan 17."
+  "respuesta": "Por epson tinta continua tengo: Impresora Epson EcoTank L3250 Negro a $277.000, quedan 1; Impresora Epson EcoTank L4260 Negro a $366.500, quedan 20; Impresora Epson EcoTank L3560 Negro a $381.000, quedan 14.\nPendrive 64gb no hay. Lo mas cercano: Almacenamiento externo SanDisk Ultra Dual Drive 1TB Negro a $25.000."
  },
  "nuevas70b gemini B70": {
   "mensaje": "nesecito un monitr de 24 y una vebcam con micrfono para el trabajo remoto",
@@ -42202,6 +42741,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "MON0017",
      "nombre": "Monitor AOC 24B2XH",
@@ -42299,6 +42839,7 @@
      ]
     },
     "no_hay": false,
+    "dudoso": false,
     "cercano": {
      "id": "WEB0010",
      "nombre": "Webcam AverMedia PW313",

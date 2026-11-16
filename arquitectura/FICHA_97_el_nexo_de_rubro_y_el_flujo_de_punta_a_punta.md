@@ -243,3 +243,24 @@ una cosa por vez, con `python3 banco_pruebas/nexo_rubro.py --calibrar`:
 - **La convivencia:** el índice calibrado movía el rubro de los nombres de modelo, "jbl tune 520" caía en parlantes. En
   el nombrado ahora el rubro lo decide la palabra exacta, regla 7.0, y los embeddings desempatan: 39 de 40 y la sonda 25
   de 27, igual que antes. Tema, destino y el flujo, iguales; cero cortes.
+
+### Jev en lo dudoso del nexo de rubro, 16-nov
+
+Dudoso, sin umbrales: el código dijo "no hay", o eligió por una palabra que solo está en etiquetas o alias y no en el
+nombre ni en el rubro del candidato. Entre 20 y 38 líneas por banco. Jev, una pregunta por mensaje, elige entre los cinco
+candidatos o ninguno. Cada candidato va con los alias de su rubro: sin eso Jev decía ninguno a "headset" y "charger 65w".
+
+| | Elige bien | Rubro equivocado | No se vende, nuevas70b |
+| --- | --- | --- | --- |
+| Antes del 16-nov | 71, 70, 71, 104 | 5 | 8 de 14 |
+| Búsqueda calibrada | 72, 71, 72, 104 | 2 | 10 de 14 |
+| Calibrada, con Jev | **74, 72, 73, 106** | **1** | **14 de 14** |
+
+Lo que no se vende pasa por primera vez su corte del 80 por ciento. En el flujo de punta a punta Jev cambia 11
+decisiones: 10 mejoran, escritorio, pad de mouse y cámara de fotos a "no hay", cajita de música a parlante, airpods a
+auriculares; una empeora, "keyboard gamer switches red" queda en "no hay" porque "keyboard" no es alias de teclado.
+
+```bash
+python3 banco_pruebas/nexo_rubro.py --jev                 # califica con lo grabado, sin gasto
+python3 banco_pruebas/nexo_rubro.py --correr-jev [--flujo]  # Jev sobre lo dudoso que falte
+```

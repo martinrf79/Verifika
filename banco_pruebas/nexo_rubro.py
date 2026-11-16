@@ -162,6 +162,9 @@ class Nexo:
         for k, fs in self.modelos.items():
             formas = [k[0], k[1], k[2]] + [f["nombre"] for f in fs] + etiquetas(fs) + self.alias.get(k[0], [])
             self.texto[k] = set(" ".join(n(x) for x in formas).split())
+        # Lo firme de cada modelo: su nombre y su rubro. Lo que solo esta en etiquetas o alias es dudoso.
+        self.firme = {k: set(" ".join(n(x) for x in [k[0]] + [f["nombre"] for f in fs]).split())
+                      for k, fs in self.modelos.items()}
 
     def _rank_rubros(self, q):
         return [r for _, r in sorted(zip(self.q[q]["r"], self.rubros), reverse=True)] if q else []
@@ -201,11 +204,13 @@ class Nexo:
         palabras = [w for w in n(linea["busqueda"]).split() if not w.isdigit()]
         pedido = palabras[0] if palabras else ""
 
-        def trae(k):
+        def trae(k, donde):
             return any(w == pedido or (min(len(w), len(pedido)) >= 4 and (w.startswith(pedido) or pedido.startswith(w)))
-                       for w in self.texto[k])
-        elegido = next((f for f in candidatos if trae(tuple(f["modelo"]))), None)
-        return {"pedido": pedido, "elegido": elegido, "no_hay": elegido is None,
+                       for w in donde[k])
+        elegido = next((f for f in candidatos if trae(tuple(f["modelo"]), self.texto)), None)
+        # Dudoso: no hay, o se eligio por una palabra que solo esta en etiquetas o alias. Eso lo confirma Jev.
+        dudoso = bool(candidatos) and (elegido is None or not trae(tuple(elegido["modelo"]), self.firme))
+        return {"pedido": pedido, "elegido": elegido, "no_hay": elegido is None, "dudoso": dudoso,
                 "cercano": candidatos[0] if candidatos else None}
 
     def producto(self, linea):
@@ -214,7 +219,7 @@ class Nexo:
         if primero.startswith(NO_SE_VENDE) and self._lo_dice(linea["busqueda"], primero):
             # Lo mas parecido es algo que la tienda declara que no vende: no hay, y no se ofrece nada a ciegas.
             return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
-                    "candidatos": [], "pedido": "", "elegido": None, "no_hay": True, "cercano": None}
+                    "candidatos": [], "pedido": "", "elegido": None, "no_hay": True, "dudoso": False, "cercano": None}
         cands = self.busqueda2(linea, rubros)
         return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
                 "candidatos": cands, **self.elegir(linea, cands)}
@@ -276,9 +281,10 @@ def bancos():
     return [("nuevas70", m, c1, l1) for m in MODELOS] + [("nuevas70b", "gemini", c2, l2)]
 
 
-def calificar(ver=False, nx=None, callado=False):
+def calificar(ver=False, nx=None, callado=False, con_jev=False):
     instalar()
     nx = nx or Nexo()
+    nj = NexoJev(None) if con_jev else None
     por_id = {f["id"]: f for f in nx.filas}
     salida, total = {}, collections.Counter()
     if not callado:
@@ -288,7 +294,9 @@ def calificar(ver=False, nx=None, callado=False):
         fallas = []
         for cid, texto, cosas in casos:
             ls = lineas.get((m, cid), [])
-            prods = [nx.producto(l) for l in ls]
+            if nj:
+                nj.clave = (banco, m, cid)
+            prods = [(nj or nx).producto(l) for l in ls]
             usadas = set()
             for raices, esp in cosas:
                 k = next((j for j, l in enumerate(ls) if j not in usadas and any(
@@ -338,6 +346,86 @@ def calificar(ver=False, nx=None, callado=False):
         json.dump(salida, open(os.path.join(AQUI, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1, default=str)
     return total
+
+
+# ══ LO DUDOSO, CON JEV ═══════════════════════════════════════════════════════
+# 16-nov, Martin: Jev en lo dudoso, como en el nexo de tema. Una pregunta por mensaje; cada linea dudosa elige entre sus
+# cinco candidatos o ninguno. Lo firme lo sigue eligiendo el codigo.
+JEV = os.path.join(AQUI, "nexo_rubro_jev.jsonl")
+NINGUNO = "ninguno"
+DESC_NINGUNO = "la tienda no tiene ese tipo de producto: ninguno de estos es lo que pide"
+
+
+def _bancos_flujo():
+    """Las lineas de la llamada 0 de tres campos del flujo nuevo, con la forma de `bancos()`."""
+    import flujo_nuevo as F
+    l0 = F.llamada0()
+    out = []
+    for b in ("nuevas70", "nuevas70b"):
+        casos = [(cid, t, []) for bb, cid, t, _, _ in F.bancos() if bb == b]
+        lineas = {("flujo", cid): [{"busqueda": l.busqueda, "fragmento": l.fragmento} for l in ls if l.busqueda]
+                  for (bb, cid), ls in l0.items() if bb == b}
+        out.append((b, "flujo", casos, lineas))
+    return out
+
+
+def correr_jev(flujo=False):
+    import nexo_tema as NT
+    instalar()
+    if flujo:
+        import flujo_nuevo as F
+        nx = F.Indice()
+    else:
+        nx = Nexo()
+    hechas = {(r["banco"], r["modelo"], r["id"]) for r in map(json.loads, open(JEV))} if os.path.exists(JEV) else set()
+    for banco, m, casos, lineas in (_bancos_flujo() if flujo else bancos()):
+        for cid, texto, _ in casos:
+            if (banco, m, cid) in hechas:
+                continue
+            ds = [(i, l, p) for i, l in enumerate(lineas.get((m, cid), [])) for p in [nx.producto(l)] if p["dudoso"]]
+            if not ds:
+                continue
+            qs = {f"l{i}": {"type": "choice",
+                            # Cada candidato con los alias de su rubro, dato de la tienda: Jev sabe que un "headset" es
+                            # un auricular. Calibrado el 16-nov contra el candidato solo con su nombre y su rubro.
+                            "criteria": {f["id"]: f"{f['nombre']}, del rubro {f['rubro']}, que tambien se dice "
+                                                  f"{', '.join(nx.alias.get(f['rubro'], [])[:12])}" for f in p["candidatos"]}
+                            | {NINGUNO: DESC_NINGUNO},
+                            "instructions": f"En la parte \"{l.get('fragmento') or l['busqueda']}\" del mensaje, que "
+                                            f"significa \"{l['busqueda']}\", cual de estos productos de la tienda es del "
+                                            "tipo que pide el cliente? Si la tienda no tiene ese tipo de producto, ninguno."}
+                  for i, l, p in ds}
+            r, tok = NT.llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "nexo_rubro")
+            fila = {"banco": banco, "modelo": m, "id": cid, "tokens": tok,
+                    "lineas": {l["busqueda"]: r[f"l{i}"] for i, l, _ in ds}}
+            with open(JEV, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(fila, ensure_ascii=False) + "\n")
+            print(f"  {banco} {m} {cid} {fila['lineas']}", flush=True)
+
+
+def veredictos_jev():
+    out = {}
+    if os.path.exists(JEV):
+        for r in map(json.loads, open(JEV)):
+            for q, v in r["lineas"].items():
+                out[(r["banco"], r["modelo"], r["id"], q)] = v
+    return out
+
+
+class NexoJev(Nexo):
+    """El nexo con lo que Jev contesto en lo dudoso: elige uno de los candidatos, o no hay."""
+
+    def __init__(self, clave):
+        super().__init__()
+        self.vd, self.clave = veredictos_jev(), clave
+
+    def producto(self, linea):
+        p = super().producto(linea)
+        if not p.get("dudoso"):
+            return p
+        v = self.vd.get(self.clave + (linea["busqueda"],))
+        elegido = next((f for f in p["candidatos"] if f["id"] == v), None)
+        return dict(p, elegido=elegido, no_hay=elegido is None, jev=v)
 
 
 # ══ LA CALIBRACION DE LA BUSQUEDA ════════════════════════════════════════════
@@ -426,7 +514,9 @@ def calibrar():
 if __name__ == "__main__":
     if "--calibrar" in sys.argv:
         calibrar()
+    elif "--correr-jev" in sys.argv:
+        correr_jev(flujo="--flujo" in sys.argv)
     elif "--embeddings" in sys.argv:
         embeddings()
     else:
-        calificar("--ver" in sys.argv)
+        calificar("--ver" in sys.argv, con_jev="--jev" in sys.argv)
