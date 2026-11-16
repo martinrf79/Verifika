@@ -448,11 +448,85 @@ def calificar_reales():
                   + f" {statistics.mean(segs):>5.1f} {dol:>8.4f}" + (f"  sin salida {c['sin salida']}" if c["sin salida"] else ""))
 
 
+
+# ══ LO QUE SOBRA Y LO INVENTADO EN LOS REALES Y LAS 365 (16-nov) ═════════════
+# Escrito antes de correrlo, con el ok de Martin. Sin las de memoria, los turnos que no son el primero.
+#   duplicada        dos lineas con la misma busqueda y el mismo destino.
+#   contada dos      una linea sin destino y otra con destino del mismo rubro: el producto se cuenta dos veces.
+#   rubro de mas     el primer candidato de los embeddings es de un rubro que el mensaje no pide ni tolera; no se cuenta
+#                    en mensajes que piden algo que la tienda no vende o toda la tienda.
+#   inventada        una raiz de `INVENTABLES` en la busqueda que no esta en el mensaje ni en lo que la vara espera.
+def sobrantes_reales(corridas=(("gemini-lite", "v1"), ("gemini-lite", "v2"), ("luna", "v2"))):
+    import embeddings_candidatos as EC
+    import nexo_rubro as NR
+    import reales as RE
+    _, alias, _, modelos = NR.fuente()
+    ms = list(modelos)
+    cache = json.load(open(EC.CACHE)) if os.path.exists(EC.CACHE) else {}
+    vp = [cache[f"RETRIEVAL_DOCUMENT|{NR.doc_producto(k, modelos[k], alias)}"] for k in ms]
+    vara = {c[0]: c[2] for c in RE.CASOS}
+    vara.update({c[0]: c[2] for c in RE.casos_525()[0]})
+    for banco, nombre in (("reales", "LOS 40 REALES"), ("reales525", "LAS 365")):
+        textos = {cid: t for _, cid, t in casos_de(banco)}
+        esp = esperado_reales(banco)
+        cs = corridas_reales(banco)
+        print(f"\n{nombre} · lo que sobra y lo inventado, sin las de memoria")
+        print(f"  {'corrida':16} {'mensajes':>8} {'lineas':>7} {'duplicada':>10} {'contada dos':>12} {'rubro de mas':>13}"
+              f" {'inventada':>10}")
+        for corrida in corridas:
+            rs = cs[corrida]
+            busq = sorted({str(l.get("busqueda")) for r in rs.values() for l in (r.get("salida") or {}).get("lineas", [])
+                           if l.get("busqueda")})
+            EC.vectores(busq, "RETRIEVAL_QUERY", cache)
+            c, ej = collections.Counter(), collections.defaultdict(list)
+            for cid, r in rs.items():
+                if "." in cid and ".0." not in cid or not r.get("salida"):
+                    continue
+                ls = [l for l in r["salida"]["lineas"] if l.get("busqueda")]
+                c["mensajes"] += 1
+                c["lineas"] += len(ls)
+                vistas = collections.Counter((E.n(l["busqueda"]), E.n(l.get("destino"))) for l in ls)
+                c["duplicada"] += sum(v - 1 for v in vistas.values())
+                rub = {}
+                for l in ls:
+                    x = cache[f"RETRIEVAL_QUERY|{l['busqueda']}"]
+                    rub[id(l)] = ms[max(range(len(ms)), key=lambda i: sum(a * b for a, b in zip(x, vp[i])))][0]
+                por = collections.defaultdict(list)
+                for l in ls:
+                    por[rub[id(l)]].append(l)
+                for rb, xs in por.items():
+                    if any(l.get("destino") for l in xs) and any(not l.get("destino") for l in xs):
+                        c["contada dos"] += sum(1 for l in xs if not l.get("destino"))
+                        ej["contada dos"].append(cid)
+                v = vara.get(cid, {})
+                if not v.get("no_vende") and "*" not in v.get("tolerados", set()):
+                    pide = set(v.get("rubros", set())) | set(v.get("tolerados", set()))
+                    de_mas = [l for l in ls if rub[id(l)] not in pide]
+                    c["rubro de mas"] += len(de_mas)
+                    ej["rubro de mas"] += [f"{cid} {l['busqueda']!r}->{rub[id(l)]}" for l in de_mas]
+                msj = E.n(textos.get(cid, ""))
+                esperadas = [x for conds in esp.get(cid, {}).values() for cond in conds for x in cond]
+                for l in ls:
+                    for t in V.INVENTABLES:
+                        if _tiene(E.n(l["busqueda"]), t) and not _tiene(msj, t) and not any(_tiene(E.n(x), t)
+                                                                                          for x in esperadas):
+                            c["inventada"] += 1
+                            ej["inventada"].append(f"{cid} {l['busqueda']!r}")
+            print(f"  {' '.join(corrida):16} {c['mensajes']:>8} {c['lineas']:>7} {c['duplicada']:>10} {c['contada dos']:>12}"
+                  f" {c['rubro de mas']:>13} {c['inventada']:>10}")
+            if "--ver" in sys.argv:
+                for k, xs in ej.items():
+                    print(f"      {k}: {xs[:12]}")
+        json.dump(cache, open(EC.CACHE, "w"))
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if "--correr" in a:
         i = a.index("--correr")
         correr(a[i + 1], a[i + 2], "--piloto" in a, a[a.index("--banco") + 1] if "--banco" in a else "140")
+    elif "--sobra" in a:
+        sobrantes_reales()
     elif "--reales" in a:
         calificar_reales()
     else:
