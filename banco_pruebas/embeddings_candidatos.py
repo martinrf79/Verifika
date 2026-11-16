@@ -132,7 +132,64 @@ def informe(rangos, ver=False):
             print(f"    {r['id']:4} {r['rubro'][:16]:16} {rk}  {r['texto'][:40]!r} / {r['traduccion'][:32]!r}")
 
 
+# ══ LOS 40 REALES Y LAS 365, POR MENSAJE Y RUBRO (16-nov) ═════════════════════
+# Pedido de Martin: con la llamada 0 que repite la condicion en cada linea, si cada linea llega al producto. Por cada
+# rubro que el mensaje pide, `reales.py`, el mejor rango entre sus lineas del primer producto de ese rubro.
+def medir_reales(corridas=(("gemini-lite", "v1"), ("luna", "v2"))):
+    import llamada0_modelos as L
+    import reales as RE
+    _, alias, rubros, modelos = NR.fuente()
+    ms = list(modelos)
+    docs_p = [NR.doc_producto(k, modelos[k], alias) for k in ms]
+    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
+    vectores(docs_p, "RETRIEVAL_DOCUMENT", cache)
+    vp = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for d in docs_p]
+    esperado = {c[0]: c[2].get("rubros", set()) for c in RE.CASOS}
+    esperado.update({c[0]: c[2]["rubros"] for c in RE.casos_525()[0]})
+    out = {}
+    for banco in ("reales", "reales525"):
+        cs = L.corridas_reales(banco)
+        for corrida in corridas:
+            rs = cs[corrida]
+            qs = {}
+            for cid, r in rs.items():
+                for l in (r.get("salida") or {}).get("lineas", []):
+                    f, b = str(l.get("fragmento") or ""), str(l.get("busqueda") or "")
+                    if b:
+                        qs[(cid, b)] = {"fragmento": f, "busqueda": b, "las dos": f"{f}. {b}" if f else b}
+            vectores([q for d in qs.values() for q in d.values() if q], "RETRIEVAL_QUERY", cache)
+            filas = []
+            for cid, rubs in esperado.items():
+                if cid not in rs or not rubs or not ((cid.startswith("R") and banco == "reales") or
+                                                     ("." in cid and banco == "reales525")):
+                    continue
+                for rubro in rubs:
+                    fila = {"id": cid, "rubro": rubro}
+                    for tipo in ("fragmento", "busqueda", "las dos"):
+                        rangos = []
+                        for (c2, _), d in qs.items():
+                            if c2 != cid or not d[tipo]:
+                                continue
+                            x = cache[f"RETRIEVAL_QUERY|{d[tipo]}"]
+                            orden = sorted(range(len(ms)), key=lambda i: -sum(a * b for a, b in zip(x, vp[i])))
+                            rangos.append(next(p + 1 for p, i in enumerate(orden) if ms[i][0] == rubro))
+                        fila[tipo] = min(rangos) if rangos else None
+                    filas.append(fila)
+            out[f"{banco} {' '.join(corrida)}"] = filas
+    json.dump(out, open(RANGOS.replace(".json", "_reales.json"), "w", encoding="utf-8"), ensure_ascii=False)
+    for nombre, filas in out.items():
+        print(f"\n{nombre}: {len(filas)} rubros pedidos; entre los k primeros de alguna de sus lineas")
+        print(f"  {'consulta':10} " + " ".join(f"{'k=' + str(k):>6}" for k in KS) + f" {'sin linea':>10}")
+        for tipo in ("fragmento", "busqueda", "las dos"):
+            rs_ = [f[tipo] for f in filas]
+            print(f"  {tipo:10} " + " ".join(f"{sum(1 for x in rs_ if x and x <= k):>6}" for k in KS)
+                  + f" {sum(1 for x in rs_ if x is None):>10}")
+
+
 if __name__ == "__main__":
+    if "--reales" in sys.argv:
+        medir_reales()
+        sys.exit()
     if "--informe" in sys.argv:
         informe(json.load(open(RANGOS, encoding="utf-8")), "--ver" in sys.argv)
     else:
