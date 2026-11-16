@@ -77,16 +77,30 @@ silla, el idioma de un teclado, si un auricular trae micrófono.
 5. **La casilla mal**: "monitor curvo 32 pulgadas" sale no hay curvo, y está bien, porque el único curvo no tiene stock.
    La vara pedía ata.
 
-## 6. Lo que sigue
+## 6. Lo que sigue, en este orden, orden de Martín del 16-nov
 
-1. **La llamada 0 con otros modelos**, sobre los cuatro bancos y con los cinco nexos. Lo que hay que mirar:
-   - que la condición quede en la búsqueda de cada línea, también la que vale para todo el mensaje;
-   - separar dos modelos en una frase;
-   - no perder preguntas en mensajes largos.
-   La vara de condición ya cuenta lo que se pierde ahí, "perdidas en la llamada 0".
-2. **Modelos de embeddings locales** contra Gemini en los mismos bancos. Los suma Martín a `requirements.txt`. Para este
-   nexo pesa poco, porque la búsqueda no es el cuello.
-3. La segunda llamada que redacta, la auditoría y el pase a `app/` reemplazando al agente.
+1. **Mejorar la llamada 0.** Primero el prompt con Gemini por la gratis; después otros modelos de costo parecido.
+   - Lo que tiene que lograr, medido con los cinco nexos sobre los cuatro bancos:
+     - que la condición quede en la búsqueda de cada línea, también la que vale para todo el mensaje, como "menos
+       partes chinas";
+     - separar dos modelos en una frase;
+     - no perder preguntas en mensajes largos.
+   - La vara ya existe y no se toca:
+     - `nexo_condicion.py` cuenta "perdidas en la llamada 0": hoy 58 de 79 en las 365 y 6 de 7 en los reales;
+     - `flujo_nuevo.py` cuenta rubros y destinos;
+     - `reales.py` y `reales.py --525` cuentan rubros, temas y nombrados.
+   - La salida de cada modelo se graba por mensaje, como `flujo_nuevo_llamada0.jsonl`, y los nexos corren sobre lo
+     grabado sin gasto. Se paga solo la llamada 0.
+2. **Afinar los nexos sobre la llamada 0 nueva.** Las búsquedas nuevas piden sus vectores y lo dudoso nuevo pide Jev.
+   Se miran las fallas que queden, por causa.
+3. **Calibrar todo si la llamada 0 mejoró.** Cada nexo con su `--calibrar`, de a una cosa por vez, y la confirmación en
+   los bancos que no se usaron.
+4. **La memoria.** Acoplar al flujo nuevo la del agente, `memoria_agente`, con el pedido anotado, lo mostrado, el pago y
+   el tope, o una más efectiva si se mide mejor. Los bancos son:
+   - las 32 claves de memoria que quedaron fuera de las 525;
+   - las charlas de varios turnos K10, K11, K16 y K21.
+5. Después: modelos de embeddings locales, que suma Martín a `requirements.txt`; la segunda llamada que redacta; la
+   auditoría; y el pase a `app/` reemplazando al agente.
 
 ## 7. Cómo se corre, sin gasto
 
