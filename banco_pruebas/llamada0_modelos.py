@@ -227,7 +227,13 @@ def calificar_mensaje(cid, texto, destinos, lineas):
             else:
                 c["condiciones perdidas"] += 1
                 malos.append(f"pierde '{cond[0]}' en {nombre}")
+    msj = E.n(texto)
+    esperadas = [r for cosa in cosas for cond in cosa["condiciones"] for r in cond]
     for i, b in enumerate(busq):
+        for t in V.INVENTABLES:
+            if _tiene(b, t) and not _tiene(msj, t) and not any(_tiene(E.n(r), t) for r in esperadas):
+                c["condiciones inventadas"] += 1
+                malos.append(f"inventa '{t[0]}' en '{lineas[i].get('busqueda')}'")
         if cid in V.NO and _tiene(b, V.NO[cid]):
             c["sobra"] += 1
             malos.append(f"sobra '{lineas[i].get('busqueda')}'")
@@ -266,7 +272,7 @@ def corridas():
 def calificar(ver=None):
     bancos = {cid: (t, d) for _, cid, t, _, d in F.bancos()}
     print("\nLA LLAMADA 0 SOBRE LAS 140 · vara por mensaje, `llamada0_vara.py`")
-    cab = ("sin falla", "cosas perdidas", "juntas", "condiciones bien", "destinos bien", "dest inventados",
+    cab = ("sin falla", "cosas perdidas", "juntas", "condiciones bien", "inventadas", "destinos bien", "dest inventados",
            "frag inventado", "invalidas", "seg medio", "seg p90", "dolares 140")
     print(f"{'corrida':16} " + " ".join(f"{h:>11}" for h in cab))
     for (corrida, prompt), rs in sorted(corridas().items()):
@@ -282,7 +288,7 @@ def calificar(ver=None):
         segs = sorted(r.get("segundos") or 0 for r in rs.values())
         dol = sum(r.get("dolares") or 0 for r in rs.values())
         val = [f"{c['mensajes sin falla']}/{len(rs)}", c["cosas perdidas"], c["cosas juntas"] + c["sobra"],
-               f"{c['condiciones bien']}/{c['condiciones']}", f"{c['destinos bien']}/{c['destinos']}",
+               f"{c['condiciones bien']}/{c['condiciones']}", c["condiciones inventadas"], f"{c['destinos bien']}/{c['destinos']}",
                c["destinos inventados"], c["fragmento inventado"], c["invalidas"],
                f"{statistics.mean(segs):.1f}" if segs else "-", f"{segs[int(len(segs) * .9) - 1]:.1f}" if segs else "-",
                f"{dol / len(rs) * 140:.3f}" if dol else "gratis"]

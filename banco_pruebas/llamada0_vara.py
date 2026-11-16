@@ -18,6 +18,9 @@ COMO SE ASIGNA UNA LINEA: a la cosa cuya raiz aparece primero en la busqueda, qu
 LA PRUEBA ROTA, corregida el mismo 16-nov al revisar las fallas: las raices no tomaban las formas de las palabras del
 propio cliente, "parlantitos", "chiquito", "grandote" y el plural "placas de video". Se cambiaron por la raiz que las
 toma. No se sumo ningun sinonimo: "reposabrazos" por "apoyabrazos" sigue contando como perdida.
+LO INVENTADO, sumado el 16-nov antes de correr el prompt v3, porque Qwen escribia "lo mas barato posible" donde el
+cliente no lo dijo: una busqueda con una raiz de `INVENTABLES` que no esta en el mensaje ni en las condiciones que la vara
+espera de ese mensaje, como "economico" por "que no me funda el bolsillo", cuenta como condicion inventada.
 LO QUE NO MIDE: los usos, "para la facu", y los topes del total, "tengo 300 mil": no son condiciones de una linea.
 """
 
@@ -197,5 +200,8 @@ VARA = {
     "B69": [C(IMP + ["epson"], ("epson",), ("continua", "ecotank")), C(["pen", "pendrive", "memoria usb"], ("64",))],
     "B70": [C(MON + ["monitr"], ("24",)), C(WEB, ("micro", "mic"))],
 }
+# Las condiciones que un modelo puede agregar sin que el cliente las diga.
+INVENTABLES = [BAR, INAL, ("gamer", "gaming"), ("rgb", "luces", "led"), ("alta gama", "gama alta", "premium"),
+               ("silencios",), ("ergonom",), ("sumerg", "resistente al agua", "waterproof"), ("compact", "mini")]
 # Lo que el cliente dijo y corrigio: una busqueda con esto, sobra.
 NO = {"B66": ("mousepad", "pad de mouse")}
