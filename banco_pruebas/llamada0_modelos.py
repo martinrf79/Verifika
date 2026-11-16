@@ -65,6 +65,38 @@ Un producto por linea: si pide dos productos, o dos variantes del mismo, como un
 separadas. Si el cliente se corrige, vale lo ultimo que dijo.
 No contestes ni decidas nada. Tu unica fuente es lo que escribio el cliente."""
 
+# v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
+# condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,
+# despues una linea por cada uno con sus condiciones en una lista, y un ejemplo inventado que no esta en ningun banco.
+PROMPTS["v3"] = """Sos el primer paso de un sistema que atiende clientes de una tienda online. Del mensaje del cliente:
+1. productos: la lista de los productos distintos que pide. Dos del mismo producto con distinta caracteristica, como
+   uno negro y uno rojo, son dos productos. Una caracteristica no es un producto.
+2. lineas: una por cada producto de la lista, y una por cada pregunta que no es un producto, sin dejar ninguna afuera
+   aunque el mensaje sea largo:
+- fragmento: la parte del mensaje que lo dice, con las palabras del cliente.
+- condiciones: todo lo que el cliente pide de ese producto: marca, modelo, medida, capacidad, color, tipo, precio o
+  tope por unidad. Lo que dice para varios productos o para todo el mensaje va repetido en cada linea a la que se
+  aplica. Nada que el cliente no haya dicho. Vacia si no pide nada de eso.
+- busqueda: lo que escribirias en el buscador de una tienda online: el producto y todas sus condiciones. Vacio si no
+  busca un producto.
+- destino: el lugar a donde hay que enviarlo, solo si el cliente lo dijo; si no, vacio.
+Si el cliente se corrige, vale lo ultimo que dijo. No contestes ni decidas nada. Tu unica fuente es lo que escribio el
+cliente.
+
+Ejemplo. Mensaje: "quiero dos lamparas de escritorio y un velador, todo en blanco y que no pase los 20 mil cada uno, el
+velador mandalo a Lujan"
+{"productos": ["lampara de escritorio", "velador"], "lineas": [
+{"fragmento": "dos lamparas de escritorio", "condiciones": ["blanco", "hasta 20 mil cada uno"],
+ "busqueda": "lampara de escritorio blanca hasta 20000", "destino": ""},
+{"fragmento": "un velador", "condiciones": ["blanco", "hasta 20 mil cada uno"],
+ "busqueda": "velador blanco hasta 20000", "destino": "Lujan"}]}"""
+_S = {"type": "string"}
+ESQUEMAS = {"v3": {"type": "object", "additionalProperties": False, "required": ["productos", "lineas"], "properties": {
+    "productos": {"type": "array", "items": _S},
+    "lineas": {"type": "array", "items": {
+        "type": "object", "additionalProperties": False, "required": ["fragmento", "condiciones", "busqueda", "destino"],
+        "properties": {"fragmento": _S, "condiciones": {"type": "array", "items": _S}, "busqueda": _S,
+                       "destino": _S}}}}}}
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
 def _clave(nombre):
@@ -74,9 +106,12 @@ def _clave(nombre):
 def pedir(corrida, prompt, texto):
     """(salida, entrada, salida_tokens, segundos, dolares)."""
     prov, modelo, esfuerzo, pe, ps, _ = MODELOS[corrida]
-    sistema = PROMPTS[prompt]
+    # "v3#2" es la segunda corrida del prompt v3: el mismo prompt, otra muestra.
+    base = prompt.split("#")[0]
+    sistema = PROMPTS[base]
+    esquema = ESQUEMAS.get(base, F.ESQUEMA)
     usuario = f"MENSAJE DEL CLIENTE: {texto}"
-    fmt = {"type": "json_schema", "json_schema": {"name": "lineas", "strict": True, "schema": F.ESQUEMA}}
+    fmt = {"type": "json_schema", "json_schema": {"name": "lineas", "strict": True, "schema": esquema}}
     t0 = time.time()
     dol = None
     if prov == "anthropic":
@@ -84,7 +119,7 @@ def pedir(corrida, prompt, texto):
         cli = anthropic.Anthropic(api_key=_clave("CLAUDE_API_KEY"))
         r = cli.messages.create(model=modelo, max_tokens=16000, system=sistema,
                                 messages=[{"role": "user", "content": usuario}],
-                                output_config={"effort": esfuerzo, "format": {"type": "json_schema", "schema": F.ESQUEMA}})
+                                output_config={"effort": esfuerzo, "format": {"type": "json_schema", "schema": esquema}})
         crudo = next((b.text for b in r.content if b.type == "text"), "")
         e, s = r.usage.input_tokens, r.usage.output_tokens
     else:
@@ -106,7 +141,7 @@ def pedir(corrida, prompt, texto):
             cli = OpenAI(api_key=_clave("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
             k["reasoning_effort"] = esfuerzo
             k["response_format"] = {"type": "json_object"}
-            k["messages"][0]["content"] += "\nDevolve solo el JSON, con este esquema: " + json.dumps(F.ESQUEMA)
+            k["messages"][0]["content"] += "\nDevolve solo el JSON, con este esquema: " + json.dumps(esquema)
         else:
             cli = OpenAI(api_key=_clave("OPENROUTER_API_KEY"), base_url=OPENROUTER)
             k["extra_body"] = {"reasoning": {"enabled": False} if esfuerzo == "none" else {"effort": esfuerzo},
