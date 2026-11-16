@@ -47,8 +47,10 @@ MODELOS = {
     "deepseek-chat": ("deepseek", "deepseek-chat", "none", 0.15, 0.60, 0.10),
     "haiku-bajo": ("anthropic", "claude-haiku-5-5", "low", 0.10, 0.50, 0.15),
     # La elegida por Martin el 16-nov, FICHA 100. Desde el 16-nov por la clave directa de OpenAI: por OpenRouter queda
-    # poco saldo. Lo grabado hasta el 16-nov vino por OpenRouter; es el mismo modelo.
-    "luna": ("openai", "gpt-6-luna", "low", 0.10, 0.50, 0.12),
+    # poco saldo. Lo grabado hasta el 16-nov vino por OpenRouter; es el mismo modelo. El tope, el ultimo numero, es lo
+    # gastado con este modelo en todo el banco: 12 centavos hasta el 16-nov, con 11 ya usados; Martin lo sube a un dolar
+    # el 16-nov para los nexos, la memoria y la segunda llamada.
+    "luna": ("openai", "gpt-6-luna", "low", 0.10, 0.50, 1.00),
     "qwen": ("openrouter", "qwen/qwen3.8-flash", "none", 0.15, 0.47, 0.06),
     "qwen-low": ("openrouter", "qwen/qwen3.8-flash", "low", 0.15, 0.47, 0.02),
     "luna-medio": ("openrouter", "openai/gpt-6-luna", "medium", 0.10, 0.50, 0.08),
