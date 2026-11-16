@@ -43,16 +43,31 @@ Las varas se escribieron antes de correr, en `banco_pruebas/llamada0_vara.py`, y
 - **Lo que la vara cuenta y no es falla:** las inventadas son casi todas tipeos del cliente que el modelo corrige,
   "inlaambrico"; el rubro de más es sobre todo C14 y C37, que preguntan por memorias sin buscar.
 
-## 3. Lo que sigue, en este orden
+## 3. Lo que sigue, en este orden, orden de Martín del 16-nov
 
-1. **Pasar la llamada 0 del banco al modelo elegido con el v2**, en `banco_pruebas/flujo_nuevo.py`, y correr los nexos
-   sobre lo nuevo: las búsquedas nuevas piden sus vectores y lo dudoso nuevo pide Jev. Se miran las fallas por causa.
-2. **Lo contado dos veces en los mensajes de siete artículos**, K20 y K21: una línea por producto y otra por destino. Se
+El flujo nuevo vive solo en el banco y pasa a `app/` todo junto, de una vez, cuando el camino completo supere al agente
+en las mismas charlas. Hasta entonces no se toca producción. Para que no se pierda nada:
+
+1. **Ordenar, la sesión que sigue.** Juntar el flujo nuevo en una sola carpeta, `banco_pruebas/flujo/`: un archivo por
+   paso, llamada 0, cada nexo, Jev y redactar; las grabaciones en una subcarpeta; los vectores en un lugar fijo y no en
+   el scratchpad de una sesión. Cortar las dependencias del banco viejo, sección 5. Se comprueba que todos los números
+   salgan iguales que hoy, sin gasto, antes y después de mover. `MAPA.md` apunta a la carpeta.
+2. **Los nexos sobre la llamada 0 elegida.**
+   - Cambiar la llamada 0 de `flujo_nuevo.py` al modelo de `llamada0_modelos.MODELOS["luna"]` con el prompt v2, por la
+     clave directa de OpenAI.
+   - Correr los cinco nexos sobre lo nuevo: las búsquedas nuevas piden sus vectores y lo dudoso nuevo pide Jev.
+   - El nexo de rubro con lo medido en `embeddings_candidatos.py`: consulta con el fragmento y la búsqueda juntos, y 8
+     candidatos en vez de 5; Jev elige entre ellos en lo dudoso.
+   - Se miran las fallas por causa y se calibra cada nexo con su `--calibrar`, de a una cosa, con la confirmación en
+     los bancos que no se usaron.
+3. **Lo contado dos veces en los mensajes de siete artículos**, K20 y K21: una línea por producto y otra por destino. Se
    resuelve con las cantidades y los destinos, después de la llamada 0.
-3. **La memoria:** acoplar al flujo nuevo la del agente, `memoria_agente`, con el pedido anotado, lo mostrado, el pago y
+4. **La memoria:** acoplar al flujo nuevo la del agente, `memoria_agente`, con el pedido anotado, lo mostrado, el pago y
    el tope, o una más efectiva si se mide mejor. Bancos: las 32 claves de memoria fuera de las 525, y K10, K11, K16 y K21.
-4. **La segunda llamada, la que redacta**, con la vara de la FICHA 90.
-5. Al pasar a `app/`: el modelo de la llamada 0 va en `app/config.py` y su clave en Secret Manager.
+5. **La segunda llamada, la que redacta**, con la vara de la FICHA 90, citando por número lo que dieron los nexos.
+6. **El camino completo contra el agente**, en las mismas charlas: `tests/test_agente.py` y las corridas con el modelo.
+   Si lo supera, pasa a `app/` reemplazando al agente: el modelo de la llamada 0 en `app/config.py`, su clave en Secret
+   Manager, los índices de la tienda calculados al subir el catálogo y la FAQ, y el cobro, el cierre y el verificador.
 
 ## 4. Cómo se corre
 
@@ -66,3 +81,32 @@ python3 banco_pruebas/embeddings_candidatos.py --informe   # cuántos candidatos
 
 Gasto de la sesión: unos 30 centavos de la paga de Gemini, anotados en `libro_paga.jsonl`; 15 de OpenRouter; unos 30
 entre Haiku y DeepSeek por sus claves.
+
+## 5. Inventario del flujo nuevo al 16-nov: dónde está cada cosa
+
+Todo en `banco_pruebas/`, salvo la fuente de la tienda, que está en `data/clientes/verifika_prod/`.
+
+| Paso | Código | Grabado, para repetir sin gasto |
+| --- | --- | --- |
+| El flujo de punta a punta | `flujo_nuevo.py` | `flujo_nuevo_llamada0.jsonl`, `flujo_nuevo_puntajes.json`, `flujo_nuevo_respuestas.json` |
+| Cómo busca cada nexo, el registro | `busquedas.py` | — |
+| La llamada 0: prompts, modelos y varas | `llamada0_modelos.py`, `llamada0_vara.py`, `engranaje0.py` | `llamada0_modelos.jsonl`, `engranaje0_corridas.jsonl` |
+| Cuántos candidatos hacen falta | `embeddings_candidatos.py` | `embeddings_candidatos_rangos.json`, `embeddings_candidatos_rangos_reales.json` |
+| Nexo de rubro y producto | `nexo_rubro.py` | `nexo_rubro_puntajes.json`, `nexo_rubro_jev.jsonl`, `nexo_rubro_respuestas.json` |
+| Nexo de tema de la FAQ | `nexo_tema.py` | `nexo_tema_puntajes.json`, `nexo_tema_dudoso.jsonl` |
+| Nexo de producto nombrado | `nexo_nombrado.py`, `nombrados38.py` | `nexo_nombrado_puntajes.json`, `nexo_nombrado_llamada0.jsonl` |
+| Nexo de condición | `nexo_condicion.py`, `nexo_condicion_vara.py` | `nexo_condicion_puntajes.json`, `nexo_condicion_jev.jsonl`, `nexo_condicion_respuestas.json` |
+| Nexo de destino | el código de producción, `app/core/flujo/normal.lugares` y `app/core/fuente._cotizar`, desde `flujo_nuevo.nexo_destino`; antecedente en `nexo_destino.py` | — |
+| Jev | `nexo_tema.llamar_jev`; la API y el índice en `jev/` | `jev/gasto_jev.jsonl` |
+| Las 140 | `nuevas70.py`, `nuevas70b.py`, `momento0_b.py` | `momento0_b_corridas.jsonl`, `momento0_b_puntajes.json` |
+| Los 40 reales y las 365 | `reales.py`, `agendas58.py`, `traduccion58.py`, `vara_58.json` | `reales_llamada0.jsonl`, `reales_puntajes.json`, `reales_jev.jsonl` y lo mismo con `reales525` |
+| El gasto | `libro_paga.py`, `costo.py` | `libro_paga.jsonl`, `jev/gasto_jev.jsonl` |
+
+**Lo que hay que cortar al ordenar:** `nexo_rubro.py` usa `camino_fijo.py`; `llamada1_modelos.py`, de donde sale la
+función de embeddings `_emb`, usa `separar_charlas.py` y `clon_produccion.py`; `reales.py` usa `traduccion58.py`, que
+usa `cableado58.py`. Son del banco viejo y no van a `app/`.
+
+**Los vectores:** `nexo_rubro.CACHE`, `nexo_tema.CACHE` y `nexo_nombrado.CACHE` apuntan al scratchpad de una sesión que
+ya no existe; `embeddings_candidatos.CACHE` a `/tmp`. Los puntajes grabados alcanzan para repetir los números; lo nuevo
+pide vectores, unos centavos por la paga o lento por la gratis.
+
