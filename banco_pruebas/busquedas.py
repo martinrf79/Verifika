@@ -22,10 +22,14 @@ NEXOS = {
     "rubro y producto": {
         "archivo": "banco_pruebas/nexo_rubro.py",
         "consulta": "busqueda, lo que tradujo el modelo en la llamada 0",
-        "indice": ["rubro: sus alias, `nexo_rubro.doc_rubro`",
-                   "modelo de la tienda: rubro, marca, modelo y etiquetas del catalogo, `nexo_rubro.doc_producto`"],
+        "indice": ["rubro: sus alias, `nexo_rubro.doc_rubro`; y lo que la tienda declara que no vende, "
+                   "`no_vendidas.json`, como rubro sin productos, `nexo_rubro.indice_rubros`",
+                   "modelo de la tienda: rubro con sus alias, marca, modelo y etiquetas, `nexo_rubro.doc_producto`"],
         "candidatos": {"rubros": 3, "productos": 5},
-        "elige": "la primera palabra de la busqueda contra el texto de la tienda de cada candidato",
+        "elige": "la primera palabra de la busqueda contra el texto de la tienda de cada candidato; lo que no se vende "
+                 "gana solo si queda primero y la busqueda lo dice",
+        "calibrado": "16-nov, `nexo_rubro.py --calibrar`: elige bien 72, 71, 72 y 104, rubro equivocado 2, lo que no se "
+                     "vende 10 de 14; antes 71, 70, 71 y 104, 5 y 8",
         "puntajes": ["banco_pruebas/nexo_rubro_puntajes.json", "banco_pruebas/flujo_nuevo_puntajes.json"],
     },
     "destino": {
@@ -51,7 +55,8 @@ NEXOS = {
         "indice": ["el mismo de rubro y producto, sin vectores nuevos: da el rubro",
                    "palabra exacta: marca, nombre de modelo y codigo del catalogo en ese rubro"],
         "candidatos": {"rubros": 1},
-        "elige": "la identidad de produccion, `catalogo._identificar`, sobre el rubro: exists, ambiguous, not_found",
+        "elige": "el rubro donde calzan mas palabras de identidad, con marca o codigo exacto, y los embeddings "
+                 "desempatan; despues la identidad de produccion, `catalogo._identificar`: exists, ambiguous, not_found",
         "puntajes": ["banco_pruebas/flujo_nuevo_puntajes.json", "banco_pruebas/nexo_nombrado_puntajes.json"],
     },
     "condicion": {
@@ -75,5 +80,7 @@ if __name__ == "__main__":
         if x["candidatos"]:
             print("  candidatos  " + ", ".join(f"{v} {k}" for k, v in x["candidatos"].items()))
         print(f"  elige       {x['elige']}")
+        if x.get("calibrado"):
+            print(f"  calibrado   {x['calibrado']}")
         for p in x["puntajes"]:
             print(f"  puntajes    {p}")

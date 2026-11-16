@@ -152,10 +152,18 @@ def embeddings():
         if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
             raise SystemExit(f"faltan {len(faltan)} vectores y van con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
         import llamada1_modelos as L
-        L._emb(faltan, "RETRIEVAL_QUERY", os.environ["GEMINI_API_KEY_PROD"].strip(), cache)
+        L._emb(faltan, "RETRIEVAL_QUERY", os.environ["GEMINI_API_KEY_PROD"].split()[0], cache)
         json.dump(cache, open(NR.CACHE, "w"))
-    dr = [cache[f"RETRIEVAL_DOCUMENT|{NR.doc_rubro(r, alias)}"] for r in rubros]
-    dp = [cache[f"RETRIEVAL_DOCUMENT|{NR.doc_producto(k, modelos[k])}"] for k in ms]
+    ir = NR.indice_rubros(rubros, alias)
+    rubros = [r for r, _ in ir]
+    falta_doc = [d for _, d in ir if f"RETRIEVAL_DOCUMENT|{d}" not in cache] + [
+        NR.doc_producto(k, modelos[k], alias) for k in ms if f"RETRIEVAL_DOCUMENT|{NR.doc_producto(k, modelos[k], alias)}" not in cache]
+    if falta_doc:
+        import llamada1_modelos as L
+        L._emb(falta_doc, "RETRIEVAL_DOCUMENT", os.environ["GEMINI_API_KEY_PROD"].split()[0], cache)
+        json.dump(cache, open(NR.CACHE, "w"))
+    dr = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for _, d in ir]
+    dp = [cache[f"RETRIEVAL_DOCUMENT|{NR.doc_producto(k, modelos[k], alias)}"] for k in ms]
 
     def dot(a, b):
         return round(sum(x * y for x, y in zip(a, b)), 4)

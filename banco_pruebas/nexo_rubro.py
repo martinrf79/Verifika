@@ -42,7 +42,7 @@ sys.path[:0] = [REPO, AQUI]
 TID = "verifika_prod"
 PUNTAJES = os.path.join(AQUI, "nexo_rubro_puntajes.json")
 # Los vectores enteros pesan decenas de megas: quedan en el cache de la sesion, y en el repo solo los puntajes.
-CACHE = "/tmp/claude-0/-home-user-Verifika/24fd8d4f-83e9-558a-8fef-87f530845b0a/scratchpad/nexo_rubro_vectores.json"
+CACHE = "/tmp/claude-0/-home-user-Verifika/3792206b-c284-57cb-9afe-3ff1597e7864/scratchpad/nexo_nombrado_vectores.json"
 MODELOS = ("gemini", "haiku", "deepseek")
 from busquedas import NEXOS as _B  # noqa: E402
 RUBROS_CANDIDATOS = _B["rubro y producto"]["candidatos"]["rubros"]
@@ -70,11 +70,31 @@ def doc_rubro(r, alias):
     return f"{r}: {', '.join(alias.get(r, []))}"
 
 
+# Lo que la tienda declara que no vende, `no_vendidas.json`, entra al indice de rubros como rubro sin productos: si queda
+# primero y la busqueda lo dice, no hay. Calibrado el 16-nov, `--calibrar`: lo que no se vende de nuevas70b pasa de 8 a
+# 11 de 14.
+NO_SE_VENDE = "no se vende: "
+
+
+def indice_rubros(rubros, alias):
+    """[(rubro, documento)]: los rubros de la tienda con sus alias, y lo que declara que no vende."""
+    d = json.load(open(os.path.join(REPO, f"data/clientes/{TID}/no_vendidas.json"), encoding="utf-8"))["no_vendidas"]
+    return [(r, doc_rubro(r, alias)) for r in rubros] + [(NO_SE_VENDE + x, NO_SE_VENDE + x) for x in sorted(d)]
+
+
 def etiquetas(filas):
     return sorted({t.strip() for f in filas for t in str(f.get("tags") or "").split(",") if t.strip()})
 
 
-def doc_producto(k, filas):
+def doc_producto(k, filas, alias=None):
+    """El modelo con los alias de su rubro adelante: calibrado el 16-nov, `--calibrar`, elige bien uno mas en cada
+    corrida de nuevas70 y el rubro equivocado baja de 5 a 1. "pantalla tactil" ya no cae en monitor."""
+    alias = fuente()[1] if alias is None else alias
+    return f"{k[0]}: {', '.join(alias.get(k[0], []))}. {k[1]} {k[2]}. {', '.join(etiquetas(filas))}"
+
+
+def _doc_etiquetas(k, filas, alias=None):
+    """El documento de antes del 16-nov, para la V0 de la calibracion."""
     return f"{k[0]} {k[1]} {k[2]}. {', '.join(etiquetas(filas))}"
 
 
@@ -102,15 +122,16 @@ def embeddings():
     busquedas = sorted({str(l["busqueda"]) for ls in todas for l in ls})
     consultas = sorted(set(busquedas) | {str(l.get("fragmento") or "") for ls in todas for l in ls} - {""})
     cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
-    dr_t = [doc_rubro(r, alias) for r in rubros]
-    dp_t = [doc_producto(k, modelos[k]) for k in ms]
+    ir = indice_rubros(rubros, alias)
+    rubros, dr_t = [r for r, _ in ir], [d for _, d in ir]
+    dp_t = [doc_producto(k, modelos[k], alias) for k in ms]
     faltan = [t for t in dr_t + dp_t if f"RETRIEVAL_DOCUMENT|{t}" not in cache] + \
              [q for q in consultas if f"RETRIEVAL_QUERY|{q}" not in cache]
     if faltan:
         if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
             raise SystemExit(f"faltan {len(faltan)} vectores y van con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
         import llamada1_modelos as L
-        clave = os.environ["GEMINI_API_KEY_PROD"].strip()
+        clave = os.environ["GEMINI_API_KEY_PROD"].split()[0]
         L._emb(dr_t + dp_t, "RETRIEVAL_DOCUMENT", clave, cache)
         L._emb(consultas, "RETRIEVAL_QUERY", clave, cache)
         json.dump(cache, open(CACHE, "w"))
@@ -145,9 +166,11 @@ class Nexo:
     def _rank_rubros(self, q):
         return [r for _, r in sorted(zip(self.q[q]["r"], self.rubros), reverse=True)] if q else []
 
+    n_rubros = RUBROS_CANDIDATOS
+
     def llamada0(self, linea):
-        """PIEZA 1: los tres rubros candidatos de lo que tradujo el modelo."""
-        return self._rank_rubros(str(linea["busqueda"]))[:RUBROS_CANDIDATOS]
+        """PIEZA 1: los tres rubros candidatos de lo que tradujo el modelo, entre los que la tienda vende."""
+        return [r for r in self._rank_rubros(str(linea["busqueda"])) if not r.startswith(NO_SE_VENDE)][:self.n_rubros]
 
     def _fila(self, k):
         con = [f for f in self.modelos[k] if int(f["stock"] or 0) > 0]
@@ -156,6 +179,14 @@ class Nexo:
         f = min(con, key=lambda f: float(f["precio_ars"]))
         return {"id": f["id"], "nombre": f["nombre"], "rubro": k[0], "precio": int(float(f["precio_ars"])),
                 "stock": int(f["stock"]), "modelo": list(k)}
+
+    @staticmethod
+    def _lo_dice(busqueda, negativo):
+        """Lo que no se vende gana solo si la busqueda lo dice: los embeddings proponen y el codigo confirma. "sony xm5"
+        queda cerca de "play 5" por Sony, y son auriculares que la tienda vende."""
+        ws = n(busqueda).split()
+        return all(any(w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w))) for w in ws)
+                   for p in n(negativo[len(NO_SE_VENDE):]).split())
 
     def busqueda2(self, linea, rubros):
         """PIEZA 2: los cinco candidatos, el mejor de cada rubro y los dos que siguen, en el orden de los embeddings."""
@@ -178,7 +209,12 @@ class Nexo:
                 "cercano": candidatos[0] if candidatos else None}
 
     def producto(self, linea):
+        primero = (self._rank_rubros(str(linea["busqueda"])) or [""])[0]
         rubros = self.llamada0(linea)
+        if primero.startswith(NO_SE_VENDE) and self._lo_dice(linea["busqueda"], primero):
+            # Lo mas parecido es algo que la tienda declara que no vende: no hay, y no se ofrece nada a ciegas.
+            return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
+                    "candidatos": [], "pedido": "", "elegido": None, "no_hay": True, "cercano": None}
         cands = self.busqueda2(linea, rubros)
         return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
                 "candidatos": cands, **self.elegir(linea, cands)}
@@ -240,12 +276,13 @@ def bancos():
     return [("nuevas70", m, c1, l1) for m in MODELOS] + [("nuevas70b", "gemini", c2, l2)]
 
 
-def calificar(ver=False):
+def calificar(ver=False, nx=None, callado=False):
     instalar()
-    nx = Nexo()
+    nx = nx or Nexo()
     por_id = {f["id"]: f for f in nx.filas}
-    salida = {}
-    print("\nEL NEXO DE RUBRO · llamada 0 con tres rubros, segunda busqueda con cinco productos, el codigo elige")
+    salida, total = {}, collections.Counter()
+    if not callado:
+        print("\nEL NEXO DE RUBRO · llamada 0 con tres rubros, segunda busqueda con cinco productos, el codigo elige")
     for banco, m, casos, lineas in bancos():
         c = collections.Counter()
         fallas = []
@@ -285,6 +322,11 @@ def calificar(ver=False):
                         c["filas mal"] += 1
             salida[f"{banco} {m} {cid}"] = {"mensaje": texto, "productos": prods, "envios": envios_de(ls),
                                             "respuesta": redactar(prods, envios_de(ls))}
+        total.update(c)
+        total[f"{banco} {m} elige bien"] = c["elige bien"]
+        total[f"{banco} {m} no vende bien"] = c["no vende bien"]
+        if callado:
+            continue
         v = c["vende"]
         print(f"\n  {banco} {m}: vende {v} · en candidatos {c['en candidatos']} · elige bien {c['elige bien']} · "
               f"no hay {c['no hay']}, con el cercano bien {c['no hay, cercano bien']} · mal {c['mal']}")
@@ -292,12 +334,99 @@ def calificar(ver=False):
               f"sin linea del modelo {c['sin linea']} · filas fuera del catalogo {c['filas mal']}")
         for x in fallas:
             print(f"    {x[0]} '{x[1]}': esperado {x[2]} · {x[3]}")
-    json.dump(salida, open(os.path.join(AQUI, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1, default=str)
+    if not callado:
+        json.dump(salida, open(os.path.join(AQUI, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
+                  ensure_ascii=False, indent=1, default=str)
+    return total
+
+
+# ══ LA CALIBRACION DE LA BUSQUEDA ════════════════════════════════════════════
+# 16-nov, orden de Martin: se calibra la busqueda de embeddings; la eleccion final sigue siendo la funcion de codigo.
+# Cada variante cambia una sola cosa y se mide con la misma vara de las 140.
+def _doc_alias(k, filas, alias):
+    return f"{k[0]}: {', '.join(alias.get(k[0], []))}. {k[1]} {k[2]}. {', '.join(etiquetas(filas))}"
+
+
+def _doc_nombre(k, filas, alias):
+    f = filas[0]
+    return f"{f['nombre']}. {f.get('descripcion') or ''}"
+
+
+def _doc_corto(k, filas, alias):
+    return f"{k[0]} {k[1]} {k[2]}"
+
+
+VARIANTES = {
+    "V0 la de antes del 16-nov": {"producto": _doc_etiquetas},
+    "V1 modelo con los alias del rubro": {"producto": _doc_alias},
+    "V2 modelo por nombre y descripcion": {"producto": _doc_nombre},
+    "V3 lo que no se vende en el indice": {"producto": _doc_etiquetas, "no_vendidas": True},
+    "V4 dos rubros candidatos": {"producto": _doc_etiquetas, "rubros": 2},
+    "V5 modelo sin etiquetas": {"producto": _doc_corto},
+    "V6 V1 mas V3, la viva desde el 16-nov": {"producto": _doc_alias, "no_vendidas": True},
+}
+CACHE_CAL = "/tmp/claude-0/-home-user-Verifika/3792206b-c284-57cb-9afe-3ff1597e7864/scratchpad/nexo_nombrado_vectores.json"
+
+
+def _no_vendidas():
+    d = json.load(open(os.path.join(REPO, f"data/clientes/{TID}/no_vendidas.json"), encoding="utf-8"))["no_vendidas"]
+    return sorted(d)
+
+
+class NexoVariante(Nexo):
+    """El mismo nexo con otro indice. Lo que la tienda declara que no vende entra como rubro sin productos: si queda
+    primero, no hay."""
+
+    def __init__(self, rubros, ms, q, n_rubros, negativos):
+        super().__init__()
+        self.rubros, self.ms, self.q, self.n_rubros, self.negativos = rubros, ms, q, n_rubros, negativos
+
+
+
+
+def calibrar():
+    import llamada1_modelos as L
+    _, alias, rubros, modelos = fuente()
+    ms = list(modelos)
+    todas = list(lineas_v2().values()) + list(lineas_b().values())
+    qs = sorted({str(l["busqueda"]) for ls in todas for l in ls})
+    neg = [NO_SE_VENDE + x for x in _no_vendidas()]
+    dr_t = [doc_rubro(r, alias) for r in rubros]
+    docs = {nombre: [v["producto"](k, modelos[k], alias) for k in ms] for nombre, v in VARIANTES.items()}
+    cache = json.load(open(CACHE_CAL)) if os.path.exists(CACHE_CAL) else {}
+    clave = os.environ["GEMINI_API_KEY_PROD" if os.environ.get("MARTIN_AUTORIZO_LA_PAGA") else "GEMINI_API_KEY"].split()[0]
+    textos = dr_t + neg + [t for ds in docs.values() for t in ds]
+    for tarea, ts in (("RETRIEVAL_DOCUMENT", textos), ("RETRIEVAL_QUERY", qs)):
+        falta = [t for t in dict.fromkeys(ts) if f"{tarea}|{t}" not in cache]
+        if falta:
+            L._emb(falta, tarea, clave, cache)
+            json.dump(cache, open(CACHE_CAL, "w"))
+            print(f"  vectores nuevos {tarea}: {len(falta)}", flush=True)
+
+    def dot(a, b):
+        return sum(x * y for x, y in zip(a, b))
+    vq = {q: cache[f"RETRIEVAL_QUERY|{q}"] for q in qs}
+    dr = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in dr_t]
+    dn = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in neg]
+    print("\nLA CALIBRACION DEL NEXO DE RUBRO · misma vara de las 140, misma funcion de codigo")
+    print("  variante                              elige bien por banco      mal  no vende bien")
+    for nombre, v in VARIANTES.items():
+        dp = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in docs[nombre]]
+        con_neg = v.get("no_vendidas")
+        rs = rubros + (neg if con_neg else [])
+        q = {x: {"r": [dot(vq[x], d) for d in dr + (dn if con_neg else [])], "m": [dot(vq[x], d) for d in dp]}
+             for x in qs}
+        nx = NexoVariante(rs, ms, q, v.get("rubros", RUBROS_CANDIDATOS), set(neg) if con_neg else set())
+        t = calificar(nx=nx, callado=True)
+        eb = " ".join(str(t[f"{b} {m} elige bien"]) for b, m, _, _ in bancos())
+        nv = " ".join(str(t[f"{b} {m} no vende bien"]) for b, m, _, _ in bancos())
+        print(f"  {nombre:37} {eb:25} {t['mal']:3}  {nv}")
 
 
 if __name__ == "__main__":
-    if "--embeddings" in sys.argv:
+    if "--calibrar" in sys.argv:
+        calibrar()
+    elif "--embeddings" in sys.argv:
         embeddings()
     else:
         calificar("--ver" in sys.argv)

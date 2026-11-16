@@ -160,8 +160,9 @@ def embeddings():
     import llamada1_modelos as L
     _, alias, rubros, modelos = NR.fuente()
     ms = list(modelos)
-    dr_t = [NR.doc_rubro(r, alias) for r in rubros]
-    dp_t = [NR.doc_producto(k, modelos[k]) for k in ms]
+    ir = NR.indice_rubros(rubros, alias)
+    rubros, dr_t = [r for r, _ in ir], [d for _, d in ir]
+    dp_t = [NR.doc_producto(k, modelos[k], alias) for k in ms]
     viejos = json.load(open(os.path.join(AQUI, "flujo_nuevo_puntajes.json"), encoding="utf-8"))
     control = sorted(viejos["consultas"])[:3]
     qs = sorted({l.busqueda for ls in llamada0().values() for l in ls} - {""} | {q for q, _ in SONDA}) + control
@@ -341,6 +342,12 @@ class Nexo:
         otros = [o["modelo"] for o in sin["opciones"] if o["modelo"] != v["producto"]["modelo"]]
         return v if any(x.isdigit() for m in otros for x in R["modelos"][m]) else sin
 
+    def _nombra(self, busqueda, rubro):
+        """Cuantas palabras de la busqueda nombran algo de ese rubro: marca, nombre de modelo o codigo de su catalogo."""
+        R = self.rub[rubro]
+        ws = self._acomodar([w for w in NR.n(busqueda).split() if w not in self.vacias], R)
+        return sum(w in R["marcas"] or w in R["nombres"] or (_codigo(w) and any(w in t for t in R["tokens"])) for w in ws)
+
     def rubro(self, busqueda, elegido):
         """PIEZA 1, la mitad exacta: el rubro lo eligen los embeddings. Solo si no eligieron ninguno, lo propone la
         palabra exacta: el rubro donde la busqueda nombra un modelo y donde mas palabras suyas estan en los modelos.
@@ -364,12 +371,14 @@ class Nexo:
     def nombrado(self, linea):
         """PIEZAS 1 A 3. None si el nexo no corre."""
         p = self.idx.producto({"busqueda": linea.busqueda, "fragmento": linea.fragmento})
-        rubro = self.rubro(linea.busqueda, p["elegido"]["rubro"] if p["elegido"] else None)
+        elegido = self.rubro(linea.busqueda, p["elegido"]["rubro"] if p["elegido"] else None)
+        exacto = self.rubro(linea.busqueda, None)
+        # La identidad la decide la palabra exacta, regla 7.0: si otro rubro nombra mas palabras de la busqueda, con
+        # marca o codigo exacto, gana ese. Los embeddings desempatan. Medido el 16-nov: con el indice calibrado,
+        # "jbl tune 520" caia en parlantes y "hyperx cloud 2" en microfonos.
+        rubro = exacto if exacto and (not elegido or self._nombra(linea.busqueda, exacto)
+                                      > self._nombra(linea.busqueda, elegido)) else elegido
         ids = self.palabras(linea.busqueda, rubro) if rubro else []
-        if not ids:
-            # Si el rubro de los embeddings no nombra nada, propone la palabra exacta: "g-305" no traia mouse.
-            rubro = self.rubro(linea.busqueda, None)
-            ids = self.palabras(linea.busqueda, rubro) if rubro else []
         if not ids:
             return None
         from app.core.flujo.catalogo import _identificar

@@ -218,3 +218,28 @@ python3 banco_pruebas/nexo_nombrado.py [--ver]    # califica, sin gasto
 python3 banco_pruebas/nexo_nombrado.py --sonda     # las variantes de escritura, sin gasto
 python3 banco_pruebas/busquedas.py                # cómo busca cada nexo
 ```
+
+## 10. La búsqueda del nexo de rubro, calibrada, 16-nov
+
+Orden de Martín: la elección final es la función de código; se calibra la búsqueda de embeddings. Sobre la vara de las 140,
+una cosa por vez, con `python3 banco_pruebas/nexo_rubro.py --calibrar`:
+
+| Variante | Elige bien | Rubro equivocado | No se vende, nuevas70b |
+| --- | --- | --- | --- |
+| V0, la de antes | 71, 70, 71, 104 | 5 | 8 de 14 |
+| V1, cada modelo con los alias de su rubro | 72, 71, 72, 104 | 2 | 8 |
+| V2, modelo por nombre y descripción | igual que V0 | 5 | 8 |
+| V3, lo que la tienda declara que no vende en el índice | igual que V0 | 5 | 10 |
+| V4, dos rubros candidatos | igual que V0 | 5 | 8 |
+| V5, modelo sin etiquetas | uno menos | 5 | 8 |
+| **V6, V1 más V3, la viva** | **72, 71, 72, 104** | **2** | **10 de 14** |
+
+- **Lo que no se vende gana solo si queda primero y la búsqueda lo dice.** Sin esa confirmación, "sony xm5" caía en
+  "play 5" por Sony, y "escritorio en L" acertaba por casualidad cerca de una heladera.
+- **Las cuatro que siguen fallando la tienda no las declara:** cámara de fotos, escritorio, pad de mouse. Es dato, no
+  búsqueda.
+- **Los "no hay" con lo más cercano bien**, "repetidor wifi", "fotocopiadora", "trono gamer", quedan: la palabra no está
+  en la fuente y se ofrece lo más cercano verificado.
+- **La convivencia:** el índice calibrado movía el rubro de los nombres de modelo, "jbl tune 520" caía en parlantes. En
+  el nombrado ahora el rubro lo decide la palabra exacta, regla 7.0, y los embeddings desempatan: 39 de 40 y la sonda 25
+  de 27, igual que antes. Tema, destino y el flujo, iguales; cero cortes.
