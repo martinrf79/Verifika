@@ -14,28 +14,28 @@ LA VARA, escrita antes de correr, por mensaje:
   nombrados   (raiz, veredicto, modelos que valen).
 Inventado: un tema o un rubro elegido fuera de lo pedido y lo tolerado.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/reales.py --correr   # llamada 0, embeddings y Jev que falten
-    python3 banco_pruebas/reales.py [--ver]                                     # califica, sin gasto
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo/reales.py --correr   # llamada 0, embeddings y Jev que falten
+    python3 banco_pruebas/flujo/reales.py [--ver]                                     # califica, sin gasto
 """
 import collections
+import functools
 import json
 import os
 import re
 import sys
 import time
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(AQUI)
-sys.path[:0] = [REPO, AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import BANCOS, GRABADO  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
 
 # Dos bancos: las charlas reales de WhatsApp, y las 525 de `traduccion58`, `--525`.
 B525 = "--525" in sys.argv
 _SUF = "reales525" if B525 else "reales"
-LLAMADA0 = os.path.join(AQUI, f"{_SUF}_llamada0.jsonl")
-PUNTAJES = os.path.join(AQUI, f"{_SUF}_puntajes.json")
-JEV = os.path.join(AQUI, f"{_SUF}_jev.jsonl")
+LLAMADA0 = os.path.join(GRABADO, f"{_SUF}_llamada0.jsonl")
+PUNTAJES = os.path.join(GRABADO, f"{_SUF}_puntajes.json")
+JEV = os.path.join(GRABADO, f"{_SUF}_jev.jsonl")
 
 _70_30 = ("Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que "
           "necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. "
@@ -135,68 +135,34 @@ CASOS = [
 # agenda a mano de cada turno, `agendas58.py`: buscar da el rubro, producto el nombrado, politica el tema. Entra el
 # primer turno de cada charla; uno posterior solo si se entiende solo: sin "M-1" ni "L-1", sin "entre lo mostrado", y
 # con lo que pide escrito en su propio texto. "y alguno mecanico?" pide teclado sin decirlo: es de memoria.
-def _rubro_en_texto(rubro, texto, alias):
-    ws = NR.n(texto).split()
-    formas = [rubro] + alias.get(rubro, [])
-    return any(all(any(w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w))) for w in ws)
-                   for p in NR.n(f).split()) for f in formas if f)
+# 16-nov, al ordenar el flujo: las 365 quedan congeladas en `bancos/las365.json`, generado con el `casos_525` de antes,
+# el del commit 95d53ea, para no depender de `traduccion58`, que arrastra el cableado viejo. Cada caso trae su texto y su
+# vara; y cada turno, las preguntas de su agenda a mano, que usan las varas de condicion.
+LAS365 = os.path.join(BANCOS, "las365.json")
+
+
+@functools.lru_cache(None)
+def _las365():
+    return json.load(open(LAS365, encoding="utf-8"))
 
 
 def casos_525():
-    from banco_pruebas import agendas58 as A
-    from banco_pruebas import traduccion58 as T
+    """([(id, texto, vara)], {turno fuera: veces}): las 365 con la vara en los mismos tipos que el codigo de antes.
+    Instala el codigo de produccion como antes: quien las califica despues lo usa."""
     NR.instalar()
-    filas, alias, _, modelos = NR.fuente()
-    vara = {c["id"]: c for c in json.load(open(os.path.join(AQUI, "vara_58.json"), encoding="utf-8"))["charlas"]}
-    prot = T._protegidas()
-    out, fuera = [], collections.Counter()
-    for clave in T_FORMAS():
-        cid, t = clave.split("|")
-        t = int(t)
-        texto = vara[cid]["turnos"][t]["texto"]
-        ps = A.AGENDAS[cid][t]["preguntas"]
-        crudo = json.dumps(ps, ensure_ascii=False)
-        if t > 0 and (re.search(r'"[MLP]-\d', crudo) or '"entre_lo_mostrado": true' in crudo
-                      or any(p["accion"] == "buscar" and not _rubro_en_texto(p["rubro"], texto, alias) for p in ps)
-                      or not any(p["accion"] in ("buscar", "producto", "politica") for p in ps)):
-            fuera[clave] += 1
-            continue
-        v = {"rubros": set(), "no_vende": set(), "temas": [], "tolerados": set(), "nombrados": []}
-        for p in ps:
-            a = p["accion"]
-            if a == "buscar" and p["rubro"] == "toda la tienda":
-                v["tolerados"].add("*")
-            elif a == "buscar" and p["rubro"] in {f["categoria"] for f in filas}:
-                v["rubros"].add(p["rubro"])
-            elif a == "buscar":
-                v["no_vende"].add(p["rubro"])
-            elif a == "producto" and isinstance(p.get("producto"), str) and not re.match(r"[MLP]-\d", p["producto"]):
-                nombre = NR.n(p["producto"])
-                # Por palabras, no como texto seguido: "Kingston Fury Beast DDR4 16GB" es "Fury Beast DDR4 3200 16GB".
-                mods = {k[2] for k in modelos if set(nombre.split()) <= set(NR.n(f"{k[1]} {k[2]}").split())}
-                rub = {k[0] for k in modelos if k[2] in mods}
-                v["rubros"] |= rub
-                v["nombrados"].append((nombre.split()[0], "exists" if len(mods) == 1 else "ambiguous", mods))
-            elif a == "politica":
-                v["temas"].append({p["tema"]})
-            elif a == "compatibilidad":
-                v["tolerados"] |= {"compatibilidad"}
-            elif a == "explicar":
-                v["tolerados"] |= {"especificaciones", "mouse_dpi", "teclado_mecanico_membrana", "asesoramiento"}
-            elif a in ("envio", "comprar", "cuenta"):
-                v["tolerados"] |= {"costo_envio", "envios", "plazo_envio"} | _PAGO
-        # Los productos que nombra una compra o una cuenta no son pregunta, pero si salen no son de mas.
-        for x in re.findall(r'"producto": "([^"]+)"', crudo):
-            if not re.match(r"[MLP]-\d", x):
-                v["tolerados"] |= {k[0] for k in modelos if set(NR.n(x).split()) <= set(NR.n(f"{k[1]} {k[2]}").split())}
-        for forma, txt in T.formas_de(cid, t, texto, prot).items():
-            out.append((f"{cid}.{t}.{forma}", txt, v))
-    return out, fuera
+    d = _las365()
+    out = []
+    for c in d["casos"]:
+        v = c["vara"]
+        out.append((c["id"], c["texto"], {"rubros": set(v["rubros"]), "no_vende": set(v["no_vende"]),
+                                          "temas": [set(t) for t in v["temas"]], "tolerados": set(v["tolerados"]),
+                                          "nombrados": [(r, ver, set(m)) for r, ver, m in v["nombrados"]]}))
+    return out, collections.Counter(d["fuera"])
 
 
-def T_FORMAS():
-    from banco_pruebas.traduccion58_formas import FORMAS
-    return list(FORMAS)
+def preguntas_525(charla, turno):
+    """Las preguntas de la agenda a mano de un turno de las 365, `agendas58.AGENDAS[charla][turno]["preguntas"]`."""
+    return _las365()["preguntas"][f"{charla}|{int(turno)}"]
 
 
 if B525:
@@ -262,9 +228,8 @@ def llamada0():
 def embeddings():
     """Las busquedas contra el indice de rubros y modelos, y los fragmentos contra los alias de los temas: los mismos
     indices de los nexos, sin tocarlos."""
-    import llamada1_modelos as L
+    import embeddings as EMB
     import nexo_tema as NT
-    clave = _paga()
     _, alias, rubros, modelos = NR.fuente()
     ms = list(modelos)
     ir = NR.indice_rubros(rubros, alias)
@@ -274,13 +239,9 @@ def embeddings():
     l0 = llamada0()
     qs = sorted({l.busqueda for ls in l0.values() for l in ls} - {""})
     fs = sorted({l.fragmento for ls in l0.values() for l in ls} - {""})
-    cache = json.load(open(NR.CACHE)) if os.path.exists(NR.CACHE) else {}
-    for tarea, ts in (("RETRIEVAL_DOCUMENT", dr_t + dp_t + [a for _, a in td]), ("RETRIEVAL_QUERY", qs + fs)):
-        falta = [t for t in dict.fromkeys(ts) if f"{tarea}|{t}" not in cache]
-        if falta:
-            L._emb(falta, tarea, clave, cache)
-            json.dump(cache, open(NR.CACHE, "w"))
-            print(f"  vectores nuevos {tarea}: {len(falta)}, {sum(len(t) for t in falta)} caracteres", flush=True)
+    cache = EMB.cargar()
+    for tarea, ts in ((EMB.DOCUMENTO, dr_t + dp_t + [a for _, a in td]), (EMB.CONSULTA, qs + fs)):
+        EMB.pedir(ts, tarea, cache)
 
     def dot(a, b):
         return round(sum(x * y for x, y in zip(a, b)), 4)
@@ -314,6 +275,7 @@ def indices():
 def correr_jev():
     """Jev sobre lo dudoso del tema y del producto, con las mismas preguntas que en los nexos."""
     import nexo_tema as NT
+    import jev as J
     idx = indices()
     hechas = {}
     if os.path.exists(JEV):
@@ -344,7 +306,7 @@ def correr_jev():
         # Se pregunta solo si falta alguna linea dudosa: un cambio en un nexo puede volver dudosa una linea nueva.
         if cid in hechas and set(qs) <= set(hechas[cid]):
             continue
-        r = NT.llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "reales")[0] if qs else {}
+        r = J.llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "reales")[0] if qs else {}
         with open(JEV, "a", encoding="utf-8") as fh:
             fh.write(json.dumps({"id": cid, "respuestas": r}, ensure_ascii=False) + "\n")
         if r:

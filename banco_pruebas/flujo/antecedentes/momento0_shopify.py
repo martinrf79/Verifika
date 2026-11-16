@@ -13,8 +13,8 @@ LA VARA, escrita antes de la primera corrida y sin tocar despues: por cada conce
 correctas, elegidas leyendo la taxonomia. Vale esa categoria o cualquiera que cuelgue de ella. Los productos que la tienda
 no vende llevan su categoria real: se mide si la traduccion libre los entiende, no si la tienda los vende.
 
-    python3 banco_pruebas/momento0_shopify.py --correr     convierte y busca, con la clave gratis
-    python3 banco_pruebas/momento0_shopify.py              el informe, sin llamar a nada
+    python3 banco_pruebas/flujo/antecedentes/momento0_shopify.py --correr     convierte y busca, con la clave gratis
+    python3 banco_pruebas/flujo/antecedentes/momento0_shopify.py              el informe, sin llamar a nada
 """
 import json
 import os
@@ -25,11 +25,12 @@ import urllib.request
 
 import numpy as np
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [os.path.dirname(AQUI), AQUI]
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from entorno import GRABADO, VECTORES  # noqa: E402
 ARGS = sys.argv[1:]
-SALIDA = os.path.join(AQUI, "momento0_shopify.json")
-CACHE = os.environ.get("CACHE_SHOPIFY", "/tmp/claude-0/-home-user-Verifika/73b1fa5d-8c2a-5c31-98dc-3d79da7273e1/scratchpad/tax")
+SALIDA = os.path.join(GRABADO, "momento0_shopify.json")
+# La taxonomia y sus vectores de 768 no van al repo: se bajan y se piden de nuevo si hacen falta.
+CACHE = os.environ.get("CACHE_SHOPIFY") or os.path.join(VECTORES, "shopify")
 URL_TAX = "https://raw.githubusercontent.com/Shopify/product-taxonomy/main/dist/es/categories.txt"
 DIM = 768
 
@@ -132,7 +133,7 @@ def pares():
     """(modelo, caso, i, concepto esperado, busqueda, fragmento) de lo grabado por la v2."""
     import engranaje0 as E
     esperado = E._esperado()
-    res = json.load(open(os.path.join(AQUI, "engranaje0_embeddings.json"), encoding="utf-8"))
+    res = json.load(open(os.path.join(GRABADO, "engranaje0_embeddings.json"), encoding="utf-8"))
     out = []
     for r in res:
         concepto = FUERA[r["id"]] if r["esperado"] == "ninguno" else esperado[(r["id"], r["i"])]
@@ -226,7 +227,7 @@ def solo_embeddings():
         if conceptos:
             print(f"{cid} {m[:90]}\n   espera {conceptos} -> " + " | ".join(t[1].split(' > ')[-1] for t in top)
                   + "   " + " ".join(f"{c}:{'1' if a else '5' if b else 'NO'}" for c, (a, b) in res.items()))
-    json.dump(filas, open(os.path.join(AQUI, "momento0_shopify_mensaje.json"), "w", encoding="utf-8"),
+    json.dump(filas, open(os.path.join(GRABADO, "momento0_shopify_mensaje.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=0)
     print(f"\nEL MENSAJE ENTERO, SOLO EMBEDDINGS: {total} productos, primera {p1}, entre cinco {p5}")
 
@@ -270,7 +271,7 @@ def separado():
                     fallas.append((m, cid, c, b, [(f, tops[f][0][1].split(" > ")[-1]) for f in fs]))
         print(f"  {m:9} primera {p1:>3}, entre cinco {p5:>3}, de {n} · " +
               " · ".join(f"{k} {v[1]}/{v[2]}/{v[0]}" for k, v in grupos.items()))
-    json.dump(salida, open(os.path.join(AQUI, "momento0_shopify_separado.json"), "w", encoding="utf-8"),
+    json.dump(salida, open(os.path.join(GRABADO, "momento0_shopify_separado.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=0)
     print("\n  lo que ningun fragmento trae primero:")
     for m, cid, c, b, fs in fallas:

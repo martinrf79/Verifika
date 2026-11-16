@@ -12,15 +12,14 @@ LA VARA, por mensaje y por rubro, para no depender de como el modelo escribio el
 Se cuenta para lo que tradujo el modelo, para los fragmentos, y para los dos juntos. Y se listan las lineas donde los dos
 no coinciden, con el rubro esperado.
 
-    python3 banco_pruebas/momento0_suma.py
+    python3 banco_pruebas/flujo/antecedentes/momento0_suma.py
 """
 import collections
-import json
 import os
 import sys
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [os.path.dirname(AQUI), AQUI]
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import entorno  # noqa: E402,F401
 
 import engranaje0 as E  # noqa: E402
 import nexo_rubro as NR  # noqa: E402

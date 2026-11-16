@@ -48,13 +48,13 @@ Las varas se escribieron antes de correr, en `banco_pruebas/llamada0_vara.py`, y
 El flujo nuevo vive solo en el banco y pasa a `app/` todo junto, de una vez, cuando el camino completo supere al agente
 en las mismas charlas. Hasta entonces no se toca producción. Para que no se pierda nada:
 
-1. **Ordenar, la sesión que sigue.** Juntar el flujo nuevo en una sola carpeta, `banco_pruebas/flujo/`: un archivo por
-   paso, llamada 0, cada nexo, Jev y redactar; las grabaciones en una subcarpeta; los vectores en un lugar fijo y no en
-   el scratchpad de una sesión. Cortar las dependencias del banco viejo, sección 5. Se comprueba que todos los números
-   salgan iguales que hoy, sin gasto, antes y después de mover. `MAPA.md` apunta a la carpeta.
+1. **Ordenar. Hecho el 16-nov, sección 6.** El flujo nuevo está en `banco_pruebas/flujo/`, sin dependencias del banco
+   viejo, con los mismos números antes y después de mover y los vectores rehechos y verificados.
 2. **Los nexos sobre la llamada 0 elegida.**
-   - Cambiar la llamada 0 de `flujo_nuevo.py` al modelo de `llamada0_modelos.MODELOS["luna"]` con el prompt v2, por la
-     clave directa de OpenAI.
+   - Cambiar la llamada 0 de `flujo_nuevo.py` al modelo de `llamada0_modelos.MODELOS["luna"]` con el prompt v2. Desde el
+     16-nov ese modelo ya va por la clave directa de OpenAI; el nombre se confirmó en la lista de modelos, sin correrlo.
+   - **Antes de correr, Martín decide el tope:** `MODELOS["luna"]` tiene un tope de 12 centavos para todo lo que corre con
+     ese modelo en el banco, y ya lleva 11. Subirlo es un umbral: su propio commit, con las cuentas.
    - Correr los cinco nexos sobre lo nuevo: las búsquedas nuevas piden sus vectores y lo dudoso nuevo pide Jev.
    - El nexo de rubro con lo medido en `embeddings_candidatos.py`: consulta con el fragmento y la búsqueda juntos, y 8
      candidatos en vez de 5; Jev elige entre ellos en lo dudoso.
@@ -72,41 +72,62 @@ en las mismas charlas. Hasta entonces no se toca producción. Para que no se pie
 ## 4. Cómo se corre
 
 ```bash
-python3 banco_pruebas/llamada0_modelos.py                  # las 140, sin gasto
-python3 banco_pruebas/llamada0_modelos.py --reales         # los 40 reales y las 365: dónde se pierde la condición
-python3 banco_pruebas/llamada0_modelos.py --sobra --ver    # lo que sobra y lo inventado
-python3 banco_pruebas/llamada0_modelos.py --correr luna v2 --banco reales525   # con gasto, retoma lo que falta
-python3 banco_pruebas/embeddings_candidatos.py --informe   # cuántos candidatos hacen falta, de lo grabado
+python3 banco_pruebas/flujo/llamada0_modelos.py                  # las 140, sin gasto
+python3 banco_pruebas/flujo/llamada0_modelos.py --reales         # los 40 reales y las 365: dónde se pierde la condición
+python3 banco_pruebas/flujo/llamada0_modelos.py --sobra --ver    # lo que sobra y lo inventado; pide vectores si faltan
+python3 banco_pruebas/flujo/llamada0_modelos.py --correr luna v2 --banco reales525   # con gasto, retoma lo que falta
+python3 banco_pruebas/flujo/embeddings_candidatos.py --informe   # cuántos candidatos hacen falta, de lo grabado
+python3 banco_pruebas/flujo/flujo_nuevo.py --ver                 # el flujo de punta a punta, sin gasto
+python3 banco_pruebas/flujo/nexo_rubro.py --ver [--jev]          # cada nexo, sin gasto: también nexo_tema, nexo_nombrado,
+python3 banco_pruebas/flujo/nexo_condicion.py --ver              #   nexo_condicion, nexo_destino y reales [--525]
+python3 banco_pruebas/flujo/embeddings.py                        # la receta de los embeddings y el registro de cada nexo
 ```
 
-Gasto de la sesión: unos 30 centavos de la paga de Gemini, anotados en `libro_paga.jsonl`; 15 de OpenRouter; unos 30
-entre Haiku y DeepSeek por sus claves.
+Gasto de la sesión del 16-nov de la elección: unos 30 centavos de la paga de Gemini, anotados en `libro_paga.jsonl`; 15
+de OpenRouter; unos 30 entre Haiku y DeepSeek por sus claves. La sesión de ordenar: 2 centavos de la paga de Gemini en
+vectores.
 
-## 5. Inventario del flujo nuevo al 16-nov: dónde está cada cosa
+## 5. Inventario del flujo nuevo: dónde está cada cosa
 
-Todo en `banco_pruebas/`, salvo la fuente de la tienda, que está en `data/clientes/verifika_prod/`.
+Todo en `banco_pruebas/flujo/`, salvo la fuente de la tienda, que está en `data/clientes/verifika_prod/`, y los libros de
+gasto, `banco_pruebas/libro_paga.jsonl` y `banco_pruebas/jev/gasto_jev.jsonl`. Lo grabado está en `grabado/`; los
+bancos de mensajes, en `bancos/`.
 
 | Paso | Código | Grabado, para repetir sin gasto |
 | --- | --- | --- |
+| Las rutas y el código de producción sin red | `entorno.py` | — |
 | El flujo de punta a punta | `flujo_nuevo.py` | `flujo_nuevo_llamada0.jsonl`, `flujo_nuevo_puntajes.json`, `flujo_nuevo_respuestas.json` |
-| Cómo busca cada nexo, el registro | `busquedas.py` | — |
+| Los embeddings: receta, pedido, registro e índice | `embeddings.py` | `vectores/indice_tienda.json.gz` |
 | La llamada 0: prompts, modelos y varas | `llamada0_modelos.py`, `llamada0_vara.py`, `engranaje0.py` | `llamada0_modelos.jsonl`, `engranaje0_corridas.jsonl` |
 | Cuántos candidatos hacen falta | `embeddings_candidatos.py` | `embeddings_candidatos_rangos.json`, `embeddings_candidatos_rangos_reales.json` |
 | Nexo de rubro y producto | `nexo_rubro.py` | `nexo_rubro_puntajes.json`, `nexo_rubro_jev.jsonl`, `nexo_rubro_respuestas.json` |
 | Nexo de tema de la FAQ | `nexo_tema.py` | `nexo_tema_puntajes.json`, `nexo_tema_dudoso.jsonl` |
-| Nexo de producto nombrado | `nexo_nombrado.py`, `nombrados38.py` | `nexo_nombrado_puntajes.json`, `nexo_nombrado_llamada0.jsonl` |
+| Nexo de producto nombrado | `nexo_nombrado.py`, `bancos/nombrados38.py` | `nexo_nombrado_puntajes.json`, `nexo_nombrado_llamada0.jsonl` |
 | Nexo de condición | `nexo_condicion.py`, `nexo_condicion_vara.py` | `nexo_condicion_puntajes.json`, `nexo_condicion_jev.jsonl`, `nexo_condicion_respuestas.json` |
-| Nexo de destino | el código de producción, `app/core/flujo/normal.lugares` y `app/core/fuente._cotizar`, desde `flujo_nuevo.nexo_destino`; antecedente en `nexo_destino.py` | — |
-| Jev | `nexo_tema.llamar_jev`; la API y el índice en `jev/` | `jev/gasto_jev.jsonl` |
-| Las 140 | `nuevas70.py`, `nuevas70b.py`, `momento0_b.py` | `momento0_b_corridas.jsonl`, `momento0_b_puntajes.json` |
-| Los 40 reales y las 365 | `reales.py`, `agendas58.py`, `traduccion58.py`, `vara_58.json` | `reales_llamada0.jsonl`, `reales_puntajes.json`, `reales_jev.jsonl` y lo mismo con `reales525` |
-| El gasto | `libro_paga.py`, `costo.py` | `libro_paga.jsonl`, `jev/gasto_jev.jsonl` |
+| Nexo de destino | el código de producción, `app/core/flujo/normal.lugares` y `app/core/fuente._cotizar`, desde `flujo_nuevo.nexo_destino`; su vara en `nexo_destino.py` | — |
+| Jev | `jev.py` | `*_jev.jsonl`, `nexo_tema_dudoso.jsonl` |
+| Las 140 | `bancos/nuevas70.py`, `bancos/nuevas70b.py`, `momento0_b.py` | `momento0_b_corridas.jsonl`, `momento0_b_puntajes.json` |
+| Los 40 reales y las 365 | `reales.py`, `bancos/las365.json` | `reales_llamada0.jsonl`, `reales_puntajes.json`, `reales_jev.jsonl` y lo mismo con `reales525` |
+| Antecedentes: la suma de fragmentos y Shopify | `antecedentes/` | `momento0_shopify*.json`, `engranaje0_embeddings.json` |
 
-**Lo que hay que cortar al ordenar:** `nexo_rubro.py` usa `camino_fijo.py`; `llamada1_modelos.py`, de donde sale la
-función de embeddings `_emb`, usa `separar_charlas.py` y `clon_produccion.py`; `reales.py` usa `traduccion58.py`, que
-usa `cableado58.py`. Son del banco viejo y no van a `app/`.
+## 6. Lo hecho al ordenar, 16-nov
 
-**Los vectores:** `nexo_rubro.CACHE`, `nexo_tema.CACHE` y `nexo_nombrado.CACHE` apuntan al scratchpad de una sesión que
-ya no existe; `embeddings_candidatos.CACHE` a `/tmp`. Los puntajes grabados alcanzan para repetir los números; lo nuevo
-pide vectores, unos centavos por la paga o lento por la gratis.
-
+- **Se movió con `git mv`:** los pasos, los bancos y lo grabado. Lo grabado no cambió un byte.
+- **Se cortó el banco viejo.** El entorno de producción sin red sale de `entorno.instalar` y no de `camino_fijo`. Los
+  vectores salen de `embeddings.pedir` y no de `llamada1_modelos._emb`. Las 365 quedan congeladas en
+  `bancos/las365.json`, generado con el código de antes, con el texto, la vara y las preguntas de la agenda a mano de
+  cada turno; ya no se importan `agendas58` ni `traduccion58`. Jev pasó a su archivo. El flujo solo importa del banco
+  los libros de gasto, el costo y el doble de Firestore.
+- **Los mismos números:** 25 informes sin gasto, corridos antes y después de mover. Salen iguales salvo el registro de
+  embeddings, que ahora dice las rutas nuevas, y lo que sobra, que antes no corría por falta de vectores.
+- **Los embeddings, que se perdían de una sesión a otra**, están en `embeddings.py`: la receta, una sola función que
+  pide, un solo cache en `vectores/`, y el índice de la tienda en el repo. Se rehicieron todos con la paga, 2 centavos.
+  Los puntajes de los cinco nexos, del flujo, de los reales, de las 365 y de los candidatos salen iguales byte a byte a
+  los grabados. Lo que sobra da lo de la sección 2: 6, 24 y 3; 11, 14 y 6; 6, 17 y 4. La calibración del nexo de rubro
+  da, con la variante viva, lo mismo que califica el nexo desde lo grabado.
+- **Dos antecedentes del 15-nov no se repiten:** `engranaje0_embeddings.json` y `momento0_b_puntajes.json` difieren
+  solo en teclado, porque el 16-nov se le sumó el alias "keyboard". Quedan como se grabaron.
+- **Lo que no coincide con una nota vieja, y ya estaba así antes de mover:** la calibración de condición da 148 de 188
+  con la V3, no 150 como dice el registro; el resto, igual.
+- **Lo que queda para el paso 2:** el tope del modelo elegido, sección 3; y la llamada 0 del flujo, que sigue con el
+  modelo de hoy hasta que se cambie con su medición.

@@ -13,16 +13,15 @@ decide el monto. Por cada destino que el cliente dijo:
   mal        llega a otra zona u otra provincia: es el error que no se puede permitir, porque cobra otro envio.
   perdido    ninguna linea del modelo trae ese destino en su campo.
 
-    python3 banco_pruebas/nexo_destino.py
+    python3 banco_pruebas/flujo/nexo_destino.py
 """
 import collections
 import json
-import logging
 import os
 import sys
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [os.path.dirname(AQUI), AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import entorno  # noqa: E402
 
 VARA = {
     "Mendoza": ("interior", "mendoza"), "Salta": ("interior", "salta"), "Caba": ("caba", None),
@@ -42,10 +41,8 @@ VARA = {
 
 
 def instalar():
-    from banco_pruebas import camino_fijo as F
-    F.instalar()
-    import structlog
-    structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(logging.CRITICAL))
+    """El codigo de produccion de los nexos sin red ni modelo: `entorno.instalar`."""
+    entorno.instalar()
 
 
 def veredicto(r, ciudad):

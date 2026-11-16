@@ -1,0 +1,8592 @@
+{
+ "de_donde": "las 525 de traduccion58 sin las claves de memoria, congeladas el 16-nov con reales.casos_525 y agendas58.AGENDAS del commit 95d53ea",
+ "fuera": {
+  "C21|1": 1,
+  "C27|1": 1,
+  "C34|1": 1,
+  "C35|1": 1,
+  "C38|1": 1,
+  "C43|1": 1,
+  "C44|1": 1,
+  "C45|1": 1,
+  "C46|1": 1,
+  "C48|1": 1,
+  "C49|3": 1,
+  "C50|1": 1,
+  "C50|2": 1,
+  "C52|1": 1,
+  "C53|1": 1,
+  "C55|2": 1,
+  "K07|1": 1,
+  "K10|1": 1,
+  "K10|3": 1,
+  "K10|5": 1,
+  "K10|6": 1,
+  "K10|7": 1,
+  "K11|1": 1,
+  "K11|2": 1,
+  "K11|4": 1,
+  "K11|5": 1,
+  "K20|1": 1,
+  "K21|2": 1,
+  "K21|3": 1,
+  "K21|4": 1,
+  "K21|5": 1,
+  "K21|6": 1
+ },
+ "casos": [
+  {
+   "id": "C01.0.original",
+   "texto": "tenes el G305?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C01.0.plano",
+   "texto": "tenes el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C01.0.whatsapp",
+   "texto": "tenes el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C01.0.redactada",
+   "texto": "¿Tienen disponible el G305?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C01.0.coloquial",
+   "texto": "che el g305 lo tenes?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C02.0.original",
+   "texto": "que parlantes tenes?",
+   "vara": {
+    "rubros": [
+     "parlante"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C02.0.plano",
+   "texto": "que parlantes tenes",
+   "vara": {
+    "rubros": [
+     "parlante"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C02.0.whatsapp",
+   "texto": "q palrantes tenes",
+   "vara": {
+    "rubros": [
+     "parlante"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C02.0.redactada",
+   "texto": "¿Qué parlantes venden?",
+   "vara": {
+    "rubros": [
+     "parlante"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C02.0.coloquial",
+   "texto": "q parlantes hay",
+   "vara": {
+    "rubros": [
+     "parlante"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C03.0.original",
+   "texto": "cuantos dpi tiene el G502 Hero?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C03.0.plano",
+   "texto": "cuantos dpi tiene el g502 hero",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C03.0.whatsapp",
+   "texto": "cunatos dpi tiene el g502 hero",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C03.0.redactada",
+   "texto": "¿Cuántos DPI tiene el mouse G502 Hero?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C03.0.coloquial",
+   "texto": "el g502 hero cuantos dpi tiene",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C04.0.original",
+   "texto": "el K120, que es inalambrico, cuanto sale?",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C04.0.plano",
+   "texto": "el k120 que es inalambrico cuanto sale",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C04.0.whatsapp",
+   "texto": "el k120 q es inlaambrico cuanto sale",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C04.0.redactada",
+   "texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C04.0.coloquial",
+   "texto": "cuanto esta el k120 que es inalambrico",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C05.0.original",
+   "texto": "busco una notebook con 16 GB de RAM",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C05.0.plano",
+   "texto": "busco una notebook con 16 gb de ram",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C05.0.whatsapp",
+   "texto": "busco una noetbook con 16 gb de ram",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C05.0.redactada",
+   "texto": "Estoy buscando una notebook que tenga 16 GB de RAM.",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C05.0.coloquial",
+   "texto": "necesito una notebook de 16 gigas de ram",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C06.0.original",
+   "texto": "quiero un mouse inalambrico, preferentemente Logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C06.0.plano",
+   "texto": "quiero un mouse inalambrico preferentemente logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C06.0.whatsapp",
+   "texto": "queiro un mouse inalambrico preferentemente logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C06.0.redactada",
+   "texto": "Quiero un mouse inalámbrico; si es Logitech, mejor.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C06.0.coloquial",
+   "texto": "busco un mouse sin cable, de ser posible logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C07.0.original",
+   "texto": "un mouse que no sea Genius",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C07.0.plano",
+   "texto": "un mouse que no sea genius",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C07.0.whatsapp",
+   "texto": "un mouse q no sea genius",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C07.0.redactada",
+   "texto": "Busco un mouse de cualquier marca menos Genius.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C07.0.coloquial",
+   "texto": "un mouse q no sea genius porfa",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C08.0.original",
+   "texto": "una tablet, lo menos china posible",
+   "vara": {
+    "rubros": [
+     "tablet"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C08.0.plano",
+   "texto": "una tablet lo menos china posible",
+   "vara": {
+    "rubros": [
+     "tablet"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C08.0.whatsapp",
+   "texto": "una talbet lo menos china posible",
+   "vara": {
+    "rubros": [
+     "tablet"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C08.0.redactada",
+   "texto": "Quiero una tablet que tenga lo menos posible de fabricación china.",
+   "vara": {
+    "rubros": [
+     "tablet"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C08.0.coloquial",
+   "texto": "busco tablet lo menos chino posible",
+   "vara": {
+    "rubros": [
+     "tablet"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C09.0.original",
+   "texto": "cual es el monitor mas barato?",
+   "vara": {
+    "rubros": [
+     "monitor"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C09.0.plano",
+   "texto": "cual es el monitor mas barato",
+   "vara": {
+    "rubros": [
+     "monitor"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C09.0.whatsapp",
+   "texto": "cual es el mointor mas barato",
+   "vara": {
+    "rubros": [
+     "monitor"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C09.0.redactada",
+   "texto": "¿Cuál es el monitor más económico que tienen?",
+   "vara": {
+    "rubros": [
+     "monitor"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C09.0.coloquial",
+   "texto": "cual es el monitor mas barato q tenes",
+   "vara": {
+    "rubros": [
+     "monitor"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C10.0.original",
+   "texto": "cuanto sale el envio a Posadas?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C10.0.plano",
+   "texto": "cuanto sale el envio a posadas",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C10.0.whatsapp",
+   "texto": "cunato sale el envio a posadas",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C10.0.redactada",
+   "texto": "¿Cuánto cuesta enviar a Posadas?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C10.0.coloquial",
+   "texto": "cuanto sale mandar a posadas",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C11.0.original",
+   "texto": "hacen factura A?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C11.0.plano",
+   "texto": "hacen factura a",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C11.0.whatsapp",
+   "texto": "hacen fatcura a",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C11.0.redactada",
+   "texto": "¿Emiten factura A?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C11.0.coloquial",
+   "texto": "hacen factura a?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C12.0.original",
+   "texto": "tienen 50 por ciento off en todo, no?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C12.0.plano",
+   "texto": "tienen 50 por ciento off en todo no",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C12.0.whatsapp",
+   "texto": "tineen 50 por ciento off en todo no",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C12.0.redactada",
+   "texto": "Tienen un 50% de descuento en todo, ¿verdad?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C12.0.coloquial",
+   "texto": "esta todo al 50 off no?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C13.0.original",
+   "texto": "soy revendedor, tienen precio mayorista?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "mayoristas"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C13.0.plano",
+   "texto": "soy revendedor tienen precio mayorista",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "mayoristas"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C13.0.whatsapp",
+   "texto": "soy reevndedor tienen precio mayorista",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "mayoristas"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C13.0.redactada",
+   "texto": "Revendo productos. ¿Manejan precios mayoristas?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "mayoristas"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C13.0.coloquial",
+   "texto": "soy revendedor, hay precio por mayor?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "mayoristas"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C14.0.original",
+   "texto": "que conviene, DDR4 o DDR5?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "asesoramiento",
+     "especificaciones",
+     "mouse_dpi",
+     "teclado_mecanico_membrana"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C14.0.plano",
+   "texto": "que conviene ddr4 o ddr5",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "asesoramiento",
+     "especificaciones",
+     "mouse_dpi",
+     "teclado_mecanico_membrana"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C14.0.whatsapp",
+   "texto": "q covniene ddr4 o ddr5",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "asesoramiento",
+     "especificaciones",
+     "mouse_dpi",
+     "teclado_mecanico_membrana"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C14.0.redactada",
+   "texto": "¿Qué me conviene más, DDR4 o DDR5?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "asesoramiento",
+     "especificaciones",
+     "mouse_dpi",
+     "teclado_mecanico_membrana"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C14.0.coloquial",
+   "texto": "ddr4 o ddr5, cual conviene",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "asesoramiento",
+     "especificaciones",
+     "mouse_dpi",
+     "teclado_mecanico_membrana"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C15.0.original",
+   "texto": "me llevo dos G305 negros",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C15.0.plano",
+   "texto": "me llevo dos g305 negros",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C15.0.whatsapp",
+   "texto": "me llevo dos g305 nergos",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C15.0.redactada",
+   "texto": "Quiero llevar dos G305 en color negro.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C15.0.coloquial",
+   "texto": "dame 2 g305 negros",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C16.0.original",
+   "texto": "me llevo el K120 negro, pago 70 por ciento transferencia y 30 por ciento Mercado Pago",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C16.0.plano",
+   "texto": "me llevo el k120 negro pago 70 por ciento transferencia y 30 por ciento mercado pago",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C16.0.whatsapp",
+   "texto": "me llevo el k120 negro pago 70 por cineto transferencia y 30 por ciento mercado pago",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C16.0.redactada",
+   "texto": "Me llevo el K120 en negro. Pago el 70% por transferencia y el 30% con Mercado Pago.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C16.0.coloquial",
+   "texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C17.0.original",
+   "texto": "cuanto sale el G305 y que teclados mecanicos tenes?",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C17.0.plano",
+   "texto": "cuanto sale el g305 y que teclados mecanicos tenes",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C17.0.whatsapp",
+   "texto": "cunato sale el g305 y q teclados mecanicos tenes",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C17.0.redactada",
+   "texto": "¿Qué teclados mecánicos tienen? ¿Y cuánto cuesta el G305?",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C17.0.coloquial",
+   "texto": "cuanto esta el g305 y q teclados mecanicos hay",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C18.0.original",
+   "texto": "tenes auriculares JBL y cuanto sale mandarlos a Cordoba?",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C18.0.plano",
+   "texto": "tenes auriculares jbl y cuanto sale mandarlos a cordoba",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C18.0.whatsapp",
+   "texto": "tenes auris jbl y cunato sale mandarlos a cordoba",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C18.0.redactada",
+   "texto": "¿Venden auriculares JBL? ¿Cuánto costaría enviarlos a Córdoba?",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C18.0.coloquial",
+   "texto": "auris jbl tenes? y cuanto sale el envio a cordoba",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C19.0.original",
+   "texto": "el G203 tiene stock? y hacen factura A?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C19.0.plano",
+   "texto": "el g203 tiene stock y hacen factura a",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C19.0.whatsapp",
+   "texto": "el g203 tiene stock y hacen fatcura a",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C19.0.redactada",
+   "texto": "¿Hay stock del G203? Además, ¿emiten factura A?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C19.0.coloquial",
+   "texto": "hay g203? y hacen factura a?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C20.0.original",
+   "texto": "sumame dos K120 negros y un G203 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C20.0.plano",
+   "texto": "sumame dos k120 negros y un g203 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C20.0.whatsapp",
+   "texto": "suamme dos k120 negros y un g203 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C20.0.redactada",
+   "texto": "Agregame dos K120 negros y un G203 negro.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C20.0.coloquial",
+   "texto": "sumame 2 k120 negros y 1 g203 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C21.0.original",
+   "texto": "quiero un G305 negro y un K120 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C21.0.plano",
+   "texto": "quiero un g305 negro y un k120 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C21.0.whatsapp",
+   "texto": "queiro un g305 negro y un k120 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C21.0.redactada",
+   "texto": "Quiero un K120 negro y un G305 negro.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C21.0.coloquial",
+   "texto": "quiero g305 negro y k120 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C22.0.original",
+   "texto": "el G305 sirve para jugar? cuanto sale?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C22.0.plano",
+   "texto": "el g305 sirve para jugar cuanto sale",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C22.0.whatsapp",
+   "texto": "el g305 sirve para jugar cunato sale",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C22.0.redactada",
+   "texto": "¿Cuánto cuesta el G305? ¿Sirve para gaming?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C22.0.coloquial",
+   "texto": "el g305 es para jugar? cuanto esta",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C23.0.original",
+   "texto": "quiero el G305 en blanco y un K120",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C23.0.plano",
+   "texto": "quiero el g305 en blanco y un k120",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C23.0.whatsapp",
+   "texto": "queiro el g305 en blanco y un k120",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C23.0.redactada",
+   "texto": "Quiero un K120 y el G305 en color blanco.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C23.0.coloquial",
+   "texto": "dame el g305 blanco y un k120",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C24.0.original",
+   "texto": "teclado y mouse, los dos lo mas baratos posible",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C24.0.plano",
+   "texto": "teclado y mouse los dos lo mas baratos posible",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C24.0.whatsapp",
+   "texto": "telcado y mouse los dos lo mas baratos posible",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C24.0.redactada",
+   "texto": "Necesito un teclado y un mouse, ambos lo más económicos posible.",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C24.0.coloquial",
+   "texto": "mouse y teclado, lo mas barato de los dos",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C25.0.original",
+   "texto": "dos G305 negros y tres K120 blancos, cuanto es?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C25.0.plano",
+   "texto": "dos g305 negros y tres k120 blancos cuanto es",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C25.0.whatsapp",
+   "texto": "dos g305 nergos y tres k120 blancos cuanto es",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C25.0.redactada",
+   "texto": "¿Cuánto sale todo? Dos G305 negros y tres K120 blancos.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C25.0.coloquial",
+   "texto": "2 g305 negros y 3 k120 blancos cuanto seria",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C26.0.original",
+   "texto": "mandame un G203 a Rosario y otro a Mendoza, cuanto sale cada envio?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C26.0.plano",
+   "texto": "mandame un g203 a rosario y otro a mendoza cuanto sale cada envio",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C26.0.whatsapp",
+   "texto": "madname un g203 a rosario y otro a mendoza cuanto sale cada envio",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C26.0.redactada",
+   "texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C26.0.coloquial",
+   "texto": "un g203 a rosario y otro a mendoza, cuanto sale cada envio",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C27.0.original",
+   "texto": "mostrame mouse Logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C27.0.plano",
+   "texto": "mostrame mouse logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C27.0.whatsapp",
+   "texto": "motsrame mouse logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C27.0.redactada",
+   "texto": "Mostrame los mouse de Logitech.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C27.0.coloquial",
+   "texto": "q mouse logitech tenes",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C28.0.original",
+   "texto": "si no hay G502 Hero en negro, pasame el G305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C28.0.plano",
+   "texto": "si no hay g502 hero en negro pasame el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C28.0.whatsapp",
+   "texto": "si no hay g502 hero en negro paasme el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C28.0.redactada",
+   "texto": "Pasame el G305 en caso de que no haya G502 Hero en negro.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C28.0.coloquial",
+   "texto": "si no tenes el g502 hero negro dame el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C29.0.original",
+   "texto": "si el G305 anda con Mac, me lo llevo",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C29.0.plano",
+   "texto": "si el g305 anda con mac me lo llevo",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C29.0.whatsapp",
+   "texto": "si el g305 anda con mac me lo llevo",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C29.0.redactada",
+   "texto": "Me llevo el G305 si es compatible con Mac.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C29.0.coloquial",
+   "texto": "si el g305 funciona con mac lo compro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C30.0.original",
+   "texto": "tengo una PC de escritorio con placa DDR5. si la Kingston Fury Beast DDR4 16GB no le sirve, que otra memoria hay?",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "memoria ram"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C30.0.plano",
+   "texto": "tengo una pc de escritorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve que otra memoria hay",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "memoria ram"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C30.0.whatsapp",
+   "texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "memoria ram"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C30.0.redactada",
+   "texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "memoria ram"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C30.0.coloquial",
+   "texto": "tengo pc de escritorio con placa ddr5, si la kingston fury beast ddr4 16gb no va que otra memoria hay",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "memoria ram"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C31.0.original",
+   "texto": "sumame un MX Master 3S negro y dos G305 negros, si pasa de 300 mil saca el MX",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C31.0.plano",
+   "texto": "sumame un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C31.0.whatsapp",
+   "texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C31.0.redactada",
+   "texto": "Agregame dos G305 negros y un MX Master 3S negro. Si el total supera los 300 mil, sacá el MX.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C31.0.coloquial",
+   "texto": "sumame 1 mx master 3s negro y 2 g305 negros, si pasa los 300 mil saca el mx",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C32.0.original",
+   "texto": "entre el G305 y el G203, dame el que sea inalambrico",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C32.0.plano",
+   "texto": "entre el g305 y el g203 dame el que sea inalambrico",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C32.0.whatsapp",
+   "texto": "entre el g305 y el g203 dame el q sea inlaambrico",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C32.0.redactada",
+   "texto": "De estos dos, el G203 y el G305, dame el inalámbrico.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C32.0.coloquial",
+   "texto": "entre g305 y g203 dame el q sea inalambrico",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C33.0.original",
+   "texto": "quiero un teclado Redragon, ah no, mejor Logitech",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C33.0.plano",
+   "texto": "quiero un teclado redragon ah no mejor logitech",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C33.0.whatsapp",
+   "texto": "queiro un teclado redragon ah no mejor logitech",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C33.0.redactada",
+   "texto": "Quiero un teclado Redragon... no, perdón, mejor uno Logitech.",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C33.0.coloquial",
+   "texto": "quiero teclado redragon, ah no mejor logitech",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C34.0.original",
+   "texto": "cuanto sale mandar un G203 a Rosario?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C34.0.plano",
+   "texto": "cuanto sale mandar un g203 a rosario",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C34.0.whatsapp",
+   "texto": "cunato sale mandar un g203 a rosario",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C34.0.redactada",
+   "texto": "¿Cuánto cuesta enviar un G203 a Rosario?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C34.0.coloquial",
+   "texto": "cuanto sale mandar un g203 a rosario",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C35.0.original",
+   "texto": "busco un mouse gamer Logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C35.0.plano",
+   "texto": "busco un mouse gamer logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C35.0.whatsapp",
+   "texto": "busco un mouse gamer logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C35.0.redactada",
+   "texto": "Estoy buscando un mouse gamer de la marca Logitech.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C35.0.coloquial",
+   "texto": "busco mouse gamer logitech",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C36.0.original",
+   "texto": "el G305 anda con mi Mac?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "mouse"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C36.0.plano",
+   "texto": "el g305 anda con mi mac",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "mouse"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C36.0.whatsapp",
+   "texto": "el g305 anda con mi mac",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "mouse"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C36.0.redactada",
+   "texto": "¿El G305 es compatible con mi Mac?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "mouse"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C36.0.coloquial",
+   "texto": "el g305 funciona con mi mac?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad",
+     "mouse"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C37.0.original",
+   "texto": "tengo una notebook, que memoria ram le sirve?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C37.0.plano",
+   "texto": "tengo una notebook que memoria ram le sirve",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C37.0.whatsapp",
+   "texto": "tengo una noetbook q memoria ram le sirve",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C37.0.redactada",
+   "texto": "Tengo una notebook. ¿Qué memoria RAM es compatible?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C37.0.coloquial",
+   "texto": "tengo notebook, q ram le va",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "compatibilidad"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C38.0.original",
+   "texto": "cuanto sale la Kingston Fury Beast DDR4 16GB?",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "memoria ram"
+    ],
+    "nombrados": [
+     [
+      "kingston",
+      "exists",
+      [
+       "Fury Beast DDR4 3200 16GB"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C38.0.plano",
+   "texto": "cuanto sale la kingston fury beast ddr4 16gb",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "memoria ram"
+    ],
+    "nombrados": [
+     [
+      "kingston",
+      "exists",
+      [
+       "Fury Beast DDR4 3200 16GB"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C38.0.whatsapp",
+   "texto": "cunato sale la kingston fury beast ddr4 16gb",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "memoria ram"
+    ],
+    "nombrados": [
+     [
+      "kingston",
+      "exists",
+      [
+       "Fury Beast DDR4 3200 16GB"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C38.0.redactada",
+   "texto": "¿Cuánto cuesta la Kingston Fury Beast DDR4 16GB?",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "memoria ram"
+    ],
+    "nombrados": [
+     [
+      "kingston",
+      "exists",
+      [
+       "Fury Beast DDR4 3200 16GB"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C38.0.coloquial",
+   "texto": "cuanto esta la kingston fury beast ddr4 16gb",
+   "vara": {
+    "rubros": [
+     "memoria ram"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "memoria ram"
+    ],
+    "nombrados": [
+     [
+      "kingston",
+      "exists",
+      [
+       "Fury Beast DDR4 3200 16GB"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C39.0.original",
+   "texto": "el G203 es inalambrico, no? lo quiero para viajar",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C39.0.plano",
+   "texto": "el g203 es inalambrico no lo quiero para viajar",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C39.0.whatsapp",
+   "texto": "el g203 es inlaambrico no lo quiero para viajar",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C39.0.redactada",
+   "texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C39.0.coloquial",
+   "texto": "el g203 es inalambrico no? es para viajar",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C40.0.original",
+   "texto": "me dijeron que el envio es gratis a todo el pais, no?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "costo_envio"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C40.0.plano",
+   "texto": "me dijeron que el envio es gratis a todo el pais no",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "costo_envio"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C40.0.whatsapp",
+   "texto": "me diejron q el envio es gratis a todo el pais no",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "costo_envio"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C40.0.redactada",
+   "texto": "Me comentaron que el envío es gratis a todo el país, ¿es así?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "costo_envio"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C40.0.coloquial",
+   "texto": "me dijeron q el envio es gratis a todo el pais, es asi?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "costo_envio"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C41.0.original",
+   "texto": "soy jubilado, tienen descuento?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "descuento_transferencia"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C41.0.plano",
+   "texto": "soy jubilado tienen descuento",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "descuento_transferencia"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C41.0.whatsapp",
+   "texto": "soy juiblado tienen descuento",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "descuento_transferencia"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C41.0.redactada",
+   "texto": "Soy jubilado. ¿Hacen algún descuento?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "descuento_transferencia"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C41.0.coloquial",
+   "texto": "soy jubilado hay descuento?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "descuento_transferencia"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C42.0.original",
+   "texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C42.0.plano",
+   "texto": "quiero una notebook con 64 gb de ram por menos de 200 mil",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C42.0.whatsapp",
+   "texto": "queiro una notebook con 64 gb de ram x menos de 200 mil",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C42.0.redactada",
+   "texto": "Busco una notebook con 64 GB de RAM que cueste menos de 200 mil.",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C42.0.coloquial",
+   "texto": "notebook de 64 gb de ram por menos de 200 mil",
+   "vara": {
+    "rubros": [
+     "notebook"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C43.0.original",
+   "texto": "cuanto sale el K120?",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C43.0.plano",
+   "texto": "cuanto sale el k120",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C43.0.whatsapp",
+   "texto": "cunato sale el k120",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C43.0.redactada",
+   "texto": "¿Cuánto cuesta el K120?",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C43.0.coloquial",
+   "texto": "cuanto esta el k120",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C44.0.original",
+   "texto": "cuanto salen el G305 y el G203?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C44.0.plano",
+   "texto": "cuanto salen el g305 y el g203",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C44.0.whatsapp",
+   "texto": "cunato salen el g305 y el g203",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C44.0.redactada",
+   "texto": "¿Cuánto cuestan el G203 y el G305?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C44.0.coloquial",
+   "texto": "cuanto estan el g305 y el g203",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C45.0.original",
+   "texto": "busco un mouse Logitech con cable",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C45.0.plano",
+   "texto": "busco un mouse logitech con cable",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C45.0.whatsapp",
+   "texto": "busco un mouse logitech con cable",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C45.0.redactada",
+   "texto": "Estoy buscando un mouse Logitech que sea con cable.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C45.0.coloquial",
+   "texto": "busco mouse logitech con cable",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C46.0.original",
+   "texto": "busco un teclado que no sea Redragon",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C46.0.plano",
+   "texto": "busco un teclado que no sea redragon",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C46.0.whatsapp",
+   "texto": "busco un telcado q no sea redragon",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C46.0.redactada",
+   "texto": "Busco un teclado de cualquier marca menos Redragon.",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C46.0.coloquial",
+   "texto": "busco teclado q no sea redragon",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C47.0.original",
+   "texto": "hola, soy de Posadas, Misiones",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C47.0.plano",
+   "texto": "hola soy de posadas misiones",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C47.0.whatsapp",
+   "texto": "hola soy de posadas misiones",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C47.0.redactada",
+   "texto": "Hola, te escribo desde Posadas, Misiones.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C47.0.coloquial",
+   "texto": "hola soy de posadas misiones",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C47.1.original",
+   "texto": "cuanto me sale el G203 negro con envio?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C47.1.plano",
+   "texto": "cuanto me sale el g203 negro con envio",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C47.1.whatsapp",
+   "texto": "cunato me sale el g203 negro con envio",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C47.1.redactada",
+   "texto": "¿Cuánto me sale el G203 negro con el envío incluido?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C47.1.coloquial",
+   "texto": "cuanto me sale el g203 negro con envio",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C48.0.original",
+   "texto": "me llevo un G305 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C48.0.plano",
+   "texto": "me llevo un g305 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C48.0.whatsapp",
+   "texto": "me llevo un g305 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C48.0.redactada",
+   "texto": "Me llevo un G305 en color negro.",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C48.0.coloquial",
+   "texto": "me llevo 1 g305 negro",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.0.original",
+   "texto": "cuanto sale el teclado Logitech K120 negro?",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C49.0.plano",
+   "texto": "cuanto sale el teclado logitech k120 negro",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C49.0.whatsapp",
+   "texto": "cunato sale el teclado logitech k120 negro",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C49.0.redactada",
+   "texto": "¿Cuánto cuesta el teclado Logitech K120 en negro?",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C49.0.coloquial",
+   "texto": "cuanto esta el teclado logitech k120 negro",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C49.1.original",
+   "texto": "y auriculares JBL tenes?",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.1.plano",
+   "texto": "y auriculares jbl tenes",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.1.whatsapp",
+   "texto": "y auris jbl tenes",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.1.redactada",
+   "texto": "¿Y tienen auriculares JBL?",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.1.coloquial",
+   "texto": "y auris jbl hay?",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.2.original",
+   "texto": "tenes webcams?",
+   "vara": {
+    "rubros": [
+     "webcam"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.2.plano",
+   "texto": "tenes webcams",
+   "vara": {
+    "rubros": [
+     "webcam"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.2.whatsapp",
+   "texto": "tenes wecbams",
+   "vara": {
+    "rubros": [
+     "webcam"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.2.redactada",
+   "texto": "¿Venden webcams?",
+   "vara": {
+    "rubros": [
+     "webcam"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C49.2.coloquial",
+   "texto": "webcams tenes?",
+   "vara": {
+    "rubros": [
+     "webcam"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C50.0.original",
+   "texto": "estoy entre el G203 y el G305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C50.0.plano",
+   "texto": "estoy entre el g203 y el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C50.0.whatsapp",
+   "texto": "estoy entre el g203 y el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C50.0.redactada",
+   "texto": "Estoy dudando entre el G203 y el G305.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C50.0.coloquial",
+   "texto": "estoy entre g203 y g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ],
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C51.0.original",
+   "texto": "cuanto sale el G305 negro? y mandame ese a Cordoba",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C51.0.plano",
+   "texto": "cuanto sale el g305 negro y mandame ese a cordoba",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C51.0.whatsapp",
+   "texto": "cunato sale el g305 negro y mandame ese a cordoba",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C51.0.redactada",
+   "texto": "¿Cuánto cuesta el G305 negro? Enviame ese mismo a Córdoba.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C51.0.coloquial",
+   "texto": "cuanto esta el g305 negro? mandamelo a cordoba",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "mouse",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C52.0.original",
+   "texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL?",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C52.0.plano",
+   "texto": "que tenes en mouse logitech teclados logitech y auriculares jbl",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C52.0.whatsapp",
+   "texto": "q tenes en mouse logitech telcados logitech y auris jbl",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C52.0.redactada",
+   "texto": "¿Qué tienen en mouse Logitech, en teclados Logitech y en auriculares JBL?",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C52.0.coloquial",
+   "texto": "q hay en mouse logitech, teclados logitech y auris jbl",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C53.0.original",
+   "texto": "cuanto sale el G502 Hero?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C53.0.plano",
+   "texto": "cuanto sale el g502 hero",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C53.0.whatsapp",
+   "texto": "cunato sale el g502 hero",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C53.0.redactada",
+   "texto": "¿Cuánto cuesta el G502 Hero?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C53.0.coloquial",
+   "texto": "cuanto esta el g502 hero",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g502",
+      "exists",
+      [
+       "G502 Hero"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C54.0.original",
+   "texto": "tengo una fuente de 550 watts, cual es la placa de video mas potente que aguante?",
+   "vara": {
+    "rubros": [
+     "placa de video"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C54.0.plano",
+   "texto": "tengo una fuente de 550 watts cual es la placa de video mas potente que aguante",
+   "vara": {
+    "rubros": [
+     "placa de video"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C54.0.whatsapp",
+   "texto": "tengo una funete de 550 watts cual es la placa de video mas potente q aguante",
+   "vara": {
+    "rubros": [
+     "placa de video"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C54.0.redactada",
+   "texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?",
+   "vara": {
+    "rubros": [
+     "placa de video"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C54.0.coloquial",
+   "texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca",
+   "vara": {
+    "rubros": [
+     "placa de video"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C55.0.original",
+   "texto": "cuanto salen el G305 negro y el G203 negro?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.0.plano",
+   "texto": "cuanto salen el g305 negro y el g203 negro",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.0.whatsapp",
+   "texto": "cunato salen el g305 negro y el g203 negro",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.0.redactada",
+   "texto": "¿Cuánto cuestan el G203 negro y el G305 negro?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.0.coloquial",
+   "texto": "cuanto estan el g305 negro y el g203 negro",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ],
+     [
+      "g203",
+      "exists",
+      [
+       "G203 Lightsync"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.1.original",
+   "texto": "me gusta el G305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.1.plano",
+   "texto": "me gusta el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.1.whatsapp",
+   "texto": "me gusta el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.1.redactada",
+   "texto": "Me gusta el G305.",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C55.1.coloquial",
+   "texto": "me copa el g305",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C56.0.original",
+   "texto": "tienen 50 off, no? entonces si el K120 negro sale menos de 10 mil llevo dos",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C56.0.plano",
+   "texto": "tienen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C56.0.whatsapp",
+   "texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C56.0.redactada",
+   "texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos.",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C56.0.coloquial",
+   "texto": "tienen 50 off no? si el k120 negro sale menos de 10 mil me llevo 2",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "promociones"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones",
+     "teclado"
+    ],
+    "nombrados": [
+     [
+      "k120",
+      "exists",
+      [
+       "K120"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C57.0.original",
+   "texto": "cual es la capital de Francia?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C57.0.plano",
+   "texto": "cual es la capital de francia",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C57.0.whatsapp",
+   "texto": "cual es la caiptal de francia",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C57.0.redactada",
+   "texto": "¿Cuál es la capital de Francia?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C57.0.coloquial",
+   "texto": "cual es la capital de francia",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "C58.0.original",
+   "texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C58.0.plano",
+   "texto": "jaja buenisimo gracias crack che y el g305 tiene garantia",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C58.0.whatsapp",
+   "texto": "jaja buneisimo gracias crack che y el g305 tiene garantia",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C58.0.redactada",
+   "texto": "Jaja, buenísimo, muchas gracias. Una pregunta: ¿el G305 tiene garantía?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C58.0.coloquial",
+   "texto": "jajaja genial gracias capo, che el g305 tiene garantia?",
+   "vara": {
+    "rubros": [
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "mouse"
+    ],
+    "nombrados": [
+     [
+      "g305",
+      "exists",
+      [
+       "G305 Lightspeed"
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "K03.0.original",
+   "texto": "dos auriculares y dos mouse, los mas baratos, sumame todo con envio a Cordoba capital",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K03.0.plano",
+   "texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K03.0.whatsapp",
+   "texto": "dos auris y dos mouse los mas baartos sumame todo con envio a cordoba capital",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K03.0.redactada",
+   "texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital.",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K03.0.coloquial",
+   "texto": "2 auris y 2 mouse lo mas barato, sumame todo con envio a cordoba capital",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K06.0.original",
+   "texto": "necesito 2 teclados y 2 mouse, los mas baratos. un envio a Cordoba a Colon 1500 y otro a Rio Tercero a Sabatini 2000, pago transferencia",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K06.0.plano",
+   "texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K06.0.whatsapp",
+   "texto": "neecsito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K06.0.redactada",
+   "texto": "Necesito dos mouse y dos teclados, los más baratos. Un envío va a Córdoba, a Colón 1500, y otro a Río Tercero, a Sabatini 2000. Pago por transferencia.",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K06.0.coloquial",
+   "texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K07.0.original",
+   "texto": "Hola quisiera preguntar precio por dos Mouse dos teclados y dos auriculares los más baratos que tengan el un Mouse y un teclado es envío a Rosario un teclado y un auricular es envío a Concordia y lo demás será enviado a Río cuarto Pásame los precios y Cuáles serían las modalidades de pagos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K07.0.plano",
+   "texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K07.0.whatsapp",
+   "texto": "hola qusiiera preguntar precio x dos mouse dos teclados y dos auris los mas baratos q tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K07.0.redactada",
+   "texto": "Hola, quisiera saber el precio de dos mouse, dos teclados y dos auriculares, los más baratos que tengan. Un mouse y un teclado van a Rosario; un teclado y un auricular, a Concordia; y lo demás, a Río Cuarto. Pasame los precios y decime qué formas de pago tienen.",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K07.0.coloquial",
+   "texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.0.original",
+   "texto": "hola, estoy armando un setup, tenes mouse y auriculares?",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.0.plano",
+   "texto": "hola estoy armando un setup tenes mouse y auriculares",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.0.whatsapp",
+   "texto": "hola estoy aramndo un setup tenes mouse y auris",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.0.redactada",
+   "texto": "Hola, estoy armando un setup. ¿Tienen mouse y auriculares?",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.0.coloquial",
+   "texto": "hola armando setup, hay mouse y auris?",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.2.original",
+   "texto": "que auriculares con microfono tenes?",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.2.plano",
+   "texto": "que auriculares con microfono tenes",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.2.whatsapp",
+   "texto": "q auris con mircofono tenes",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.2.redactada",
+   "texto": "¿Qué auriculares con micrófono tienen?",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.2.coloquial",
+   "texto": "q auris con microfono hay",
+   "vara": {
+    "rubros": [
+     "auriculares"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.4.original",
+   "texto": "cuantas cuotas puedo hacer? y aceptan tarjeta de debito?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "cuotas"
+     ],
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.4.plano",
+   "texto": "cuantas cuotas puedo hacer y aceptan tarjeta de debito",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "cuotas"
+     ],
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.4.whatsapp",
+   "texto": "cunatas cuotas puedo hacer y aceptan tarjeta de debito",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "cuotas"
+     ],
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.4.redactada",
+   "texto": "¿En cuántas cuotas puedo pagar? ¿Aceptan débito?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "cuotas"
+     ],
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K10.4.coloquial",
+   "texto": "cuantas cuotas hay? y debito aceptan?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "cuotas"
+     ],
+     [
+      "formas_pago"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.0.original",
+   "texto": "hola, ando viendo mouse y teclado para la oficina",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.0.plano",
+   "texto": "hola ando viendo mouse y teclado para la oficina",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.0.whatsapp",
+   "texto": "hola ando vinedo mouse y teclado para la oficina",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.0.redactada",
+   "texto": "Hola, estoy buscando mouse y teclado para la oficina.",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.0.coloquial",
+   "texto": "hola busco mouse y teclado para la ofi",
+   "vara": {
+    "rubros": [
+     "mouse",
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.3.original",
+   "texto": "che y aparte, hacen factura A?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.3.plano",
+   "texto": "che y aparte hacen factura a",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.3.whatsapp",
+   "texto": "che y aprate hacen factura a",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.3.redactada",
+   "texto": "Por otro lado, ¿emiten factura A?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K11.3.coloquial",
+   "texto": "che aparte hacen factura a?",
+   "vara": {
+    "rubros": [],
+    "no_vende": [],
+    "temas": [
+     [
+      "factura"
+     ]
+    ],
+    "tolerados": [],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K20.0.original",
+   "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K20.0.plano",
+   "texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K20.0.whatsapp",
+   "texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K20.0.redactada",
+   "texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos.",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K20.0.coloquial",
+   "texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.0.original",
+   "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.0.plano",
+   "texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.0.whatsapp",
+   "texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.0.redactada",
+   "texto": "Pasame precio de dos auriculares, dos mouse y dos memorias. El precio no es tan importante; lo que sí necesito es que tengan la menor cantidad posible de partes chinas. Un auricular y un mouse van a Córdoba capital; un teclado y un mouse, a Concordia; y los otros dos artículos, a Posadas. Dividí el presupuesto en setenta y treinta, que en la próxima etapa vemos cómo seguimos.",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.0.coloquial",
+   "texto": "dame precio de 2 auris 2 mouse y 2 memorias. el precio no importa tanto, lo q si q tengan lo menos de partes chinas posible. 1 auri y 1 mouse a cordoba capital, 1 teclado y 1 mouse a concordia, los otros 2 a posadas. dividi el presupuesto 70 30 q despues vemos como sigue",
+   "vara": {
+    "rubros": [
+     "auriculares",
+     "memoria ram",
+     "mouse"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.1.original",
+   "texto": "En realidad son 7 articulos el teclado va a concordia, lo demas esta bien",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.1.plano",
+   "texto": "en realidad son 7 articulos el teclado va a concordia lo demas esta bien",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.1.whatsapp",
+   "texto": "en relaidad son 7 articulos el teclado va a concordia lo demas esta bien",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.1.redactada",
+   "texto": "En realidad son 7 artículos: el teclado va a Concordia, lo demás está bien.",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  },
+  {
+   "id": "K21.1.coloquial",
+   "texto": "son 7 articulos en realidad, el teclado a concordia, lo otro esta bien",
+   "vara": {
+    "rubros": [
+     "teclado"
+    ],
+    "no_vende": [],
+    "temas": [],
+    "tolerados": [
+     "costo_envio",
+     "cuotas",
+     "descuento_transferencia",
+     "envios",
+     "formas_pago",
+     "monedas_aceptadas",
+     "plazo_envio",
+     "promociones"
+    ],
+    "nombrados": []
+   }
+  }
+ ],
+ "preguntas": {
+  "C01|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "stock"
+   }
+  ],
+  "C02|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "parlante",
+    "cantidad": 1,
+    "orden": "nada"
+   }
+  ],
+  "C03|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G502 Hero",
+    "quiere_saber": "dpi"
+   }
+  ],
+  "C04|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "K120",
+    "quiere_saber": "precio",
+    "afirma": "inalambrico"
+   }
+  ],
+  "C05|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "notebook",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "16 GB de RAM"
+    ]
+   }
+  ],
+  "C06|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "inalambrico",
+     "preferentemente Logitech"
+    ]
+   }
+  ],
+  "C07|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "que no sea Genius"
+    ]
+   }
+  ],
+  "C08|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "tablet",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "lo menos china posible"
+    ]
+   }
+  ],
+  "C09|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "monitor",
+    "cantidad": 1,
+    "orden": "mas barato"
+   }
+  ],
+  "C10|0": [
+   {
+    "n": 1,
+    "accion": "envio",
+    "destino": "Posadas"
+   }
+  ],
+  "C11|0": [
+   {
+    "n": 1,
+    "accion": "politica",
+    "tema": "factura"
+   }
+  ],
+  "C12|0": [
+   {
+    "n": 1,
+    "accion": "politica",
+    "tema": "promociones",
+    "afirma": "50 por ciento off en todo"
+   }
+  ],
+  "C13|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "dato"
+   },
+   {
+    "n": 2,
+    "accion": "politica",
+    "tema": "mayoristas"
+   }
+  ],
+  "C14|0": [
+   {
+    "n": 1,
+    "accion": "explicar",
+    "pregunta": "que conviene, DDR4 o DDR5?"
+   }
+  ],
+  "C15|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 2,
+      "color": "negro"
+     }
+    ]
+   }
+  ],
+  "C16|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "K120",
+      "cantidad": 1,
+      "color": "negro"
+     }
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "cuenta",
+    "reparto": [
+     {
+      "medio": "transferencia",
+      "porcentaje": 70
+     },
+     {
+      "medio": "Mercado Pago",
+      "porcentaje": 30
+     }
+    ]
+   }
+  ],
+  "C17|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "precio"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "mecanico"
+    ]
+   }
+  ],
+  "C18|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "JBL"
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "envio",
+    "destino": "Cordoba"
+   }
+  ],
+  "C19|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "stock"
+   },
+   {
+    "n": 2,
+    "accion": "politica",
+    "tema": "factura"
+   }
+  ],
+  "C20|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "K120",
+      "cantidad": 2,
+      "color": "negro"
+     },
+     {
+      "producto": "G203",
+      "cantidad": 1,
+      "color": "negro"
+     }
+    ]
+   }
+  ],
+  "C21|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 1,
+      "color": "negro"
+     },
+     {
+      "producto": "K120",
+      "cantidad": 1,
+      "color": "negro"
+     }
+    ]
+   }
+  ],
+  "C22|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "sirve para jugar"
+   }
+  ],
+  "C23|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 1,
+      "color": "blanco"
+     },
+     {
+      "producto": "K120",
+      "cantidad": 1
+     }
+    ]
+   }
+  ],
+  "C24|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 1,
+    "orden": "mas barato"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "mas barato"
+   }
+  ],
+  "C25|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 2,
+      "color": "negro"
+     },
+     {
+      "producto": "K120",
+      "cantidad": 3,
+      "color": "blanco"
+     }
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "cuenta"
+   }
+  ],
+  "C26|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G203",
+      "cantidad": 1,
+      "destino": "Rosario"
+     },
+     {
+      "producto": "G203",
+      "cantidad": 1,
+      "destino": "Mendoza"
+     }
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "envio",
+    "destino": "Rosario"
+   },
+   {
+    "n": 3,
+    "accion": "envio",
+    "destino": "Mendoza"
+   }
+  ],
+  "C27|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "Logitech"
+    ]
+   }
+  ],
+  "C28|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G502 Hero",
+    "quiere_saber": "stock",
+    "color": "negro"
+   },
+   {
+    "n": 2,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "precio",
+    "si": {
+     "de": 1,
+     "da": "no"
+    }
+   }
+  ],
+  "C29|0": [
+   {
+    "n": 1,
+    "accion": "compatibilidad",
+    "producto": "G305",
+    "con": "Mac"
+   },
+   {
+    "n": 2,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 1
+     }
+    ],
+    "si": {
+     "de": 1,
+     "da": "si"
+    }
+   }
+  ],
+  "C30|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "dato"
+   },
+   {
+    "n": 2,
+    "accion": "compatibilidad",
+    "producto": "Kingston Fury Beast DDR4 16GB",
+    "con": "placa DDR5"
+   },
+   {
+    "n": 3,
+    "accion": "buscar",
+    "rubro": "memoria ram",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "DDR5"
+    ],
+    "si": {
+     "de": 2,
+     "da": "no"
+    }
+   }
+  ],
+  "C31|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "MX Master 3S",
+      "cantidad": 1,
+      "color": "negro"
+     },
+     {
+      "producto": "G305",
+      "cantidad": 2,
+      "color": "negro"
+     }
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "cuenta",
+    "tope": 300000,
+    "si_pasa": "MX Master 3S"
+   }
+  ],
+  "C32|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "inalambrico"
+   },
+   {
+    "n": 2,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "inalambrico"
+   },
+   {
+    "n": 3,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 1
+     }
+    ],
+    "si": {
+     "de": 1,
+     "da": "si"
+    }
+   },
+   {
+    "n": 4,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G203",
+      "cantidad": 1
+     }
+    ],
+    "si": {
+     "de": 2,
+     "da": "si"
+    }
+   }
+  ],
+  "C33|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "corrige"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "Logitech"
+    ]
+   }
+  ],
+  "C34|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "precio"
+   },
+   {
+    "n": 2,
+    "accion": "envio",
+    "destino": "Rosario"
+   }
+  ],
+  "C35|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "gamer",
+     "Logitech"
+    ]
+   }
+  ],
+  "C36|0": [
+   {
+    "n": 1,
+    "accion": "compatibilidad",
+    "producto": "G305",
+    "con": "Mac"
+   }
+  ],
+  "C37|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "dato"
+   },
+   {
+    "n": 2,
+    "accion": "compatibilidad",
+    "producto": "memoria ram",
+    "con": "notebook",
+    "falta_modelo": true
+   }
+  ],
+  "C38|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "Kingston Fury Beast DDR4 16GB",
+    "quiere_saber": "precio"
+   }
+  ],
+  "C39|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "inalambrico",
+    "afirma": "inalambrico"
+   }
+  ],
+  "C40|0": [
+   {
+    "n": 1,
+    "accion": "politica",
+    "tema": "costo_envio",
+    "afirma": "envio gratis a todo el pais"
+   }
+  ],
+  "C41|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "dato"
+   },
+   {
+    "n": 2,
+    "accion": "politica",
+    "tema": "descuento_transferencia"
+   }
+  ],
+  "C42|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "notebook",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "64 GB de RAM",
+     "menos de 200 mil"
+    ]
+   }
+  ],
+  "C43|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "K120",
+    "quiere_saber": "precio"
+   }
+  ],
+  "C44|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "precio"
+   },
+   {
+    "n": 2,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "precio"
+   }
+  ],
+  "C45|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "Logitech",
+     "con cable"
+    ]
+   }
+  ],
+  "C46|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "que no sea Redragon"
+    ]
+   }
+  ],
+  "C47|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "dato"
+   }
+  ],
+  "C47|1": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "precio",
+    "color": "negro"
+   },
+   {
+    "n": 2,
+    "accion": "envio",
+    "destino": "Posadas"
+   },
+   {
+    "n": 3,
+    "accion": "cuenta"
+   }
+  ],
+  "C48|0": [
+   {
+    "n": 1,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 1,
+      "color": "negro"
+     }
+    ]
+   }
+  ],
+  "C49|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "K120",
+    "quiere_saber": "precio",
+    "color": "negro"
+   }
+  ],
+  "C49|1": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "JBL"
+    ]
+   }
+  ],
+  "C49|2": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "webcam",
+    "cantidad": 1,
+    "orden": "nada"
+   }
+  ],
+  "C50|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "precio"
+   },
+   {
+    "n": 2,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "precio"
+   }
+  ],
+  "C51|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "precio",
+    "color": "negro"
+   },
+   {
+    "n": 2,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "G305",
+      "cantidad": 1,
+      "color": "negro",
+      "destino": "Cordoba"
+     }
+    ]
+   }
+  ],
+  "C52|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "Logitech"
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "Logitech"
+    ]
+   },
+   {
+    "n": 3,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "JBL"
+    ]
+   }
+  ],
+  "C53|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G502 Hero",
+    "quiere_saber": "precio"
+   }
+  ],
+  "C54|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "dato"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "placa de video",
+    "cantidad": 1,
+    "orden": "mas potente",
+    "condiciones": [
+     "que aguante una fuente de 550 watts"
+    ]
+   }
+  ],
+  "C55|0": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "precio",
+    "color": "negro"
+   },
+   {
+    "n": 2,
+    "accion": "producto",
+    "producto": "G203",
+    "quiere_saber": "precio",
+    "color": "negro"
+   }
+  ],
+  "C55|1": [
+   {
+    "n": 1,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "precio"
+   }
+  ],
+  "C56|0": [
+   {
+    "n": 1,
+    "accion": "politica",
+    "tema": "promociones",
+    "afirma": "50 off"
+   },
+   {
+    "n": 2,
+    "accion": "producto",
+    "producto": "K120",
+    "quiere_saber": "si sale menos de 10 mil",
+    "color": "negro"
+   },
+   {
+    "n": 3,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "K120",
+      "cantidad": 2,
+      "color": "negro"
+     }
+    ],
+    "si": {
+     "de": 2,
+     "da": "si"
+    }
+   }
+  ],
+  "C57|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "fuera_de_tema"
+   }
+  ],
+  "C58|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "saludo"
+   },
+   {
+    "n": 2,
+    "accion": "producto",
+    "producto": "G305",
+    "quiere_saber": "garantia"
+   }
+  ],
+  "K03|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 2,
+    "orden": "mas barato"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 2,
+    "orden": "mas barato"
+   },
+   {
+    "n": 3,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "auriculares",
+      "cantidad": 2,
+      "destino": "Cordoba capital"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 2,
+      "destino": "Cordoba capital"
+     }
+    ]
+   },
+   {
+    "n": 4,
+    "accion": "cuenta"
+   }
+  ],
+  "K06|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 2,
+    "orden": "mas barato"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 2,
+    "orden": "mas barato"
+   },
+   {
+    "n": 3,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "teclado",
+      "cantidad": 1,
+      "destino": "Cordoba"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Cordoba"
+     },
+     {
+      "producto": "teclado",
+      "cantidad": 1,
+      "destino": "Rio Tercero"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Rio Tercero"
+     }
+    ]
+   },
+   {
+    "n": 4,
+    "accion": "cuenta",
+    "reparto": [
+     {
+      "medio": "transferencia",
+      "porcentaje": 100
+     }
+    ]
+   }
+  ],
+  "K07|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "saludo"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 2,
+    "orden": "mas barato"
+   },
+   {
+    "n": 3,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 2,
+    "orden": "mas barato"
+   },
+   {
+    "n": 4,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 2,
+    "orden": "mas barato"
+   },
+   {
+    "n": 5,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Rosario"
+     },
+     {
+      "producto": "teclado",
+      "cantidad": 1,
+      "destino": "Rosario"
+     },
+     {
+      "producto": "teclado",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "auriculares",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "los otros",
+      "cantidad": 2,
+      "destino": "Rio Cuarto"
+     }
+    ]
+   },
+   {
+    "n": 6,
+    "accion": "cuenta"
+   },
+   {
+    "n": 7,
+    "accion": "politica",
+    "tema": "formas_pago"
+   }
+  ],
+  "K10|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "saludo"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada"
+   },
+   {
+    "n": 3,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 1,
+    "orden": "nada"
+   }
+  ],
+  "K10|2": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "con microfono"
+    ]
+   }
+  ],
+  "K10|4": [
+   {
+    "n": 1,
+    "accion": "politica",
+    "tema": "cuotas"
+   },
+   {
+    "n": 2,
+    "accion": "politica",
+    "tema": "formas_pago"
+   }
+  ],
+  "K11|0": [
+   {
+    "n": 1,
+    "accion": "otro",
+    "que": "saludo"
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "para la oficina"
+    ]
+   },
+   {
+    "n": 3,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "para la oficina"
+    ]
+   }
+  ],
+  "K11|3": [
+   {
+    "n": 1,
+    "accion": "politica",
+    "tema": "factura"
+   }
+  ],
+  "K20|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 2,
+    "orden": "nada",
+    "condiciones": [
+     "menos partes chinas posibles"
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 2,
+    "orden": "nada",
+    "condiciones": [
+     "menos partes chinas posibles"
+    ]
+   },
+   {
+    "n": 3,
+    "accion": "buscar",
+    "rubro": "memoria ram",
+    "cantidad": 2,
+    "orden": "nada",
+    "condiciones": [
+     "menos partes chinas posibles"
+    ]
+   },
+   {
+    "n": 4,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "auriculares",
+      "cantidad": 1,
+      "destino": "Cordoba capital"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Cordoba capital"
+     },
+     {
+      "producto": "teclado",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "los otros",
+      "cantidad": 2,
+      "destino": "Posadas"
+     }
+    ]
+   },
+   {
+    "n": 5,
+    "accion": "cuenta",
+    "reparto": [
+     {
+      "medio": "transferencia",
+      "porcentaje": 70
+     },
+     {
+      "medio": "Mercado Pago",
+      "porcentaje": 30
+     }
+    ]
+   }
+  ],
+  "K21|0": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "auriculares",
+    "cantidad": 2,
+    "orden": "nada",
+    "condiciones": [
+     "menos partes chinas posibles"
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "buscar",
+    "rubro": "mouse",
+    "cantidad": 2,
+    "orden": "nada",
+    "condiciones": [
+     "menos partes chinas posibles"
+    ]
+   },
+   {
+    "n": 3,
+    "accion": "buscar",
+    "rubro": "memoria ram",
+    "cantidad": 2,
+    "orden": "nada",
+    "condiciones": [
+     "menos partes chinas posibles"
+    ]
+   },
+   {
+    "n": 4,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "auriculares",
+      "cantidad": 1,
+      "destino": "Cordoba capital"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Cordoba capital"
+     },
+     {
+      "producto": "teclado",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "los otros",
+      "cantidad": 2,
+      "destino": "Posadas"
+     }
+    ]
+   },
+   {
+    "n": 5,
+    "accion": "cuenta",
+    "reparto": [
+     {
+      "medio": "transferencia",
+      "porcentaje": 70
+     },
+     {
+      "medio": "Mercado Pago",
+      "porcentaje": 30
+     }
+    ]
+   }
+  ],
+  "K21|1": [
+   {
+    "n": 1,
+    "accion": "buscar",
+    "rubro": "teclado",
+    "cantidad": 1,
+    "orden": "nada",
+    "condiciones": [
+     "menos partes chinas posibles"
+    ]
+   },
+   {
+    "n": 2,
+    "accion": "comprar",
+    "agrega": [
+     {
+      "producto": "auriculares",
+      "cantidad": 1,
+      "destino": "Cordoba capital"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Cordoba capital"
+     },
+     {
+      "producto": "teclado",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "mouse",
+      "cantidad": 1,
+      "destino": "Concordia"
+     },
+     {
+      "producto": "los otros",
+      "destino": "Posadas"
+     }
+    ],
+    "reemplaza": true
+   },
+   {
+    "n": 3,
+    "accion": "cuenta"
+   }
+  ]
+ }
+}

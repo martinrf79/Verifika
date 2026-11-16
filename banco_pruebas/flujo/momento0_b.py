@@ -17,9 +17,9 @@ codigo, `normal.lugares` sobre los fragmentos del modelo; en la v2, el mismo cod
   acierta  un lugar esperado que el codigo encuentra.
   inventa  un lugar que el codigo encuentra y el cliente no nombro para enviar.
 
-    python3 banco_pruebas/momento0_b.py --correr v1     # la llamada 0 con la gratis
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/momento0_b.py --embeddings
-    python3 banco_pruebas/momento0_b.py [v1|v2] [--ver] # califica, sin gasto
+    python3 banco_pruebas/flujo/momento0_b.py --correr v1     # la llamada 0 con la gratis
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo/momento0_b.py --embeddings
+    python3 banco_pruebas/flujo/momento0_b.py [v1|v2] [--ver] # califica, sin gasto
 """
 import collections
 import json
@@ -28,15 +28,15 @@ import re
 import sys
 import time
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [os.path.dirname(AQUI), AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO  # noqa: E402
 
 import engranaje0 as E  # noqa: E402
 import nexo_rubro as NR  # noqa: E402
 from nuevas70b import CASOS  # noqa: E402
 
-SALIDA = os.path.join(AQUI, "momento0_b_corridas.jsonl")
-PUNTAJES = os.path.join(AQUI, "momento0_b_puntajes.json")
+SALIDA = os.path.join(GRABADO, "momento0_b_corridas.jsonl")
+PUNTAJES = os.path.join(GRABADO, "momento0_b_puntajes.json")
 DESTINOS = {"B01": ["Lomas de Zamora"], "B07": ["Merlo"], "B10": ["Quilmes"], "B14": ["Mar del Plata"], "B47": ["Tigre"],
             "B55": ["Jujuy", "Formosa", "Rio Gallegos"], "B56": ["Lanus"], "B57": ["Cordoba"], "B58": ["Rosario"],
             "B60": ["Salta", "Tucuman"], "B61": ["La Plata"], "B64": ["Ushuaia"]}
@@ -99,17 +99,13 @@ def lineas(sal):
 
 
 def embeddings():
-    if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
-        raise SystemExit("los embeddings van con la paga: falta MARTIN_AUTORIZO_LA_PAGA=<fecha>")
-    import llamada1_modelos as L
+    import embeddings as EMB
     _, alias, rubros, _ = NR.fuente()
-    cache = json.load(open(NR.CACHE)) if os.path.exists(NR.CACHE) else {}
+    cache = EMB.cargar()
     qs = sorted({str(l.get(k) or "") for v in ("v1", "v2") for s in salidas(v).values() for l in lineas(s)
                  for k in ("busqueda", "fragmento")} - {""})
-    clave = os.environ["GEMINI_API_KEY_PROD"].strip()
-    dr = L._emb([NR.doc_rubro(r, alias) for r in rubros], "RETRIEVAL_DOCUMENT", clave, cache)
-    vq = L._emb(qs, "RETRIEVAL_QUERY", clave, cache)
-    json.dump(cache, open(NR.CACHE, "w"))
+    dr = EMB.pedir([NR.doc_rubro(r, alias) for r in rubros], EMB.DOCUMENTO, cache)
+    vq = EMB.pedir(qs, EMB.CONSULTA, cache)
     out = {q: [round(sum(a * b for a, b in zip(x, d)), 4) for d in dr] for q, x in zip(qs, vq)}
     json.dump({"rubros": rubros, "consultas": out}, open(PUNTAJES, "w", encoding="utf-8"), ensure_ascii=False)
     print(f"{len(qs)} consultas, {sum(len(q) for q in qs)} caracteres")

@@ -16,9 +16,9 @@ LAS CORRIDAS, una por modelo y prompt. La base, Gemini con el prompt de hoy, es 
 EL GASTO: OpenRouter tiene un tope de 20 centavos entre luna y qwen, orden de Martin; cada corrida corta en su tope.
 `--piloto` corre 10 mensajes y estima las 140 con lo medido.
 
-    python3 banco_pruebas/llamada0_modelos.py --correr gemini-lite v2 [--piloto]
-    python3 banco_pruebas/llamada0_modelos.py                 # califica todo lo grabado, sin gasto
-    python3 banco_pruebas/llamada0_modelos.py --ver luna v2   # el detalle de las fallas de una corrida
+    python3 banco_pruebas/flujo/llamada0_modelos.py --correr gemini-lite v2 [--piloto]
+    python3 banco_pruebas/flujo/llamada0_modelos.py                 # califica todo lo grabado, sin gasto
+    python3 banco_pruebas/flujo/llamada0_modelos.py --ver luna v2   # el detalle de las fallas de una corrida
 """
 import collections
 import json
@@ -28,14 +28,14 @@ import statistics
 import sys
 import time
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [os.path.dirname(AQUI), AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO  # noqa: E402
 
 import engranaje0 as E  # noqa: E402
 import flujo_nuevo as F  # noqa: E402
 import llamada0_vara as V  # noqa: E402
 
-SALIDA = os.path.join(AQUI, "llamada0_modelos.jsonl")
+SALIDA = os.path.join(GRABADO, "llamada0_modelos.jsonl")
 OPENROUTER = "https://openrouter.ai/api/v1"
 # (proveedor, modelo, razonamiento, dolares por millon de entrada y de salida, tope en dolares de la corrida)
 MODELOS = {
@@ -46,7 +46,9 @@ MODELOS = {
     # Como se uso en el banco, `engranaje0`: deepseek-chat, sin razonamiento, temperatura 0. Y Haiku con el bajo.
     "deepseek-chat": ("deepseek", "deepseek-chat", "none", 0.15, 0.60, 0.10),
     "haiku-bajo": ("anthropic", "claude-haiku-5-5", "low", 0.10, 0.50, 0.15),
-    "luna": ("openrouter", "openai/gpt-6-luna", "low", 0.10, 0.50, 0.12),
+    # La elegida por Martin el 16-nov, FICHA 100. Desde el 16-nov por la clave directa de OpenAI: por OpenRouter queda
+    # poco saldo. Lo grabado hasta el 16-nov vino por OpenRouter; es el mismo modelo.
+    "luna": ("openai", "gpt-6-luna", "low", 0.10, 0.50, 0.12),
     "qwen": ("openrouter", "qwen/qwen3.8-flash", "none", 0.15, 0.47, 0.06),
     "qwen-low": ("openrouter", "qwen/qwen3.8-flash", "low", 0.15, 0.47, 0.02),
     "luna-medio": ("openrouter", "openai/gpt-6-luna", "medium", 0.10, 0.50, 0.08),
@@ -148,6 +150,9 @@ def pedir(corrida, prompt, texto):
                 k["reasoning_effort"] = esfuerzo
             k["response_format"] = {"type": "json_object"}
             k["messages"][0]["content"] += "\nDevolve solo el JSON, con este esquema: " + json.dumps(esquema)
+        elif prov == "openai":
+            cli = OpenAI(api_key=_clave("OPENAI_API_KEY"), timeout=120, max_retries=2)
+            k["reasoning_effort"] = esfuerzo
         else:
             cli = OpenAI(api_key=_clave("OPENROUTER_API_KEY"), base_url=OPENROUTER)
             k["extra_body"] = {"reasoning": {"enabled": False} if esfuerzo == "none" else {"effort": esfuerzo},
@@ -368,12 +373,11 @@ def esperado_reales(banco):
     if banco == "reales":
         return V.REALES
     import reales as RE
-    from banco_pruebas import agendas58 as A
     out = {}
     for cid, _, _ in RE.casos_525()[0]:
         c, t, _ = cid.split(".")
         esp = collections.defaultdict(list)
-        for p in A.AGENDAS[c][int(t)]["preguntas"]:
+        for p in RE.preguntas_525(c, t):
             if p["accion"] != "buscar" or p["rubro"] == "toda la tienda" or p.get("entre_lo_mostrado"):
                 continue
             esp[p["rubro"]] += [V.RAICES_AGENDA[x] for x in p.get("condiciones", []) if x in V.RAICES_AGENDA]
@@ -414,7 +418,7 @@ def donde_se_pierde(texto, lineas, esperado, alias, memoria=False):
 
 def corridas_reales(banco):
     out = collections.defaultdict(dict)
-    for r in map(json.loads, open(os.path.join(AQUI, f"{banco}_llamada0.jsonl"), encoding="utf-8")):
+    for r in map(json.loads, open(os.path.join(GRABADO, f"{banco}_llamada0.jsonl"), encoding="utf-8")):
         out[("gemini-lite", "v1")][r["id"]] = r
     for r in filas():
         if r["banco"] == banco and (r.get("salida") or r["id"] not in out[(r["corrida"], r["prompt"])]):
@@ -457,12 +461,13 @@ def calificar_reales():
 #                    en mensajes que piden algo que la tienda no vende o toda la tienda.
 #   inventada        una raiz de `INVENTABLES` en la busqueda que no esta en el mensaje ni en lo que la vara espera.
 def sobrantes_reales(corridas=(("gemini-lite", "v1"), ("gemini-lite", "v2"), ("luna", "v2"))):
+    import embeddings as EMB
     import embeddings_candidatos as EC
     import nexo_rubro as NR
     import reales as RE
     _, alias, _, modelos = NR.fuente()
     ms = list(modelos)
-    cache = json.load(open(EC.CACHE)) if os.path.exists(EC.CACHE) else {}
+    cache = EMB.cargar()
     vp = [cache[f"RETRIEVAL_DOCUMENT|{NR.doc_producto(k, modelos[k], alias)}"] for k in ms]
     vara = {c[0]: c[2] for c in RE.CASOS}
     vara.update({c[0]: c[2] for c in RE.casos_525()[0]})
@@ -517,7 +522,7 @@ def sobrantes_reales(corridas=(("gemini-lite", "v1"), ("gemini-lite", "v2"), ("l
             if "--ver" in sys.argv:
                 for k, xs in ej.items():
                     print(f"      {k}: {xs[:12]}")
-        json.dump(cache, open(EC.CACHE, "w"))
+        EMB.guardar(cache)
 
 
 if __name__ == "__main__":

@@ -24,9 +24,9 @@ LA VARA, escrita antes de correr:
                     nexo corre por un atributo del modelo, "memoria ddr4", "monitor curvo", se cuentan aparte: no estan
                     en la vara.
 
-    python3 banco_pruebas/nexo_nombrado.py --llamada0     # la llamada 0 sobre nombrados38, con la gratis
-    python3 banco_pruebas/nexo_nombrado.py --embeddings   # los vectores de sus busquedas, con la gratis
-    python3 banco_pruebas/nexo_nombrado.py [--ver]        # califica, sin gasto
+    python3 banco_pruebas/flujo/nexo_nombrado.py --llamada0     # la llamada 0 sobre nombrados38, con la gratis
+    python3 banco_pruebas/flujo/nexo_nombrado.py --embeddings   # los vectores de sus busquedas, con la gratis
+    python3 banco_pruebas/flujo/nexo_nombrado.py [--ver]        # califica, sin gasto
 """
 import collections
 import csv
@@ -36,16 +36,15 @@ import re
 import sys
 import time
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(AQUI)
-sys.path[:0] = [REPO, AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO, REPO  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
 
 TID = NR.TID
-LLAMADA0 = os.path.join(AQUI, "nexo_nombrado_llamada0.jsonl")
-PUNTAJES = os.path.join(AQUI, "nexo_nombrado_puntajes.json")
-CACHE = "/tmp/claude-0/-home-user-Verifika/3792206b-c284-57cb-9afe-3ff1597e7864/scratchpad/nexo_nombrado_vectores.json"
+LLAMADA0 = os.path.join(GRABADO, "nexo_nombrado_llamada0.jsonl")
+PUNTAJES = os.path.join(GRABADO, "nexo_nombrado_puntajes.json")
+import embeddings as EMB  # noqa: E402
 
 # Lo nombrado de las 140: (banco, id, raiz de la busqueda, veredicto, modelos que valen).
 _SONY = {"ULT Wear", "WH-1000XM5", "WH-CH520", "WH-CH720N"}
@@ -156,30 +155,18 @@ def embeddings():
     """Las busquedas del banco nuevo contra el mismo indice de rubros y productos del nexo de rubro. Los documentos se
     recalculan, porque el cache de la sesion que los calculo ya no esta; como control, tres busquedas de las 140 tienen
     que dar los mismos puntajes que quedaron en el repo."""
-    import urllib.error
-    import llamada1_modelos as L
     _, alias, rubros, modelos = NR.fuente()
     ms = list(modelos)
     ir = NR.indice_rubros(rubros, alias)
     rubros, dr_t = [r for r, _ in ir], [d for _, d in ir]
     dp_t = [NR.doc_producto(k, modelos[k], alias) for k in ms]
-    viejos = json.load(open(os.path.join(AQUI, "flujo_nuevo_puntajes.json"), encoding="utf-8"))
+    viejos = json.load(open(os.path.join(GRABADO, "flujo_nuevo_puntajes.json"), encoding="utf-8"))
     control = sorted(viejos["consultas"])[:3]
     qs = sorted({l.busqueda for ls in llamada0().values() for l in ls} - {""} | {q for q, _ in SONDA}) + control
-    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
+    cache = EMB.cargar()
     # La gratis se traba con la cuota de embeddings; con la marca de Martin va la paga, menos de dos centavos.
-    clave = os.environ["GEMINI_API_KEY_PROD" if os.environ.get("MARTIN_AUTORIZO_LA_PAGA") else "GEMINI_API_KEY"].split()[0]
-    for textos, tarea in ((dr_t + dp_t, "RETRIEVAL_DOCUMENT"), (qs, "RETRIEVAL_QUERY")):
-        falta = [t for t in dict.fromkeys(textos) if f"{tarea}|{t}" not in cache]
-        for i in range(0, len(falta), 100):
-            for intento in range(6):
-                try:
-                    L._emb(falta[i:i + 100], tarea, clave, cache)
-                    break
-                except urllib.error.HTTPError as e:
-                    print(f"  {tarea} lote {i}: {e.code}, reintento", flush=True)
-                    time.sleep(30 * (intento + 1))
-            json.dump(cache, open(CACHE, "w"))
+    for textos, tarea in ((dr_t + dp_t, EMB.DOCUMENTO), (qs, EMB.CONSULTA)):
+        EMB.pedir(textos, tarea, cache)
     dr = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in dr_t]
     dp = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in dp_t]
 

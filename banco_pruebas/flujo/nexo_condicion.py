@@ -36,11 +36,11 @@ CUATRO PIEZAS, cada una hace una sola cosa:
 EL BORDE CON EL NOMBRADO: si el nombrado dio exists, manda el nombrado y este nexo no corre. Si dio ambiguo o no hay,
 corre sobre el rubro. Si el producto no se vende, no corre.
 
-    python3 banco_pruebas/nexo_condicion.py --base           # la base: `catalogo.atar` de produccion, sin embeddings
-    python3 banco_pruebas/nexo_condicion.py --embeddings     # los vectores que falten, con la gratis
-    python3 banco_pruebas/nexo_condicion.py --calibrar       # las variantes de la busqueda, con Jev perfecto
-    python3 banco_pruebas/nexo_condicion.py --correr-jev     # Jev en lo dudoso, grabado
-    python3 banco_pruebas/nexo_condicion.py [--ver] [--sin-jev]   # califica los tres bancos, sin gasto
+    python3 banco_pruebas/flujo/nexo_condicion.py --base           # la base: `catalogo.atar` de produccion, sin embeddings
+    python3 banco_pruebas/flujo/nexo_condicion.py --embeddings     # los vectores que falten, con la gratis
+    python3 banco_pruebas/flujo/nexo_condicion.py --calibrar       # las variantes de la busqueda, con Jev perfecto
+    python3 banco_pruebas/flujo/nexo_condicion.py --correr-jev     # Jev en lo dudoso, grabado
+    python3 banco_pruebas/flujo/nexo_condicion.py [--ver] [--sin-jev]   # califica los tres bancos, sin gasto
 """
 import collections
 import json
@@ -48,19 +48,16 @@ import os
 import re
 import sys
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(AQUI)
-sys.path[:0] = [REPO, AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
-from busquedas import NEXOS as _B  # noqa: E402
+import embeddings as EMB  # noqa: E402
+from embeddings import NEXOS as _B  # noqa: E402
 
 TID = NR.TID
-PUNTAJES = os.path.join(AQUI, "nexo_condicion_puntajes.json")
-JEV = os.path.join(AQUI, "nexo_condicion_jev.jsonl")
-# Los vectores enteros no van al repo, como en los otros nexos: quedan en el cache de la sesion y alcanzan los puntajes.
-CACHE = os.environ.get("NEXO_CONDICION_VECTORES") or \
-    "/tmp/claude-0/-home-user-Verifika/fc678680-2c33-5f62-8042-4213c50577d9/scratchpad/nexo_condicion_vectores.json"
+PUNTAJES = os.path.join(GRABADO, "nexo_condicion_puntajes.json")
+JEV = os.path.join(GRABADO, "nexo_condicion_jev.jsonl")
 _CONF = _B["condicion"]
 CANDIDATOS = _CONF["candidatos"].get("campos", 3)
 VARIANTE = _CONF.get("variante", "segmento con rubro, documento por campo")
@@ -585,15 +582,15 @@ def banco_reales(suf):
     """Las lineas de `reales.py`, "reales" o "reales525", con sus grabaciones."""
     import flujo_nuevo as F
     idx = F.Indice()
-    p = json.load(open(os.path.join(AQUI, f"{suf}_puntajes.json"), encoding="utf-8"))
+    p = json.load(open(os.path.join(GRABADO, f"{suf}_puntajes.json"), encoding="utf-8"))
     idx.q = dict(idx.q, **p["producto"])
     idx.temas.q = dict(idx.temas.q, **p["tema"])
     por_id = {f["id"]: f for f in idx.filas}
     l0 = {}
-    for r in map(json.loads, open(os.path.join(AQUI, f"{suf}_llamada0.jsonl"), encoding="utf-8")):
+    for r in map(json.loads, open(os.path.join(GRABADO, f"{suf}_llamada0.jsonl"), encoding="utf-8")):
         l0[r["id"]] = [F.Linea(str(x.get("fragmento") or ""), str(x.get("busqueda") or "").strip(),
                                str(x.get("destino") or "").strip()) for x in r["salida"]["lineas"]]
-    jp = os.path.join(AQUI, f"{suf}_jev.jsonl")
+    jp = os.path.join(GRABADO, f"{suf}_jev.jsonl")
     jv = {r["id"]: r["respuestas"] for r in map(json.loads, open(jp))} if os.path.exists(jp) else {}
     return _lineas_flujo(l0, idx, por_id, lambda c, i: jv.get(c, {}).get(f"t{i}"),
                          lambda c, i, b: jv.get(c, {}).get(f"p{i}"))
@@ -604,12 +601,11 @@ def esperado_525():
     import nexo_condicion_vara as V
     import reales as RE
     casos, _ = RE.casos_525()
-    from banco_pruebas import agendas58 as A
     out = {}
     for cid, _, _ in casos:
         c, t, _ = cid.split(".")
         esp = collections.defaultdict(list)
-        for p in A.AGENDAS[c][int(t)]["preguntas"]:
+        for p in RE.preguntas_525(c, t):
             if p["accion"] != "buscar" or p["rubro"] == "toda la tienda" or p.get("entre_lo_mostrado"):
                 continue
             esp[p["rubro"]] += [V.DE_LA_AGENDA[x] for x in p.get("condiciones", [])]
@@ -756,7 +752,7 @@ def calificar(nx=None, ver=False, callado=False, motor="nexo"):
         if not callado:
             _imprimir(nombre + ", con la vara por mensaje y rubro", c, fallas, ver)
     if not callado and motor == "nexo":
-        json.dump(salida, open(os.path.join(AQUI, "nexo_condicion_respuestas.json"), "w", encoding="utf-8"),
+        json.dump(salida, open(os.path.join(GRABADO, "nexo_condicion_respuestas.json"), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1, default=str)
     return tot
 
@@ -783,45 +779,9 @@ def _todas_las_lineas():
     return list(dict.fromkeys(out))
 
 
-def _anotar_paga(textos):
-    """Los vectores con la paga, en `libro_paga.jsonl`: unos cuatro caracteres por token, a 0,15 dolares el millon."""
-    import datetime
-    from banco_pruebas import libro_paga as LP
-    tok = sum(len(t) for t in textos) // 4 + 1
-    with open(LP.LIBRO, "a", encoding="utf-8") as fh:
-        fh.write(json.dumps({"dia": LP._hoy(), "hora": datetime.datetime.now(datetime.timezone.utc).strftime("%H:%M:%S"),
-                             "modelo": "gemini-embedding-001", "entrada": tok, "salida": 0,
-                             "dolares": round(tok * 0.15 / 1e6, 6), "proceso": os.getpid()}) + "\n")
-
-
-def _emb_con_espera(L, falta, tarea, clave, cache):
-    """De a lotes chicos, guardando cada uno: la gratis cuenta cada texto como un pedido, contesta 429 a un lote de
-    cien, y se reintenta con espera."""
-    import time
-    import urllib.error
-    lote = int(os.environ.get("NEXO_CONDICION_LOTE", "40"))
-    for i in range(0, len(falta), lote):
-        for intento in range(8):
-            try:
-                L._emb(falta[i:i + lote], tarea, clave, cache)
-                if os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
-                    _anotar_paga(falta[i:i + lote])
-                else:
-                    time.sleep(float(os.environ.get("NEXO_CONDICION_PAUSA", "25")))
-                break
-            except urllib.error.HTTPError as e:
-                if e.code != 429 or intento == 7:
-                    raise
-                time.sleep(30 * (intento + 1))
-        json.dump(cache, open(CACHE, "w"))
-
-
 def embeddings(variantes_=None):
-    import llamada1_modelos as L
     fx = Fuente()
-    paga = bool(os.environ.get("MARTIN_AUTORIZO_LA_PAGA"))
-    clave = os.environ["GEMINI_API_KEY_PROD" if paga else "GEMINI_API_KEY"].split()[0]
-    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
+    cache = EMB.cargar()
     lineas = _todas_las_lineas()
     p = json.load(open(PUNTAJES, encoding="utf-8")) if os.path.exists(PUNTAJES) else {}
     for nombre in variantes_ or [x for x in sys.argv[2:] if x in VARIANTES] or list(VARIANTES):
@@ -833,12 +793,8 @@ def embeddings(variantes_=None):
                 consultas[r].add(v["consulta"](parte, r, b))
         textos_d = [d for ds in docs.values() for _, d in ds]
         textos_q = sorted({q for qs in consultas.values() for q in qs})
-        for tarea, ts in (("RETRIEVAL_DOCUMENT", textos_d), ("RETRIEVAL_QUERY", textos_q)):
-            falta = [t for t in dict.fromkeys(ts) if f"{tarea}|{t}" not in cache]
-            if falta:
-                _emb_con_espera(L, falta, tarea, clave, cache)
-                print(f"  {nombre}: vectores nuevos {tarea} {len(falta)}, {sum(len(t) for t in falta)} caracteres",
-                      flush=True)
+        for tarea, ts in ((EMB.DOCUMENTO, textos_d), (EMB.CONSULTA, textos_q)):
+            EMB.pedir(ts, tarea, cache)
         p[nombre] = {}
         for r, qs in consultas.items():
             dv = [(k, cache[f"RETRIEVAL_DOCUMENT|{d}"]) for k, d in docs[r]]
@@ -890,7 +846,7 @@ def _oraculo(nx):
 
 def correr_jev():
     """Jev en lo dudoso de los tres bancos: una llamada por busqueda con todas sus partes. Lo grabado no se repite."""
-    import nexo_tema as NT
+    import jev as J
     nx = Nexo(jev=False)
     hechas = jev_grabado()
     for _, b, r in _todas_las_lineas():
@@ -905,7 +861,7 @@ def correr_jev():
             qs[f"p{i}"] = {"type": "choice", "criteria": opciones(r, cands, nx.fx),
                            "instructions": f"El cliente busca {r} y escribio \"{b}\". En la parte \"{parte}\", que pide "
                                            f"de como tiene que ser el producto?"}
-        res, tok = NT.llamar_jev(f"BUSQUEDA DEL CLIENTE: {b}\nPRODUCTO: {r}", qs, "nexo_condicion")
+        res, tok = J.llamar_jev(f"BUSQUEDA DEL CLIENTE: {b}\nPRODUCTO: {r}", qs, "nexo_condicion")
         fila = {"rubro": r, "busqueda": b, "tokens": tok, "partes": {p: res.get(f"p{i}") for i, p in enumerate(falta)}}
         with open(JEV, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(fila, ensure_ascii=False) + "\n")

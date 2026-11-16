@@ -56,6 +56,29 @@ Catálogos y FAQ por tienda, bajo `data/clientes/<tienda>/`. En producción el
 catálogo se lee de Firestore; esto es la carga y el respaldo. No se toca sin
 permiso.
 
+## El flujo nuevo — `banco_pruebas/flujo/`
+
+El camino que reemplaza al agente, FICHA 100. Vive solo en el banco y pasa a `app/` todo junto cuando supere al agente
+en las mismas charlas. Un archivo por paso; todo se califica sin gasto desde `grabado/`.
+
+| Qué querés tocar o medir | Archivo |
+| --- | --- |
+| Las rutas y el código de producción sin red ni modelo, que comparten todos los pasos | `banco_pruebas/flujo/entorno.py` |
+| El flujo de punta a punta, contrato de la FICHA 96, y el nexo de destino | `banco_pruebas/flujo/flujo_nuevo.py` |
+| La llamada 0: prompts, modelos y su vara; la elegida es `MODELOS["luna"]` con el prompt v2 | `banco_pruebas/flujo/llamada0_modelos.py`, `llamada0_vara.py`, `engranaje0.py` |
+| Los embeddings: la receta, la única función que pide vectores, el registro de cada nexo y el índice de la tienda | `banco_pruebas/flujo/embeddings.py`, `vectores/` |
+| Cuántos candidatos hacen falta | `banco_pruebas/flujo/embeddings_candidatos.py` |
+| Nexo de rubro y producto | `banco_pruebas/flujo/nexo_rubro.py` |
+| Nexo de tema de la FAQ | `banco_pruebas/flujo/nexo_tema.py` |
+| Nexo de producto nombrado | `banco_pruebas/flujo/nexo_nombrado.py` |
+| Nexo de condición y su vara | `banco_pruebas/flujo/nexo_condicion.py`, `nexo_condicion_vara.py` |
+| Nexo de destino, su vara sobre lo grabado | `banco_pruebas/flujo/nexo_destino.py` |
+| Jev, que elige de listas cerradas lo dudoso | `banco_pruebas/flujo/jev.py` |
+| Los 40 reales y las 365 | `banco_pruebas/flujo/reales.py`, `bancos/las365.json` |
+| Las 140: las 70, las otras 70 y los nombrados | `banco_pruebas/flujo/bancos/`, `momento0_b.py` |
+| Lo que devolvieron los modelos, los puntajes y Jev | `banco_pruebas/flujo/grabado/` |
+| Pruebas ya decididas fuera del camino: la suma de fragmentos y Shopify | `banco_pruebas/flujo/antecedentes/` |
+
 ## Medición — `banco_pruebas/`
 
 | Qué querés medir | Archivo |

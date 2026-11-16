@@ -1,0 +1,5 @@
+# Los vectores de la sesion del flujo nuevo: pesan mas de cien megas y se piden de nuevo. El indice de la tienda,
+# indice_tienda.json.gz, si va al repo. Aca y no en el .gitignore de la raiz: un cambio ahi deploya.
+cache.claves
+cache.f64
+shopify/

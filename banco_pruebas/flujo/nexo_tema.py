@@ -34,9 +34,9 @@ se tolera porque el cliente lo dice sin preguntarlo, "pago todo por transferenci
   mensaje: cada linea elige entre sus tres candidatos o ninguno. Corte escrito antes de correrlos, el 15-nov: con el
   paso de lo dudoso, elige bien al menos 14 de 15, inventa a lo sumo 7 lineas y ningun tema al menos 6 de 7.
 
-    python3 banco_pruebas/nexo_tema.py --embeddings   # los vectores que falten, con la clave gratis
-    python3 banco_pruebas/nexo_tema.py --correr jev|corta [--corrida N]   # lo dudoso, grabado en nexo_tema_dudoso.jsonl
-    python3 banco_pruebas/nexo_tema.py [--ver] [--con jev|corta] [--corrida N]   # califica, sin gasto
+    python3 banco_pruebas/flujo/nexo_tema.py --embeddings   # los vectores que falten, con la clave gratis
+    python3 banco_pruebas/flujo/nexo_tema.py --correr jev|corta [--corrida N]   # lo dudoso, grabado en nexo_tema_dudoso.jsonl
+    python3 banco_pruebas/flujo/nexo_tema.py [--ver] [--con jev|corta] [--corrida N]   # califica, sin gasto
 """
 import collections
 import json
@@ -44,16 +44,16 @@ import os
 import sys
 import time
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(AQUI)
-sys.path[:0] = [REPO, AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO, REPO  # noqa: E402
+from jev import llamar_jev  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
 
 TID = NR.TID
-PUNTAJES = os.path.join(AQUI, "nexo_tema_puntajes.json")
-CACHE = "/tmp/claude-0/-home-user-Verifika/3792206b-c284-57cb-9afe-3ff1597e7864/scratchpad/nexo_tema_vectores.json"
-from busquedas import NEXOS as _B  # noqa: E402
+PUNTAJES = os.path.join(GRABADO, "nexo_tema_puntajes.json")
+import embeddings as EMB  # noqa: E402
+from embeddings import NEXOS as _B  # noqa: E402
 CANDIDATOS = _B["tema de la FAQ"]["candidatos"]["temas"]
 
 # ══ LA VARA ══════════════════════════════════════════════════════════════════
@@ -105,24 +105,12 @@ def fragmentos():
 
 
 def embeddings():
-    import urllib.error
-    import llamada1_modelos as L
     faq, alias = fuente()
     ds = [a for _, a in docs(faq, alias)]
     qs = fragmentos()
-    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
-    clave = os.environ["GEMINI_API_KEY"].split()[0]
-    for textos, tarea in ((ds, "RETRIEVAL_DOCUMENT"), (qs, "RETRIEVAL_QUERY")):
-        falta = [t for t in textos if f"{tarea}|{t}" not in cache]
-        for i in range(0, len(falta), 100):
-            for intento in range(6):
-                try:
-                    L._emb(falta[i:i + 100], tarea, clave, cache)
-                    break
-                except urllib.error.HTTPError as e:
-                    print(f"  {tarea} lote {i}: {e.code}, reintento", flush=True)
-                    time.sleep(30 * (intento + 1))
-            json.dump(cache, open(CACHE, "w"))
+    cache = EMB.cargar()
+    for textos, tarea in ((ds, EMB.DOCUMENTO), (qs, EMB.CONSULTA)):
+        EMB.pedir(textos, tarea, cache)
     dd = [cache[f"RETRIEVAL_DOCUMENT|{a}"] for a in ds]
     temas = [f["tema"] for f in faq]
     de = [t for t, _ in docs(faq, alias)]
@@ -211,7 +199,7 @@ class Nexo:
 # Dudosa es toda linea donde el codigo eligio un tema: la palabra compartida puede ser un homonimo, "guardar las
 # facturas" en un disco. Una pregunta por mensaje, con todas sus lineas dudosas. Cada una elige entre sus tres temas
 # candidatos o ninguno: lista cerrada, el texto de la FAQ lo sigue poniendo el codigo.
-DUDOSO = os.path.join(AQUI, "nexo_tema_dudoso.jsonl")
+DUDOSO = os.path.join(GRABADO, "nexo_tema_dudoso.jsonl")
 NINGUNO = "ninguno"
 DESC_NINGUNO = ("esa parte no pregunta por esta regla de la tienda: pide un producto o un dato del producto, dice a "
                 "donde mandarlo, o pregunta algo que la tienda no contesta")
@@ -235,29 +223,6 @@ def dudosos(nx):
 
 def _desc(nx, t):
     return f"{t.replace('_', ' ')}: {nx.faq[t]['respuesta']}"
-
-
-def llamar_jev(state, qs, prueba):
-    """Una llamada a Jev con preguntas de lista cerrada; anota el gasto en `jev/gasto_jev.jsonl`. {pregunta: elegido}."""
-    import urllib.request
-    import urllib.error
-    body = {"state": state, "model": "jev-latest", "questions": qs}
-    req = urllib.request.Request("https://api.typesafe.ai/v1/systemone", data=json.dumps(body).encode(), headers={
-        "Authorization": "Bearer " + os.environ["TYPESAFE_API_KEY"].strip(), "Content-Type": "application/json"})
-    for intento in range(5):
-        try:
-            r = json.load(urllib.request.urlopen(req, timeout=120))
-            break
-        except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 504) and intento < 4:
-                time.sleep(3 * 2 ** intento)
-                continue
-            raise
-    with open(os.path.join(AQUI, "jev", "gasto_jev.jsonl"), "a") as fh:
-        fh.write(json.dumps({"cuando": time.strftime("%Y-%m-%dT%H:%M:%S"), "prueba": prueba,
-                             "tokens": r["usage"]["input_tokens"],
-                             "usd": round(r["usage"]["input_tokens"] * 0.042 / 1e6, 5)}) + "\n")
-    return {k: v["choice"] for k, v in r["answers"].items()}, r["usage"]["input_tokens"]
 
 
 def _jev(nx, texto, ds):

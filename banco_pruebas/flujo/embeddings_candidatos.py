@@ -16,26 +16,23 @@ Contra dos indices, los mismos documentos de `nexo_rubro`:
   rubros      cada rubro con sus alias, mas lo que la tienda declara que no vende.
 Se cuenta en k = 1, 3, 5, 8, 10, 15 y 20. Lo que la tienda no vende no entra: es otra pregunta.
 
-    python3 banco_pruebas/embeddings_candidatos.py [--ver]   # pide los vectores que falten con la gratis
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/embeddings_candidatos.py   # si la gratis se traba
+    python3 banco_pruebas/flujo/embeddings_candidatos.py [--ver]   # pide los vectores que falten con la gratis
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo/embeddings_candidatos.py   # si la gratis se traba
 """
-import collections
 import json
 import os
 import sys
-import time
-import urllib.error
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [os.path.dirname(AQUI), AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO  # noqa: E402
 
+import embeddings as EMB  # noqa: E402
 import engranaje0 as E  # noqa: E402
 import flujo_nuevo as F  # noqa: E402
 import nexo_rubro as NR  # noqa: E402
 
-# Los vectores pesan megas: en el cache de la sesion. En el repo quedan los rangos.
-CACHE = os.environ.get("EMB_CACHE", "/tmp/claude-0/embeddings_candidatos_vectores.json")
-RANGOS = os.path.join(AQUI, "embeddings_candidatos_rangos.json")
+# Los vectores pesan megas: en el cache de la sesion, `embeddings.py`. En el repo quedan los rangos.
+RANGOS = os.path.join(GRABADO, "embeddings_candidatos_rangos.json")
 KS = (1, 3, 5, 8, 10, 15, 20)
 CORRIDA = ("gemini-lite", "v2")
 
@@ -57,28 +54,7 @@ def cosas():
 
 
 def vectores(textos, tarea, cache):
-    import llamada1_modelos as L
-    from nexo_condicion import _anotar_paga
-    paga = bool(os.environ.get("MARTIN_AUTORIZO_LA_PAGA"))
-    clave = os.environ["GEMINI_API_KEY_PROD" if paga else "GEMINI_API_KEY"].split()[0]
-    falta = [t for t in dict.fromkeys(textos) if t and f"{tarea}|{t}" not in cache]
-    lote = 100 if paga else 40
-    for i in range(0, len(falta), lote):
-        for intento in range(6):
-            try:
-                L._emb(falta[i:i + lote], tarea, clave, cache)
-                if paga:
-                    _anotar_paga(falta[i:i + lote])
-                else:
-                    time.sleep(25)
-                break
-            except urllib.error.HTTPError as e:
-                if e.code != 429 or intento == 5:
-                    raise
-                print(f"  429, espero {30 * (intento + 1)} s", flush=True)
-                time.sleep(30 * (intento + 1))
-        json.dump(cache, open(CACHE, "w"))
-        print(f"  {tarea}: {min(i + lote, len(falta))} de {len(falta)}", flush=True)
+    EMB.pedir([t for t in textos if t], tarea, cache)
 
 
 def medir():
@@ -90,7 +66,7 @@ def medir():
     cs = cosas()
     consultas = {"fragmento": [c[2] for c in cs], "busqueda": [c[3] for c in cs],
                  "las dos": [f"{c[2]}. {c[3]}" if c[2] and c[3] else c[2] or c[3] for c in cs]}
-    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
+    cache = EMB.cargar()
     vectores(docs_p + docs_r, "RETRIEVAL_DOCUMENT", cache)
     vectores([q for qs in consultas.values() for q in qs], "RETRIEVAL_QUERY", cache)
     vp = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for d in docs_p]
@@ -141,7 +117,7 @@ def medir_reales(corridas=(("gemini-lite", "v1"), ("luna", "v2"))):
     _, alias, rubros, modelos = NR.fuente()
     ms = list(modelos)
     docs_p = [NR.doc_producto(k, modelos[k], alias) for k in ms]
-    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
+    cache = EMB.cargar()
     vectores(docs_p, "RETRIEVAL_DOCUMENT", cache)
     vp = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for d in docs_p]
     esperado = {c[0]: c[2].get("rubros", set()) for c in RE.CASOS}

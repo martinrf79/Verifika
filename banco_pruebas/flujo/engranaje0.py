@@ -16,9 +16,9 @@ el fragmento con sus palabras y la busqueda que haria en cualquier tienda online
 
 La vara es la de `nuevas70.py`, permisiva y escrita antes.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/engranaje0.py --correr gemini v1
-    python3 banco_pruebas/engranaje0.py --correr haiku v2
-    python3 banco_pruebas/engranaje0.py --calificar [--ver]
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo/engranaje0.py --correr gemini v1
+    python3 banco_pruebas/flujo/engranaje0.py --correr haiku v2
+    python3 banco_pruebas/flujo/engranaje0.py --calificar [--ver]
 """
 import collections
 import json
@@ -28,12 +28,11 @@ import sys
 import time
 import unicodedata
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(AQUI)
-sys.path[:0] = [REPO, AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO, REPO  # noqa: E402
 os.chdir(REPO)
 ARGS = sys.argv[1:]
-SALIDA = os.path.join(AQUI, "engranaje0_corridas.jsonl")
+SALIDA = os.path.join(GRABADO, "engranaje0_corridas.jsonl")
 TOPE = {"gemini": 0.20, "haiku": 0.20, "deepseek": 0.20}
 
 PROMPT = {"v1": """Sos el primer paso de un sistema que atiende clientes de una tienda online. Del mensaje del cliente,
@@ -206,7 +205,7 @@ def calificar():
     filas = {}
     for r in map(json.loads, open(SALIDA)):
         filas[(r["modelo"], r["v"], r["id"])] = r
-    print(f"\nEL ENGRANAJE 0 SOBRE LAS 70 NUEVAS · vara permisiva")
+    print("\nEL ENGRANAJE 0 SOBRE LAS 70 NUEVAS · vara permisiva")
     print(f"{'corrida':12} {'bien':>9}  {'pierde':>6} {'traduce mal':>11} {'inventa':>7} {'reescribe':>9} {'invalida':>8} "
           f"{'seg':>5} {'tok sal':>7} {'dolares':>8}")
     detalle = {}
@@ -303,15 +302,14 @@ def _esperado():
 
 
 def embeddings():
-    if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
-        raise SystemExit("los embeddings van con la paga: falta MARTIN_AUTORIZO_LA_PAGA=<fecha>")
-    import llamada1_modelos as L
+    import embeddings as EMB
+    import nexo_rubro as NR
     from nuevas70 import CASOS
-    clave = os.environ["GEMINI_API_KEY_PROD"].strip()
-    cache_f = "/tmp/claude-0/-home-user-Verifika/5f208f43-0a09-5b2e-aeaf-05c8eef85751/scratchpad/llamada1_emb.json"
-    cache = json.load(open(cache_f)) if os.path.exists(cache_f) else {}
-    rubros = [(t, k) for t, tipo, k in L.indice_tienda() if tipo == "rubro"]
-    docs = L._emb([t for t, _ in rubros], "RETRIEVAL_DOCUMENT", clave, cache)
+    cache = EMB.cargar()
+    # Los rubros con sus alias, sin lo que no se vende: el indice de rubros del 14-nov, `nexo_rubro.doc_rubro`.
+    _, alias, rs, _ = NR.fuente()
+    rubros = [(NR.doc_rubro(r, alias), r) for r in rs]
+    docs = EMB.pedir([t for t, _ in rubros], EMB.DOCUMENTO, cache)
     esperado = _esperado()
     casos = {c[0]: c for c in CASOS}
     filas = [r for r in map(json.loads, open(SALIDA)) if r["v"] == "v2" and r.get("salida")]
@@ -326,8 +324,7 @@ def embeddings():
                 pares.append((r["modelo"], r["id"], i, str(suyas[0].get("busqueda") or ""),
                               str(suyas[0].get("fragmento") or ""), esperado[(r["id"], i)]))
     qs = sorted({q for p in pares for q in p[3:5] if q})
-    vs = dict(zip(qs, L._emb(qs, "RETRIEVAL_QUERY", clave, cache)))
-    json.dump(cache, open(cache_f, "w"))
+    vs = dict(zip(qs, EMB.pedir(qs, EMB.CONSULTA, cache)))
     res = []
     for m, cid, i, busq, frag, esp in pares:
         fila = {"modelo": m, "id": cid, "i": i, "esperado": esp}
@@ -339,13 +336,13 @@ def embeddings():
             fila[nombre] = [(k, round(p, 3)) for p, k in pts[:3]]
         fila["texto_busqueda"], fila["texto_fragmento"] = busq, frag
         res.append(fila)
-    json.dump(res, open(os.path.join(AQUI, "engranaje0_embeddings.json"), "w", encoding="utf-8"), ensure_ascii=False,
+    json.dump(res, open(os.path.join(GRABADO, "engranaje0_embeddings.json"), "w", encoding="utf-8"), ensure_ascii=False,
               indent=0)
     print(f"{len(rubros)} rubros, {len(qs)} consultas, {len(res)} productos")
 
 
 def calificar_embeddings(umbral=None):
-    res = json.load(open(os.path.join(AQUI, "engranaje0_embeddings.json"), encoding="utf-8"))
+    res = json.load(open(os.path.join(GRABADO, "engranaje0_embeddings.json"), encoding="utf-8"))
     dentro = [r for r in res if r["esperado"] != "ninguno"]
     fuera = [r for r in res if r["esperado"] == "ninguno"]
     print(f"\nEL NEXO POR EMBEDDINGS, {len(dentro)} productos que la tienda vende y {len(fuera)} que no")

@@ -25,26 +25,23 @@ pedida se cruza con la linea del modelo cuyo fragmento o busqueda trae una de su
   no vende  bien si dice que no hay; mal si elige algo. Corte: no hay al menos 80 por ciento.
   la respuesta  cada fila citada esta en el catalogo con ese precio y ese rubro.
 
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/nexo_rubro.py --embeddings   # los vectores que falten
-    python3 banco_pruebas/nexo_rubro.py [--ver]                                         # califica, sin gasto
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo/nexo_rubro.py --embeddings   # los vectores que falten
+    python3 banco_pruebas/flujo/nexo_rubro.py [--ver]                                         # califica, sin gasto
 """
 import collections
 import csv
 import json
-import logging
 import os
 import re
 import sys
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.dirname(AQUI)
-sys.path[:0] = [REPO, AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO, REPO  # noqa: E402
 TID = "verifika_prod"
-PUNTAJES = os.path.join(AQUI, "nexo_rubro_puntajes.json")
-# Los vectores enteros pesan decenas de megas: quedan en el cache de la sesion, y en el repo solo los puntajes.
-CACHE = "/tmp/claude-0/-home-user-Verifika/3792206b-c284-57cb-9afe-3ff1597e7864/scratchpad/nexo_nombrado_vectores.json"
+PUNTAJES = os.path.join(GRABADO, "nexo_rubro_puntajes.json")
 MODELOS = ("gemini", "haiku", "deepseek")
-from busquedas import NEXOS as _B  # noqa: E402
+import embeddings as EMB  # noqa: E402
+from embeddings import NEXOS as _B  # noqa: E402
 RUBROS_CANDIDATOS = _B["rubro y producto"]["candidatos"]["rubros"]
 CANDIDATOS = _B["rubro y producto"]["candidatos"]["productos"]
 
@@ -121,20 +118,14 @@ def embeddings():
     todas = list(lineas_v2().values()) + list(lineas_b().values())
     busquedas = sorted({str(l["busqueda"]) for ls in todas for l in ls})
     consultas = sorted(set(busquedas) | {str(l.get("fragmento") or "") for ls in todas for l in ls} - {""})
-    cache = json.load(open(CACHE)) if os.path.exists(CACHE) else {}
+    cache = EMB.cargar()
     ir = indice_rubros(rubros, alias)
     rubros, dr_t = [r for r, _ in ir], [d for _, d in ir]
     dp_t = [doc_producto(k, modelos[k], alias) for k in ms]
-    faltan = [t for t in dr_t + dp_t if f"RETRIEVAL_DOCUMENT|{t}" not in cache] + \
-             [q for q in consultas if f"RETRIEVAL_QUERY|{q}" not in cache]
-    if faltan:
-        if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
-            raise SystemExit(f"faltan {len(faltan)} vectores y van con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
-        import llamada1_modelos as L
-        clave = os.environ["GEMINI_API_KEY_PROD"].split()[0]
-        L._emb(dr_t + dp_t, "RETRIEVAL_DOCUMENT", clave, cache)
-        L._emb(consultas, "RETRIEVAL_QUERY", clave, cache)
-        json.dump(cache, open(CACHE, "w"))
+    faltan = [t for t in dr_t + dp_t if f"{EMB.DOCUMENTO}|{t}" not in cache] + \
+             [q for q in consultas if f"{EMB.CONSULTA}|{q}" not in cache]
+    EMB.pedir(dr_t + dp_t, EMB.DOCUMENTO, cache)
+    EMB.pedir(consultas, EMB.CONSULTA, cache)
     dr = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in dr_t]
     dp = [cache[f"RETRIEVAL_DOCUMENT|{t}"] for t in dp_t]
 
@@ -264,10 +255,9 @@ def envios_de(lineas):
 
 
 def instalar():
-    from banco_pruebas import camino_fijo as F
-    F.instalar()
-    import structlog
-    structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(logging.CRITICAL))
+    """El codigo de produccion de los nexos sin red ni modelo: `entorno.instalar`."""
+    import entorno
+    entorno.instalar()
 
 
 # ══ LA VARA ══════════════════════════════════════════════════════════════════
@@ -345,7 +335,7 @@ def calificar(ver=False, nx=None, callado=False, con_jev=False):
         for x in fallas:
             print(f"    {x[0]} '{x[1]}': esperado {x[2]} · {x[3]}")
     if not callado:
-        json.dump(salida, open(os.path.join(AQUI, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
+        json.dump(salida, open(os.path.join(GRABADO, "nexo_rubro_respuestas.json"), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1, default=str)
     return total
 
@@ -353,7 +343,7 @@ def calificar(ver=False, nx=None, callado=False, con_jev=False):
 # ══ LO DUDOSO, CON JEV ═══════════════════════════════════════════════════════
 # 16-nov, Martin: Jev en lo dudoso, como en el nexo de tema. Una pregunta por mensaje; cada linea dudosa elige entre sus
 # cinco candidatos o ninguno. Lo firme lo sigue eligiendo el codigo.
-JEV = os.path.join(AQUI, "nexo_rubro_jev.jsonl")
+JEV = os.path.join(GRABADO, "nexo_rubro_jev.jsonl")
 NINGUNO = "ninguno"
 DESC_NINGUNO = "la tienda no tiene ese tipo de producto: ninguno de estos es lo que pide"
 
@@ -372,7 +362,7 @@ def _bancos_flujo():
 
 
 def correr_jev(flujo=False):
-    import nexo_tema as NT
+    import jev as J
     instalar()
     if flujo:
         import flujo_nuevo as F
@@ -397,7 +387,7 @@ def correr_jev(flujo=False):
                                             f"significa \"{l['busqueda']}\", cual de estos productos de la tienda es del "
                                             "tipo que pide el cliente? Si la tienda no tiene ese tipo de producto, ninguno."}
                   for i, l, p in ds}
-            r, tok = NT.llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "nexo_rubro")
+            r, tok = J.llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "nexo_rubro")
             fila = {"banco": banco, "modelo": m, "id": cid, "tokens": tok,
                     "lineas": {l["busqueda"]: r[f"l{i}"] for i, l, _ in ds}}
             with open(JEV, "a", encoding="utf-8") as fh:
@@ -455,7 +445,6 @@ VARIANTES = {
     "V5 modelo sin etiquetas": {"producto": _doc_corto},
     "V6 V1 mas V3, la viva desde el 16-nov": {"producto": _doc_alias, "no_vendidas": True},
 }
-CACHE_CAL = "/tmp/claude-0/-home-user-Verifika/3792206b-c284-57cb-9afe-3ff1597e7864/scratchpad/nexo_nombrado_vectores.json"
 
 
 def _no_vendidas():
@@ -475,7 +464,6 @@ class NexoVariante(Nexo):
 
 
 def calibrar():
-    import llamada1_modelos as L
     _, alias, rubros, modelos = fuente()
     ms = list(modelos)
     todas = list(lineas_v2().values()) + list(lineas_b().values())
@@ -483,15 +471,10 @@ def calibrar():
     neg = [NO_SE_VENDE + x for x in _no_vendidas()]
     dr_t = [doc_rubro(r, alias) for r in rubros]
     docs = {nombre: [v["producto"](k, modelos[k], alias) for k in ms] for nombre, v in VARIANTES.items()}
-    cache = json.load(open(CACHE_CAL)) if os.path.exists(CACHE_CAL) else {}
-    clave = os.environ["GEMINI_API_KEY_PROD" if os.environ.get("MARTIN_AUTORIZO_LA_PAGA") else "GEMINI_API_KEY"].split()[0]
+    cache = EMB.cargar()
     textos = dr_t + neg + [t for ds in docs.values() for t in ds]
-    for tarea, ts in (("RETRIEVAL_DOCUMENT", textos), ("RETRIEVAL_QUERY", qs)):
-        falta = [t for t in dict.fromkeys(ts) if f"{tarea}|{t}" not in cache]
-        if falta:
-            L._emb(falta, tarea, clave, cache)
-            json.dump(cache, open(CACHE_CAL, "w"))
-            print(f"  vectores nuevos {tarea}: {len(falta)}", flush=True)
+    for tarea, ts in ((EMB.DOCUMENTO, textos), (EMB.CONSULTA, qs)):
+        EMB.pedir(ts, tarea, cache)
 
     def dot(a, b):
         return sum(x * y for x, y in zip(a, b))

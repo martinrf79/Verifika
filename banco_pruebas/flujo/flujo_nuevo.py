@@ -30,9 +30,9 @@ LA VARA, escrita antes de correr, sobre `nuevas70` y `nuevas70b`:
                  citada fuera del catalogo.
   la prevision   cuantas lineas esperan a cada nexo que falta, con ejemplos: es la carga de lo que sigue.
 
-    python3 banco_pruebas/flujo_nuevo.py --llamada0        # la llamada 0 con la gratis, retoma lo que falta
-    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo_nuevo.py --embeddings
-    python3 banco_pruebas/flujo_nuevo.py [--ver]           # el flujo y la vara, sin gasto
+    python3 banco_pruebas/flujo/flujo_nuevo.py --llamada0        # la llamada 0 con la gratis, retoma lo que falta
+    MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo/flujo_nuevo.py --embeddings
+    python3 banco_pruebas/flujo/flujo_nuevo.py [--ver]           # el flujo y la vara, sin gasto
 """
 import collections
 import dataclasses
@@ -42,14 +42,14 @@ import re
 import sys
 import time
 
-AQUI = os.path.dirname(os.path.abspath(__file__))
-sys.path[:0] = [os.path.dirname(AQUI), AQUI]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from entorno import GRABADO  # noqa: E402
 
 import engranaje0 as E  # noqa: E402
 import nexo_rubro as NR  # noqa: E402
 
-LLAMADA0 = os.path.join(AQUI, "flujo_nuevo_llamada0.jsonl")
-PUNTAJES = os.path.join(AQUI, "flujo_nuevo_puntajes.json")
+LLAMADA0 = os.path.join(GRABADO, "flujo_nuevo_llamada0.jsonl")
+PUNTAJES = os.path.join(GRABADO, "flujo_nuevo_puntajes.json")
 PROMPT = E.PROMPT["v1"].replace("No contestes", """- destino: el lugar a donde hay que enviarlo, solo si el cliente lo
   dijo; si no, vacio.
 No contestes""")
@@ -149,22 +149,13 @@ def embeddings():
     _, alias, rubros, modelos = NR.fuente()
     ms = list(modelos)
     qs = sorted({l.busqueda for ls in llamada0().values() for l in ls} - {""})
-    cache = json.load(open(NR.CACHE)) if os.path.exists(NR.CACHE) else {}
-    faltan = [q for q in qs if f"RETRIEVAL_QUERY|{q}" not in cache]
-    if faltan:
-        if not os.environ.get("MARTIN_AUTORIZO_LA_PAGA"):
-            raise SystemExit(f"faltan {len(faltan)} vectores y van con la paga: MARTIN_AUTORIZO_LA_PAGA=<fecha>")
-        import llamada1_modelos as L
-        L._emb(faltan, "RETRIEVAL_QUERY", os.environ["GEMINI_API_KEY_PROD"].split()[0], cache)
-        json.dump(cache, open(NR.CACHE, "w"))
+    import embeddings as EMB
+    cache = EMB.cargar()
+    faltan = [q for q in qs if f"{EMB.CONSULTA}|{q}" not in cache]
+    EMB.pedir(qs, EMB.CONSULTA, cache)
     ir = NR.indice_rubros(rubros, alias)
     rubros = [r for r, _ in ir]
-    falta_doc = [d for _, d in ir if f"RETRIEVAL_DOCUMENT|{d}" not in cache] + [
-        NR.doc_producto(k, modelos[k], alias) for k in ms if f"RETRIEVAL_DOCUMENT|{NR.doc_producto(k, modelos[k], alias)}" not in cache]
-    if falta_doc:
-        import llamada1_modelos as L
-        L._emb(falta_doc, "RETRIEVAL_DOCUMENT", os.environ["GEMINI_API_KEY_PROD"].split()[0], cache)
-        json.dump(cache, open(NR.CACHE, "w"))
+    EMB.pedir([d for _, d in ir] + [NR.doc_producto(k, modelos[k], alias) for k in ms], EMB.DOCUMENTO, cache)
     dr = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for _, d in ir]
     dp = [cache[f"RETRIEVAL_DOCUMENT|{NR.doc_producto(k, modelos[k], alias)}"] for k in ms]
 
@@ -481,7 +472,7 @@ def calificar(ver=False):
         print(f"    {nexo}: {c['nexo ' + nexo + ' repreguntar']} lineas · por ejemplo {xs}")
     for x in cortes:
         print(f"    corte {x}")
-    json.dump(salida, open(os.path.join(AQUI, "flujo_nuevo_respuestas.json"), "w", encoding="utf-8"),
+    json.dump(salida, open(os.path.join(GRABADO, "flujo_nuevo_respuestas.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1, default=str)
 
 
