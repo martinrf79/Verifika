@@ -18,7 +18,7 @@ LA RECETA, igual en el banco y en produccion, `app/core/flujo/agente._vectores`:
                16-nov. Los de `engranaje0` y `momento0_b`, del 15-nov, difieren solo en teclado: el 16-nov se le sumo el
                alias "keyboard". La API devuelve lo mismo de una sesion a otra.
   el indice    los documentos de la tienda que usan los nexos vivos, `indice_tienda`, quedan en el repo, en
-               `vectores/indice_tienda.json.gz`, en float32: una sesion nueva paga solo sus consultas. Se rehace con
+               `data/clientes/verifika_prod/indice_embeddings.json.gz`, en float32: una sesion nueva paga solo sus consultas. Se rehace con
                `--indice` cuando cambian el catalogo, los alias, la FAQ o lo que la tienda no vende. Medido el 16-nov:
                cada componente difiere en menos de dos cienmillonesimos de la precision entera, y 150 busquedas
                contra todos los productos dan los mismos puntajes al cuarto decimal. `EMB_SIN_INDICE=1` lo saltea.
@@ -55,7 +55,10 @@ DOCUMENTO = "RETRIEVAL_DOCUMENT"
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:batchEmbedContents"
 USD_POR_MILLON = 0.15
 CACHE = os.environ.get("EMB_CACHE") or os.path.join(VECTORES, "cache")
-INDICE = os.path.join(VECTORES, "indice_tienda.json.gz")
+# El indice de la tienda vive desde el 17-nov donde lo lee el bot, `app/core/flujo/nuevo/vectores.ruta_indice`: una
+# sola copia. `--indice` lo rehace ahi.
+from app.core.flujo.nuevo.vectores import ruta_indice as _ruta  # noqa: E402
+INDICE = _ruta("verifika_prod")
 
 NEXOS = {
     "rubro y producto": {

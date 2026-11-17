@@ -90,6 +90,23 @@ def test_si_una_pieza_cae_el_cliente_igual_recibe_respuesta(S, corrida, falla):
         assert "8.500" in r["respuesta"] and "14.500" in r["respuesta"]
 
 
+def test_el_indice_de_la_tienda_tiene_cada_documento_de_los_nexos(S):
+    """El bot compara cada busqueda contra los documentos de la tienda ya calculados, en
+    `data/clientes/<tienda>/indice_embeddings.json.gz`. Si el catalogo, los alias, la FAQ o lo que no se vende cambian y
+    el indice no, el nexo revienta en ese documento: se rehace con `banco_pruebas/flujo/embeddings.py --indice`."""
+    from app.core.flujo.nuevo import condicion as NC, rubro as NR, tema as NT, vectores as V
+    tid = "verifika_prod"
+    pos, _, dim = V.indice(tid)
+    _, alias, rubros, modelos = NR.fuente(tid)
+    docs = [d for _, d in NR.indice_rubros(rubros, alias, tid)] + [NR.doc_producto(k, modelos[k], alias) for k in modelos]
+    docs += [a for _, a in NT.docs(*NT.fuente(tid))]
+    fx = NC.fuente(tid)
+    docs += [d for r in fx.campos for _, d in NC.docs_campo(r, fx)]
+    faltan = [d for d in dict.fromkeys(docs) if d not in pos]
+    print(f"\nINDICE: {len(pos)} documentos de {dim} dimensiones; faltan {len(faltan)} de {len(set(docs))}")
+    assert not faltan, faltan[:5]
+
+
 @pytest.mark.xfail(strict=True, reason="A MEDIAS: la charla larga de 22 turnos, 17-nov. El lugar del primer turno llega al "
                                        "ultimo y el total sale bien, 47.500, pero dice Misiones y no Posadas: la llamada 0 "
                                        "no marca destino en 'soy de Posadas, Misiones' y la segunda llamada toma la provincia.")
