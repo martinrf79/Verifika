@@ -64,6 +64,24 @@ PROMPTS = {"v1": F.PROMPT}
 from app.core.flujo.nuevo.llamada0 import PROMPT as _V2  # noqa: E402
 PROMPTS["v2"] = _V2
 
+# v4, 17-nov, orden de Martin: la v2 separa bien pero escribe de mas en la busqueda, la cantidad, comentarios y signos,
+# y el nexo de condicion los toma por condiciones. Las mismas tres cosas por linea; la busqueda atada a producto y
+# condiciones, con una sola linea de lo que no va; la jerga que no entiende, tal cual; el fragmento, donde nombra la cosa;
+# dos iguales en una linea salvo que vayan a destinos distintos. Sin ejemplo: con ejemplo, la v3 copiaba en vez de traducir.
+PROMPTS["v4"] = """Sos el primer paso de un sistema que atiende clientes de una tienda online. Del mensaje del cliente,
+devolve una linea por cada cosa que pide o pregunta, sin dejar ninguna afuera aunque el mensaje sea largo:
+- fragmento: la parte del mensaje que nombra esa cosa, con las palabras del cliente.
+- busqueda: lo que escribirias en el buscador de una tienda online para encontrarlo: el producto primero y despues solo
+  lo que el cliente pide de como tiene que ser: marca, modelo, medida, capacidad, color, tipo, origen, tope por unidad o
+  el mas barato. Lo que dice para varios productos o para todo el mensaje, como "todo inalambrico" o "lo mas barato
+  posible", va repetido en la busqueda de cada linea a la que se aplica. Escribilo como lo diria la tienda; lo que no
+  sepas que quiere decir, dejalo con las palabras del cliente, corrigiendo solo la ortografia. En la busqueda no va: la
+  cantidad, el destino, el pago, el total, comentarios ni signos de puntuacion. Vacio si no busca un producto.
+- destino: el lugar a donde hay que enviarlo, solo si el cliente lo dijo; si no, vacio.
+Un producto por linea: si pide dos productos, o dos variantes del mismo, como uno negro y uno rojo, van en lineas
+separadas. Varias unidades iguales van en una linea, salvo que vayan a destinos distintos: una linea por destino. Si el
+cliente se corrige, vale lo ultimo que dijo. No contestes ni decidas nada. Tu unica fuente es lo que escribio el cliente."""
+
 # v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
 # condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,
 # despues una linea por cada uno con sus condiciones en una lista, y un ejemplo inventado que no esta en ningun banco.
@@ -522,13 +540,40 @@ def sobrantes_reales(corridas=(("gemini-lite", "v1"), ("gemini-lite", "v2"), ("l
         EMB.guardar(cache)
 
 
+# ══ LO QUE ESCRIBE DE MAS EN LA BUSQUEDA (17-nov) ═════════════════════════════
+# Escrito antes de correr la v4, orden de Martin: lo que la busqueda trae y no es producto ni condicion. Solo lo que se
+# reconoce sin dudas: signos de puntuacion, y una cantidad, "2 unidades", "cantidad 3", "x2". Y las palabras por busqueda.
+_CANTIDAD = re.compile(r"\b\d+\s*(?:unidad(?:es)?|u)\b|\bcantidad\s*:?\s*\d+|\bx\s?\d+\b|\b\d+\s?x\b")
+
+
+def de_mas(corridas_=(("luna", "v2"), ("luna", "v4"))):
+    print("\nLO QUE ESCRIBE DE MAS EN LA BUSQUEDA · las 140, los reales y el primer turno de las 365")
+    print(f"  {'corrida':12} {'busquedas':>10} {'con signos':>11} {'con cantidad':>13} {'palabras promedio':>18}")
+    filas_ = {}
+    for corrida in corridas_:
+        bs = []
+        for rs in [corridas()[corrida]] + [corridas_reales(b)[corrida] for b in ("reales", "reales525")]:
+            for cid, r in rs.items():
+                if "." in cid and ".0." not in cid:
+                    continue
+                bs += [str(l.get("busqueda")) for l in (r.get("salida") or {}).get("lineas", []) if l.get("busqueda")]
+        filas_[corrida] = bs
+        n = len(bs) or 1
+        print(f"  {' '.join(corrida):12} {len(bs):>10} {sum(1 for b in bs if re.search(r'[,;:]', b)):>11} "
+              f"{sum(1 for b in bs if _CANTIDAD.search(b.lower())):>13} {sum(len(b.split()) for b in bs) / n:>18.1f}")
+    return filas_
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if "--correr" in a:
         i = a.index("--correr")
         correr(a[i + 1], a[i + 2], "--piloto" in a, a[a.index("--banco") + 1] if "--banco" in a else "140")
     elif "--sobra" in a:
-        sobrantes_reales()
+        sobrantes_reales(tuple(tuple(x.split(":")) for x in a[a.index("--sobra") + 1:]) or
+                         (("gemini-lite", "v1"), ("gemini-lite", "v2"), ("luna", "v2")))
+    elif "--de-mas" in a:
+        de_mas()
     elif "--reales" in a:
         calificar_reales()
     else:
