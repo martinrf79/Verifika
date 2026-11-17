@@ -8181,18 +8181,22 @@
    {
     "parte": "2 unidades, con las menos partes",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    },
    {
     "parte": "posibles",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
    [
     "2 unidades, con las menos partes",
-    []
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "campo|garantia_meses"
+    ]
    ],
    [
     "posibles",
@@ -8243,18 +8247,22 @@
    {
     "parte": "2 unidades, con las menos partes",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    },
    {
     "parte": "posibles",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
    [
     "2 unidades, con las menos partes",
-    []
+    [
+     "campo|color",
+     "campo|conexion",
+     "campo|material"
+    ]
    ],
    [
     "posibles",
@@ -8305,18 +8313,22 @@
    {
     "parte": "2 unidades, con las menos partes",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    },
    {
     "parte": "posibles",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
    [
     "2 unidades, con las menos partes",
-    []
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|garantia_meses"
+    ]
    ],
    [
     "posibles",
@@ -8365,14 +8377,9 @@
   "rubro": "auriculares",
   "items": [
    {
-    "parte": "2",
-    "veredicto": "no se ata",
-    "por": "sin jev"
-   },
-   {
     "parte": "menor cantidad posible de partes chinas; precio no prioritario",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
@@ -8400,13 +8407,17 @@
    {
     "parte": "1 auricular, con la menor cantidad posible de partes chinas; precio no prioritario",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
    [
     "1 auricular, con la menor cantidad posible de partes chinas; precio no prioritario",
-    []
+    [
+     "campo|pais_marca",
+     "campo|pais_fabricacion",
+     "campo|garantia_meses"
+    ]
    ]
   ]
  },
@@ -8414,20 +8425,19 @@
   "rubro": "mouse",
   "items": [
    {
-    "parte": "1",
-    "veredicto": "no se ata",
-    "por": "sin jev"
-   },
-   {
     "parte": "menor cantidad posible de partes chinas; precio no prioritario",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
    [
     "1",
-    []
+    [
+     "campo|material",
+     "campo|color",
+     "campo|sensor"
+    ]
    ],
    [
     "menor cantidad posible de partes chinas; precio no prioritario",
@@ -8445,22 +8455,25 @@
    {
     "parte": "2",
     "veredicto": "no se ata",
-    "por": "sin jev"
-   },
-   {
-    "parte": "menor cantidad posible de partes chinas; precio no prioritario",
-    "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
    [
     "2",
-    []
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|garantia_meses"
+    ]
    ],
    [
     "menor cantidad posible de partes chinas; precio no prioritario",
-    []
+    [
+     "campo|pais_fabricacion",
+     "campo|marca",
+     "campo|pais_marca"
+    ]
    ]
   ]
  },
@@ -8468,20 +8481,19 @@
   "rubro": "teclado",
   "items": [
    {
-    "parte": "1",
-    "veredicto": "no se ata",
-    "por": "sin jev"
-   },
-   {
     "parte": "menor cantidad posible de partes chinas; precio no prioritario",
     "veredicto": "no se ata",
-    "por": "sin jev"
+    "por": "jev"
    }
   ],
   "dudosas": [
    [
     "1",
-    []
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
    ],
    [
     "menor cantidad posible de partes chinas; precio no prioritario",

@@ -341,31 +341,39 @@ def _todas_las_lineas():
 
 
 def embeddings(variantes_=None):
+    """Los puntajes de las partes que todavia no los tienen, en cada variante. Lo grabado no se vuelve a pedir: solo los
+    vectores de las consultas nuevas y los documentos de sus rubros."""
     fx = Fuente()
     cache = EMB.cargar()
     lineas = _todas_las_lineas()
     p = json.load(open(PUNTAJES, encoding="utf-8")) if os.path.exists(PUNTAJES) else {}
     for nombre in variantes_ or [x for x in sys.argv[2:] if x in VARIANTES] or list(VARIANTES):
         v = VARIANTES[nombre]
-        docs = {r: v["docs"](r, fx) for r in fx.campos}
+        hechas = p.setdefault(nombre, {})
         consultas = collections.defaultdict(set)
         for _, b, r in lineas:
             for parte in seguro(b, r, fx)[1]:
-                consultas[r].add(v["consulta"](parte, r, b))
+                q = v["consulta"](parte, r, b)
+                if q not in hechas.get(r, {}):
+                    consultas[r].add(q)
+        if not consultas:
+            continue
+        docs = {r: v["docs"](r, fx) for r in consultas}
         textos_d = [d for ds in docs.values() for _, d in ds]
         textos_q = sorted({q for qs in consultas.values() for q in qs})
         for tarea, ts in ((EMB.DOCUMENTO, textos_d), (EMB.CONSULTA, textos_q)):
             EMB.pedir(ts, tarea, cache)
-        p[nombre] = {}
         for r, qs in consultas.items():
             dv = [(k, cache[f"RETRIEVAL_DOCUMENT|{d}"]) for k, d in docs[r]]
-            p[nombre][r] = {}
             for q in sorted(qs):
                 x = cache[f"RETRIEVAL_QUERY|{q}"]
                 pts = sorted(((k, round(sum(a * b for a, b in zip(x, d)), 4)) for k, d in dv), key=lambda t: -t[1])
-                p[nombre][r][q] = pts[:12]
+                hechas.setdefault(r, {})[q] = pts[:12]
+        print(f"  {nombre}: {len(textos_q)} consultas nuevas", flush=True)
     json.dump(p, open(PUNTAJES, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print(f"puntajes: {', '.join(p)}")
+
+
+TODOS = 99
 
 
 def calibrar():
@@ -376,13 +384,16 @@ def calibrar():
     print("  variante                                       k   " + "   ".join(f"{b} sin falla" for b in bancos)
           + "   perdidas  inventados")
     for nombre in VARIANTES:
-        for k in (1, 2, 3, 5):
+        for k in (1, 2, 3, 5, 8, 10, TODOS):
             nx = Nexo(nombre, k, jev=False)
             if not nx.pt.p.get(nombre):
                 continue
+            if k == TODOS:
+                # La referencia sin embeddings: Jev ve todos los campos del rubro y los ordenes.
+                nx.pt.candidatos = lambda v, r, q, k_, fx=nx.fx: [c for c, _ in docs_campo(r, fx)]
             nx.oraculo = _oraculo(nx)
             t = calificar(nx, callado=True)
-            print(f"  {nombre:46} {k}   " + "   ".join(f"{t[b + ' rubros sin falla']:3} de {t[b + ' rubros']:3}"
+            print(f"  {nombre:46} {'todos' if k == TODOS else k:>5}   " + "   ".join(f"{t[b + ' rubros sin falla']:3} de {t[b + ' rubros']:3}"
                                                      for b in bancos)
                   + f"   {sum(t[b + ' condiciones perdidas'] for b in bancos):4}"
                   + f"      {sum(t[b + ' filtro inventado'] for b in bancos):3}")
