@@ -200,7 +200,7 @@ async def turno(mensaje, historial, memoria, user_id, canal, tienda_id, trace_id
     from app.core.flujo import redaccion
     from app.core.flujo import verificador as V
     from app.config import get_settings
-    cid = f"{ESTADO['charla']}|{ESTADO['turno']}"
+    cid = ESTADO.get("cid") or f"{ESTADO['charla']}|{ESTADO['turno']}"
     lineas, codigo, ids = nexos(cid)
     del_cliente = list(memoria.get("dicho") or []) or [str(m.get("content") or "") for m in historial
                                                        if m.get("role") == "user"]
@@ -297,6 +297,33 @@ def correr(etiqueta, ids=None, modo="grabado"):
     return out
 
 
+# LA CHARLA LARGA, 17-nov, orden de Martin: la memoria tiene que aguantar 20 turnos o mas. Con mensajes ya grabados: el
+# lugar en el primero, veinte preguntas de otras charlas sin compra en el medio, y en el ultimo el precio con envio. La
+# vara, escrita antes de correr: la ultima respuesta dice Posadas y el monto 47.500, el G203 a 37.500 y el envio a
+# Posadas a 10.000. `HISTORY_LIMIT` deja en la charla solo los ultimos turnos: el lugar llega por lo que dijo el cliente.
+LARGA = (["C47|0"] + ["C27|0", "C35|0", "C38|0", "C43|0", "C49|0", "C49|1", "C49|2", "K10|0", "K10|2", "K10|3", "K10|4",
+                      "K11|3", "K12|0", "K13|0", "K17|0", "K17|1", "K18|0", "C52|0", "C53|0", "C45|0"] + ["C47|1"])
+
+
+def larga(etiqueta, modo="grabado"):
+    """La charla larga por el webhook entero del clon: (turnos, ultima respuesta, tokens de la ultima llamada, si pasa)."""
+    from banco_pruebas import clon_produccion as C
+    instalar(modo, etiqueta)
+    textos = {f"{ch}|{g['turno']}": g["mensaje"] for ch, gs in charlas().items() for g in gs}
+    C.reiniciar_cliente("larga")
+    ESTADO["charla"] = "LARGA"
+    texto = ""
+    for i, cid in enumerate(LARGA):
+        ESTADO.update({"turno": i, "cid": cid})
+        texto = "\n".join(asyncio.run(C.turno("larga", textos[cid])))
+    ESTADO["cid"] = None
+    n = texto.lower()
+    ok = "posadas" in n and "47.500" in texto
+    print(f"LA CHARLA LARGA, corrida {etiqueta}: {len(LARGA)} turnos; ultima respuesta {'BIEN' if ok else 'MAL'}: "
+          f"dice Posadas {'posadas' in n}, monto 47.500 {'47.500' in texto}\n  " + texto.replace("\n", "\n  "))
+    return ok
+
+
 def tokens():
     """Cuanto pesa la segunda llamada en cada turno de las 26, sin modelo: la consigna, la herramienta y el mensaje,
     a cuatro caracteres por token. La memoria se arma con el texto del codigo como respuesta y sin comandos."""
@@ -324,6 +351,8 @@ if __name__ == "__main__":
     pedidas = [a for a in args if a[:1] in "CK" and a[1:].isdigit()]
     if "--tokens" in args:
         tokens()
+    elif "--larga" in args:
+        larga(next(a for a in args if not a.startswith("--")), "modelo" if "--correr" in args else "grabado")
     else:
         etiqueta = next((a for a in args if not a.startswith("--") and a not in pedidas), "")
         if not etiqueta:
