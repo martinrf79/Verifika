@@ -45,6 +45,7 @@ corre sobre el rubro. Si el producto no se vende, no corre.
 import collections
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -331,6 +332,130 @@ def _imprimir(titulo, c, fallas, ver):
             print(f"      {'; '.join(malos)}")
 
 
+# ══ EL PUNTO 1 DEL 17-NOV: DONDE QUEDA EL CAMPO CORRECTO ENTRE LOS CANDIDATOS ══════════════════════════════════════
+# Orden de Martin del 17-nov: antes de tocar el codigo o a Jev, medir si los embeddings traen el campo que pide cada
+# condicion de la vara, y en que puesto, con las busquedas de la llamada 0 elegida. Tres formas de buscar contra los
+# documentos por campo del rubro, `docs_campo`, que son los del indice de la tienda:
+#   hoy        las partes que deja la funcion de codigo, `seguro`, con el rubro adelante. Lo que el codigo ato no llega a
+#              los embeddings: se cuenta aparte, bien o mal atado.
+#   resto      toda la busqueda menos las palabras que nombran el producto, con el rubro adelante, sin funcion de codigo.
+#   entera     la busqueda entera, como la escribio la llamada 0.
+# Solo cuentan las condiciones que piden un campo de los documentos; las que valen trivial o no se ata, y las del nombre,
+# el modelo y las etiquetas, que no tienen documento, se cuentan aparte.
+RANGOS = grabado("nexo_condicion_rangos.json")
+PUESTOS = (1, 3, 5, 8, 10)
+
+
+def resto(b, r, fx):
+    """La busqueda menos las palabras que nombran el producto: todo lo que el cliente pidio de el, junto."""
+    tokens = fx.C.n(b).split()
+    cab = fx.producto[r] | fx.rubro_ws[r]
+    fuera = {0} if tokens and not re.search(r"\d", tokens[0]) and not fx.es_valor(tokens[0].lstrip("-"), r) else set()
+    fuera |= {i for i, w in enumerate(tokens) if _palabra_producto(w, cab)}
+    return " ".join(w for i, w in enumerate(tokens) if i not in fuera)
+
+
+def campos_de(cond):
+    """Las claves de documento que satisfacen la condicion, o None si alguna alternativa no pide campo."""
+    out = set()
+    for a in cond:
+        pal = a.split()
+        if pal[0] in ("ata", "niega"):
+            out |= {f"campo|{c}" for c in pal[1:]}
+        elif a.startswith("no hay"):
+            out |= {f"campo|{c}" for c in pal[2:]}
+        elif pal[0] == "orden":
+            out.add("orden|precio" if pal[-1] in ("barato", "caro") else "orden|peso")
+        else:
+            return None
+    return out
+
+
+def _bancos():
+    import nexo_condicion_vara as V
+    return (("140", banco_140, V.LAS_140), ("reales", lambda: banco_reales("reales"), V.REALES),
+            ("reales525", lambda: banco_reales("reales525"), esperado_525()), ("charlas", banco_charlas, V.CHARLAS))
+
+
+def rangos():
+    """Cada condicion con campo de la vara: en que puesto trae el campo cada forma de buscar. Graba los rankings."""
+    fx, nx = Fuente(), Nexo(jev=False)
+    filas = []
+    for suf, lineas, esperado in _bancos():
+        por_msj = collections.defaultdict(list)
+        for clave, l, r, _ in lineas():
+            if r:
+                por_msj[clave].append((l, r))
+        for cid, esp in esperado.items():
+            for rub, conds in esp.items():
+                ls = [l for l, r in por_msj.get(cid, []) if r == rub]
+                for cond in conds:
+                    filas.append((suf, cid, rub, cond, ls))
+    # Los vectores de las formas resto y entera, con la gratis; los documentos ya estan en el indice de la tienda.
+    cache = EMB.cargar()
+    qs = {("resto", r, l.busqueda): f"{r}: {resto(l.busqueda, r, fx)}" for _, _, r, _, ls in filas for l in ls}
+    qs.update({("entera", r, l.busqueda): l.busqueda for _, _, r, _, ls in filas for l in ls})
+    EMB.pedir(sorted(set(qs.values())), EMB.CONSULTA, cache)
+    docs = {r: [(k, cache[f"{EMB.DOCUMENTO}|{d}"]) for k, d in docs_campo(r, fx)] for r in {x[2] for x in filas}}
+    rank = {}
+    for (forma, r, b), q in qs.items():
+        x = cache[f"{EMB.CONSULTA}|{q}"]
+        rank[(forma, r, b)] = [k for k, _ in sorted(((k, sum(a * c for a, c in zip(x, d))) for k, d in docs[r]),
+                                                    key=lambda t: -t[1])]
+    json.dump({f"{f}|{r}|{b}": v for (f, r, b), v in rank.items()}, open(RANGOS, "w", encoding="utf-8"),
+              ensure_ascii=False, separators=(",", ":"))
+    c = {f: collections.Counter() for f in ("hoy", "resto", "entera")}
+    sin_campo, perdidas = collections.Counter(), collections.defaultdict(list)
+    for suf, cid, rub, cond, ls in filas:
+        ok = campos_de(cond)
+        if ok is None:
+            sin_campo["trivial o no se ata"] += 1
+            continue
+        if not ok & {k for k, _ in docs_campo(rub, fx)}:
+            sin_campo["campo sin documento, nombre, modelo o etiquetas"] += 1
+            continue
+        if not ls:
+            sin_campo["rubro sin linea que corra"] += 1
+            continue
+        for forma in c:
+            c[forma]["condiciones"] += 1
+        # hoy: lo que ato el codigo, y si no, el mejor puesto entre las partes que deja
+        atado = [it for l in ls for it in seguro(l.busqueda, rub, fx)[0]]
+        if any(acepta(a, it, rub, nx) for it in atado for a in cond):
+            c["hoy"]["lo ato bien el codigo"] += 1
+        else:
+            if atado and any(it.get("campo") and f"campo|{it['campo']}" in ok for it in atado):
+                c["hoy"]["el codigo ato el campo, mal"] += 1
+            pts = [nx.pt.candidatos(VIVA, rub, VARIANTES[VIVA]["consulta"](p, rub, l.busqueda), 12) or []
+                   for l in ls for p in seguro(l.busqueda, rub, fx)[1]]
+            pos = min([xs.index(k) + 1 for xs in pts for k in ok if k in xs] or [99])
+            _contar(c["hoy"], pos)
+            if pos > 10:
+                perdidas["hoy"].append((suf, cid, rub, cond, [l.busqueda for l in ls]))
+        for forma in ("resto", "entera"):
+            pos = min(rank[(forma, rub, l.busqueda)].index(k) + 1 for l in ls for k in ok if k in rank[(forma, rub, l.busqueda)])
+            _contar(c[forma], pos)
+            if pos > 5:
+                perdidas[forma].append((suf, cid, rub, cond, [l.busqueda for l in ls], pos))
+    print("\nDONDE QUEDA EL CAMPO CORRECTO ENTRE LOS CANDIDATOS, con la llamada 0 de FLUJO_L0, por condicion de la vara")
+    print(f"  fuera de la cuenta: {dict(sin_campo)}")
+    for forma, x in c.items():
+        extra = "" if forma != "hoy" else (f" · lo ato bien el codigo {x['lo ato bien el codigo']}"
+                                           f" · el codigo ato el campo, mal {x['el codigo ato el campo, mal']}")
+        print(f"  {forma:7} condiciones {x['condiciones']}{extra} · " +
+              " · ".join(f"en los {k} primeros {x[k]}" for k in PUESTOS) + f" · mas abajo {x['mas abajo']}")
+    for forma in ("resto", "entera"):
+        print(f"\n  {forma}, mas abajo del puesto 5:")
+        for x in perdidas[forma]:
+            print(f"    {x[0]} {x[1]} [{x[2]}] {x[3]} puesto {x[5]}: {x[4]}")
+
+
+def _contar(c, pos):
+    for k in PUESTOS:
+        c[k] += pos <= k
+    c["mas abajo"] += pos > PUESTOS[-1]
+
+
 # ══ LOS VECTORES, LA CALIBRACION Y JEV ═══════════════════════════════════════
 def _todas_las_lineas():
     out = [("140", l.busqueda, r) for _, l, r, _ in banco_140() if r]
@@ -447,6 +572,8 @@ if __name__ == "__main__":
         calificar(Nexo(jev=False), "--ver" in sys.argv, motor="base")
     elif "--embeddings" in sys.argv:
         embeddings([v for v in VARIANTES if any(v.startswith(a + " ") for a in sys.argv[2:])] or None)
+    elif "--rangos" in sys.argv:
+        rangos()
     elif "--calibrar" in sys.argv:
         calibrar()
     elif "--correr-jev" in sys.argv:
