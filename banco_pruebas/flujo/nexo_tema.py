@@ -45,7 +45,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from entorno import REPO, grabado  # noqa: E402
+from entorno import grabado  # noqa: E402
 from jev import llamar_jev  # noqa: E402
 
 import nexo_rubro as NR  # noqa: E402
@@ -88,15 +88,15 @@ TOLERADOS = {
 
 
 # ══ LA FUENTE ════════════════════════════════════════════════════════════════
+# La fuente y el nexo viven en `app/core/flujo/nuevo/tema.py` desde el 17-nov, una sola copia: aca, la tienda del banco
+# y los puntajes grabados.
+from app.core.flujo.nuevo import tema as _A  # noqa: E402
+from app.core.flujo.nuevo.tema import DESC_NINGUNO, NINGUNO, _desc, docs  # noqa: E402
+
+
 def fuente():
-    faq = json.load(open(os.path.join(REPO, f"data/clientes/{TID}/faq.json"), encoding="utf-8"))
-    alias = json.load(open(os.path.join(REPO, f"data/clientes/{TID}/alias.json"), encoding="utf-8"))["temas"]
-    return faq, alias
+    return _A.fuente(TID)
 
-
-def docs(faq, alias):
-    """[(tema, alias)]: cada forma de preguntar un tema es un documento."""
-    return [(f["tema"], a) for f in faq for a in alias.get(f["tema"], [])]
 
 
 def fragmentos():
@@ -126,73 +126,10 @@ def embeddings():
 
 
 # ══ EL NEXO ══════════════════════════════════════════════════════════════════
-def _una_letra(a, b):
-    """Dos letras seguidas dadas vuelta, el error de tipeo de WhatsApp: "fatcura", "tineen". Una letra cambiada no:
-    medido el 16-nov, confunde palabras reales, "vieja" con "viaja" y "tiene" con "viene"."""
-    if len(a) != len(b) or a == b:
-        return False
-    d = [i for i in range(len(a)) if a[i] != b[i]]
-    return len(d) == 2 and d[1] == d[0] + 1 and a[d[0]] == b[d[1]] and a[d[1]] == b[d[0]]
-
-
-class Nexo:
+class Nexo(_A.Nexo):
     def __init__(self):
-        from app.core.flujo.agenda import _VACIAS
-        self.vacias = _VACIAS
-        faq, alias = fuente()
-        self.faq = {f["tema"]: f for f in faq}
-        p = json.load(open(PUNTAJES, encoding="utf-8"))
-        self.temas, self.q = p["temas"], p["consultas"]
-        # Los alias son formas de preguntar: sirven a los embeddings, pero traen "tenes", "necesito", "venden". La
-        # funcion que elige compara contra las palabras clave que la tienda cargo por tema, menos las que el catalogo
-        # usa para nombrar productos: "mouse" o "caja" no dicen que el cliente pregunta por la tienda.
-        _, ralias, _, modelos = NR.fuente()
-        self.vocabulario = {w for k, fs in modelos.items() for x in [k[0], k[1], k[2]] + [f["nombre"] for f in fs]
-                            + NR.etiquetas(fs) + ralias.get(k[0], []) for w in NR.n(x).split()}
-        self.palabras = {t: {w for w in self._ws(" ".join(self.faq[t].get("keywords", [])))
-                             if not any(self._igual(w, v) for v in self.vocabulario)} for t in self.temas}
+        super().__init__(TID, json.load(open(PUNTAJES, encoding="utf-8")))
 
-    def _ws(self, texto):
-        return {w for w in NR.n(texto).split() if w not in self.vacias and not w.isdigit()}
-
-    @staticmethod
-    def _igual(w, p):
-        """Igual, o una empieza con la otra desde cuatro letras, por el plural; o, desde cinco letras, dos letras
-        seguidas dadas vuelta, por el tipeo: "fatcura" es "factura". Medido el 16-nov en las formas de WhatsApp de las
-        525."""
-        if w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w))):
-            return True
-        return min(len(w), len(p)) >= 5 and _una_letra(w, p)
-
-    def candidatos(self, fragmento):
-        """PIEZA 1: los tres temas cuyo alias mas se parece al fragmento."""
-        if fragmento not in self.q:
-            return []
-        return [t for _, t in sorted(zip(self.q[fragmento], self.temas), reverse=True)][:CANDIDATOS]
-
-    def comparte(self, ws, tema):
-        return sorted(w for w in ws for p in self.palabras[tema] if self._igual(w, p))
-
-    def elegir(self, fragmento, cands):
-        """PIEZA 2: el primer candidato que comparte una palabra con el fragmento; si ninguno, ningun tema."""
-        ws = self._ws(fragmento)
-        for t in cands:
-            if self.comparte(ws, t):
-                return t, self.comparte(ws, t)
-        return None, []
-
-    def tema(self, fragmento):
-        cands = self.candidatos(fragmento)
-        elegido, por = self.elegir(fragmento, cands)
-        return {"fragmento": fragmento, "candidatos": cands, "elegido": elegido, "por": por,
-                "texto": self.texto(elegido) if elegido else None}
-
-    def texto(self, tema):
-        """PIEZA 3: el texto de la FAQ con los numeros estampados por `curadas`, como en produccion. Si a la curada le
-        falta un valor, la respuesta llana."""
-        from app.core.curadas import estampar_valores
-        f = self.faq[tema]
-        return (estampar_valores(f.get("respuesta_curada") or "", f) or "") or f["respuesta"]
 
 
 # ══ LO DUDOSO: JEV O LA LLAMADA CORTA ════════════════════════════════════════
@@ -200,9 +137,6 @@ class Nexo:
 # facturas" en un disco. Una pregunta por mensaje, con todas sus lineas dudosas. Cada una elige entre sus tres temas
 # candidatos o ninguno: lista cerrada, el texto de la FAQ lo sigue poniendo el codigo.
 DUDOSO = grabado("nexo_tema_dudoso.jsonl")
-NINGUNO = "ninguno"
-DESC_NINGUNO = ("esa parte no pregunta por esta regla de la tienda: pide un producto o un dato del producto, dice a "
-                "donde mandarlo, o pregunta algo que la tienda no contesta")
 
 
 def dudosos(nx):
@@ -220,9 +154,6 @@ def dudosos(nx):
             out.append((banco, cid, texto, ds))
     return out
 
-
-def _desc(nx, t):
-    return f"{t.replace('_', ' ')}: {nx.faq[t]['respuesta']}"
 
 
 def _jev(nx, texto, ds):
