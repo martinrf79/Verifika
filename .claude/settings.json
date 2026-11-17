@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/setup_test_env.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/scripts/setup_test_env.sh"
           }
         ]
       }
@@ -16,11 +16,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/guard_rama.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/scripts/guard_rama.sh"
           },
           {
             "type": "command",
-            "command": "bash scripts/guard_clave.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/scripts/guard_clave.sh"
           }
         ]
       }
