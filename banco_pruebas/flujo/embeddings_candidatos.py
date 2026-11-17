@@ -19,6 +19,7 @@ Se cuenta en k = 1, 3, 5, 8, 10, 15 y 20. Lo que la tienda no vende no entra: es
     python3 banco_pruebas/flujo/embeddings_candidatos.py [--ver]   # pide los vectores que falten con la gratis
     MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/flujo/embeddings_candidatos.py   # si la gratis se traba
 """
+import collections
 import json
 import os
 import sys
@@ -37,10 +38,10 @@ KS = (1, 3, 5, 8, 10, 15, 20)
 CORRIDA = ("gemini-lite", "v2")
 
 
-def cosas():
-    """[(id, rubro esperado, fragmento, busqueda)] de las 140, con la llamada 0 de produccion y el prompt v2."""
+def cosas(corrida=CORRIDA):
+    """[(id, rubro esperado, fragmento, busqueda)] de las 140, con la llamada 0 de esa corrida."""
     import llamada0_modelos as L
-    l0 = L.corridas()[CORRIDA]
+    l0 = L.corridas()[corrida]
     out = []
     for _, cid, _, cs, _ in F.bancos():
         lineas = (l0.get(cid) or {}).get("salida", {}).get("lineas", [])
@@ -162,7 +163,113 @@ def medir_reales(corridas=(("gemini-lite", "v1"), ("luna", "v2"))):
                   + f" {sum(1 for x in rs_ if x is None):>10}")
 
 
+# ══ LA BUSQUEDA CERO: LA TRADUCCION DE LUNA CONTRA LOS CANDIDATOS DEL FRAGMENTO (17-nov) ══════════════════════════════
+# Orden de Martin del 17-nov, antes de tocar el prompt: los embeddings buscan sobre el fragmento que separo la llamada 0,
+# las palabras del cliente, y traen 8 productos; la traduccion de Luna, la busqueda, da su rubro por su cuenta. Una funcion
+# de codigo cruza las dos. Tres casos por linea:
+#   1 coincide     el rubro de la traduccion esta entre los rubros de los 8 candidatos del fragmento.
+#   2 distinto     tradujo, y su rubro no esta entre los candidatos.
+#   3 tal cual     no tradujo: las palabras de la busqueda son todas del fragmento.
+# Por cada caso, quien tiene razon contra la vara: la traduccion, el primer candidato del fragmento o el de los dos juntos.
+# La vara: en las 140, el rubro de cada cosa de `nuevas70`; en los reales y las 365, los rubros del mensaje, y una linea de
+# un mensaje que pide algo que la tienda no vende, que cae fuera de esos rubros, no se cuenta.
+TRES = os.path.join(GRABADO, "busqueda_cero_luna.json")
+K0 = 8
+
+
+def _palabras(t):
+    return {w[:-1] if len(w) > 3 and w.endswith("s") else w for w in E.n(t).split()}
+
+
+def lineas_luna():
+    """[(banco, id, fragmento, busqueda, rubros que valen, hay algo que no vende)] con la llamada 0 elegida."""
+    import llamada0_modelos as L
+    import reales as RE
+    out = [("140", cid, f, b, {r}, False) for cid, r, f, b in cosas(("luna", "v2")) if b]
+    esperado = {c[0]: (set(c[2].get("rubros", ())), bool(c[2].get("no_vende"))) for c in RE.CASOS}
+    esperado.update({c[0]: (set(c[2]["rubros"]), bool(c[2].get("no_vende"))) for c in RE.casos_525()[0]})
+    for banco in ("reales", "reales525"):
+        for cid, r in L.corridas_reales(banco)[("luna", "v2")].items():
+            rubs, nv = esperado.get(cid, (set(), False))
+            if not rubs or (banco == "reales") != cid.startswith("R"):
+                continue
+            for l in (r.get("salida") or {}).get("lineas", []):
+                f, b = str(l.get("fragmento") or ""), str(l.get("busqueda") or "")
+                if b:
+                    out.append((banco, cid, f, b, rubs, nv))
+    return out
+
+
+def tres_casos():
+    _, alias, rubros, modelos = NR.fuente()
+    ms = list(modelos)
+    docs_p = [NR.doc_producto(k, modelos[k], alias) for k in ms]
+    ir = NR.indice_rubros(rubros, alias)
+    ls = lineas_luna()
+    cache = EMB.cargar()
+    vectores(docs_p + [d for _, d in ir], "RETRIEVAL_DOCUMENT", cache)
+    vectores(sorted({q for _, _, f, b, _, _ in ls for q in (f, b, f"{f}. {b}" if f else b)}), "RETRIEVAL_QUERY", cache)
+    vp = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for d in docs_p]
+    vr = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for _, d in ir]
+
+    def orden(q, vs):
+        x = cache[f"RETRIEVAL_QUERY|{q}"]
+        return sorted(range(len(vs)), key=lambda i: -sum(a * c for a, c in zip(x, vs[i])))
+    filas, c = [], collections.defaultdict(collections.Counter)
+    for banco, cid, f, b, rubs, nv in ls:
+        rt = ir[orden(b, vr)[0]][0]
+        trad = "ninguno" if rt.startswith(NR.NO_SE_VENDE) else rt
+        cand = [ms[i][0] for i in orden(f or b, vp)[:K0]]
+        dos = ms[orden(f"{f}. {b}" if f else b, vp)[0]][0]
+        caso = "3 tal cual" if _palabras(b) <= _palabras(f) else ("1 coincide" if trad in cand else "2 distinto")
+        ok = {"traduccion": trad in rubs, "fragmento": cand[0] in rubs, "las dos": dos in rubs}
+        if nv and not any(ok.values()):
+            c[caso]["fuera: pide algo que no se vende"] += 1
+            continue
+        c[caso]["lineas"] += 1
+        for k, v in ok.items():
+            c[caso][f"acierta {k}"] += v
+        c[caso]["ninguno acierta"] += not any(ok.values())
+        filas.append({"banco": banco, "id": cid, "fragmento": f, "busqueda": b, "rubros": sorted(rubs), "caso": caso,
+                      "traduccion": trad, "candidatos": cand, "las dos": dos, **{f"ok {k}": v for k, v in ok.items()}})
+    json.dump(filas, open(TRES, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+    return filas, c
+
+
+def informe_tres(filas, c, ver=False):
+    print(f"\nLA BUSQUEDA CERO CON LA LLAMADA 0 ELEGIDA · {len(filas)} lineas de las 140, los reales y las 365 · "
+          f"{K0} candidatos del fragmento")
+    for caso in sorted(c):
+        x = c[caso]
+        print(f"  {caso:11} lineas {x['lineas']:4} · acierta la traduccion {x['acierta traduccion']:4} · el primer "
+              f"candidato del fragmento {x['acierta fragmento']:4} · los dos juntos {x['acierta las dos']:4} · "
+              f"ninguno {x['ninguno acierta']:3}" + (f" · fuera {x['fuera: pide algo que no se vende']}"
+                                                   if x["fuera: pide algo que no se vende"] else ""))
+    print("\n  LAS REGLAS, sobre esas lineas: bien, mal y repreguntas")
+    reglas = {
+        "A: 1 la traduccion, 2 repregunta, 3 el fragmento": lambda r: r["ok traduccion"] if r["caso"][0] == "1" else (
+            None if r["caso"][0] == "2" else r["ok fragmento"]),
+        "B: 1 la traduccion, 2 los dos juntos, 3 el fragmento": lambda r: r["ok traduccion"] if r["caso"][0] == "1"
+        else (r["ok las dos"] if r["caso"][0] == "2" else r["ok fragmento"]),
+        "C: 1 la traduccion, 2 y 3 los dos juntos": lambda r: r["ok traduccion"] if r["caso"][0] == "1" else r["ok las dos"],
+        "D: hoy, la traduccion sola": lambda r: r["ok traduccion"],
+        "E: los dos juntos siempre": lambda r: r["ok las dos"],
+    }
+    for nombre, f in reglas.items():
+        rs = [f(r) for r in filas]
+        print(f"    {nombre:52} bien {sum(1 for x in rs if x is True):4} · mal {sum(1 for x in rs if x is False):3} · "
+              f"repregunta {sum(1 for x in rs if x is None):3}")
+    for r in filas:
+        if ver or r["caso"][0] != "1" or not r["ok traduccion"]:
+            print(f"    {r['caso'][:1]} {r['banco']:9} {r['id']:20} {r['rubros']} trad {r['traduccion']}"
+                  f"{'' if r['ok traduccion'] else ' X'} · frag {r['candidatos'][0]}{'' if r['ok fragmento'] else ' X'} "
+                  f"· dos {r['las dos']}{'' if r['ok las dos'] else ' X'} · {r['fragmento'][:50]!r} / {r['busqueda'][:40]!r}")
+
+
 if __name__ == "__main__":
+    if "--tres-casos" in sys.argv:
+        informe_tres(*tres_casos(), "--ver" in sys.argv)
+        sys.exit()
     if "--reales" in sys.argv:
         medir_reales()
         sys.exit()
