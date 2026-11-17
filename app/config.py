@@ -48,6 +48,11 @@ class Settings(BaseModel):
         "https://generativelanguage.googleapis.com/v1beta/openai/")
     # Los embeddings del buscador del agente, para el rubro y la regla mas parecidos por significado (FICHA 83).
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "gemini-embedding-001")
+    # EL FLUJO NUEVO DE DOS LLAMADAS, 17-nov, orden de Martin, FICHA 101: la llamada 0 y la segunda llamada con el modelo
+    # elegido el 16-nov, FICHA 100, por la clave de OpenAI; razonamiento bajo por la demora.
+    FLUJO_MODELO: str = os.getenv("FLUJO_MODELO", "gpt-6-luna")
+    FLUJO_RAZONAMIENTO: str = os.getenv("FLUJO_RAZONAMIENTO", "low")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     # DEEPSEEK, el otro proveedor que se mide (27-sep-2026).
     DEEPSEEK_API_KEY: str = os.getenv("DEEPSEEK_API_KEY", "")
     DEEPSEEK_BASE_URL: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")

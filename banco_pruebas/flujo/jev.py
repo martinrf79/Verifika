@@ -13,35 +13,21 @@ import json
 import os
 import sys
 import time
-import urllib.error
-import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from entorno import REPO  # noqa: E402
 
-URL = "https://api.typesafe.ai/v1/systemone"
-MODELO = "jev-latest"
+from app.core.flujo.nuevo.jev import MODELO, URL  # noqa: E402,F401
 USD_POR_MILLON = 0.042
 GASTO = os.path.join(REPO, "banco_pruebas", "jev", "gasto_jev.jsonl")
 
 
 def llamar_jev(state, qs, prueba):
-    """Una llamada a Jev con preguntas de lista cerrada; anota el gasto en `jev/gasto_jev.jsonl`.
-    Devuelve ({pregunta: elegido}, tokens de entrada)."""
-    body = {"state": state, "model": MODELO, "questions": qs}
-    req = urllib.request.Request(URL, data=json.dumps(body).encode(), headers={
-        "Authorization": "Bearer " + os.environ["TYPESAFE_API_KEY"].strip(), "Content-Type": "application/json"})
-    for intento in range(5):
-        try:
-            r = json.load(urllib.request.urlopen(req, timeout=120))
-            break
-        except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 504) and intento < 4:
-                time.sleep(3 * 2 ** intento)
-                continue
-            raise
+    """Una llamada a Jev con preguntas de lista cerrada, la de produccion, `app/core/flujo/nuevo/jev.llamar`, con la
+    espera larga del banco; anota el gasto en `jev/gasto_jev.jsonl`. Devuelve ({pregunta: elegido}, tokens de entrada)."""
+    from app.core.flujo.nuevo.jev import llamar
+    r, tokens = llamar(state, qs, espera=120, intentos=5)
     with open(GASTO, "a") as fh:
-        fh.write(json.dumps({"cuando": time.strftime("%Y-%m-%dT%H:%M:%S"), "prueba": prueba,
-                             "tokens": r["usage"]["input_tokens"],
-                             "usd": round(r["usage"]["input_tokens"] * USD_POR_MILLON / 1e6, 5)}) + "\n")
-    return {k: v["choice"] for k, v in r["answers"].items()}, r["usage"]["input_tokens"]
+        fh.write(json.dumps({"cuando": time.strftime("%Y-%m-%dT%H:%M:%S"), "prueba": prueba, "tokens": tokens,
+                             "usd": round(tokens * USD_POR_MILLON / 1e6, 5)}) + "\n")
+    return r, tokens

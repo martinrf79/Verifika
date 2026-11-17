@@ -60,17 +60,9 @@ TOPE_OPENROUTER = 0.20
 # v1, el de hoy: el engranaje 0 mas el destino. v2, lo que la FICHA 99 le pide a la llamada 0: la condicion en cada
 # linea, tambien la del mensaje entero; una linea por producto y por variante; lo corregido no cuenta; nada se pierde.
 PROMPTS = {"v1": F.PROMPT}
-PROMPTS["v2"] = """Sos el primer paso de un sistema que atiende clientes de una tienda online. Del mensaje del cliente,
-devolve una linea por cada cosa que pide o pregunta, sin dejar ninguna afuera aunque el mensaje sea largo:
-- fragmento: la parte del mensaje que lo dice, con las palabras del cliente.
-- busqueda: lo que escribirias en el buscador de una tienda online para encontrarlo, con el producto primero y despues
-  todo lo que el cliente pide de el: marca, modelo, medida, capacidad, color, tipo, precio o tope por unidad. Lo que
-  dice para varios productos o para todo el mensaje, como "todo inalambrico" o "lo mas barato posible", va repetido
-  en la busqueda de cada linea a la que se aplica. Vacio si no busca un producto.
-- destino: el lugar a donde hay que enviarlo, solo si el cliente lo dijo; si no, vacio.
-Un producto por linea: si pide dos productos, o dos variantes del mismo, como uno negro y uno rojo, van en lineas
-separadas. Si el cliente se corrige, vale lo ultimo que dijo.
-No contestes ni decidas nada. Tu unica fuente es lo que escribio el cliente."""
+# La v2 vive en `app/core/flujo/nuevo/llamada0.py` desde el 17-nov: es la del bot, una sola copia.
+from app.core.flujo.nuevo.llamada0 import PROMPT as _V2  # noqa: E402
+PROMPTS["v2"] = _V2
 
 # v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
 # condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,

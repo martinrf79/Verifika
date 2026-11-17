@@ -53,11 +53,7 @@ PUNTAJES = grabado("flujo_nuevo_puntajes.json")
 PROMPT = E.PROMPT["v1"].replace("No contestes", """- destino: el lugar a donde hay que enviarlo, solo si el cliente lo
   dijo; si no, vacio.
 No contestes""")
-_S = {"type": "string"}
-ESQUEMA = {"type": "object", "additionalProperties": False, "required": ["lineas"], "properties": {"lineas": {
-    "type": "array", "items": {"type": "object", "additionalProperties": False,
-                               "required": ["fragmento", "busqueda", "destino"],
-                               "properties": {"fragmento": _S, "busqueda": _S, "destino": _S}}}}}
+from app.core.flujo.nuevo.llamada0 import ESQUEMA  # noqa: E402  — el de la llamada 0 del bot
 
 
 # ══ EL CONTRATO, EL RUTEO, LOS NEXOS Y REDACTAR, EN app/ DESDE EL 17-NOV ═════
