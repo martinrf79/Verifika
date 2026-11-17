@@ -212,7 +212,7 @@ La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y
 
 ### 6 BUSCAR
 
-Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 190 funciones, 3703 lineas.
+Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 190 funciones, 3708 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -364,10 +364,10 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.flujo.nuevo.tema | `_desc` | 2 | · | si |
 | core.flujo.nuevo.vectores | `ruta_indice` | 2 | · | si |
 | core.flujo.nuevo.vectores | `indice` | 8 | · | si |
-| core.flujo.nuevo.vectores | `consultas` | 15 | · | si |
+| core.flujo.nuevo.vectores | `consultas` | 19 | · | si |
 | core.flujo.nuevo.vectores | `_punto` | 4 | · | si |
 | core.flujo.nuevo.vectores | `puntajes` | 22 | 5 | si |
-| core.flujo.nuevo.vectores | `puntajes_condicion` | 9 | 5 | si |
+| core.flujo.nuevo.vectores | `puntajes_condicion` | 10 | 5 | si |
 | core.flujo.tabla | `_columnas` | 20 | · | si |
 | core.flujo.tabla | `tabla` | 14 | · | si |
 | core.flujo.tabla | `ficha` | 5 | 5 | si |
