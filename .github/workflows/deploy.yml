@@ -94,6 +94,32 @@ jobs:
         with:
           project_id: memory-engine-v1
 
+      # LAS CLAVES DEL FLUJO NUEVO SE PRUEBAN ANTES DE DEPLOYAR, 17-nov, orden de Martin: una clave mal pegada, cortada
+      # en dos renglones desde el celular, dejaria al bot sin modelo. Cada una hace una llamada minima y el log dice
+      # solo si anduvo, nunca la clave. Si alguna falta, tiene espacios o saltos de renglon, o la API la rechaza, el
+      # deploy se frena y produccion queda como esta.
+      - name: Probar las claves del flujo nuevo
+        env:
+          OPENAI_CLAVE: ${{ secrets.OPENAI_API_KEY }}
+          TYPESAFE_CLAVE: ${{ secrets.TYPESAFE_API_KEY }}
+        run: |
+          MAL=0
+          probar() {
+            NOMBRE="$1"; VALOR="$2"; CODIGO="$3"
+            if [ -z "$VALOR" ]; then echo "$NOMBRE: falta el secreto en GitHub"; MAL=1; return; fi
+            case "$VALOR" in *[[:space:]]*) echo "$NOMBRE: tiene espacios o un salto de renglon, hay que cargarla de nuevo"; MAL=1; return;; esac
+            if [ "$CODIGO" = "200" ]; then echo "$NOMBRE: bien"; else echo "$NOMBRE: rechazada, la API contesto $CODIGO"; MAL=1; fi
+          }
+          C1=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://api.openai.com/v1/models \
+               -H "Authorization: Bearer $OPENAI_CLAVE" || echo "sin red")
+          probar OPENAI_API_KEY "$OPENAI_CLAVE" "$C1"
+          C2=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://api.typesafe.ai/v1/systemone \
+               -H "Authorization: Bearer $TYPESAFE_CLAVE" -H "Content-Type: application/json" \
+               -d '{"state": "prueba de la clave", "model": "jev-latest", "questions": {"q": {"type": "choice", "criteria": {"si": "si", "no": "no"}, "instructions": "elegi si"}}}' \
+               || echo "sin red")
+          probar TYPESAFE_API_KEY "$TYPESAFE_CLAVE" "$C2"
+          exit $MAL
+
       # ADMIN_TOKEN VIAJA EN EL DEPLOY, no se cablea a mano (4-ago-2026).
       #
       # Hasta hoy los endpoints de admin tenian un token por defecto escrito en
@@ -137,13 +163,23 @@ jobs:
       # SI EL SECRETO DE LA PAGA NO ESTA, NO SE TOCA LA ENV y el log lo grita.
       # Sin esa guarda, un secreto vacio dejaria a produccion con
       # GEMINI_API_KEY="" y el bot mudo, que es peor que cualquier factura.
+      #
+      # EL FLUJO NUEVO DE DOS LLAMADAS, 17-nov, orden de Martin: la llamada 0 y la segunda con OpenAI, y Jev con
+      # typesafe. Igual que la de Gemini: si el secreto no esta, la env de produccion queda como esta y el log lo dice.
       - name: Deploy a Cloud Run
         env:
           GEMINI_PAGA: ${{ secrets.GEMINI_API_KEY_PROD }}
+          OPENAI_CLAVE: ${{ secrets.OPENAI_API_KEY }}
+          TYPESAFE_CLAVE: ${{ secrets.TYPESAFE_API_KEY }}
         run: |
           CLAVE=""
+          FLUJO=""
+          if [ -n "$OPENAI_CLAVE" ]; then FLUJO="OPENAI_API_KEY=$OPENAI_CLAVE"; else
+            echo "AVISO: no hay secreto OPENAI_API_KEY en el repo: el flujo nuevo no tiene modelo."; fi
+          if [ -n "$TYPESAFE_CLAVE" ]; then FLUJO="${FLUJO:+$FLUJO,}TYPESAFE_API_KEY=$TYPESAFE_CLAVE"; else
+            echo "AVISO: no hay secreto TYPESAFE_API_KEY en el repo: lo dudoso queda como lo elige el codigo."; fi
           if [ -n "$GEMINI_PAGA" ]; then
-            CLAVE="--update-env-vars=GEMINI_API_KEY=$GEMINI_PAGA"
+            CLAVE="--update-env-vars=GEMINI_API_KEY=$GEMINI_PAGA${FLUJO:+,$FLUJO}"
             echo "Deploy con la clave PAGA de Gemini en produccion (lo que corresponde)."
           else
             echo "AVISO: no hay secreto GEMINI_API_KEY_PROD en el repo."
@@ -154,6 +190,7 @@ jobs:
             echo "mano:  gcloud run services update agente-bot \\"
             echo "         --region southamerica-east1 --project memory-engine-v1 \\"
             echo "         --update-env-vars GEMINI_API_KEY=LA_CLAVE_PAGA"
+            CLAVE="${FLUJO:+--update-env-vars=$FLUJO}"
           fi
           gcloud run deploy agente-bot \
             --region southamerica-east1 \
