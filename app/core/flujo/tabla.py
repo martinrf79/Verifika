@@ -1,18 +1,13 @@
-"""EL CATALOGO COMO TABLA — el modelo consulta con SQL (5-nov-2026, FICHA 87, decidido con Martin).
+"""EL CATALOGO COMO TABLA — una fila por producto y color, con su ficha (5-nov-2026, FICHA 87).
 
-El buscador recibia una frase, "auriculares PS5", y el codigo la volvia a interpretar con reglas de palabras: ahi se
-perdian el equipo, la marca y el origen. Ahora el modelo escribe la consulta exacta sobre una tabla con columnas, con
-los valores reales de la tienda a la vista, y el codigo la ejecuta de solo lectura y devuelve filas reales. Medido en
-las 42 charlas reales con la gratis, `banco_pruebas/examen_real/corrida_sql_r2.jsonl`: 25 de 30 charlas de varios
-mensajes sin error, contra 14 con la busqueda por frases.
+El agente consultaba esta tabla con SQL; desde el 17-nov el agente quedo archivado y la busqueda la hacen los nexos del
+flujo nuevo. Queda la tabla y la ficha de un producto, que el flujo usa para mostrar lo que el cliente ya vio. La
+consulta con SQL y el mapa de columnas estan en git, para volver con git revert.
 
   la tabla   una fila por producto y color: rubro, marca, pais de la marca, pais de fabricacion, precio, stock, la ficha,
              los campos de specs y una columna por equipo con lo que dice la tabla de compatibilidad: anda, no anda o
              sin dato. Se rearma sola si cambia el catalogo, precio o stock.
-  el mapa    las columnas con sus valores, que el modelo tiene a la vista: elige mirando la lista, no de memoria.
 """
-import collections
-import itertools
 import re
 import sqlite3
 
@@ -64,29 +59,6 @@ def tabla(tienda_id: str) -> sqlite3.Connection:
     return _TABLAS[tienda_id][1]
 
 
-def mapa(tienda_id: str) -> str:
-    """Las columnas de la tabla con sus valores: lo que el modelo tiene a la vista para escribir la consulta."""
-    db = tabla(tienda_id)
-    if _TABLAS[tienda_id][2] is None:
-        out = []
-        for c in [x[1] for x in db.execute("PRAGMA table_info(productos)") if x[1] not in ("id", "nombre", "modelo")]:
-            vals = collections.Counter(v for (v,) in db.execute(f"SELECT {c} FROM productos") if v is not None)
-            out.append(f"- {c}: numero, de {min(vals)} a {max(vals)}" if c in _NUMERICAS else
-                       f"- {c}: " + " | ".join(str(v) for v, _ in vals.most_common()) if len(vals) <= VALORES_MAX else
-                       f"- {c}: texto libre, busca con LIKE")
-        _TABLAS[tienda_id] = (*_TABLAS[tienda_id][:2], "LA TABLA productos, una fila por producto y color. Columnas, "
-                              "ademas de id, nombre y modelo:\n" + "\n".join(out))
-    return _TABLAS[tienda_id][2]
-
-
-def es_consulta(texto: str) -> bool:
-    return bool(re.match(r"(?is)^\s*(select|with)\b", texto or ""))
-
-
-def columnas(tienda_id: str) -> list:
-    return [x[1] for x in tabla(tienda_id).execute("PRAGMA table_info(productos)")]
-
-
 def ficha(pid: str, tienda_id: str) -> dict:
     """La fila entera de un producto, {columna: valor} sin vacios: lo que el codigo pega cuando el modelo lo cita."""
     cur = tabla(tienda_id).execute("SELECT * FROM productos WHERE id = ?", (pid,))
@@ -94,74 +66,3 @@ def ficha(pid: str, tienda_id: str) -> dict:
     return {d[0]: v for d, v in zip(cur.description, f) if v is not None} if f else {}
 
 
-def resumen(tienda_id: str) -> list:
-    """LA TIENDA EN NUMEROS, 7-nov: cuantos productos tiene y cuantos con stock, y por rubro. Los cuenta el codigo de la
-    tabla, no el modelo: el modelo contaba 'con stock' porque la consigna lo pide en toda consulta, y contestaba 778 donde
-    el cliente preguntaba por el catalogo. Nada de esto se escribe en un documento: sale de la tabla en cada turno."""
-    db = tabla(tienda_id)
-    n, s, r = db.execute("SELECT COUNT(*), SUM(stock > 0), COUNT(DISTINCT rubro) FROM productos").fetchone()
-    por = db.execute("SELECT rubro, COUNT(*) FROM productos WHERE stock > 0 GROUP BY rubro ORDER BY 2 DESC").fetchall()
-    return [f"La tienda tiene {n} productos en {r} rubros, {s} con stock hoy.",
-            "Con stock hoy, por rubro: " + ", ".join(f"{a} {b}" for a, b in por) + "."]
-
-
-def con_orden(sql: str, terminos: list) -> str:
-    """EL CRITERIO DEL CLIENTE LO ORDENA EL CODIGO, 7-nov: "lo menos chino" escrito por el modelo como ORDER BY pais
-    dejaba a China primera. Los terminos van antes del orden que escribio el modelo, que queda de desempate."""
-    m = re.search(r"(?is)(?:\border\s+by\s+(.+?))?(\s+limit\s+\d+(?:\s+offset\s+\d+)?)?\s*$", sql)
-    if not terminos or re.search(r"(?i)\b(group\s+by|union|having)\b", sql) or not re.match(r"(?is)\s*select\b", sql):
-        return sql
-    return sql[:m.start()] + " ORDER BY " + ", ".join(terminos + ([m.group(1)] if m.group(1) else [])) + (m.group(2) or "")
-
-
-def consultar(sql: str, tienda_id: str, citas=None, orden: list = ()) -> str:
-    """Un SELECT sobre la tabla, de solo lectura: las filas en texto, cada una con sus columnas, el precio en pesos. Con
-    `citas`, cada fila lleva el numero con que el modelo la cita, "P3"; un resultado sin producto, un COUNT, lleva el
-    suyo, "D1". Con `orden`, el criterio del cliente va primero en el orden."""
-    q = sql.strip().rstrip(";")
-    if not es_consulta(q) or ";" in q:
-        return "Solo una consulta SELECT sobre la tabla productos."
-    # EL ENVIO NO ESTA EN LA TABLA, c48ed9: consultado con LIKE daba nada y el modelo contestaba un rango.
-    if re.search(r"(?i)env[ií]o", q):
-        return "El envio no esta en la tabla: buscalo en castellano, \"envio a <lugar>\", y te da el costo exacto."
-    db, pasos = tabla(tienda_id), [0]
-
-    def corta():  # una consulta que no termina se corta
-        pasos[0] += 1
-        return pasos[0] > 2000
-    db.set_progress_handler(corta, 1000)
-    try:
-        cur = db.execute(con_orden(q, list(orden)))
-        cols, todas = [d[0] for d in cur.description], cur.fetchall()
-        # EL CORTE LO REPARTE EL CODIGO ENTRE RUBROS, 7-nov, FICHA 91: con ORDER BY rubro las 25 filas eran notebooks y las
-        # tablets no llegaban. Una fila por rubro a la vez; las que entran se ven en el orden del modelo, que no decide cuales entran.
-        rubro, grupos, total = dict(db.execute("SELECT id, rubro FROM productos UNION SELECT nombre, rubro FROM productos UNION SELECT rubro, rubro FROM productos")), {}, len(todas)
-        for i, f in enumerate(todas):
-            grupos.setdefault(next((rubro[v] for v in f if v in rubro), None), []).append(i)
-        entran = [i for t in itertools.zip_longest(*grupos.values()) for i in t if i is not None] if total > FILAS_MAX else range(total)
-        filas = [todas[i] for i in sorted(entran[:FILAS_MAX])]  # entran las que reparte cada rubro, se ven en el orden del modelo
-        por = [(r, len(v)) for r, v in grupos.items() if r] if total > FILAS_MAX and "nombre" in [c.lower() for c in cols] else []
-    except sqlite3.Error as e:
-        return f"La consulta fallo: {e}. Revisa las columnas y valores del mapa."
-    finally:
-        db.set_progress_handler(None, 0)
-    if not filas:  # UNA FRASE QUE NO ESTA ENTERA SE BUSCA PALABRA POR PALABRA, 7-nov, FICHA 91: "mouse g203" no es "Mouse Logitech G203"
-        q2 = re.sub(r"(?i)nombre\s+like\s+'%([^%']+ [^%']+)%'", lambda m: "(" + " AND ".join(f"nombre LIKE '%{w}%'" for w in m.group(1).split()) + ")", q)
-        if q2 != q:
-            return consultar(q2, tienda_id, citas, orden)
-    if not filas:  # UNA BUSQUEDA VACIA SE PUEDE CITAR, 7-nov: sin esto el modelo no tenia como decir "no tenemos"
-        vacio = "No tenemos productos que cumplan lo que buscaste."
-        return (f"{citas('dato', 'vacio', vacio)}: " if citas is not None else "") + "Ninguna fila cumple esa consulta. " + vacio
-    # EL PRECIO EN PESOS, "$70.000", como lo controla el verificador: con "70000" borraba la lista.
-    plata = lambda c, v: f"${int(v):,}".replace(",", ".") if c.lower() == "precio" and isinstance(v, (int, float)) else v  # noqa: E731
-
-    def linea(f):
-        d, texto = dict(zip([c.lower() for c in cols], f)), "; ".join(f"{c}: {plata(c, v)}" for c, v in zip(cols, f) if v is not None)
-        if citas is None:
-            return texto
-        pid = d.get("id") or ((db.execute("SELECT id FROM productos WHERE nombre = ?", (d["nombre"],)).fetchone() or [None])[0]
-                              if d.get("nombre") else None)
-        return (f"{citas.producto(str(pid))}: " if pid else f"{citas('dato', texto, texto)}: ") + texto
-    return f"{min(len(filas), FILAS_MAX)} filas" + (f" de {total}" + (f" ({', '.join(f'{r} {n}' for r, n in por)})" if por else "") + ", hay mas: afina la consulta"
-                                          if total > FILAS_MAX else "") \
-        + ":\n" + "\n".join("  " + linea(f) for f in filas[:FILAS_MAX])

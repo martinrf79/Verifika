@@ -50,9 +50,3 @@ def test_una_negacion_no_es_un_atributo(V):
     assert V.verificar(t, K.n("Teclado HyperX Alloy Origins Core Negro " + t), C.TIENDA) == []
 
 
-def test_lo_marcado_sale_y_lo_pegado_queda(V):
-    from app.core.flujo import catalogo as K
-    pegado = "Presupuesto:\n- 1x Mouse Logitech M170 Negro: $12.000 c/u = $12.000\nTotal: $12.000"
-    texto = f"Te paso el presupuesto.\n{pegado}\nEl M170 anda con la PS5. Decime si lo reservo."
-    limpio = V.sin_marcadas(texto, K.n(FUENTE + " " + pegado), C.TIENDA, [pegado])
-    assert pegado in limpio and "Decime si lo reservo." in limpio and "PS5" not in limpio

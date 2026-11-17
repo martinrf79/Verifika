@@ -1,51 +1,33 @@
-"""EL AGENTE DE LA TIENDA — el modelo vende con un buscador en su idioma (29-oct-2026, FICHA 83; en el bot el 30-oct).
+"""LO QUE QUEDO DEL AGENTE DE LA TIENDA: EL PEDIDO, EL PRESUPUESTO, EL COBRO Y LA MEMORIA (29-oct-2026; archivado 17-nov).
 
-Orden de Martin del 29-oct: adaptar las herramientas a lo que el modelo sabe por entrenamiento. El 30-oct, por su orden,
-reemplaza a la lectura de la FICHA 81 en el bot. Medido en el banco, `banco_pruebas/buscador_agente.py`: en las mismas
-21 charlas, 56 a 58 de 61 turnos contra 51 a 52 de la lectura.
+El agente de la FICHA 83 contesto el bot del 30-oct al 17-nov. Desde el 17-nov, por orden de Martin, contesta el flujo
+nuevo de dos llamadas, `nuevo/turno.py`, y el agente quedo archivado: se vuelve a el con git revert. Lo que sigue aca lo
+usa el flujo nuevo tal cual, con los mismos parametros que tenian las herramientas del agente, `HERRAMIENTAS`:
 
-  buscar        castellano libre. El codigo contesta con filas reales de la tienda: el modelo nombrado con su ficha, el
-                estante de cada rubro ordenado por el criterio que dice la consulta, las reglas de la tienda y el envio
-                a cada lugar.
   pedido        solo el cambio que pidio el cliente, con su cita, sobre la libreta que vive en el codigo, FICHA 89 paso 2;
                 lo aplica el borrador y lo cumple el ejecutor, que pone montos, envios y reparto.
-  cotizar       cuanto sale algo, sin tocar el pedido.
-  responder     LA RESPUESTA ATADA A LA API, 7-nov, FICHA 90: el modelo no escribe datos. Llama a `responder` con los
-                numeros de lo que devolvieron las herramientas en el turno, P1, R1, E1, y que datos mostrar de cada
-                uno, mas un saludo y una pregunta cortos; el codigo arma el mensaje con las filas reales.
+  presupuesto   cuanto sale algo, la cotizacion, sin tocar el pedido.
   cobrar        los datos de cobro del codigo de cobro, y el lead con aviso al dueño.
   calcular      una calculadora.
-  el candado    el verificador, sobre lo unico que escribe el modelo: el saludo y la pregunta. Lo que marca vuelve una
-                vez al modelo; si sigue, se saca.
 
 LA MEMORIA de la charla: el historial, que es una ventana, y aparte, en el codigo, todo lo que dijo el cliente, el pedido
-anotado en la libreta, lo ultimo cotizado, el pago y el tope.
+anotado en la libreta, lo ultimo cotizado, el pago, el tope, el lead y lo que el cliente ya vio.
 """
 import collections
 import copy
 import json
-import math
 import re
-import time
 
-from app.config import get_settings
-from app.core.guia_compra import categoria_no_vendida
 from app.core.pago_split import descuento_de
 from app.logger import get_logger
 
 from . import borrador as B
 from . import catalogo as K
 from . import estado as E
-from . import marcador as MK
 from . import redaccion
-from . import tabla as T
-from . import verificador as V
-from .respuesta import Citas
 from .ejecutor import ejecutar
 
 log = get_logger(__name__)
-# UMBRALES de los embeddings, medidos en el banco el 29-oct: el rubro correcto da cerca de 0,78 y el ruido de 0,65 a 0,74.
-UMBRAL_TEMA = 0.70
 # "estado" es el estado entero del ejecutor, con el borrador de la FICHA 71: lo que dijo el cliente, entre turnos. FICHA 86.
 # "fuente" es lo que devolvieron las herramientas en cada turno anterior, uno por turno, la misma ventana que el historial:
 # lo que dijo el bot no es fuente, auditoria del 6-nov.
@@ -104,67 +86,7 @@ def _agenda(preguntas: list) -> dict:
     return {"preguntas": preguntas, "cliente": {}, "responde": "", "respuesta": "", "dudas": []}
 
 
-# ══ LOS EMBEDDINGS DE TEMAS: la regla mas parecida por significado ══
-
-_VEC: dict = {}
-_BASES: dict = {}
-# SI LOS EMBEDDINGS CAEN, se dejan de pedir un rato: cada busqueda no paga la espera de nuevo. El buscador sigue con lo
-# exacto, por nombre y alias.
-_CAIDOS = {"hasta": 0.0}
-PAUSA_EMBEDDINGS_S, ESPERA_EMBEDDINGS_S = 120, 10
-
-
-def _vectores(textos: list, tarea: str) -> list:
-    """Embeddings con tipo de tarea por la puerta nativa de Google, guardados en memoria y normalizados."""
-    import httpx
-    s = get_settings()
-    faltan = [t for t in dict.fromkeys(textos) if (tarea, t) not in _VEC]
-    if faltan and time.time() < _CAIDOS["hasta"]:
-        raise RuntimeError("embeddings en pausa por una caida reciente")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{s.EMBEDDING_MODEL}:batchEmbedContents"
-    for i in range(0, len(faltan), 100):
-        lote = faltan[i:i + 100]
-        # LA CLAVE VA EN EL ENCABEZADO: en la direccion, un error la escribia entera en el log.
-        clave = {"x-goog-api-key": (s.GEMINI_API_KEY or "").split()[0]}
-        r = httpx.post(url, headers=clave, timeout=ESPERA_EMBEDDINGS_S, json={"requests": [
-            {"model": f"models/{s.EMBEDDING_MODEL}", "content": {"parts": [{"text": t}]}, "taskType": tarea}
-            for t in lote]})
-        r.raise_for_status()
-        for t, x in zip(lote, r.json()["embeddings"]):
-            norma = math.sqrt(sum(v * v for v in x["values"])) or 1.0
-            _VEC[(tarea, t)] = [v / norma for v in x["values"]]
-    return [_VEC[(tarea, t)] for t in textos]
-
-
-def _base(tienda_id: str) -> list:
-    """[(texto, (tipo, clave))]: cada tema de la FAQ con sus palabras. Los rubros ya no: los elige el modelo en la tabla."""
-    if tienda_id not in _BASES:
-        from app.storage.firestore_client import get_all_faq
-        faq = get_all_faq(tienda_id=tienda_id) or {}
-        base = [(f"{t.replace('_', ' ')}: {', '.join((d or {}).get('keywords') or [])}", ("tema", t))
-                 for t, d in (faq.items() if isinstance(faq, dict) else []) if isinstance(d, dict)]
-        _BASES[tienda_id] = base
-    return _BASES[tienda_id]
-
-
-def _parecidos(consulta: str, tipo: str, tienda_id: str) -> list:
-    """[(clave, puntaje)] de un tipo, del mas parecido al menos. Sin embeddings, ninguno: queda lo exacto."""
-    try:
-        base = [b for b in _base(tienda_id) if b[1][0] == tipo]
-        docs = _vectores([t for t, _ in base], "RETRIEVAL_DOCUMENT")
-        q = _vectores([consulta], "RETRIEVAL_QUERY")[0]
-    except Exception as e:  # noqa: BLE001 — sin embeddings el buscador sigue con lo exacto
-        if "pausa" not in str(e):
-            _CAIDOS["hasta"] = time.time() + PAUSA_EMBEDDINGS_S
-        log.warning("agente_embeddings_error", error=f"{type(e).__name__}: {str(e)[:160]}")
-        return []
-    mejor: dict = {}
-    for (_, (_, clave)), d in zip(base, docs):
-        mejor[clave] = max(mejor.get(clave, -1.0), sum(a * b for a, b in zip(q, d)))
-    return sorted(mejor.items(), key=lambda x: -x[1])
-
-
-# ══ EL BUSCADOR: un SELECT sobre la tabla, o en castellano el envio y las reglas ══
+# ══ LOS LUGARES QUE DICE EL CLIENTE ══
 
 def _lugares(texto) -> list:
     from .normal import lugares
@@ -177,55 +99,6 @@ def destinos_dichos(texto: str) -> list:
     return list(dict.fromkeys(x for o in re.split(r"[.!?\n]", texto or "") for x in _lugares(o) for e in [re.escape(K.n(x))]
                               if not re.search(rf"\b(?:no|ni|sin)\s+(?:\w+\s+)?{e}\b", K.n(o)) and
                               re.search(rf"\b(?:a|para|hacia|envio|envios|mandar|manda)\s+(?:la\s+|el\s+)?{e}\b", K.n(o))))
-
-
-def _orden_de(texto: str, tienda_id: str) -> str:
-    """El orden que dice el texto normalizado: una frase del vocabulario de ordenes de la tienda, o el "mas algo"."""
-    voc = MK.vocabulario_respuestas(tienda_id)["ordenes"]
-    return next((o for o, fs in voc.items() if o in K.ORDEN for f in fs if f" {K.n(f)}" in f" {texto}"),
-                f"mas {m.group(1)}" if (m := re.search(r"\bmas\s+(?!de\b|que\b|del\b)([a-z]+)", texto)) else "")
-
-
-def _tema_por_clave(q: str, tienda_id: str) -> str:
-    """La frase de la FAQ que el cliente dice tal cual, la mas larga: "precio por cantidad" es mayoristas."""
-    from app.core import agente
-    ts = agente.indice(tienda_id)["temas"]
-    dichas = sorted(((len(f), tm) for tm in ts for f in ts[tm].get("frases") or []
-                     if re.search(rf"\b{re.escape(f)}\b", q)), reverse=True)
-    return dichas[0][1] if dichas else ""
-
-
-# Los campos que no dicen nada del producto para elegirlo, o que la fila ya trae siempre.
-_NO_PEDIBLES = set("nombre modelo descripcion descripcion_rica precio_ars marca color tags id categoria stock compat".split())
-
-
-def buscar(consulta: str, tienda_id: str, citas: Citas = None, orden: list = ()) -> str:
-    """Con un SELECT, las filas reales de la tabla de la tienda, `tabla.consultar`. Con texto, lo que no esta en la tabla:
-    las reglas de la FAQ, el envio a cada lugar y lo que la tienda no vende. LOS PRODUCTOS SE CONSULTAN EN LA TABLA desde el
-    5-nov: la frase la reinterpretaba el codigo con reglas de palabras y se perdian el equipo, la marca y el origen.
-    Con `citas`, cada cosa devuelta lleva su numero."""
-    num = (lambda tipo, clave, texto: f"{citas(tipo, clave, texto)}: ") if citas is not None else (lambda *_: "")
-    if T.es_consulta(consulta):
-        return T.consultar(consulta, tienda_id, citas, orden)
-    q, out = K.n(consulta), []
-    tcands = _parecidos(consulta, "tema", tienda_id)
-    temas = list(dict.fromkeys([_tema_por_clave(q, tienda_id)] + [k for k, s in tcands[:2] if s >= UMBRAL_TEMA]))
-    if _lugares(consulta):
-        temas = [t for t in temas if t not in ("envios", "costo_envio", "plazo_envio")]  # va el envio al lugar
-    for tm in [t for t in temas if t][:2]:
-        t = ejecutar(_agenda([{"n": 1, "accion": "politica", "tema": tm}]), E.leer({}), tienda_id)
-        texto = " ".join(h.get("texto") or "" for h in t.hechos)
-        out.append(num("regla", tm, texto) + f"REGLA {tm.replace('_', ' ')}: " + texto)
-    for d in _lugares(consulta):
-        t = ejecutar(_agenda([{"n": 1, "accion": "envio", "destino": d}]), E.leer({}), tienda_id)
-        texto = redaccion.texto(t.hechos, t.preguntas, False).replace("\n", " ")
-        out.append(num("envio", K.n(d), texto) + "ENVIO: " + texto)
-    # LO QUE LA TIENDA NO VENDE lo dice su fuente, `no_vendidas.json`, con su alternativa real si la hay.
-    for c, alt in [x for x in [categoria_no_vendida(consulta, tienda_id)] if x]:
-        texto = f"No vendemos {c}." + (f" Lo que sí vendemos parecido: {alt}." if alt else "")
-        out.insert(0, num("no_vendemos", K.n(c), texto) + f"NO VENDEMOS {c.upper()}." + (f" Lo que si vendemos parecido: {alt}." if alt else ""))
-    return "\n".join(out) or "Los productos se consultan en la tabla, con un SELECT. Con texto, solo el envio a un " \
-        "lugar, \"envio a Rosario\", o una regla de la tienda."
 
 
 # ══ EL PRESUPUESTO, EL COBRO Y LA CALCULADORA ══
@@ -637,96 +510,11 @@ def calcular(cuenta: str) -> str:
         else f"{cuenta} = {round(v, 2)}"
 
 
-def _pegado(pasos: list, herramienta: str = "cotizar") -> str:
-    """Lo que el cliente lee de la ultima llamada del turno a esa herramienta: solo el texto del codigo."""
-    return next((p.get("al_cliente", "") for p in reversed(pasos) if p["herramienta"] == herramienta), "")
-
-
-# ══ EL TURNO DEL AGENTE ══
-
-def sin_buscar(mensaje: str, pasos: list, tienda_id: str) -> list:
-    """LOS CRITERIOS DEL CLIENTE QUE NINGUNA HERRAMIENTA LLEVO, 31-oct: cada palabra del mensaje que el catalogo ata a
-    un campo —"chinas" al pais de fabricacion, "inalambrico" a la conexion— cuando nada de lo que pidio el modelo ata
-    ese campo. En el examen real, "las menos partes chinas" se buscaba como "auriculares" en once charlas. En un campo
-    de si o no vale solo su clave, "rgb", no una palabra de su texto."""
-    def campos(texto: str, tipos=K.campos_filtrables(tienda_id), todos=K.productos(tienda_id)) -> dict:
-        ws = [w for w in re.findall(r"[a-z0-9]+", K.n(texto)) if w not in K._RELLENO and len(w) > 2 and not w.isdigit()]
-        # Solo un tramo que nombra un producto: "rgb" esta en el modelo de varios y no nombra a ninguno.
-        de_producto = {w for t, es in MK._productos(ws, tienda_id) if es.startswith("el producto") for w in t.split()}
-        return {w: f["campo"] for w in ws if w not in de_producto and "campo" in (f := K.atar(w, todos, tienda_id))
-                and f["campo"] not in _NO_PEDIBLES and (tipos.get(f["campo"]) != "si_no" or f.get("si_no")
-                                                       or K._si_no_nombrado(w, todos, tienda_id) == f["campo"])}
-    pidio = set(campos(json.dumps([p["pide"] for p in pasos], ensure_ascii=False)).values())
-    return [w for w, c in campos(mensaje).items() if c not in pidio]
+# ══ LA MEMORIA DE LA CHARLA ══
 
 
 def _id_de(nombre, tienda_id: str) -> str:
     return (K.identificar(str(nombre), "", tienda_id).get("producto") or {}).get("id") or K.n(nombre)
-
-
-def _por_rubro(rs: list, tienda_id: str) -> collections.Counter:
-    ids = [(K.identificar(str(x.get("producto")), "", tienda_id), K.entero(x.get("cantidad")) or 1) for x in rs]
-    return sum((collections.Counter({i["producto"].get("categoria"): n}) for i, n in ids if i["veredicto"] == "exists"),
-               collections.Counter())
-
-
-def omitidos(mensaje: str, memoria: dict, pasos: list, tienda_id: str) -> list:
-    """LO QUE EL CLIENTE NOMBRO CON SU CANTIDAD Y EL PRESUPUESTO DEL TURNO NO TRAE, 3-nov: "dos memorias" y la cuenta con
-    una, "no tenes teclados" con el teclado afuera. En el examen real el pedido perdia renglones y nadie se enteraba.
-    Solo lo dicho con un numero delante, "un teclado", "2 notebooks": "cambia el mouse" no pide un mouse."""
-    if not any(p["herramienta"] in ("pedido", "cotizar") for p in pasos):
-        return []
-    rs = (memoria.get("_ultimo") or {}).get("mostrado") or []
-    hay, antes = _por_rubro(rs, tienda_id), _por_rubro(memoria.get("mostrado") or [], tienda_id)
-    ws = re.findall(r"[a-z0-9]+", K.n(mensaje))
-    pide = {}
-    for w, r in MK._rubros(ws, tienda_id):
-        j = ws.index(w.split()[0])
-        c = ws[j - 1] if j else ""
-        n = int(c) if c.isdigit() else _CUANTOS.get(c, 0)
-        if n:
-            pide[r] = max(pide.get(r, 0), n)
-    out = [f"{n} {r} y el presupuesto trae {hay.get(r, 0)}" for r, n in pide.items() if hay.get(r, 0) < n]
-    # SUMAR LO QUE YA ESTABA, b8df72: "Y 1 teclado" con el teclado ya en el pedido quedaba con dos. Sin "otro", se
-    # pregunta si es otro o el mismo.
-    otro = re.search(r"\b(otro|otra|otros|otras|mas|ademas)\b", K.n(mensaje))
-    out += [f"{n} {r}, y ya habia {antes[r]}: quedan {hay[r]}; si no dijo otro, preguntale si es otro mas o el que ya "
-            "estaba" for r, n in pide.items() if not otro and antes.get(r, 0) >= n and hay.get(r, 0) == antes[r] + n]
-    # LO QUE EL CLIENTE NO TOCO NO CAMBIA, 83e58a: "son 7, los mas baratos" y las memorias pasaban de 2 a 3. Un rubro
-    # que el mensaje no nombra conserva la cantidad del presupuesto anterior.
-    # El rubro se nombra tambien por un modelo: "sumame un Redragon Cobra" nombra un mouse.
-    # Si el modelo es ambiguo, "Redragon Cobra", el rubro es el de sus opciones.
-    nombrados = {r for _, r in MK._rubros(ws, tienda_id)} | {(i.get("producto") or (i.get("opciones") or [{}])[0]).get(
-        "categoria") for t, _ in MK._productos(ws, tienda_id) for i in [K.identificar(t, "", tienda_id)]}
-    out += [f"{r}: eran {antes[r]} y quedan {hay.get(r, 0)}, sin que el cliente lo nombre; si no lo pidio, dejalo como "
-            "estaba" for r in antes if hay and r not in nombrados and hay.get(r, 0) != antes[r]]
-    # UN LUGAR DICHO QUE EL PRESUPUESTO NO TRAE, 6740e0: "2 a villa maria y 3 a toledo" y Toledo se perdia. Por oracion,
-    # porque el padron corta en comas; "era para Cordoba, no Rosario" no pide Rosario.
-    out += [f"el cliente dijo {x} y ningun renglon va ahi" for d in [" ".join(K.n(y.get("destino")) for y in rs)] for x in destinos_dichos(mensaje) if d.strip() and K.n(x) not in d]
-    # EL CRITERIO DEL CLIENTE, d29c5a: "el mouse mas liviano" y el presupuesto con el tercero mas liviano. Un rubro solo
-    # en el pedido y un orden del vocabulario: el elegido tiene que ser el primero de su rubro con stock.
-    clave, sentido = K.ORDEN.get(_orden_de(K.n(mensaje), tienda_id), (None, 0))
-    # "De esos, el mas barato" elige entre lo mostrado, no en la tienda.
-    entre = re.search(r"\b(de esos|de estos|de esas|de estas|de los que|entre)\b", K.n(mensaje))
-    for x in rs if clave and len(hay) == 1 and not entre else []:
-        p = K.identificar(str(x.get("producto")), "", tienda_id).get("producto") or {}
-        rubro = [y for y in K.productos(tienda_id) if y.get("categoria") == p.get("categoria")]
-        if p and not V._primero(p, clave, sentido, rubro):
-            out.append(f"el {_orden_de(K.n(mensaje), tienda_id)} y {p['nombre']} no lo es: busca con ese criterio")
-    return out
-
-
-def hoja_reglas(tienda_id: str, citas: Citas = None) -> str:
-    """LAS REGLAS DE LA TIENDA SIEMPRE A LA VISTA, 31-oct, orden de Martin: una linea por tema, de la FAQ de la tienda,
-    tal como esta hoy. Llegaban solo si el modelo las buscaba, y en el examen real dijo que no habia descuento por
-    cantidad, con mayoristas y 10% por transferencia en la FAQ. Sale de la FAQ en cada turno: si cambia, cambia.
-    CON SU NUMERO, 5-nov: el modelo las contestaba de la hoja sin buscarlas, y sin numero no las podia citar."""
-    def linea(t, d):
-        texto = " ".join(str(d.get("respuesta") or "").split())
-        return (f"{citas('regla', t, texto)}: " if citas is not None else "- ") + f"{(d.get('tema') or t).replace('_', ' ')}: {texto}"
-    lineas = [linea(t, d) for t, d in sorted((K.fc.get_all_faq(tienda_id=tienda_id) or {}).items())
-              if isinstance(d, dict) and d.get("respuesta")]
-    return "LAS REGLAS DE LA TIENDA, de su FAQ, valen siempre:\n" + "\n".join(lineas) if lineas else ""
 
 
 def charla(historial: list, dicho: list = ()) -> str:

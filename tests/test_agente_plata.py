@@ -130,43 +130,6 @@ def test_el_medio_se_lee_como_lo_escriba_el_cliente(A):
     assert A.menciones("mp no tengo") == [("mercado pago", True)]
 
 
-def test_el_criterio_del_cliente_se_controla_en_el_presupuesto(A):
-    """d29c5a: "dame el mouse más liviano" y el presupuesto con el G502 X, el tercero. Entre lo mostrado no aplica."""
-    def aviso(producto, mensaje):
-        m = A.memoria_de({})
-        m["_ultimo"] = {"mostrado": [{"producto": producto}]}
-        return A.omitidos(mensaje, m, [{"herramienta": "cotizar"}], C.TIENDA)
-    assert aviso("Mouse Logitech G502 X Negro", "dame el mouse más liviano")
-    assert not aviso("Mouse Logitech G Pro Wireless Blanco", "dame el mouse más liviano")
-    assert not aviso("Mouse Logitech G502 X Negro", "de esos, el más liviano")
-    assert not aviso("Mouse Logitech G502 X Negro", "quiero un mouse")
-
-
-def test_lo_que_el_cliente_no_cambio_queda_y_se_avisa(A):
-    """Las cuatro del pedido del examen real. d0c439: "2 auriculares" sin destino vuelve al reparto de antes. 6740e0:
-    "3 a toledo" sin renglon a Toledo. b8df72: "Y 1 teclado" con uno ya en el pedido. 83e58a: las memorias de 2 a 3 sin
-    que el cliente las nombre. Y lo que no avisa: "sumame un Redragon Cobra" nombra el mouse; "partes de Estados Unidos"
-    no es un envio."""
-    m = A.memoria_de({})
-    m["mostrado"] = [{"producto": PEDIDO[1]["producto"], "cantidad": 1, "destino": "Córdoba"},
-                     {"producto": PEDIDO[1]["producto"], "cantidad": 1, "destino": "Posadas"}]
-    cliente, _ = A.presupuesto({"renglones": [{"producto": PEDIDO[1]["producto"], "cantidad": 2}]}, m, C.TIENDA)
-    assert "Envio a Córdoba" in cliente and "Envio a Posadas" in cliente
-
-    def avisos(mensaje, antes, ahora):
-        mm = A.memoria_de({})
-        mm["mostrado"], mm["_ultimo"] = antes, {"mostrado": ahora}
-        return " ".join(A.omitidos(mensaje, mm, [{"herramienta": "cotizar"}], C.TIENDA))
-    teclado = {"producto": "Teclado Logitech K120 Negro", "cantidad": 1, "destino": "Concordia"}
-    memoria = {"producto": "Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro", "cantidad": 2, "destino": "Posadas"}
-    assert "toledo" in avisos("2 a villa maria y 3 a toledo", [], [{**memoria, "destino": "Villa Maria"}])
-    assert "otro mas" in avisos("Y 1 teclado", [teclado], [{**teclado, "cantidad": 2}])
-    assert "eran 2 y quedan 3" in avisos("son 7, los mas baratos", [memoria], [{**memoria, "cantidad": 3}])
-    assert not avisos("sumame también un Redragon Cobra", [{"producto": "Mouse Logitech M170 Negro"}],
-                      [{"producto": "Mouse Logitech M170 Negro"}, {"producto": "Mouse Redragon Cobra M711"}])
-    assert not avisos("las menos partes de estados unidos", [], [memoria])
-
-
 def test_el_color_dicho_se_usa(A):
     """La corrida con la gratis del 3-nov. b8bb00: "el mas eco en negro" y el Pandora sin color volvia a preguntar el
     color. El equipo nombrado que filtra la busqueda pasó a la tabla el 5-nov: `test_agente_campos.py`."""

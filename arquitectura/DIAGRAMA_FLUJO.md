@@ -4,7 +4,7 @@ Lo escribe `python3 banco_pruebas/diagrama.py` leyendo `app/`. `tests/test_diagr
 
 Limites: analisis estatico. Una referencia es un nombre que aparece en el codigo, no una llamada probada. Lo que se llama por `getattr`, o por texto, no se ve. Columna ALCANCE: `si` = alguna entrada la alcanza; `?` = ninguna la alcanza pero su nombre aparece escrito en otra parte de `app/`, hay que mirarla; `-` = ninguna la alcanza y su nombre no aparece en ningun otro lado de `app/`. Un `-` no prueba que sobre: puede usarla un script o un test.
 
-Funciones y clases de nivel superior: 550. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
+Funciones y clases de nivel superior: 531. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
 
 ## Nivel 1 — el turno
 
@@ -13,12 +13,12 @@ flowchart LR
   C1["1 CANAL<br/>17 funciones"]
   C2["2 PUERTA<br/>3 funciones"]
   C3["3 MEMORIA<br/>34 funciones"]
-  C4["4 CONTEXTO<br/>45 funciones"]
+  C4["4 CONTEXTO<br/>41 funciones"]
   C5["5 DOS LLAMADAS<br/>18 funciones"]
-  C6["6 BUSCAR<br/>200 funciones"]
-  C7["7 PEDIDO Y CUENTA<br/>158 funciones"]
+  C6["6 BUSCAR<br/>190 funciones"]
+  C7["7 PEDIDO Y CUENTA<br/>156 funciones"]
   C8["8 COBRO<br/>20 funciones"]
-  C9["9 RESPUESTA Y CONTROL<br/>19 funciones"]
+  C9["9 RESPUESTA Y CONTROL<br/>16 funciones"]
   C10["10 TEXTOS Y GUARDAS<br/>17 funciones"]
   C1 --> C2 --> C3 --> C4 --> C5
   C5 --> C6
@@ -52,12 +52,12 @@ Cada celda cuenta cuantas funciones de la caja de la fila nombran a una funcion 
 | **1** CANAL |  | · | 2 | 3 |  |  |  |  |  |  | 2 |
 | **2** PUERTA |  |  | · | 2 |  |  |  |  | 1 |  | 1 |
 | **3** MEMORIA |  |  |  | · |  | 1 | 3 | 1 |  |  | 3 |
-| **4** CONTEXTO | 2 |  |  | 9 | · |  | 21 | 10 |  |  | 3 |
+| **4** CONTEXTO | 2 |  |  | 9 | · |  | 19 | 10 |  |  | 3 |
 | **5** DOS LLAMADAS | 5 |  |  |  | 2 | · | 13 | 5 | 1 | 1 |  |
-| **6** BUSCAR | 2 |  |  | 23 | 9 |  | · | 8 |  |  | 6 |
-| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 6 |  | 147 | · |  | 1 | 3 |
+| **6** BUSCAR | 1 |  |  | 21 | 6 |  | · | 6 |  |  | 6 |
+| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 6 |  | 145 | · |  | 1 | 3 |
 | **8** COBRO | 2 |  |  | 6 |  |  |  | 4 | · |  | 3 |
-| **9** RESPUESTA Y CONTROL |  |  |  |  | 7 |  | 34 | 4 |  | · |  |
+| **9** RESPUESTA Y CONTROL |  |  |  |  | 4 |  | 25 | 3 |  | · |  |
 | **10** TEXTOS Y GUARDAS |  |  |  | 2 |  |  |  |  |  |  | · |
 
 ## Nivel 2 — cada caja
@@ -112,7 +112,7 @@ Cargar y guardar la charla: historial, memoria del agente, estado del pedido, fi
 | core.estado_venta | `get_current_estado` | 4 | 7 | si |
 | core.flujo.agente | `memoria_de` | 3 | · | si |
 | core.flujo.agente | `estado_de` | 15 | 4,7 | si |
-| core.flujo.estado | `leer` | 6 | 6,7 | si |
+| core.flujo.estado | `leer` | 6 | 7 | si |
 | core.flujo.estado | `_de_antes` | 8 | · | si |
 | core.flujo.estado | `mostrar` | 7 | 7 | si |
 | core.flujo.turno | `procesar_turno` | 22 | 2 | si |
@@ -139,11 +139,10 @@ Cargar y guardar la charla: historial, memoria del agente, estado del pedido, fi
 
 ### 4 CONTEXTO
 
-Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la tienda no vende. 45 funciones, 636 lineas.
+Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la tienda no vende. 41 funciones, 584 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
-| core.flujo.agente | `hoja_reglas` | 11 | · | - |
 | core.flujo.agente | `charla` | 8 | 5 | si |
 | core.flujo.agente | `memoria_texto` | 9 | 5 | si |
 | core.flujo.marcador | `_numero` | 2 | · | si |
@@ -154,13 +153,10 @@ Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la
 | core.flujo.marcador | `_rubros` | 18 | 9 | si |
 | core.flujo.marcador | `_temas` | 28 | · | si |
 | core.flujo.marcador | `marcar` | 22 | 7 | si |
-| core.flujo.marcador | `vocabulario_respuestas` | 10 | 6,7 | si |
+| core.flujo.marcador | `vocabulario_respuestas` | 10 | 7 | si |
 | core.flujo.marcador | `_sacar` | 8 | · | si |
 | core.flujo.marcador | `_mismo` | 3 | · | si |
 | core.flujo.marcador | `respuesta` | 37 | 7 | si |
-| core.flujo.respuesta | `Citas` (clase) | 19 | 6 | ? |
-| core.flujo.tabla | `mapa` | 13 | · | ? |
-| core.flujo.tabla | `resumen` | 9 | · | ? |
 | core.fuente | `_norm` | 3 | · | si |
 | core.fuente | `temas_consultables` | 8 | · | si |
 | core.fuente | `_fichas` | 12 | · | si |
@@ -216,7 +212,7 @@ La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y
 
 ### 6 BUSCAR
 
-Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 200 funciones, 3848 lineas.
+Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 190 funciones, 3703 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -267,7 +263,7 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.filtros_catalogo | `_sumar_valor` | 12 | · | si |
 | core.filtros_catalogo | `vocabulario` | 26 | · | si |
 | core.filtros_catalogo | `condicion_sin_vocabulario` | 16 | · | si |
-| core.filtros_catalogo | `campos_filtrables` | 4 | 7,9 | si |
+| core.filtros_catalogo | `campos_filtrables` | 4 | 7 | si |
 | core.filtros_catalogo | `limpiar_cache` | 11 | 3 | si |
 | core.filtros_catalogo | `_a_numero` | 7 | · | si |
 | core.filtros_catalogo | `_raices` | 4 | · | si |
@@ -295,13 +291,7 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.filtros_catalogo | `rankear_por_cercania` | 14 | · | si |
 | core.filtros_catalogo | `dato_que_falla` | 24 | · | si |
 | core.flujo.agente | `_agenda` | 2 | 7 | si |
-| core.flujo.agente | `_vectores` | 20 | · | ? |
-| core.flujo.agente | `_base` | 9 | · | ? |
-| core.flujo.agente | `_parecidos` | 15 | · | ? |
 | core.flujo.agente | `_lugares` | 3 | 7,9 | si |
-| core.flujo.agente | `_orden_de` | 5 | 9 | ? |
-| core.flujo.agente | `_tema_por_clave` | 7 | · | ? |
-| core.flujo.agente | `buscar` | 27 | · | ? |
 | core.flujo.catalogo | `n` | 3 | 4,5,7,9 | si |
 | core.flujo.catalogo | `productos` | 2 | 4,7,9 | si |
 | core.flujo.catalogo | `rubro` | 3 | 7 | si |
@@ -314,7 +304,7 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.flujo.catalogo | `por_id` | 2 | 7 | si |
 | core.flujo.catalogo | `_valores` | 8 | · | si |
 | core.flujo.catalogo | `_pistas_derivadas` | 8 | · | si |
-| core.flujo.catalogo | `_si_no_nombrado` | 10 | 9 | si |
+| core.flujo.catalogo | `_si_no_nombrado` | 10 | · | si |
 | core.flujo.catalogo | `_contiene` | 5 | · | si |
 | core.flujo.catalogo | `_monto` | 8 | 4 | si |
 | core.flujo.catalogo | `atar` | 39 | 7,9 | si |
@@ -379,12 +369,8 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.flujo.nuevo.vectores | `puntajes` | 22 | 5 | si |
 | core.flujo.nuevo.vectores | `puntajes_condicion` | 9 | 5 | si |
 | core.flujo.tabla | `_columnas` | 20 | · | si |
-| core.flujo.tabla | `tabla` | 14 | 4 | si |
-| core.flujo.tabla | `es_consulta` | 2 | · | ? |
-| core.flujo.tabla | `columnas` | 2 | · | ? |
+| core.flujo.tabla | `tabla` | 14 | · | si |
 | core.flujo.tabla | `ficha` | 5 | 5 | si |
-| core.flujo.tabla | `con_orden` | 7 | · | ? |
-| core.flujo.tabla | `consultar` | 51 | · | ? |
 | core.fuente_producto | `_norm` | 3 | · | si |
 | core.fuente_producto | `_patron_clave` | 7 | · | si |
 | core.fuente_producto | `_ruta_config` | 15 | · | si |
@@ -423,7 +409,7 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 
 ### 7 PEDIDO Y CUENTA
 
-El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 158 funciones, 3419 lineas.
+El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado. 156 funciones, 3412 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -459,9 +445,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.agente | `_con_descuento` | 5 | · | si |
 | core.flujo.agente | `presupuesto` | 106 | 5,8 | si |
 | core.flujo.agente | `calcular` | 10 | · | ? |
-| core.flujo.agente | `_pegado` | 3 | · | - |
 | core.flujo.agente | `_id_de` | 2 | 5 | si |
-| core.flujo.agente | `_por_rubro` | 4 | 9 | ? |
 | core.flujo.borrador | `leer` | 3 | 4 | si |
 | core.flujo.borrador | `_destino` | 7 | · | si |
 | core.flujo.borrador | `_mismo_destino` | 4 | · | si |
@@ -524,7 +508,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.ejecutor | `_explicar` | 2 | · | si |
 | core.flujo.ejecutor | `_otro` | 8 | · | si |
 | core.flujo.ejecutor | `_cumplir` | 20 | · | si |
-| core.flujo.ejecutor | `ejecutar` | 80 | 6 | si |
+| core.flujo.ejecutor | `ejecutar` | 80 | · | si |
 | core.flujo.ejecutor | `_palabras_de` | 3 | · | si |
 | core.flujo.ejecutor | `atar_esperas` | 17 | · | si |
 | core.flujo.ejecutor | `_llenar` | 7 | · | si |
@@ -571,7 +555,7 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.redaccion | `_cuenta` | 5 | · | si |
 | core.flujo.redaccion | `_envio` | 7 | · | si |
 | core.flujo.redaccion | `pedir_nombre` | 3 | 5 | si |
-| core.flujo.redaccion | `texto` | 15 | 6 | si |
+| core.flujo.redaccion | `texto` | 15 | · | si |
 | core.geo_cp | `_norm` | 5 | · | si |
 | core.geo_cp | `_cargar` | 26 | · | si |
 | core.geo_cp | `_provincia_en_texto` | 17 | · | si |
@@ -615,13 +599,11 @@ El link de pago, los datos de transferencia, el lead y el aviso al dueno. 20 fun
 
 ### 9 RESPUESTA Y CONTROL
 
-La respuesta atada, el verificador y los controles de lo que el modelo omitio. 19 funciones, 275 lineas.
+La respuesta atada, el verificador y los controles de lo que el modelo omitio. 16 funciones, 211 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
 | core.flujo.agente | `destinos_dichos` | 6 | 7 | si |
-| core.flujo.agente | `sin_buscar` | 14 | · | - |
-| core.flujo.agente | `omitidos` | 44 | · | - |
 | core.flujo.verificador | `_montos` | 2 | · | si |
 | core.flujo.verificador | `_medidas` | 3 | · | si |
 | core.flujo.verificador | `_pagos` | 4 | · | si |
@@ -636,7 +618,6 @@ La respuesta atada, el verificador y los controles de lo que el modelo omitio. 1
 | core.flujo.verificador | `_compat_general` | 15 | · | si |
 | core.flujo.verificador | `_medios` | 18 | · | si |
 | core.flujo.verificador | `_de_todos` | 12 | · | si |
-| core.flujo.verificador | `sin_marcadas` | 6 | · | - |
 | core.flujo.verificador | `verificar` | 62 | 5 | si |
 
 ### 10 TEXTOS Y GUARDAS
@@ -696,45 +677,26 @@ Los campos de la variable `memoria` que tocan las funciones de `app/`, leidos de
 | campo | lo lee | lo escribe |
 |---|---|---|
 | `_cmds` | - | agente.pedido, turno.responder |
-| `_ultimo` | agente.cobrar, agente.estado_de, agente.omitidos, agente.pedido, agente.presupuesto | agente.pedido, agente.presupuesto, turno.responder |
+| `_ultimo` | agente.cobrar, agente.estado_de, agente.pedido, agente.presupuesto | agente.pedido, agente.presupuesto, turno.responder |
 | `dicho` | segunda.entrada, turno.responder | turno.responder |
 | `estado` | agente.estado_de, agente.memoria_texto | - |
 | `lead` | agente.cobrar, turno.responder | agente.cobrar |
-| `mostrado` | agente.estado_de, agente.omitidos, agente.presupuesto | - |
+| `mostrado` | agente.estado_de, agente.presupuesto | - |
 | `nombre_para` | turno.responder | turno.responder |
 | `pago` | agente.cobrar, agente.presupuesto | agente.cobrar |
 | `pedido` | agente.cobrar, agente.estado_de, agente.memoria_texto, agente.presupuesto, turno.responder | - |
 | `tope` | agente.presupuesto | - |
 | `vistos` | segunda.vistos_texto, turno.responder | turno.responder |
 
-## Sin alcance desde las entradas: 38 (14 con `-`, 24 con `?`)
+## Sin alcance desde las entradas: 19 (9 con `-`, 10 con `?`)
 
 Ningun codigo alcanzable desde los webhooks o el orquestador las nombra. Se revisan una por una antes de borrar.
 
 | alcance | caja | modulo | funcion | lineas |
 |---|---|---|---|---|
 | - | 3 | core.estado_venta | `set_current_estado` | 7 |
-| ? | 6 | core.flujo.agente | `_vectores` | 20 |
-| ? | 6 | core.flujo.agente | `_base` | 9 |
-| ? | 6 | core.flujo.agente | `_parecidos` | 15 |
-| ? | 6 | core.flujo.agente | `_orden_de` | 5 |
-| ? | 6 | core.flujo.agente | `_tema_por_clave` | 7 |
-| ? | 6 | core.flujo.agente | `buscar` | 27 |
 | ? | 7 | core.flujo.agente | `calcular` | 10 |
-| - | 7 | core.flujo.agente | `_pegado` | 3 |
-| - | 9 | core.flujo.agente | `sin_buscar` | 14 |
-| ? | 7 | core.flujo.agente | `_por_rubro` | 4 |
-| - | 9 | core.flujo.agente | `omitidos` | 44 |
-| - | 4 | core.flujo.agente | `hoja_reglas` | 11 |
 | ? | 7 | core.flujo.interprete | `datos` | 10 |
-| ? | 4 | core.flujo.respuesta | `Citas` | 19 |
-| ? | 4 | core.flujo.tabla | `mapa` | 13 |
-| ? | 6 | core.flujo.tabla | `es_consulta` | 2 |
-| ? | 6 | core.flujo.tabla | `columnas` | 2 |
-| ? | 4 | core.flujo.tabla | `resumen` | 9 |
-| ? | 6 | core.flujo.tabla | `con_orden` | 7 |
-| ? | 6 | core.flujo.tabla | `consultar` | 51 |
-| - | 9 | core.flujo.verificador | `sin_marcadas` | 6 |
 | ? | 4 | core.fuente | `inventario` | 8 |
 | ? | 10 | core.guardas_salida | `_norm` | 3 |
 | ? | 10 | core.guia_venta_prosa | `identidad` | 6 |

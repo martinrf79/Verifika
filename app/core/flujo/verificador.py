@@ -231,14 +231,6 @@ def _de_todos(o: str, tienda_id: str) -> list:
     return out
 
 
-def sin_marcadas(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -> str:
-    """La respuesta sin las oraciones que el verificador marca: lo que siguio marcado despues de corregir no le llega al
-    cliente. Lo que el codigo pego tal cual queda entero."""
-    lineas = [x if x.strip() and any(x in y for y in pegados) else " ".join(
-        o for o in re.split(r"(?<=[.!?])\s+", x) if not verificar(o, fuente, tienda_id, pegados)) for x in respuesta.split("\n")]
-    return re.sub(r"\n{3,}", "\n\n", "\n".join(lineas)).strip()
-
-
 def verificar(respuesta: str, fuente: str, tienda_id: str, pegados: list = ()) -> list:
     """Los hallazgos de una respuesta contra su fuente: [(clase, detalle)]. Lo que el codigo pego tal cual desde una
     herramienta —el presupuesto, el cobro— no lo escribio el modelo: se saca antes de mirar."""
