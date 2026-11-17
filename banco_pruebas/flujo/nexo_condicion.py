@@ -167,6 +167,19 @@ def banco_reales(suf):
                          lambda c, i, b: jv.get(c, {}).get(f"p{i}"))
 
 
+def banco_charlas():
+    """Las lineas del primer turno de las 26 charlas que tienen vara, con la llamada 0 elegida grabada en `segunda.py`.
+    Solo el primer turno: la condicion corre antes de la memoria."""
+    import flujo_nuevo as F
+    import nexo_condicion_vara as V
+    import segunda as S
+    idx = S.indice()
+    por_id = {f["id"]: f for f in idx.filas}
+    j = S.jev_grabado()
+    l0 = {k: v for k, v in S.llamada0().items() if k in V.CHARLAS}
+    return _lineas_flujo(l0, idx, por_id, lambda c, i: j.get(("t", c, i, "")), lambda c, i, b: j.get(("p", c, i, "")))
+
+
 def esperado_525():
     """{id: {rubro: [condicion]}} de las 365, por la agenda a mano."""
     import nexo_condicion_vara as V
@@ -264,40 +277,15 @@ def calificar(nx=None, ver=False, callado=False, motor="nexo"):
             return {"items": base(b, r, nx.fx), "dudosas": []}
         return nx.condicion(b, r)
 
-    # LAS 140, por busqueda.
-    c, fallas = collections.Counter(), []
-    for clave, l, r, motivo in banco_140():
-        esp = V.LAS_140.get(l.busqueda, "fuera")
-        if esp == "fuera":
-            continue
-        c["lineas"] += 1
-        if r is None:
-            c[f"no corre: {motivo}"] += 1
-            if esp:
-                c["no corre y la vara tiene condiciones"] += 1
-            continue
-        if esp is None:
-            c["corre sobre algo que no se vende"] += 1
-            continue
-        c["lineas donde corre"] += 1
-        res = correr(l.busqueda, r, esp)
-        cc, malos = comparar(esp, res["items"], r, nx)
-        c.update(cc)
-        c["lineas sin falla"] += not malos
-        c["dudosas"] += len(res["dudosas"])
-        salida[f"140 {clave[0]} {clave[1]} {l.busqueda}"] = {"rubro": r, "items": res["items"], "dudosas": res["dudosas"]}
-        if malos or ver:
-            fallas.append((f"{clave[1]} '{l.busqueda}' [{r}]", [_resumen(x) for x in res["items"]], malos))
-    tot.update({f"140 {k}": v for k, v in c.items()})
-    if not callado:
-        _imprimir("LAS 140, nuevas70 y nuevas70b, con la vara por busqueda", c, fallas, ver)
-
-    # LOS REALES Y LAS 365, por mensaje y rubro.
-    for nombre, suf, esperado in (("LOS 40 REALES", "reales", V.REALES), ("LAS 365 DE traduccion58", "reales525",
-                                                                         esperado_525())):
+    # LOS CUATRO BANCOS, por mensaje y rubro: la vara no depende de la llamada 0.
+    for nombre, suf, lineas, esperado in (
+            ("LAS 140, nuevas70 y nuevas70b", "140", banco_140, V.LAS_140),
+            ("LOS 40 REALES", "reales", lambda: banco_reales("reales"), V.REALES),
+            ("LAS 365 DE traduccion58", "reales525", lambda: banco_reales("reales525"), esperado_525()),
+            ("LAS 26 CHARLAS, primer turno", "charlas", banco_charlas, V.CHARLAS)):
         c, fallas = collections.Counter(), []
         por_msj = collections.defaultdict(list)
-        for clave, l, r, motivo in banco_reales(suf):
+        for clave, l, r, motivo in lineas():
             por_msj[clave].append((l, r))
         for cid, esp in esperado.items():
             for rub, conds in esp.items():
@@ -311,6 +299,7 @@ def calificar(nx=None, ver=False, callado=False, motor="nexo"):
                     res = correr(l.busqueda, r, conds)
                     items += res["items"]
                     c["dudosas"] += len(res["dudosas"])
+                    salida[f"{suf} {cid} {l.busqueda}"] = {"rubro": r, "items": res["items"], "dudosas": res["dudosas"]}
                 cc, malos = comparar(conds, items, rub, nx)
                 if cc["condiciones perdidas"] and not any(sum(map(len, seguro(l.busqueda, r, nx.fx))) for l, r in ls):
                     # La busqueda trae solo el producto: la condicion se perdio en la llamada 0, antes del nexo.
@@ -347,6 +336,7 @@ def _todas_las_lineas():
     out = [("140", l.busqueda, r) for _, l, r, _ in banco_140() if r]
     for suf in ("reales", "reales525"):
         out += [(suf, l.busqueda, r) for _, l, r, _ in banco_reales(suf) if r]
+    out += [("charlas", l.busqueda, r) for _, l, r, _ in banco_charlas() if r]
     return list(dict.fromkeys(out))
 
 
@@ -382,7 +372,9 @@ def calibrar():
     """Cada variante de la busqueda con Jev perfecto: la parte dudosa sale bien si algun candidato es un campo que la
     vara acepta. Es el techo de cada busqueda, sin gastar en Jev."""
     print("\nLA CALIBRACION DEL NEXO DE CONDICION · misma vara, mismo codigo, Jev perfecto sobre los candidatos")
-    print("  variante                                       k   140 sin falla   reales   365   perdidas  inventados")
+    bancos = ("140", "reales", "reales525", "charlas")
+    print("  variante                                       k   " + "   ".join(f"{b} sin falla" for b in bancos)
+          + "   perdidas  inventados")
     for nombre in VARIANTES:
         for k in (1, 2, 3, 5):
             nx = Nexo(nombre, k, jev=False)
@@ -390,11 +382,10 @@ def calibrar():
                 continue
             nx.oraculo = _oraculo(nx)
             t = calificar(nx, callado=True)
-            print(f"  {nombre:46} {k}   {t['140 lineas sin falla']:3} de {t['140 lineas']:3}   "
-                  f"{t['reales rubros sin falla']:2} de {t['reales rubros']:2}   "
-                  f"{t['reales525 rubros sin falla']:3} de {t['reales525 rubros']:3}   "
-                  f"{t['140 condiciones perdidas'] + t['reales condiciones perdidas'] + t['reales525 condiciones perdidas']:4}"
-                  f"      {t['140 filtro inventado'] + t['reales filtro inventado'] + t['reales525 filtro inventado']:3}")
+            print(f"  {nombre:46} {k}   " + "   ".join(f"{t[b + ' rubros sin falla']:3} de {t[b + ' rubros']:3}"
+                                                     for b in bancos)
+                  + f"   {sum(t[b + ' condiciones perdidas'] for b in bancos):4}"
+                  + f"      {sum(t[b + ' filtro inventado'] for b in bancos):3}")
 
 
 def _oraculo(nx):

@@ -1,5 +1,279 @@
 {
- "140 nuevas70 M01 mouse barato": {
+ "140 ('nuevas70', 'A01') mouse gamer con luces RGB, precio": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "luces rgb, precio",
+    "veredicto": "ata",
+    "campo": "retroiluminacion",
+    "valor": "si",
+    "niega": false,
+    "si_no": true,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "luces rgb, precio",
+    [
+     "campo|retroiluminacion",
+     "campo|marca",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'A02') notebook 16 GB de RAM liviana": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "liviana",
+    "veredicto": "orden",
+    "valor": "mas liviano",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'A03') headset para computadora con micrófono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "computadora con microfono",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "computadora con microfono",
+    [
+     "campo|caracteristicas_extra",
+     "campo|uso_recomendado",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'A04') teclado mecánico en español": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanico",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "espanol",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "espanol",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'A04') teclado mecánico en inglés": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanico",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ingles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "ingles",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'A05') SSD 500 GB M.2": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "500 gb",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "500gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'A07') placa de video para Fortnite que corra a ciento cuarenta y cuatro": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "fortnite que corra a ciento cuarenta y cuatro",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "fortnite que corra a ciento cuarenta y cuatro",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'A10') 2 sillas gamers negras, precio total con envío": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "2",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ],
+   [
+    "negras, precio total con envio",
+    [
+     "campo|color",
+     "orden|precio",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'A10') 1 silla gamer roja, precio total con envío": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "1",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "roja, precio total con envio",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|garantia_meses"
+    ]
+   ],
+   [
+    "roja, precio total con envio",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'A11') impresora a color con wifi de tinta continua": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "wifi",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "wifi",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "color",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "tinta continua",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "color",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ],
+   [
+    "tinta continua",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'F06') notebook más barata que la misma publicada en Mercado Libre": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "mas barata",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "misma publicada en mercado libre",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "misma publicada en mercado libre",
+    [
+     "campo|uso_recomendado",
+     "campo|color",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M01') mouse barato": {
   "rubro": "mouse",
   "items": [
    {
@@ -11,7 +285,7 @@
   ],
   "dudosas": []
  },
- "140 nuevas70 M01 auriculares baratos": {
+ "140 ('nuevas70', 'M01') auriculares baratos": {
   "rubro": "auriculares",
   "items": [
    {
@@ -23,12 +297,679 @@
   ],
   "dudosas": []
  },
- "140 nuevas70 M06 silla gamer": {
+ "140 ('nuevas70', 'M02') monitores, 2 unidades, 24 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "24 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M02') teclados mecánicos, 2 unidades": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "2 unidades",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "mecanicos,",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mecanicos,",
+    [
+     "campo|caracteristicas_extra",
+     "campo|switch_teclado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M03') mouse inalámbrico": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M03') notebook para la facultad": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": [
+   [
+    "facultad",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M04') memoria 8 GB DDR4, cantidad 2": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "8 gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "8gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "ddr4,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cantidad 2",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 2",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M04') disco sólido 1 TB, cantidad 2": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "1 tb, cantidad 2",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "1tb",
+    "niega": false,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 tb, cantidad 2",
+    [
+     "campo|almacenamiento",
+     "campo|caracteristicas_extra",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M05') auriculares con micrófono, 5 unidades, para la oficina, hasta 600 lucas en total": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "hasta 600 lucas",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 600000,
+    "por": "codigo"
+   },
+   {
+    "parte": "microfono, 5 unidades, para la oficina, en total",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono, 5 unidades, para la oficina, en total",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M05') impresora multifunción, 1 unidad, para la oficina, solo si el total no supera 600 lucas": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "600 lucas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "solo",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "solo",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "si el total no supera",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "multifuncion, 1 unidad,",
+    [
+     "campo|caracteristicas_extra",
+     "campo|uso_recomendado",
+     "campo|color"
+    ]
+   ],
+   [
+    "si el total no supera",
+    [
+     "campo|material",
+     "orden|peso",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M05') webcams, 5 unidades, para la oficina, hasta 600 lucas en total": {
+  "rubro": "webcam",
+  "items": [
+   {
+    "parte": "hasta 600 lucas",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 600000,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "5 unidades, para la oficina, en total",
+    [
+     "campo|material",
+     "campo|garantia_meses",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M06') silla gamer": {
   "rubro": "silla gamer",
   "items": [],
   "dudosas": []
  },
- "140 nuevas70 M17 fuente modular": {
+ "140 ('nuevas70', 'M07') cargadores 3 tipo C rápidos": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "3 tipo",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "rapidos",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapidos",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M07') parlantitos 3 Bluetooth": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "3 bluetooth",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M08') micro Ryzen 5": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "ryzen 5",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen 5",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M08') mother compatible con Ryzen 5": {
+  "rubro": "motherboard",
+  "items": [
+   {
+    "parte": "ryzen 5",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compatible",
+    "veredicto": "no hay",
+    "campo": "procesador",
+    "valor": "socket am4, para ryzen de 1a a 5a generacion",
+    "niega": false,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible",
+    [
+     "campo|procesador",
+     "campo|formato",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M08') memoria RAM 16 GB": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16 gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M08') fuente 650 W": {
+  "rubro": "fuente",
+  "items": [
+   {
+    "parte": "650 w",
+    "veredicto": "ata",
+    "campo": "potencia",
+    "valor": "650w",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M09') routers wifi 6, 2 unidades, lo mas barato posible": {
+  "rubro": "router",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "6, 2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "6, 2 unidades,",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M09') mesh, 1 unidad, lo mas barato posible": {
+  "rubro": "router",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "1 unidad,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad,",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M10') tablets, cantidad 2, para chicos": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "cantidad 2, para chicos",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 2, para chicos",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M11') micrófono para streaming": {
+  "rubro": "microfono",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M12') mouse, 10 unidades, lo más económico posible, tope total 300 mil": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "300 mil",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "10 unidades, lo mas economico posible, tope total",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "10 unidades, lo mas economico posible, tope total",
+    [
+     "orden|precio",
+     "campo|marca",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M12') teclados, 10 unidades, lo más económico posible, tope total 300 mil": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "300 mil",
+    "veredicto": "no hay",
+    "campo": "bateria",
+    "valor": "300mah",
+    "por": "codigo"
+   },
+   {
+    "parte": "10 unidades, lo mas economico posible, tope total",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "10 unidades, lo mas economico posible, tope total",
+    [
+     "orden|precio",
+     "campo|garantia_meses",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M13') monitor 27 pulgadas 144 Hz": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "27 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "144 hz",
+    "veredicto": "ata",
+    "campo": "hz",
+    "valor": "144hz",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M13') placa de video adecuada para monitor de 27 pulgadas y 144 Hz": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "27 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "144 hz",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "adecuada para monitor",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "adecuada para monitor",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M13') gabinete con buena ventilación": {
+  "rubro": "gabinete",
+  "items": [
+   {
+    "parte": "buena ventilacion",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "buena ventilacion",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M14') disco externo, 2 teras, para backup": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "2 teras,",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "2tb",
+    "niega": false,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 teras,",
+    [
+     "campo|almacenamiento",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M15') auriculares inalámbricos Sony, cantidad 3, precio total con envío": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "inalambricos",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "sony,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "sony,",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 3, precio total con envio",
+    [
+     "campo|garantia_meses",
+     "orden|precio",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M15') parlante JBL grande, precio total con envío": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "grande, precio total con envio",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "grande, precio total con envio",
+    [
+     "campo|garantia_meses",
+     "orden|precio",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M16') silla cómoda": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "comoda",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "comoda",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M16') impresora": {
+  "rubro": "impresora",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'M17') cooler para el micro": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "micro",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "micro",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'M17') fuente modular": {
   "rubro": "fuente",
   "items": [
    {
@@ -48,12 +989,39 @@
    ]
   ]
  },
- "140 nuevas70 R18 silla gamer": {
-  "rubro": "silla gamer",
-  "items": [],
+ "140 ('nuevas70', 'M18') webcam Full HD, 6 unidades, para aulas": {
+  "rubro": "webcam",
+  "items": [
+   {
+    "parte": "6 unidades, para aulas",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "6 unidades, para aulas",
+    [
+     "campo|garantia_meses",
+     "campo|material",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O01') mouse lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
   "dudosas": []
  },
- "140 nuevas70 O02 teclado silencioso": {
+ "140 ('nuevas70', 'O02') teclado silencioso": {
   "rubro": "teclado",
   "items": [
    {
@@ -73,7 +1041,131 @@
    ]
   ]
  },
- "140 nuevas70 O09 parlante resistente al agua": {
+ "140 ('nuevas70', 'O03') notebook la mejor disponible sin límite de precio": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "mejor disponible sin limite de precio",
+    "veredicto": "orden",
+    "valor": "mas caro",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mejor disponible sin limite de precio",
+    [
+     "orden|precio",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O04') auriculares inalámbricos, no chinos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "no chinos",
+    "veredicto": "no hay",
+    "campo": "pais_fabricacion",
+    "valor": "china",
+    "niega": true,
+    "por": "codigo"
+   },
+   {
+    "parte": "inalambricos,",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "inalambricos,",
+    [
+     "campo|caracteristicas_extra",
+     "campo|conexion",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O05') monitor hasta 200 lucas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "hasta 200 lucas",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 200000,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'O06') placa de video más bestia que tengan": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "mas bestia que tengan",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas bestia que tengan",
+    [
+     "orden|precio",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O07') silla que aguante 120 kilos": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "120 kilos",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "aguante",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "aguante",
+    [
+     "campo|garantia_meses",
+     "campo|material",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O08') disco externo chiquito, que entre en el bolsillo": {
+  "rubro": "almacenamiento externo",
+  "items": [],
+  "dudosas": [
+   [
+    "chiquito, que entre en el bolsillo",
+    [
+     "campo|uso_recomendado",
+     "campo|color",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O09') parlante resistente al agua": {
   "rubro": "parlante",
   "items": [
    {
@@ -88,12 +1180,551 @@
   ],
   "dudosas": []
  },
- "140 nuevas70b B04 placa madre": {
+ "140 ('nuevas70', 'O10') cargador rápido para iPhone": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "rapido para iphone",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapido para iphone",
+    [
+     "campo|garantia_meses",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O11') notebook más liviana para viajar": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "mas liviana",
+    "veredicto": "orden",
+    "valor": "mas liviano",
+    "por": "codigo"
+   },
+   {
+    "parte": "viajar",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "viajar",
+    [
+     "campo|material",
+     "campo|uso_recomendado",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'O12') router para cubrir una casa de 3 pisos": {
+  "rubro": "router",
+  "items": [
+   {
+    "parte": "3 pisos",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "cubrir una casa",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R01') micrófono para computadora para hablar en Zoom y que se escuche bien": {
+  "rubro": "microfono",
+  "items": [
+   {
+    "parte": "escuche bien",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "computadora para hablar en zoom",
+    [
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra",
+     "campo|color"
+    ]
+   ],
+   [
+    "escuche bien",
+    [
+     "campo|garantia_meses",
+     "campo|material",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R03') pantalla grande para conectar notebook": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "grande para conectar notebook",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "grande para conectar notebook",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R05') almacenamiento para fotos del celular, que no sea la nube": {
+  "rubro": "almacenamiento externo",
+  "items": [],
+  "dudosas": [
+   [
+    "fotos del celular, que no sea la nube",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R07') componente para PC para correr juegos": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": [
+   [
+    "pc para correr juegos",
+    [
+     "campo|uso_recomendado",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R08') gabinete para PC, caja grande donde va todo lo de la PC": {
+  "rubro": "gabinete",
+  "items": [
+   {
+    "parte": "grande donde va todo",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "grande donde va todo",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|formato"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R09') ventilador para procesador": {
+  "rubro": "cooler",
+  "items": [],
+  "dudosas": [
+   [
+    "procesador",
+    [
+     "campo|uso_recomendado",
+     "campo|potencia",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R10') auriculares para escuchar música": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": [
+   [
+    "escuchar musica",
+    [
+     "campo|color",
+     "campo|conexion",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R11') camarita para monitor": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": [
+   [
+    "monitor",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|camara"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R13') plaqueta madre": {
   "rubro": "motherboard",
   "items": [],
   "dudosas": []
  },
- "140 nuevas70b B11 tablet para dibujar": {
+ "140 ('nuevas70', 'R14') procesador bueno para editar videos": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "bueno para editar videos",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "bueno para editar videos",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R15') pantalla táctil": {
+  "rubro": "tablet",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70', 'R16') memoria para notebook para que vaya mas rápido": {
+  "rubro": "memoria ram",
+  "items": [],
+  "dudosas": [
+   [
+    "notebook para que vaya mas rapido",
+    [
+     "campo|ram",
+     "campo|color",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70', 'R18') silla gamer": {
+  "rubro": "silla gamer",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B01') mouse inalámbrico": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B01') teclado inalámbrico": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B02') parlante que reproduzca música fuerte, para asado": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "reproduzca musica fuerte, para asado",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "reproduzca musica fuerte, para asado",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B03') fuente de alimentación para PC de 650": {
+  "rubro": "fuente",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B03') gabinete para PC metálico con vidrio templado": {
+  "rubro": "gabinete",
+  "items": [],
+  "dudosas": [
+   [
+    "metalico",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|garantia_meses"
+    ]
+   ],
+   [
+    "templado",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B04') procesador Ryzen 5": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "ryzen 5",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen 5",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B04') placa madre": {
+  "rubro": "motherboard",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B05') cámara web para clases por Meet": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": [
+   [
+    "clases por meet",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B05') micrófono para notebook, buena calidad de audio": {
+  "rubro": "microfono",
+  "items": [
+   {
+    "parte": "notebook, buena calidad de audio",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "notebook, buena calidad de audio",
+    [
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B06') cargador rápido USB-C para celular": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "rapido",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapido",
+    [
+     "campo|material",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ],
+   [
+    "celular",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B07') pendrive de gran capacidad para respaldar fotos": {
+  "rubro": "almacenamiento externo",
+  "items": [],
+  "dudosas": [
+   [
+    "gran capacidad para respaldar fotos",
+    [
+     "campo|uso_recomendado",
+     "campo|garantia_meses",
+     "campo|almacenamiento"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B07') disco de gran capacidad para respaldar fotos": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "gran capacidad para respaldar fotos",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "gran capacidad para respaldar fotos",
+    [
+     "campo|uso_recomendado",
+     "campo|garantia_meses",
+     "campo|almacenamiento"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B07') impresora para imprimir tareas": {
+  "rubro": "impresora",
+  "items": [],
+  "dudosas": [
+   [
+    "tareas",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B08') memoria RAM 16 gigas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16 gigas",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B08') disco NVMe rápido": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "rapido",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapido",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B09') tarjeta gráfica para jugar Warzone en alto": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": [
+   [
+    "jugar warzone en alto",
+    [
+     "campo|uso_recomendado",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B09') ventilador para microprocesador": {
+  "rubro": "cooler",
+  "items": [],
+  "dudosas": [
+   [
+    "microprocesador",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B10') computadora portátil para oficina": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B10') pantalla grande": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "grande",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "grande",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B11') tablet para dibujar": {
   "rubro": "tablet",
   "items": [],
   "dudosas": [
@@ -107,12 +1738,576 @@
    ]
   ]
  },
- "140 nuevas70b B26 silla gamer": {
+ "140 ('nuevas70b', 'B12') mouse, con cable, cantidad 5": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "cable,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "cable,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cantidad 5",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 5",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B12') teclado, con ñ, cantidad 5": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "n, cantidad 5",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "n, cantidad 5",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B12') cámara web, cantidad 5": {
+  "rubro": "webcam",
+  "items": [
+   {
+    "parte": "cantidad 5",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 5",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|camara"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B13') cascos con micrófono para jugar online, USB": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "usb",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "usb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono para jugar online,",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B13') micrófono de mesa para grabar podcast, USB": {
+  "rubro": "microfono",
+  "items": [
+   {
+    "parte": "mesa para grabar podcast,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mesa para grabar podcast,",
+    [
+     "campo|material",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B14') placa de video de 8 gigas": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "8 gigas",
+    "veredicto": "ata",
+    "campo": "memoria_video",
+    "valor": "8gb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B14') fuente certificada oro de 750": {
+  "rubro": "fuente",
+  "items": [],
+  "dudosas": [
+   [
+    "certificada oro",
+    [
+     "campo|material",
+     "campo|garantia_meses",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B15') tablets, dos, para chicos, resistentes a golpes": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "dos, para chicos, resistentes a golpes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "dos, para chicos, resistentes a golpes",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B15') parlante bluetooth para la pileta": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "bluetooth",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "bluetooth",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "pileta",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pileta",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B16') monitor gamer 144 Hz lo más barato posible": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "144 hz",
+    "veredicto": "ata",
+    "campo": "hz",
+    "valor": "144hz",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B16') silla ergonómica lo más barato posible": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B17') cargador universal para notebook": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "universal",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "universal",
+    [
+     "campo|uso_recomendado",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B18') coolers con luces, 120 mm, cantidad 3": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "luces, 120 mm, cantidad 3",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "luces, 120 mm, cantidad 3",
+    [
+     "campo|caracteristicas_extra",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B18') gabinete": {
+  "rubro": "gabinete",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B19') impresora multifunción para negocio": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "negocio",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "negocio",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B19') disco externo de 2 TB para guardar facturas": {
+  "rubro": "almacenamiento externo",
+  "items": [
+   {
+    "parte": "2 tb",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "2tb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "guardar facturas",
+    [
+     "campo|garantia_meses",
+     "campo|material",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B20') motherboard compatible con procesador Intel de los nuevos y memoria DDR5": {
+  "rubro": "motherboard",
+  "items": [
+   {
+    "parte": "intel",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "intel",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compatible con procesador",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "socket lga1700, para intel 12a, 13a y 14a generacion",
+    "niega": false,
+    "por": "jev"
+   },
+   {
+    "parte": "nuevos y memoria",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible con procesador",
+    [
+     "campo|procesador",
+     "campo|uso_recomendado",
+     "campo|formato"
+    ]
+   ],
+   [
+    "nuevos y memoria",
+    [
+     "campo|formato",
+     "campo|ram",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B20') memoria RAM 32 GB DDR5 compatible con motherboard": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "32 gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "32gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compatible con motherboard",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible con motherboard",
+    [
+     "campo|ram",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B20') procesador Intel de los nuevos compatible con motherboard": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "intel",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "intel",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "nuevos compatible con motherboard",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "nuevos compatible con motherboard",
+    [
+     "campo|procesador",
+     "campo|marca",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B21') mouse inalámbrico chiquito": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "chiquito",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "chiquito",
+    [
+     "campo|material",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B21') notebook": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B22') impresora láser": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "laser",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "laser",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B23') cargador rápido": {
+  "rubro": "cargador",
+  "items": [
+   {
+    "parte": "rapido",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "rapido",
+    [
+     "campo|material",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B23') auriculares inalámbricos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "inalambricos",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B24') parlante para conectar a smart TV": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "conectar a smart tv",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "conectar a smart tv",
+    [
+     "campo|conexion",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B25') webcam para streamear": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": [
+   [
+    "streamear",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B26') silla gamer": {
   "rubro": "silla gamer",
   "items": [],
   "dudosas": []
  },
- "140 nuevas70b B28 cooler para procesador": {
+ "140 ('nuevas70b', 'B27') auriculares gamer con sonido envolvente": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "sonido envolvente",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "sonido envolvente",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B28') cooler para procesador": {
   "rubro": "cooler",
   "items": [],
   "dudosas": [
@@ -126,7 +2321,50 @@
    ]
   ]
  },
- "140 nuevas70b B32 monitor para computadora de escritorio": {
+ "140 ('nuevas70b', 'B29') fuente de 600": {
+  "rubro": "fuente",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B30') placa de video compatible con lentes de realidad virtual": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "compatible con lentes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "realidad virtual",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible con lentes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|marca"
+    ]
+   ],
+   [
+    "realidad virtual",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B31') auriculares": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B32') monitor para computadora de escritorio": {
   "rubro": "monitor",
   "items": [],
   "dudosas": [
@@ -140,7 +2378,62 @@
    ]
   ]
  },
- "140 nuevas70b B36 cooler para procesador": {
+ "140 ('nuevas70b', 'B34') router Wi-Fi para toda la casa, conexión inalámbrica estable que no se corte": {
+  "rubro": "router",
+  "items": [
+   {
+    "parte": "no se",
+    "veredicto": "no hay",
+    "campo": "bateria",
+    "valor": "se",
+    "niega": true,
+    "por": "codigo"
+   },
+   {
+    "parte": "wi-fi para toda la casa, conexion inalambrica estable",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "corte",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "wi-fi para toda la casa, conexion inalambrica estable",
+    [
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra",
+     "campo|marca"
+    ]
+   ],
+   [
+    "corte",
+    [
+     "campo|material",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B35') tarjeta gráfica para juegos": {
+  "rubro": "placa de video",
+  "items": [],
+  "dudosas": [
+   [
+    "juegos",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B36') cooler para procesador": {
   "rubro": "cooler",
   "items": [],
   "dudosas": [
@@ -154,12 +2447,330 @@
    ]
   ]
  },
- "140 nuevas70b B44 placa madre": {
+ "140 ('nuevas70b', 'B37') memoria RAM para PC": {
+  "rubro": "memoria ram",
+  "items": [],
+  "dudosas": [
+   [
+    "pc",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B38') webcam para videollamadas": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": [
+   [
+    "videollamadas",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B39') mouse para jugar al LoL, para mano derecha": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": [
+   [
+    "jugar al lol, para mano derecha",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B40') impresora": {
+  "rubro": "impresora",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B41') computadora portátil para llevar en la mochila al colegio, batería que dure todo el día": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "llevar en la mochila al colegio,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "llevar en la mochila al colegio,",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|color"
+    ]
+   ],
+   [
+    "dure todo el dia",
+    [
+     "campo|uso_recomendado",
+     "campo|bateria",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B42') gabinete para PC gamer grande con luces": {
+  "rubro": "gabinete",
+  "items": [
+   {
+    "parte": "gamer grande con luces",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "gamer grande con luces",
+    [
+     "campo|caracteristicas_extra",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B43') fuente de alimentación para PC": {
+  "rubro": "fuente",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B44') placa madre": {
   "rubro": "motherboard",
   "items": [],
   "dudosas": []
  },
- "140 nuevas70b B53 tableta para leer libros": {
+ "140 ('nuevas70b', 'B45') procesador de computadora, el más rápido disponible": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "computadora, el mas rapido disponible",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "computadora, el mas rapido disponible",
+    [
+     "campo|marca",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B46') disco silencioso, muy rápido, para instalar Windows": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "silencioso, muy rapido, para instalar windows",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "silencioso, muy rapido, para instalar windows",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B47') webcam Full HD para empezar a streamear en Twitch": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": [
+   [
+    "empezar a streamear en twitch",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B47') headset para empezar a streamear en Twitch": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": [
+   [
+    "empezar a streamear en twitch",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B47') micrófono para empezar a streamear en Twitch": {
+  "rubro": "microfono",
+  "items": [],
+  "dudosas": [
+   [
+    "empezar a streamear en twitch",
+    [
+     "campo|uso_recomendado",
+     "campo|marca",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B48') impresora compatible con celular": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "compatible con celular",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible con celular",
+    [
+     "campo|marca",
+     "campo|caracteristicas_extra",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B48') notebook": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B49') router": {
+  "rubro": "router",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B50') memoria RAM 8 GB DDR4": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "8 gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "8gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr4",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B50') SSD 1 TB": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "1 tb",
+    "veredicto": "ata",
+    "campo": "almacenamiento",
+    "valor": "1tb",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B51') mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B51') teclado Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B51') auriculares Logitech": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B52') fuente de alimentación 750 watts": {
+  "rubro": "fuente",
+  "items": [
+   {
+    "parte": "750 watts",
+    "veredicto": "ata",
+    "campo": "potencia",
+    "valor": "750w",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B52') gabinete compatible con placa grande": {
+  "rubro": "gabinete",
+  "items": [],
+  "dudosas": [
+   [
+    "compatible con placa grande",
+    [
+     "campo|formato",
+     "campo|caracteristicas_extra",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B53') tableta para leer libros": {
   "rubro": "tablet",
   "items": [],
   "dudosas": [
@@ -173,9 +2784,5713 @@
    ]
   ]
  },
- "140 nuevas70b B54 silla gamer": {
+ "140 ('nuevas70b', 'B53') cargador de repuesto para tableta": {
+  "rubro": "cargador",
+  "items": [],
+  "dudosas": [
+   [
+    "repuesto para tableta",
+    [
+     "campo|garantia_meses",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B54') silla gamer": {
   "rubro": "silla gamer",
   "items": [],
   "dudosas": []
+ },
+ "140 ('nuevas70b', 'B54') monitor curvo de 32 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "32 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "curvo",
+    "veredicto": "no hay",
+    "campo": "modelo",
+    "valor": "curvo",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B55') parlante hasta 50 lucas cada uno": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "hasta 50 lucas",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 50000,
+    "por": "codigo"
+   },
+   {
+    "parte": "cada uno",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cada uno",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B56') 4 discos sólidos de 480": {
+  "rubro": "ssd",
+  "items": [
+   {
+    "parte": "4",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "480",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "4",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ],
+   [
+    "480",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B56') 4 memorias de 8": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "4",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "4",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B57') sillas, cantidad 2": {
+  "rubro": "silla gamer",
+  "items": [
+   {
+    "parte": "cantidad 2",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 2",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B58') auriculares, 10 unidades, baratos, para call center, con micrófono incorporado": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "10 unidades, baratos, para call center, con microfono incorporado",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "10 unidades, baratos, para call center, con microfono incorporado",
+    [
+     "campo|color",
+     "orden|precio",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B59') placa madre, combo más económico, para PC de oficina": {
+  "rubro": "motherboard",
+  "items": [
+   {
+    "parte": "combo mas economico,",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   },
+   {
+    "parte": "oficina",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "combo mas economico,",
+    [
+     "orden|precio",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ],
+   [
+    "oficina",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B59') cooler, combo más económico, para PC de oficina": {
+  "rubro": "cooler",
+  "items": [
+   {
+    "parte": "combo mas economico, para pc de oficina",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "combo mas economico, para pc de oficina",
+    [
+     "campo|uso_recomendado",
+     "orden|precio",
+     "campo|potencia"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B59') microprocesador, combo más económico, para PC de oficina": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "combo mas economico, para pc de oficina",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "combo mas economico, para pc de oficina",
+    [
+     "campo|procesador",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B60') monitor de 27 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "27 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B60') teclado": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B61') impresoras, 3 unidades": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "3 unidades",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B62') placas de video, garantía oficial": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "garantia oficial",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "garantia oficial",
+    [
+     "campo|garantia_meses",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B63') notebook con Windows instalado": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "windows instalado",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "windows instalado",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B64') webcam, 5 unidades": {
+  "rubro": "webcam",
+  "items": [
+   {
+    "parte": "5 unidades",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B65') router": {
+  "rubro": "router",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B66') mouse": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B66') keyboard gamer con switches red": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "switches red",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "switches red",
+    [
+     "campo|marca",
+     "campo|switch_teclado",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B67') parlante JBL o similar para escuchar música en el living": {
+  "rubro": "parlante",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "similar para escuchar musica en el living",
+    [
+     "campo|uso_recomendado",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B67') auriculares AirPods o similares": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "airpods o similares",
+    "veredicto": "ata",
+    "campo": "caracteristicas_extra",
+    "valor": "inalambrico por bluetooth",
+    "niega": false,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "airpods o similares",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B68') procesador Ryzen 7": {
+  "rubro": "procesador",
+  "items": [
+   {
+    "parte": "ryzen 7",
+    "veredicto": "ata",
+    "campo": "procesador",
+    "valor": "ryzen 7",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B68') placa de video RTX": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "rtx",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "rtx",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B69') impresora Epson de tinta continua": {
+  "rubro": "impresora",
+  "items": [
+   {
+    "parte": "epson",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "epson",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "tinta continua",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tinta continua",
+    [
+     "campo|material",
+     "campo|marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "140 ('nuevas70b', 'B70') monitor de 24 pulgadas": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "24 pulgadas",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "140 ('nuevas70b', 'B70') webcam con micrófono": {
+  "rubro": "webcam",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales R07 notebooks, 2 unidades, lo más económico posible": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "2 unidades, lo mas economico",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, lo mas economico",
+    [
+     "orden|precio",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales R07 micrófono, 1 unidad, lo más económico posible": {
+  "rubro": "microfono",
+  "items": [
+   {
+    "parte": "1 unidad, lo mas economico",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad, lo mas economico",
+    [
+     "orden|precio",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales R07 memorias, 4 unidades, lo más económico posible": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "4 unidades, lo mas economico",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "4 unidades, lo mas economico",
+    [
+     "orden|precio",
+     "campo|marca",
+     "campo|ram"
+    ]
+   ]
+  ]
+ },
+ "reales R10 artículo para escribir, bueno, barato, con mucha garantía": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "escribir, bueno, barato, con mucha garantia",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "escribir, bueno, barato, con mucha garantia",
+    [
+     "campo|garantia_meses",
+     "orden|precio",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales R12 placa de video que caliente menos": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "caliente menos",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "caliente menos",
+    [
+     "orden|precio",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales R14 auriculares, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales R14 mouse, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|material",
+     "orden|peso",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales R14 memorias, con la menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|ram"
+    ]
+   ]
+  ]
+ },
+ "reales R18 auriculares, 3 unidades, que lleven las menos partes de Estados Unidos posibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "estados unidos",
+    "veredicto": "ata",
+    "campo": "pais_marca",
+    "valor": "estados unidos",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "3 unidades, que lleven las menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "3 unidades, que lleven las menos partes",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "orden|peso"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales R18 auriculares, 2 unidades, que lleven las menos partes de Estados Unidos posibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "estados unidos",
+    "veredicto": "ata",
+    "campo": "pais_marca",
+    "valor": "estados unidos",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades, que lleven las menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, que lleven las menos partes",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "orden|peso"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales R18 auriculares, 1 unidad, que lleven las menos partes de Estados Unidos posibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "estados unidos",
+    "veredicto": "ata",
+    "campo": "pais_marca",
+    "valor": "estados unidos",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "1 unidad, que lleven las menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad, que lleven las menos partes",
+    [
+     "campo|conexion",
+     "campo|caracteristicas_extra",
+     "orden|peso"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales R18 mouse, 2 unidades, que lleven las menos partes de Estados Unidos posibles": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "estados unidos",
+    "veredicto": "ata",
+    "campo": "pais_marca",
+    "valor": "estados unidos",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades, que lleven las menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, que lleven las menos partes",
+    [
+     "campo|color",
+     "orden|peso",
+     "campo|conexion"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "orden|peso",
+     "campo|conexion",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales R18 memorias, 4 unidades, que lleven las menos partes de Estados Unidos posibles": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "estados unidos",
+    "veredicto": "ata",
+    "campo": "pais_marca",
+    "valor": "estados unidos",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "4 unidades, que lleven las menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "4 unidades, que lleven las menos partes",
+    [
+     "campo|ram",
+     "campo|color",
+     "campo|marca"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|ram",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales R18 memorias, 3 unidades, que lleven las menos partes de Estados Unidos posibles": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "estados unidos",
+    "veredicto": "ata",
+    "campo": "pais_marca",
+    "valor": "estados unidos",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "3 unidades, que lleven las menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "3 unidades, que lleven las menos partes",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|marca"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|ram",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales R18 memorias, 1 unidad, que lleven las menos partes de Estados Unidos posibles": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "estados unidos",
+    "veredicto": "ata",
+    "campo": "pais_marca",
+    "valor": "estados unidos",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "1 unidad, que lleven las menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad, que lleven las menos partes",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|caracteristicas_extra"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|ram",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales R31 mouse con luces psicodélicas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "luces psicodelicas",
+    "veredicto": "ata",
+    "campo": "retroiluminacion",
+    "valor": "si",
+    "niega": false,
+    "si_no": true,
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "luces psicodelicas",
+    [
+     "campo|retroiluminacion",
+     "campo|sensor",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales R35 auriculares accesibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "accesibles",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "accesibles",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "reales R36 teclado más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales R36 teclado con cuotas": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "cuotas",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cuotas",
+    [
+     "campo|garantia_meses",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales R37 auriculares compatibles con PS5": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "compatibles con ps5",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatibles con ps5",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales R39 mouse más liviano": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "mas liviano",
+    "veredicto": "orden",
+    "valor": "mas liviano",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C02.0.original parlantes": {
+  "rubro": "parlante",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C02.0.plano parlantes": {
+  "rubro": "parlante",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C02.0.whatsapp parlantes": {
+  "rubro": "parlante",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C02.0.redactada parlantes": {
+  "rubro": "parlante",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C02.0.coloquial parlantes": {
+  "rubro": "parlante",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C05.0.original notebook 16 GB de RAM": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C05.0.plano notebook, 16 GB de RAM": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C05.0.whatsapp notebook 16 GB de RAM": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C05.0.redactada notebook 16 GB de RAM": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C05.0.coloquial notebook 16 GB de RAM": {
+  "rubro": "notebook",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C06.0.original mouse inalámbrico Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C06.0.plano mouse inalámbrico, preferentemente Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "inalambrico,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C06.0.whatsapp mouse inalámbrico, preferentemente Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "inalambrico,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C06.0.redactada mouse inalámbrico Logitech preferentemente": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C06.0.coloquial mouse inalámbrico Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "inalambrico",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "inalambrico",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C07.0.original mouse marca distinta de Genius": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "genius",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "genius",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "marca distinta",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "marca distinta",
+    [
+     "campo|marca",
+     "campo|pais_marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 C07.0.plano mouse que no sea Genius": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "no sea genius",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "genius",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C07.0.whatsapp mouse que no sea Genius": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "no sea genius",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "genius",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C07.0.redactada mouse, cualquier marca excepto Genius": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "excepto genius",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "genius",
+    "niega": true,
+    "por": "codigo"
+   },
+   {
+    "parte": "cualquier marca",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cualquier marca",
+    [
+     "campo|marca",
+     "campo|pais_marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 C07.0.coloquial mouse, marca distinta de Genius": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "genius",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "genius",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "marca distinta",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "marca distinta",
+    [
+     "campo|marca",
+     "campo|pais_marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 C08.0.original tablet lo menos china posible": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "menos china",
+    "veredicto": "no hay",
+    "campo": "pais_fabricacion",
+    "valor": "china",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C08.0.plano tablet lo menos china posible": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "menos china",
+    "veredicto": "no hay",
+    "campo": "pais_fabricacion",
+    "valor": "china",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C08.0.whatsapp tablet lo menos china posible": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "menos china",
+    "veredicto": "no hay",
+    "campo": "pais_fabricacion",
+    "valor": "china",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C08.0.redactada tablet con lo menos posible de fabricación china": {
+  "rubro": "tablet",
+  "items": [],
+  "dudosas": [
+   [
+    "menos posible de fabricacion",
+    [
+     "campo|pais_fabricacion",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C08.0.coloquial tablet, lo menos chino posible": {
+  "rubro": "tablet",
+  "items": [
+   {
+    "parte": "menos chino",
+    "veredicto": "no hay",
+    "campo": "pais_fabricacion",
+    "valor": "china",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C09.0.original monitor, el mas barato posible": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "el mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C09.0.plano monitor más barato": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C09.0.whatsapp monitor más barato posible": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C09.0.redactada monitor lo más económico posible": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "mas economico",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas economico",
+    [
+     "orden|precio",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C09.0.coloquial monitor, lo más barato posible": {
+  "rubro": "monitor",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C17.0.original teclados mecánicos": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanicos",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C17.0.plano teclados mecánicos": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanicos",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C17.0.whatsapp teclado mecánico": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanico",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C17.0.redactada teclados mecánicos": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanicos",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C17.0.coloquial teclado mecánico": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mecanico",
+    "veredicto": "ata",
+    "campo": "switch_teclado",
+    "valor": "mecanico",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C18.0.original auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C18.0.plano auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C18.0.whatsapp auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C18.0.redactada auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C18.0.coloquial auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.original teclado, lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.original mouse, lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.plano teclado, lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.plano mouse, lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.whatsapp teclado lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.whatsapp mouse lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.redactada teclado lo más económicos posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mas economicos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas economicos",
+    [
+     "orden|precio",
+     "orden|peso",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C24.0.redactada mouse lo más económicos posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "mas economicos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas economicos",
+    [
+     "orden|precio",
+     "campo|material",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C24.0.coloquial teclado lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C24.0.coloquial mouse lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C27.0.original mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C27.0.plano mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C27.0.whatsapp mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C27.0.redactada mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C27.0.coloquial mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C30.0.original memoria RAM DDR5 para PC de escritorio": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "pc de escritorio",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc de escritorio",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C30.0.plano memoria RAM Kingston Fury Beast DDR4 16GB compatible con PC de escritorio con DDR5": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "kingston fury beast",
+    "veredicto": "ata",
+    "campo": "nombre",
+    "valor": "kingston fury beast",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr4",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compatible con pc de escritorio",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible con pc de escritorio",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "reales525 C30.0.plano memoria RAM DDR5 de 16GB para PC de escritorio, alternativa a Kingston Fury Beast DDR4 16GB": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "16gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "kingston fury beast",
+    "veredicto": "ata",
+    "campo": "nombre",
+    "valor": "kingston fury beast",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr4",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "pc de escritorio, alternativa",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc de escritorio, alternativa",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 C30.0.whatsapp memoria RAM Kingston Fury Beast DDR4 16 GB para PC de escritorio con placa DDR5": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16 gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "kingston fury beast",
+    "veredicto": "ata",
+    "campo": "nombre",
+    "valor": "kingston fury beast",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr4",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "pc de escritorio con placa",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc de escritorio con placa",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C30.0.whatsapp memoria RAM DDR5 para PC de escritorio con placa DDR5": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "pc de escritorio con placa",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc de escritorio con placa",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C30.0.redactada memoria RAM DDR5 compatible": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "compatible",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible",
+    [
+     "campo|marca",
+     "campo|ram",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 C30.0.coloquial memoria Kingston Fury Beast DDR4 16GB para PC de escritorio con placa DDR5": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "16gb",
+    "veredicto": "ata",
+    "campo": "ram",
+    "valor": "16gb",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "kingston fury beast",
+    "veredicto": "ata",
+    "campo": "nombre",
+    "valor": "kingston fury beast",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr4",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr4",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "pc de escritorio con placa",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc de escritorio con placa",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C30.0.coloquial memoria para PC de escritorio con placa DDR5": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "ddr5",
+    "veredicto": "ata",
+    "campo": "modelo",
+    "valor": "ddr5",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "pc de escritorio con placa",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "pc de escritorio con placa",
+    [
+     "campo|color",
+     "campo|ram",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C33.0.original teclado Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C33.0.plano teclado Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C33.0.whatsapp teclado Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C33.0.redactada teclado Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C33.0.coloquial teclado Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C35.0.original mouse gamer Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C35.0.plano mouse gamer Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C35.0.whatsapp mouse gamer Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C35.0.redactada mouse gamer Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C35.0.coloquial mouse gamer Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C42.0.original notebook 64 GB de RAM menos de 200 mil": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "menos de 200 mil",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 200000,
+    "por": "codigo"
+   },
+   {
+    "parte": "64 gb",
+    "veredicto": "no hay",
+    "campo": "ram",
+    "valor": "64gb",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C42.0.plano notebook 64 GB de RAM menos de 200 mil": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "menos de 200 mil",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 200000,
+    "por": "codigo"
+   },
+   {
+    "parte": "64 gb",
+    "veredicto": "no hay",
+    "campo": "ram",
+    "valor": "64gb",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C42.0.whatsapp notebook 64 GB de RAM menos de 200 mil": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "menos de 200 mil",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 200000,
+    "por": "codigo"
+   },
+   {
+    "parte": "64 gb",
+    "veredicto": "no hay",
+    "campo": "ram",
+    "valor": "64gb",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C42.0.redactada notebook 64 GB de RAM menos de 200 mil": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "menos de 200 mil",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 200000,
+    "por": "codigo"
+   },
+   {
+    "parte": "64 gb",
+    "veredicto": "no hay",
+    "campo": "ram",
+    "valor": "64gb",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C42.0.coloquial notebook, 64 GB de RAM, menos de 200 mil": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "menos de 200 mil",
+    "veredicto": "tope",
+    "lado": "max",
+    "valor": 200000,
+    "por": "codigo"
+   },
+   {
+    "parte": "64 gb",
+    "veredicto": "no hay",
+    "campo": "ram",
+    "valor": "64gb",
+    "por": "codigo"
+   },
+   {
+    "parte": "ram,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "ram,",
+    [
+     "campo|ram",
+     "campo|ram_ampliable",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 C45.0.original mouse Logitech con cable": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cable",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "cable",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C45.0.plano mouse Logitech con cable": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cable",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "cable",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C45.0.whatsapp mouse Logitech con cable": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cable",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "cable",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C45.0.redactada mouse Logitech con cable": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cable",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "cable",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C45.0.coloquial mouse Logitech con cable": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cable",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "cable",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C46.0.original teclado que no sea Redragon": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "no sea redragon",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "redragon",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C46.0.plano teclado que no sea Redragon": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "no sea redragon",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "redragon",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C46.0.whatsapp teclado, que no sea Redragon": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "no sea redragon",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "redragon",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C46.0.redactada teclado cualquier marca menos Redragon": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "menos redragon",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "redragon",
+    "niega": true,
+    "por": "codigo"
+   },
+   {
+    "parte": "cualquier marca",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cualquier marca",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C46.0.coloquial teclado, cualquier marca excepto Redragon": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "excepto redragon",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "redragon",
+    "niega": true,
+    "por": "codigo"
+   },
+   {
+    "parte": "cualquier marca",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cualquier marca",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C49.1.original auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C49.1.plano auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C49.1.whatsapp auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C49.1.redactada auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C49.1.coloquial auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C49.2.original webcams": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C49.2.plano webcams": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C49.2.whatsapp webcams": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C49.2.redactada webcam": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C49.2.coloquial webcam": {
+  "rubro": "webcam",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 C52.0.original mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.original teclados Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.original auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.plano mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.plano teclados Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.plano auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.whatsapp mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.whatsapp teclados Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.whatsapp auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.redactada mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.redactada teclado Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.redactada auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.coloquial mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.coloquial teclados Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C52.0.coloquial auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 C54.0.original placa de video más potente compatible con una fuente de 550 watts": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "550 watts",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "mas potente compatible con una fuente",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas potente compatible con una fuente",
+    [
+     "campo|marca",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 C54.0.plano placa de video, la más potente posible, compatible con fuente de 550 watts": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "550 watts",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "mas potente posible, compatible con fuente",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas potente posible, compatible con fuente",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 C54.0.whatsapp placa de video más potente compatible con fuente de 550 watts": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "550 watts",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "mas potente compatible con fuente",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas potente compatible con fuente",
+    [
+     "campo|marca",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 C54.0.redactada placa de video compatible con fuente de 550 watts, la más potente posible": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "compatible con fuente",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "550 watts, la mas potente",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "compatible con fuente",
+    [
+     "campo|marca",
+     "campo|color",
+     "campo|material"
+    ]
+   ],
+   [
+    "550 watts, la mas potente",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 C54.0.coloquial placa de video más potente compatible con fuente de 550w": {
+  "rubro": "placa de video",
+  "items": [
+   {
+    "parte": "550w",
+    "veredicto": "no se ata",
+    "por": "codigo"
+   },
+   {
+    "parte": "mas potente compatible con fuente",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "mas potente compatible con fuente",
+    [
+     "campo|marca",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.original 2 auriculares, los más baratos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "2",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.original 2 mouse, los más baratos": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2",
+    [
+     "campo|material",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.plano auriculares, cantidad 2, lo más baratos posible": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "lo mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "2,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cantidad",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.plano mouse, cantidad 2, lo más baratos posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "2,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cantidad",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad",
+    [
+     "campo|color",
+     "campo|conexion",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.whatsapp auriculares, 2 unidades, los más baratos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.whatsapp mouse, 2 unidades, los más baratos": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.redactada 2 auriculares, los más baratos": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": [
+   [
+    "2",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.redactada 2 mouse, los más baratos": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2",
+    [
+     "campo|material",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.coloquial auriculares, 2 unidades, lo más barato posible": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K03.0.coloquial mouse, 2 unidades, lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K06.0.original teclado, 2 unidades, lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K06.0.original mouse, 2 unidades, lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K06.0.plano teclado lo mas barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 K06.0.plano mouse lo mas barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 K06.0.whatsapp teclado, 2 unidades, lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K06.0.whatsapp mouse, 2 unidades, lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K06.0.redactada teclado, los más baratos": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 K06.0.redactada mouse, los más baratos": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 K06.0.coloquial teclado, 2 unidades, lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K06.0.coloquial mouse, 2 unidades, lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.original mouse más barato": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 K07.0.original teclado más barato": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 K07.0.original auricular más barato": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "reales525 K07.0.plano mouse, el más barato disponible, precio": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "el mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "disponible, precio",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "disponible, precio",
+    [
+     "orden|precio",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.plano teclado, el más barato disponible, precio": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "el mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "disponible, precio",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "disponible, precio",
+    [
+     "orden|precio",
+     "campo|color",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.plano auriculares, los más baratos disponibles, precio": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "disponibles, precio",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "disponibles, precio",
+    [
+     "campo|color",
+     "orden|precio",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.whatsapp mouse, 2 unidades, los más baratos disponibles": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "disponibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|conexion"
+    ]
+   ],
+   [
+    "disponibles",
+    [
+     "campo|color",
+     "campo|conexion",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.whatsapp mouse, los más baratos disponibles": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "disponibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "disponibles",
+    [
+     "campo|color",
+     "campo|conexion",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.whatsapp teclado, 2 unidades, los más baratos disponibles": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "disponibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ],
+   [
+    "disponibles",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.whatsapp teclado, los más baratos disponibles": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "disponibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "disponibles",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.whatsapp auriculares, 2 unidades, los más baratos disponibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "2 unidades,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "disponibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ],
+   [
+    "disponibles",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.whatsapp auriculares, los más baratos disponibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "disponibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "disponibles",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.redactada mouse, los más baratos que tengan": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "tengan",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tengan",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.redactada teclado, los más baratos que tengan": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "tengan",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tengan",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.redactada auriculares, los más baratos que tengan": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "los mas baratos",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "tengan",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "tengan",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.coloquial mouse, 1 unidad, lo más barato posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "1 unidad,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad,",
+    [
+     "campo|color",
+     "campo|conexion",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.coloquial teclado, 1 unidad, lo más barato posible": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "1 unidad,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad,",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 K07.0.coloquial auriculares, 1 unidad, lo más barato posible": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   },
+   {
+    "parte": "1 unidad,",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad,",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|resistencia_agua"
+    ]
+   ]
+  ]
+ },
+ "reales525 K10.0.original mouse": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.original auriculares": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.plano mouse": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.plano auriculares": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.whatsapp mouse": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.whatsapp auriculares": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.redactada mouse": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.redactada auriculares": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.coloquial mouse": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.0.coloquial auriculares": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K10.2.original auriculares con micrófono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K10.2.plano auriculares con microfono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K10.2.whatsapp auriculares con micrófono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K10.2.redactada auriculares con micrófono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K10.2.coloquial auriculares con micrófono": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "microfono",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "microfono",
+    [
+     "campo|marca",
+     "campo|uso_recomendado",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.original mouse para oficina": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "oficina",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.original teclado para oficina": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.plano mouse para la oficina": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "oficina",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.plano teclado para la oficina": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.whatsapp mouse para la oficina": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "oficina",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.whatsapp teclado para la oficina": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.redactada mouse para oficina": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "oficina",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.redactada teclado para oficina": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.coloquial mouse para la ofi": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": [
+   [
+    "ofi",
+    [
+     "campo|material",
+     "campo|sensor",
+     "campo|caracteristicas_extra"
+    ]
+   ]
+  ]
+ },
+ "reales525 K11.0.coloquial teclado para la ofi": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": [
+   [
+    "ofi",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.original auriculares, 2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.original auriculares, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.original mouse, 2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.original mouse, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.original memorias, 2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "memoria ram",
+  "items": [],
+  "dudosas": [
+   [
+    "2 unidades, con la menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|color",
+     "campo|marca",
+     "campo|pais_fabricacion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.plano auriculares, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.plano auricular, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.plano mouse, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|material",
+     "orden|peso",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.plano memorias, con la menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|ram"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.whatsapp auriculares, lo menos de fabricación china posible": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menos de fabricacion",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos de fabricacion",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.whatsapp mouse, lo menos de fabricación china posible": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menos de fabricacion",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos de fabricacion",
+    [
+     "campo|pais_fabricacion",
+     "campo|material",
+     "campo|pais_marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.whatsapp memorias, lo menos de fabricación china posible": {
+  "rubro": "memoria ram",
+  "items": [],
+  "dudosas": [
+   [
+    "menos de fabricacion",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.redactada auriculares, 2 unidades, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "2 unidades, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.redactada auriculares, 1 unidad, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "1 unidad, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "orden|peso",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.redactada mouse, 1 unidad, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "1 unidad, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 unidad, con la menor cantidad posible de partes",
+    [
+     "campo|material",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.redactada memorias, 2 unidades, con la menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "2 unidades, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|ram",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.coloquial auriculares x2, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "x2, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "x2, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "campo|garantia_meses"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.coloquial auriculares, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.coloquial mouse x2, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "x2, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "x2, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|uso_recomendado"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.coloquial mouse, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|material",
+     "orden|peso",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K20.0.coloquial memorias x2, con la menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "x2, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "x2, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|ram"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.original auriculares, con las menos partes chinas posibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos partes",
+    [
+     "campo|color",
+     "orden|peso",
+     "orden|precio"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.original auricular, con las menos partes chinas posibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos partes",
+    [
+     "campo|color",
+     "orden|peso",
+     "orden|precio"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.original mouse, con las menos partes chinas posibles": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos partes",
+    [
+     "orden|peso",
+     "campo|material",
+     "campo|color"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "orden|peso",
+     "campo|conexion",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.original memorias, con las menos partes chinas posibles": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|ram"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|ram",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.plano auriculares, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.plano mouse, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|material",
+     "orden|peso",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.plano memorias, con la menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|ram"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.whatsapp auriculares, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.whatsapp mouse, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|material",
+     "orden|peso",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.whatsapp memoria, con la menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|ram"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.redactada auriculares, menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.redactada mouse, menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|material",
+     "orden|peso",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.redactada memorias, menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "campo|ram"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.coloquial auriculares, cantidad 2, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "2,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "2,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cantidad",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|caracteristicas_extra"
+    ]
+   ],
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|material",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.coloquial auriculares, cantidad 1, con la menor cantidad posible de partes chinas": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "cantidad 1, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 1, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|caracteristicas_extra",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.coloquial mouse, cantidad 2, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "2,",
+    "veredicto": "ata",
+    "campo": "tags",
+    "valor": "2,",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cantidad",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad",
+    [
+     "campo|color",
+     "campo|conexion",
+     "orden|peso"
+    ]
+   ],
+   [
+    "menor cantidad posible de partes",
+    [
+     "campo|material",
+     "orden|peso",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.coloquial mouse, cantidad 1, con la menor cantidad posible de partes chinas": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "cantidad 1, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 1, con la menor cantidad posible de partes",
+    [
+     "campo|material",
+     "campo|color",
+     "orden|peso"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.0.coloquial memorias, cantidad 2, con la menor cantidad posible de partes chinas": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "cantidad 2, con la menor cantidad posible de partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "cantidad 2, con la menor cantidad posible de partes",
+    [
+     "campo|color",
+     "campo|ram",
+     "orden|precio"
+    ]
+   ]
+  ]
+ },
+ "reales525 K21.1.original teclado": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K21.1.plano teclado": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K21.1.whatsapp teclado": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K21.1.redactada teclado": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": []
+ },
+ "reales525 K21.1.coloquial teclado": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": []
+ },
+ "charlas C27|0 mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas C35|0 mouse gamer Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas C45|0 mouse Logitech con cable": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   },
+   {
+    "parte": "cable",
+    "veredicto": "ata",
+    "campo": "conexion",
+    "valor": "cable",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas C46|0 teclado que no sea Redragon": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "no sea redragon",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "redragon",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas C52|0 mouse Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas C52|0 teclados Logitech": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas C52|0 auriculares JBL": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "jbl",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "jbl",
+    "niega": false,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas K07|0 mouse más barato": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas K07|0 teclado más barato": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas K07|0 auricular más barato": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas K10|0 mouse": {
+  "rubro": "mouse",
+  "items": [],
+  "dudosas": []
+ },
+ "charlas K10|0 auriculares": {
+  "rubro": "auriculares",
+  "items": [],
+  "dudosas": []
+ },
+ "charlas K11|0 mouse para oficina": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "oficina",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|material",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "charlas K11|0 teclado para oficina": {
+  "rubro": "teclado",
+  "items": [],
+  "dudosas": [
+   [
+    "oficina",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "charlas K13|0 notebook lo más barato posible": {
+  "rubro": "notebook",
+  "items": [
+   {
+    "parte": "lo mas barato",
+    "veredicto": "orden",
+    "valor": "mas barato",
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas K17|0 mouse, no Genius ni Logitech": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "no genius",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "genius",
+    "niega": true,
+    "por": "codigo"
+   },
+   {
+    "parte": "ni logitech",
+    "veredicto": "ata",
+    "campo": "marca",
+    "valor": "logitech",
+    "niega": true,
+    "por": "codigo"
+   }
+  ],
+  "dudosas": []
+ },
+ "charlas K20|0 auriculares, 2 unidades, con las menos partes chinas posibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "2 unidades, con las menos partes",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, con las menos partes",
+    []
+   ],
+   [
+    "posibles",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "charlas K20|0 auriculares, con las menos partes chinas posibles": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos partes",
+    [
+     "campo|color",
+     "orden|peso",
+     "orden|precio"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|caracteristicas_extra",
+     "campo|color",
+     "campo|conexion"
+    ]
+   ]
+  ]
+ },
+ "charlas K20|0 mouse, 2 unidades, con las menos partes chinas posibles": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "2 unidades, con las menos partes",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, con las menos partes",
+    []
+   ],
+   [
+    "posibles",
+    [
+     "orden|peso",
+     "campo|conexion",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "charlas K20|0 mouse, con las menos partes chinas posibles": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos partes",
+    [
+     "orden|peso",
+     "campo|material",
+     "campo|color"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "orden|peso",
+     "campo|conexion",
+     "campo|color"
+    ]
+   ]
+  ]
+ },
+ "charlas K20|0 memorias, 2 unidades, con las menos partes chinas posibles": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "2 unidades, con las menos partes",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2 unidades, con las menos partes",
+    []
+   ],
+   [
+    "posibles",
+    [
+     "campo|ram",
+     "campo|color",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "charlas K20|0 teclado, con las menos partes chinas posibles": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "menos partes",
+    "veredicto": "no se ata",
+    "por": "jev"
+   },
+   {
+    "parte": "posibles",
+    "veredicto": "no se ata",
+    "por": "jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "menos partes",
+    [
+     "orden|peso",
+     "campo|color",
+     "campo|material"
+    ]
+   ],
+   [
+    "posibles",
+    [
+     "campo|color",
+     "campo|uso_recomendado",
+     "campo|material"
+    ]
+   ]
+  ]
+ },
+ "charlas K21|0 2 auriculares, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "2",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2",
+    [
+     "campo|color",
+     "campo|garantia_meses",
+     "campo|uso_recomendado"
+    ]
+   ],
+   [
+    "menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "charlas K21|0 1 auricular, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "auriculares",
+  "items": [
+   {
+    "parte": "1 auricular, con la menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1 auricular, con la menor cantidad posible de partes chinas; precio no prioritario",
+    []
+   ]
+  ]
+ },
+ "charlas K21|0 1 mouse, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "mouse",
+  "items": [
+   {
+    "parte": "1",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1",
+    []
+   ],
+   [
+    "menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|marca"
+    ]
+   ]
+  ]
+ },
+ "charlas K21|0 2 memorias, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "memoria ram",
+  "items": [
+   {
+    "parte": "2",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "2",
+    []
+   ],
+   [
+    "menor cantidad posible de partes chinas; precio no prioritario",
+    []
+   ]
+  ]
+ },
+ "charlas K21|0 1 teclado, con la menor cantidad posible de partes chinas; precio no prioritario": {
+  "rubro": "teclado",
+  "items": [
+   {
+    "parte": "1",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   },
+   {
+    "parte": "menor cantidad posible de partes chinas; precio no prioritario",
+    "veredicto": "no se ata",
+    "por": "sin jev"
+   }
+  ],
+  "dudosas": [
+   [
+    "1",
+    []
+   ],
+   [
+    "menor cantidad posible de partes chinas; precio no prioritario",
+    [
+     "campo|pais_fabricacion",
+     "campo|pais_marca",
+     "campo|marca"
+    ]
+   ]
+  ]
  }
 }
