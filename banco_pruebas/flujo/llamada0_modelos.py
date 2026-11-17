@@ -102,6 +102,25 @@ Un producto por linea: si pide dos productos, o dos variantes del mismo, como un
 separadas. Varias unidades iguales van en una linea, salvo que vayan a destinos distintos: una linea por destino. Si el
 cliente se corrige, vale lo ultimo que dijo. No contestes ni decidas nada. Tu unica fuente es lo que escribio el cliente."""
 
+# v6, 17-nov, propuesta medida con el ok de Martin: los mismos pedidos que la v5, pero el producto y lo que pide de el en
+# dos campos. Hoy una funcion de codigo corta de la busqueda que parte es el producto, y esa funcion pisaba a los
+# embeddings; con los dos campos, el producto va a la busqueda cero y las condiciones a la segunda busqueda, sin cortar.
+# Sin ejemplo, que en la v3 hacia copiar. Para la vara, que lee la busqueda, la busqueda es producto y condiciones juntos.
+PROMPTS["v6"] = """Sos el primer paso de un sistema que atiende clientes de una tienda online. Del mensaje del cliente,
+devolve una linea por cada cosa que pide o pregunta, sin dejar ninguna afuera aunque el mensaje sea largo:
+- fragmento: la parte del mensaje que nombra esa cosa, con las palabras del cliente.
+- producto: que tipo de producto busca, con el nombre que usaria la tienda. Si no sabes que producto es, deja las
+  palabras del cliente, corrigiendo solo la ortografia. Vacio si no busca un producto.
+- condiciones: todo lo que el cliente pide de como tiene que ser ese producto o para que lo quiere: marca, modelo,
+  medida, capacidad, color, tipo, origen, uso, compatibilidad, precio o tope, el mas barato. Lo que dice para varios
+  productos o para todo el mensaje, como "todo inalambrico" o "lo mas barato posible", va repetido en cada linea a la
+  que se aplica. Los numeros, en cifras, y sin signos de puntuacion. No va: la cantidad de unidades, el destino, el pago
+  ni comentarios que no dicen como tiene que ser el producto. Vacio si no pide nada de eso.
+- destino: el lugar a donde hay que enviarlo, solo si el cliente lo dijo; si no, vacio.
+Un producto por linea: si pide dos productos, o dos variantes del mismo, como uno negro y uno rojo, van en lineas
+separadas. Varias unidades iguales van en una linea, salvo que vayan a destinos distintos: una linea por destino. Si el
+cliente se corrige, vale lo ultimo que dijo. No contestes ni decidas nada. Tu unica fuente es lo que escribio el cliente."""
+
 # v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
 # condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,
 # despues una linea por cada uno con sus condiciones en una lista, y un ejemplo inventado que no esta en ningun banco.
@@ -134,6 +153,12 @@ ESQUEMAS = {"v3": {"type": "object", "additionalProperties": False, "required": 
         "type": "object", "additionalProperties": False, "required": ["fragmento", "condiciones", "busqueda", "destino"],
         "properties": {"fragmento": _S, "condiciones": {"type": "array", "items": _S}, "busqueda": _S,
                        "destino": _S}}}}}}
+
+ESQUEMAS["v6"] = {"type": "object", "additionalProperties": False, "required": ["lineas"], "properties": {
+    "lineas": {"type": "array", "items": {
+        "type": "object", "additionalProperties": False, "required": ["fragmento", "producto", "condiciones", "destino"],
+        "properties": {"fragmento": _S, "producto": _S, "condiciones": _S, "destino": _S}}}}}
+
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
 def _clave(nombre):
@@ -206,6 +231,11 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
+    if base == "v6" and isinstance(salida, dict):
+        # La vara lee la busqueda: el producto y las condiciones juntos. Los dos campos quedan grabados.
+        for l in salida.get("lineas") or []:
+            if isinstance(l, dict):
+                l["busqueda"] = f"{l.get('producto') or ''} {l.get('condiciones') or ''}".strip()
     return salida, e, s, seg, round(dol, 7), crudo
 
 
@@ -566,7 +596,7 @@ def sobrantes_reales(corridas=(("gemini-lite", "v1"), ("gemini-lite", "v2"), ("l
 _CANTIDAD = re.compile(r"\b\d+\s*(?:unidad(?:es)?|u)\b|\bcantidad\s*:?\s*\d+|\bx\s?\d+\b|\b\d+\s?x\b")
 
 
-def de_mas(corridas_=(("luna", "v2"), ("luna", "v4"), ("luna", "v5"))):
+def de_mas(corridas_=(("luna", "v2"), ("luna", "v2#2"), ("luna", "v4"), ("luna", "v5"), ("luna", "v5#2"), ("luna", "v6"))):
     print("\nLO QUE ESCRIBE DE MAS EN LA BUSQUEDA · las 140, los reales y el primer turno de las 365")
     print(f"  {'corrida':12} {'busquedas':>10} {'con signos':>11} {'con cantidad':>13} {'palabras promedio':>18}")
     filas_ = {}
