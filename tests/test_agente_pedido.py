@@ -159,16 +159,6 @@ def test_dos_llamadas_en_el_mismo_turno_se_suman(A):
     assert [x[1] for x in renglones(m)] == [M220, HYPERX]
 
 
-def test_el_pedido_lo_pega_el_codigo(A):
-    """K21: el modelo no escribio el presupuesto porque creyo que no cambio nada. Si hubo `pedido`, va igual. Desde el
-    7-nov la respuesta la arma el codigo con la herramienta responder, FICHA 90: ya no hay marca [[PEDIDO]] que poner."""
-    pasos = [{"herramienta": "pedido", "pide": {}, "devuelve": "", "al_cliente": "Presupuesto: 1x Mouse"}]
-    m = A.memoria_de({})
-    texto, _ = A.armar({"saludo": "Listo, te lo sumo.", "bloques": [], "pregunta": "¿Te sirve?"}, A.Citas(), pasos, m, C.TIENDA)
-    assert texto == "Listo, te lo sumo.\n\nPresupuesto: 1x Mouse\n\n¿Te sirve?"
-    assert A.armar({"saludo": "Listo.", "bloques": [], "pregunta": ""}, A.Citas(), [], m, C.TIENDA)[0] == "Listo."
-
-
 # ══ PROCEDENCIA SOLA: el paso 3, sin el ejecutor ══
 
 def test_procedencia_rechaza_destino_medio_y_cita(A):

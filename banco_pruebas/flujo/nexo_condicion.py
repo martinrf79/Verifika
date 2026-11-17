@@ -66,7 +66,7 @@ VARIANTE = _CONF.get("variante", "segmento con rubro, documento por campo")
 from app.core.flujo.nuevo import condicion as _A  # noqa: E402
 from app.core.flujo.nuevo.condicion import (  # noqa: E402,F401
     NINGUNO, ORDEN_DOCS, SOLO_PRODUCTO, TEXTO, VARIANTES, VIVA, Puntajes, _cumple, _filtro, _hallar, _palabra_producto,
-    de_jev, docs_campo, docs_valor, etiqueta, no_filtra, opciones, rubro_de, seguro, variantes)
+    de_jev, docs_campo, docs_valor, etiqueta, opciones, rubro_de, seguro, variantes)
 
 
 def Fuente():
@@ -80,6 +80,13 @@ def jev_grabado():
         for x in map(json.loads, open(JEV, encoding="utf-8")):
             out.update({(x["rubro"], x["busqueda"], p): e for p, e in x["partes"].items()})
     return out
+
+
+def no_filtra(it, r, nx):
+    """Un item que no deja afuera ningun producto del rubro: lo que vale para todo el rubro."""
+    if it["veredicto"] not in ("ata",):
+        return False
+    return len(nx.filas(r, [it])) == len(nx.filas(r, []))
 
 
 # ══ EL NEXO DEL BANCO: LO GRABADO ════════════════════════════════════════════

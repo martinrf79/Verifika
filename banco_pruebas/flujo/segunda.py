@@ -141,29 +141,31 @@ class Grabado:
         return a
 
 
+_RESPONDER = {}
+
+
 async def turno(mensaje, historial, memoria, user_id, canal, tienda_id, trace_id=""):
-    from app.core.flujo.nuevo import turno as T
-    return await T.responder(mensaje, historial, memoria, user_id, canal, tienda_id, trace_id, piezas=Grabado())
+    """El turno del bot, `nuevo/turno.responder`, con las piezas del banco."""
+    return await _RESPONDER["vivo"](mensaje, historial, memoria, user_id, canal, tienda_id, trace_id, piezas=Grabado())
 
 
 # ══ EL BANCO ═════════════════════════════════════════════════════════════════
 def instalar(modo="grabado", etiqueta=""):
-    """El clon del bot con el turno nuevo en lugar del agente. Devuelve la lista donde quedan los turnos."""
+    """El clon del bot con sus piezas grabadas. Devuelve la lista donde quedan los turnos."""
     sys.path.insert(0, REPO)
     from banco_pruebas import clon_produccion as C
     C.instalar()
-    from app.core.flujo import agente as A
+    from app.core.flujo.nuevo import turno as T
     ESTADO.update({"modo": modo, "etiqueta": etiqueta, "idx": indice(), "l0": llamada0(), "jev": jev_grabado()})
-    # "vistos" es la unica clave nueva de la memoria: `agente.memoria_de` guarda solo las de MEMORIA.
-    A.MEMORIA.setdefault("vistos", [])
-    A._parecidos = lambda *a, **k: []
+    # El bot llama a `nuevo/turno.responder` desde `turno.procesar_turno`: el banco le pone sus piezas.
+    _RESPONDER.setdefault("vivo", T.responder)
     vistos = []
 
     async def _turno(*a, **k):
         r = await turno(*a, **k)
         vistos.append(r)
         return r
-    A.responder = _turno
+    T.responder = _turno
     return vistos
 
 

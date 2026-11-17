@@ -436,18 +436,19 @@ def informe(revisadas: list, meta: dict | None = None) -> str:
 
 
 
-# ── LA PELICULA DEL TURNO — que pidio el agente y que marco el verificador ──
-# Desde el 30-oct el turno es el agente, `app/core/flujo/agente.py`, y escribe un renglon por turno, `agente_turno`,
-# con las herramientas, lo que pidio a cada una, lo que marco el verificador y los tokens. Los errores tienen su renglon. El texto que leyo el cliente no esta en los logs: esta en
-# la transcripcion, al final del informe.
+# ── LA PELICULA DEL TURNO — que tradujo, que encontraron los nexos, que retoco la segunda y que marco el control ──
+# Desde el 17-nov el turno es el flujo nuevo, `app/core/flujo/nuevo/turno.py`, y escribe un renglon por paso: la llamada
+# 0, Jev, los nexos con el texto del codigo, la segunda llamada y el cierre del turno, `flujo_turno`. Los errores tienen
+# su renglon. El texto que leyo el cliente no esta en los logs: esta en la transcripcion, al final del informe.
 
 EVENTOS_PELICULA = (
-    "message_received", "antijailbreak_bloqueo", "agente_turno", "agente_modelo_error", "agente_herramienta_error",
-    "agente_lead_error", "agente_cobro_error", "agente_embeddings_error", "flujo_guardar_error")
+    "message_received", "antijailbreak_bloqueo", "flujo_llamada0", "flujo_jev", "flujo_nexos", "flujo_segunda",
+    "flujo_turno", "flujo_llamada0_error", "flujo_jev_error", "flujo_nexos_error", "flujo_segunda_error",
+    "flujo_comando_error", "agente_lead_error", "agente_cobro_error", "flujo_guardar_error")
 
 # Los renglones que avisan que algo fallo: la pelicula los muestra con su error.
-AVISOS = ("antijailbreak_bloqueo", "agente_modelo_error", "agente_herramienta_error", "agente_lead_error",
-          "agente_cobro_error", "agente_embeddings_error", "flujo_guardar_error")
+AVISOS = ("antijailbreak_bloqueo", "flujo_llamada0_error", "flujo_jev_error", "flujo_nexos_error", "flujo_segunda_error",
+          "flujo_comando_error", "agente_lead_error", "agente_cobro_error", "flujo_guardar_error")
 
 # Cuantos turnos se cuentan por defecto. Tres alcanzan para una prueba por
 # WhatsApp; el informe de arriba sigue midiendo la ventana entera.
@@ -504,8 +505,8 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
         return []
     ultimos = list(por_turno.items())[-max(1, turnos):]
     out = ["", "=" * 64, f"LA PELICULA DE LOS ULTIMOS {len(ultimos)} TURNOS",
-           "Lo que pidio el agente a cada herramienta y lo que marco el verificador. El texto que leyo el cliente esta en la "
-           "transcripcion, al final.", "=" * 64]
+           "Lo que tradujo la llamada 0, lo que encontraron los nexos, lo que retoco la segunda llamada y lo que marco el "
+           "control. El texto que leyo el cliente esta en la transcripcion, al final.", "=" * 64]
     for trace, evs in ultimos:
         cab = next((e for e in evs if e.get("event") == "message_received"), {})
         hora = str(cab.get("_t") or evs[0].get("_t") or "")[11:19]
@@ -514,20 +515,28 @@ def pelicula(eventos: list, turnos: int = TURNOS_PELICULA) -> list:
             out.append(f"  CLIENTE: {cab['msg_preview']}")
         for e in evs:
             ev = e.get("event")
-            if ev == "agente_turno":
-                # Desde el 30-oct el turno lo contesta el agente: lo que pidio a cada herramienta y lo que marco el
-                # verificador.
-                out.append("  HIZO      " + (", ".join(map(str, e.get("herramientas") or [])) or "sin herramientas")
+            if ev == "flujo_llamada0":
+                out.append("  TRADUJO   " + str([(x.get("busqueda"), x.get("destino")) for x in e.get("lineas") or []])
                            + (f" · {_n(e.get('entrada'))}+{_n(e.get('salida'))} tokens" if e.get("entrada") else ""))
-                if e.get("pide"):
-                    out.append("  PIDIO     " + str(e["pide"]))
+            elif ev == "flujo_jev":
+                out.append("  JEV       " + str(e.get("elige")))
+            elif ev == "flujo_nexos":
+                out.append("  NEXOS     " + str(e.get("nexos")))
+                if e.get("codigo"):
+                    out.append("  CODIGO    " + str(e["codigo"])[:300].replace("\n", " | "))
+            elif ev == "flujo_segunda":
+                out.append("  RETOCO    " + str(e.get("responde"))[:300]
+                           + (f" · {_n(e.get('entrada'))}+{_n(e.get('salida'))} tokens" if e.get("entrada") else ""))
+            elif ev == "flujo_turno":
+                out.append("  HIZO      " + (", ".join(map(str, e.get("comandos") or [])) or "sin comandos")
+                           + (f" · {e.get('seg')} s" if e.get("seg") is not None else ""))
                 if e.get("hallazgos"):
-                    out.append("  VERIFICO  " + str(e["hallazgos"]) + (" · corregido" if e.get("corregido") else ""))
+                    out.append("  VERIFICO  " + str(e["hallazgos"]) + " · salio el texto del codigo")
             elif ev in AVISOS:
                 out.append(f"  AVISO     {ev} " + str(e.get("error") or e.get("motivo") or e.get("cita") or "")[:160])
-        if not any(e.get("event") == "agente_turno" for e in evs) and \
+        if not any(e.get("event") == "flujo_turno" for e in evs) and \
                 not any(e.get("event") == "antijailbreak_bloqueo" for e in evs):
-            out.append("  (este turno no llego a `agente_turno`: se cayo antes o el modelo no contesto)")
+            out.append("  (este turno no llego a `flujo_turno`: se cayo antes de contestar)")
     return out
 
 

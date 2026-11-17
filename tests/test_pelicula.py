@@ -1,9 +1,9 @@
-"""LA PELICULA DEL TURNO — la sonda sobre produccion, para el agente (19-oct-2026; el agente, 30-oct).
+"""LA PELICULA DEL TURNO — la sonda sobre produccion (19-oct-2026; el agente, 30-oct; el flujo nuevo, 17-nov).
 
 QUE CUIDA ESTA VARA. La pelicula es una funcion PURA sobre los renglones del log: lo que decide QUE se ve del sistema
 tiene que poder probarse sin red y sin credencial.
 
-Y cuida la otra mitad, que es la que se rompe sola: los NOMBRES. El agente escribe `agente_turno`; la pelicula lo lee.
+Y cuida la otra mitad, que es la que se rompe sola: los NOMBRES. El flujo escribe `flujo_turno`; la pelicula lo lee.
 Si alguien renombra uno de los dos lados, la pelicula se queda muda sin que nadie lo note. Por eso cada evento que la
 pelicula pide tiene que estar escrito en `app/`.
 """
@@ -14,22 +14,28 @@ from banco_pruebas.produccion import EVENTOS_PELICULA, pelicula
 
 
 def _evs() -> list:
-    """Un turno entero, tal como lo escribe `app/core/flujo/agente.py`."""
+    """Un turno entero, tal como lo escribe `app/core/flujo/nuevo/turno.py`."""
     return [
-        {"event": "message_received", "trace_id": "abc123", "_t": "2026-10-30T15:29:15Z",
+        {"event": "message_received", "trace_id": "abc123", "_t": "2026-11-17T15:29:15Z",
          "msg_preview": "me llevo el G305 negro, mandalo a Rosario"},
-        {"event": "agente_turno", "trace_id": "abc123", "herramientas": ["buscar", "presupuesto"],
-         "pide": '[{"consulta": "G305"}]', "hallazgos": [["dato", "12000"]], "corregido": True,
-         "entrada": 3800, "salida": 160},
+        {"event": "flujo_llamada0", "trace_id": "abc123", "lineas": [{"fragmento": "el G305 negro", "busqueda": "G305 negro",
+                                                                        "destino": "Rosario"}], "entrada": 350, "salida": 60},
+        {"event": "flujo_nexos", "trace_id": "abc123", "nexos": [[["nombrado", "coincide", "MOU0001"]]],
+         "codigo": "Mouse Logitech G305 Lightspeed Negro a $80.500, quedan 9."},
+        {"event": "flujo_segunda", "trace_id": "abc123", "responde": {"texto": "Dale", "pedido": {"agrega": []}},
+         "entrada": 900, "salida": 80},
+        {"event": "flujo_turno", "trace_id": "abc123", "comandos": ["pedido"], "hallazgos": [["dato", "12000"]], "seg": 6.1},
     ]
 
 
-def test_la_pelicula_muestra_lo_que_pidio_y_lo_que_verifico():
+def test_la_pelicula_muestra_cada_paso_del_flujo():
     t = "\n".join(pelicula(_evs()))
     assert "me llevo el G305 negro" in t
-    assert "HIZO      buscar, presupuesto · 3800+160 tokens" in t
-    assert 'PIDIO     [{"consulta": "G305"}]' in t
-    assert "VERIFICO  [['dato', '12000']] · corregido" in t
+    assert "TRADUJO   [('G305 negro', 'Rosario')] · 350+60 tokens" in t
+    assert "NEXOS     [[['nombrado', 'coincide', 'MOU0001']]]" in t and "CODIGO    Mouse Logitech G305" in t
+    assert "RETOCO    {'texto': 'Dale'" in t and "· 900+80 tokens" in t
+    assert "HIZO      pedido · 6.1 s" in t
+    assert "VERIFICO  [['dato', '12000']] · salio el texto del codigo" in t
 
 
 def test_un_error_se_ve_como_error():
@@ -38,11 +44,11 @@ def test_un_error_se_ve_como_error():
 
 
 def test_un_turno_que_se_cayo_se_dice():
-    """Sin `agente_turno` el modelo no contesto. Decirlo es el dato."""
-    evs = [e for e in _evs() if e["event"] != "agente_turno"] + \
-          [{"event": "agente_modelo_error", "trace_id": "abc123", "error": "RateLimitError"}]
+    """Sin `flujo_turno` el turno no contesto. Decirlo es el dato."""
+    evs = [e for e in _evs() if e["event"] != "flujo_turno"] + \
+          [{"event": "flujo_segunda_error", "trace_id": "abc123", "error": "RateLimitError"}]
     t = "\n".join(pelicula(evs))
-    assert "no llego a `agente_turno`" in t and "agente_modelo_error RateLimitError" in t
+    assert "no llego a `flujo_turno`" in t and "flujo_segunda_error RateLimitError" in t
 
 
 def test_sin_eventos_no_hay_pelicula():

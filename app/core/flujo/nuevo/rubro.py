@@ -62,11 +62,6 @@ def doc_producto(k, filas, alias):
     return f"{k[0]}: {', '.join(alias.get(k[0], []))}. {k[1]} {k[2]}. {', '.join(etiquetas(filas))}"
 
 
-def _doc_etiquetas(k, filas, alias=None):
-    """El documento de antes del 16-nov, para la V0 de la calibracion."""
-    return f"{k[0]} {k[1]} {k[2]}. {', '.join(etiquetas(filas))}"
-
-
 
 
 class Nexo:

@@ -21,7 +21,6 @@ reemplaza a la lectura de la FICHA 81 en el bot. Medido en el banco, `banco_prue
 LA MEMORIA de la charla: el historial, que es una ventana, y aparte, en el codigo, todo lo que dijo el cliente, el pedido
 anotado en la libreta, lo ultimo cotizado, el pago y el tope.
 """
-import asyncio
 import collections
 import copy
 import json
@@ -41,11 +40,10 @@ from . import marcador as MK
 from . import redaccion
 from . import tabla as T
 from . import verificador as V
-from .respuesta import Citas, armar, datos_en_libre, herramienta_responder, orden_del_cliente
+from .respuesta import Citas
 from .ejecutor import ejecutar
 
 log = get_logger(__name__)
-VUELTAS = 6
 # UMBRALES de los embeddings, medidos en el banco el 29-oct: el rubro correcto da cerca de 0,78 y el ruido de 0,65 a 0,74.
 UMBRAL_TEMA = 0.70
 # "estado" es el estado entero del ejecutor, con el borrador de la FICHA 71: lo que dijo el cliente, entre turnos. FICHA 86.
@@ -54,7 +52,7 @@ UMBRAL_TEMA = 0.70
 # "dicho" es cada mensaje del cliente, hasta MEMORIA_TURNOS: lo que dijo no se pierde cuando sale de la ventana, 6-nov.
 # "nombre_para" es lo que compraba cuando se le pidio el nombre para reservar: no se repite para el mismo pedido.
 MEMORIA = {"estado": {}, "pedido": [], "mostrado": [], "pago": "", "tope": 0, "lead": "", "fuente": [], "dicho": [],
-           "nombre_para": []}
+           "nombre_para": [], "vistos": []}
 # UMBRAL, 30-oct: hasta cuantas palabras la respuesta del cliente elige el medio que le ofrecio el bot. "Joaquin no tengo
 # mp" son 4; con 6, "si, el teclado era una memoria" anotaba transferencia en K20 y "color indistinto 70 por ciento
 # transferencia" anotaba Mercado Pago al 30% en K21, sin que el cliente lo dijera.
@@ -65,44 +63,6 @@ RESPUESTA_CORTA = 4
 # "hola, que tal" da 0,0. Con 0,5 entra una cita resumida, "dos hyperx a posadas" de un mensaje mas largo, y no una
 # inventada. Se revisa con las citas reales del modelo en el paso 6, al regrabar.
 UMBRAL_CITA = 0.5
-
-CONSIGNA = """Sos vendedor de una tienda online de tecnologia de Argentina que vende por WhatsApp. Contestas el ultimo
-mensaje del cliente como un buen vendedor: corto, claro, en español rioplatense con voseo, contestando todo lo que
-pregunto o pidio y llevando a la venta.
-
-Tenes cinco herramientas, y contestas siempre con la ultima, responder:
-- buscar: con un SELECT consultas la tabla productos de la tienda, que esta abajo con sus columnas y sus
-  valores; con texto, el envio a un lugar, "envio a Rosario", o una regla. Una consulta por cosa que pide el cliente,
-  con stock > 0, y en las columnas pedi siempre nombre, precio y stock, y las columnas en que te basas para elegir. El
-  criterio del cliente va en el WHERE y en el ORDER BY: un equipo suyo, en la columna con_ de ese equipo = 'anda'; lo
-  mas barato, ORDER BY precio; lo menos chino, por fabricado_en y pais_marca. Para un texto libre, LIKE '%palabra%'.
-  Cuantos productos o rubros tiene la tienda, y cuantos por rubro: citalo de LA TIENDA EN NUMEROS, no lo cuentes.
-- pedido: cambia el pedido del cliente cuando compra, cambia, saca o confirma algo. Manda solo ese cambio, nunca el
-  pedido entero, con las palabras del cliente en cita: lo nuevo en agrega; para cambiar o sacar un renglon que ya esta,
-  su numero de la libreta, L-1. Si el cliente no eligio entre opciones, manda las opciones en entre: el sistema le
-  pregunta. El pago y el tope, como los dijo. Devuelve el pedido con precios, envios, total y reparto, y lo que falta.
-- cotizar: cuanto sale algo, sin tocar el pedido: renglones con producto, cantidad y destino.
-- calcular: una calculadora, para otra cuenta.
-- responder: lo que lee el cliente. Cada fila, regla, envio, cantidad o "no vendemos" que te devuelve buscar viene con su
-  numero, P1, R1, E1, N1, D1, y las reglas de la tienda de abajo traen el suyo. En bloques pones los numeros que le
-  mostras, en orden, y de cada producto las columnas que hay que mostrarle —las que pidio o en las que te basas— y en por
-  la columna que decide si elegiste o recomendaste uno. El sistema pega cada dato tal cual de la tienda. PRESUPUESTO pega
-  la cotizacion y COBRO los datos de pago; el pedido del turno sale solo. En saludo y pregunta, cortos, solo lo que
-  conecta: nunca un numero, una marca, un modelo, un dato de un producto, una regla ni un envio, que van en bloques. El
-  sistema ya saluda: no digas "hola". Si el cliente pide un dato que la tienda no tiene, ponelo en sin_dato.
-
-Solo podes mostrar lo que te devolvio una herramienta en este turno: lo que ya le mostraste antes, si hace falta, buscalo
-de nuevo. Si no lo encontraste, no lo digas: decile al cliente que no lo tenes o preguntale lo que falte. Antes de
-elegir un producto, buscalo: no elijas de memoria. Si pregunta si anda con un equipo suyo, buscalo con ese equipo.
-Si el cliente compra, cambia, saca o confirma algo, usa pedido con solo ese cambio, aunque falte un dato; un renglon por
-destino. Si el cliente da un criterio para elegir —el mas barato, el mejor, el mas liviano—, busca con ese
-criterio aunque ya le hayas mostrado opciones: lo mostrado era una parte. Si el cliente dijo cuantos quiere de cada
-cosa, revisa en la libreta que el pedido lo respete.
-
-Las reglas de la tienda: para reservar una compra se le pide al cliente solo el nombre. Antes de cobrar, el cliente
-tiene que haber dicho con que medio paga cada parte: si no lo dijo, preguntaselo, y no lo des por acordado. Los datos
-para pagar —CBU, alias, links— salen solo de la herramienta cobrar, y se muestran con COBRO. Si la tienda no tiene algo,
-decilo claro: "no vendemos eso", y ofrece lo que si hay."""
 
 _S = {"type": "string"}
 _RENGLON = {"producto": _S, "cantidad": {"type": "integer"}, "destino": _S, "color": _S}
@@ -788,173 +748,6 @@ def memoria_texto(memoria: dict, tienda_id: str = None) -> str:
     return ("LA LIBRETA DEL PEDIDO" + ("" if memoria.get("pedido") or memoria.get("estado") else
                                        ", con lo ultimo que cotizaste: el cliente todavia no lo compro") + ":\n"
             + "\n".join(lineas)) if lineas else "EL PEDIDO esta vacio."
-
-
-async def _llamar(msgs: list, herramientas: list, trace_id: str):
-    """Siempre con herramientas y obligado a llamar una: la respuesta al cliente es la herramienta responder."""
-    from app.core.llm_reintento import _cliente, _modelo, llamar_con_reintento
-    cli = _cliente()
-    if cli is None:
-        raise RuntimeError("sin clave del modelo")
-    kw = {"tools": herramientas, "tool_choice": "required"}
-    return await llamar_con_reintento(
-        lambda: cli.chat.completions.create(model=_modelo(), temperature=0, messages=msgs, **kw),
-        timeout_s=float(get_settings().LLM_TIMEOUT_SECONDS), trace_id=trace_id)
-
-
-async def responder(mensaje: str, historial: list, memoria: dict, user_id: str, canal: str, tienda_id: str,
-                    trace_id: str = "") -> dict:
-    """Un turno: {"respuesta", "pasos", "hallazgos", "presupuesto"}, o {"error"} si el modelo no contesto. La memoria se
-    actualiza solo si hay respuesta."""
-    contexto, citas = memoria_texto(memoria, tienda_id), Citas()
-    hoja = f"{hoja_reglas(tienda_id, citas)}\n\n{T.mapa(tienda_id)}".strip()  # las reglas y la tabla, siempre a la vista
-    orden = orden_del_cliente(mensaje, tienda_id)
-    contexto += "\nLA TIENDA EN NUMEROS, para cuando pregunta cuantos hay; citalo con su numero:\n" + "\n".join(
-        f"{citas('dato', t, t)}: {t}" for t in T.resumen(tienda_id))
-    # LO QUE LA TIENDA NO VENDE LO DETECTA EL CODIGO EN EL MENSAJE, 7-nov, K12: "tenes celulares" buscado por SQL con una
-    # marca daba monitores, y el modelo no tenia como decir "no vendemos". Va con su numero, para citarlo.
-    if (nv := categoria_no_vendida(mensaje, tienda_id)):
-        texto = f"No vendemos {nv[0]}." + (f" Lo que sí vendemos parecido: {nv[1]}." if nv[1] else "")
-        contexto += f"\nEL CLIENTE PIDIO ALGO QUE LA TIENDA NO VENDE, mostralo con su numero:\n{citas('no_vendemos', K.n(nv[0]), texto)}: {texto}"
-    dichos = [str(m.get("content") or "") for m in historial]
-    # LO QUE DIJO EL CLIENTE VIVE EN EL CODIGO, 6-nov: la charla entera, no la ventana. Una charla de antes del 6-nov
-    # arranca con lo que quedo en su historial.
-    del_cliente = list(memoria.get("dicho") or []) or [x for m, x in zip(historial, dichos) if m.get("role") == "user"]
-    msgs = [{"role": "system", "content": f"{CONSIGNA}\n\n{hoja}".strip()},
-            {"role": "user", "content": f"{charla(historial, del_cliente)}\n\n{contexto}\n\nULTIMO MENSAJE DEL CLIENTE: {mensaje}"}]
-    # LO QUE DIJO EL CLIENTE, y lo que le ofrecio el ultimo mensaje del bot si contesta corto: a "¿transferencia o Mercado
-    # Pago?", "no tengo MP" es transferencia; un mensaje largo de otra cosa no elige medio. Decision de Martin, 30-oct.
-    ultimo_bot = next((x for m, x in zip(reversed(historial), reversed(dichos)) if m.get("role") == "assistant"), "")
-    dijo = K.n(" ".join([mensaje] + del_cliente + de_la_oferta(mensaje, ultimo_bot)))
-    memoria.pop("_ultimo", None), memoria.pop("_cmds", None)
-    # LO QUE DIJO EL BOT NO ES FUENTE, 6-nov, auditoria de las 12 capas, FICHA 87 causa 3: un dato inventado en un turno
-    # pasaba los controles en los siguientes porque su texto estaba en la charla. Vale lo que devolvieron las
-    # herramientas, en este turno y en los anteriores, y lo que dijo el cliente.
-    antes = list(memoria.get("fuente") or [])
-    pasos, salidas, entrada, salida, corregido, avisos = [], [], 0, 0, False, []
-    t0 = time.time()
-    for vuelta in range(VUELTAS + 1):
-        try:
-            # EN LA ULTIMA VUELTA, SOLO RESPONDER: con lo que ya devolvieron las herramientas.
-            r = await _llamar(msgs, (HERRAMIENTAS if vuelta < VUELTAS else []) + [herramienta_responder(citas, tienda_id)], trace_id)
-        except Exception as e:  # noqa: BLE001 — sin modelo no se inventa una respuesta
-            log.warning("agente_modelo_error", trace_id=trace_id, error=f"{type(e).__name__}: {str(e)[:160]}")
-            return {"error": f"{type(e).__name__}", "pasos": pasos}
-        if getattr(r, "usage", None):
-            entrada, salida = entrada + (r.usage.prompt_tokens or 0), salida + (r.usage.completion_tokens or 0)
-        m = r.choices[0].message
-        final = next((c for c in m.tool_calls or [] if c.function.name == "responder"), None)
-        if not m.tool_calls:  # obligado a llamar una herramienta, contesto texto: se le pide de nuevo
-            msgs.append(m.model_dump(exclude_none=True))
-            msgs.append({"role": "user", "content": "REVISION INTERNA DEL SISTEMA: contesta con la herramienta responder."})
-            continue
-        if final and len(m.tool_calls) == 1:
-            try:
-                a = json.loads(final.function.arguments or "{}")
-            except ValueError:
-                a = {}
-            texto, pegado = armar(a, citas, pasos, memoria, tienda_id)
-            # EL CANDADO MIRA LO QUE ESCRIBIO EL MODELO: lo pegado por el codigo sale de la tienda tal cual. La fuente
-            # es lo que devolvieron las herramientas, lo que dijo el cliente y la memoria del codigo: lo que dijo el bot
-            # antes ya no cuenta, FICHA 87 causa 3, un dato inventado se repetia en los turnos siguientes.
-            pegados = pegado + [p.get("al_cliente", p["devuelve"]) for p in pasos if p["herramienta"] in ("pedido", "cotizar", "cobrar")]
-            fuente = " ".join(salidas + antes + del_cliente + [mensaje, contexto, hoja])
-            libres = datos_en_libre(a, tienda_id)
-            # COBRO SIN COBRAR, 3-nov, 58b5a1: citar COBRO sin llamar a cobrar deja la linea vacia.
-            malos = V.verificar(texto, fuente, tienda_id, pegados) + [(c, f"escribiste un dato: {d}") for c, d in libres] \
-                + [("hecho", "citaste COBRO y no llamaste a cobrar") for b in a.get("bloques") or []
-                   if b.get("cita") == "COBRO" and not _pegado(pasos, "cobrar")][:1]
-            faltan = [] if corregido else sin_buscar(mensaje, pasos, tienda_id)
-            omite = [] if corregido else omitidos(mensaje, memoria, pasos, tienda_id)
-            if (malos or faltan or omite) and not corregido and vuelta < VUELTAS:
-                corregido, ws, avisos = True, K.n(mensaje).split(), omite
-                # LA BUSQUEDA QUE FALTA LA HACE EL CODIGO, 1-nov: con solo el aviso, el modelo lo ignoraba en el
-                # examen. Cada busqueda del turno, de nuevo con las palabras del cliente alrededor del criterio.
-                frase = " ".join(dict.fromkeys(x for w in faltan for i, y in enumerate(ws) if K.n(w) in y for x in ws[max(0, i - 3):i + 1]))
-                salidas += (extra := [buscar(f"{p['pide']['consulta']} {frase}", tienda_id, citas) for p in pasos if faltan and p["herramienta"] == "buscar"
-                                      and p["pide"].get("consulta") and not T.es_consulta(p["pide"]["consulta"])][:3])
-                msgs.append(m.model_dump(exclude_none=True))
-                # LA REVISION ES INTERNA: el cliente no la ve ni la dijo. Sin esto el modelo le pedia disculpas.
-                msgs.append({"role": "tool", "tool_call_id": final.id, "content": "REVISION INTERNA DEL SISTEMA, el cliente no la ve: " + (
-                    "el saludo o la pregunta dicen cosas que no respaldan las herramientas: " + "; ".join(
-                        f"{c}: {d}" for c, d in malos) + ". Sacalas, o mostralas con su numero en bloques. " if malos else "")
-                    + (f"el cliente dijo {', '.join(faltan)} y ninguna busqueda lo llevo: consultalo en la tabla con ese criterio. "
-                       + ("El buscador con eso da:\n" + "\n".join(extra) + "\n" if extra else "") if faltan else "")
-                    + (f"el cliente pidio {'; '.join(omite)}: arma el presupuesto con el pedido entero, o preguntale si "
-                       "es lo que quiso decir. " if omite else "")
-                    + "Llama de nuevo a responder con la respuesta completa, sin mencionar esta revision ni pedir disculpas."})
-                continue
-            if libres:  # EL SALUDO O LA PREGUNTA CON UN DATO, DESPUES DE CORREGIR: ese campo no sale
-                a = {**a, **{c: "" for c, _ in libres}}
-                texto, pegado = armar(a, citas, pasos, memoria, tienda_id)
-                malos = V.verificar(texto, fuente, tienda_id, pegado + pegados)
-            if malos:  # LO QUE SIGUE MARCADO DESPUES DE CORREGIR NO SALE: se saca la oracion entera.
-                from app.core.guia_venta_prosa import mensaje as prosa
-                texto = V.sin_marcadas(texto, fuente, tienda_id, pegados) or prosa(
-                    "sin_respaldo", "Eso prefiero confirmarlo antes de decírtelo. ¿Te ayudo con algo más mientras?")
-            # LA CUENTA QUE SIGUE MAL DESPUES DE CORREGIR LA PREGUNTA EL CODIGO, 5-nov, las del mensaje de los siete
-            # articulos: el modelo sumo el teclado que faltaba y saco una memoria, y salia sin aviso.
-            # Y LO SUMADO A LO QUE YA ESTABA, b8df72 t3: "Y 1 teclado" con el teclado en el pedido salia con dos.
-            sigue = omitidos(mensaje, memoria, pasos, tienda_id) if corregido else []
-            texto += "".join("\n\nMe pediste " + x.replace(" y el presupuesto trae ", " y en el presupuesto van ") + ".\n¿Cómo lo repartimos?"
-                             if " y el presupuesto" in x else f"\n\n¿El {x.split(', y ya')[0].split(' ', 1)[1]} es otro más o el que ya estaba?"
-                             if ", y ya habia" in x else "" for x in sigue)
-            # LO OBLIGATORIO EN CODIGO, FICHA 89 hallazgo 3, C55 t3: el cliente compra, el pedido se anota, y para reservar
-            # se pide el nombre. Estaba solo en la consigna, y "ese me lo llevo" salia preguntando solo el envio.
-            # UNA VEZ POR PEDIDO: se vuelve a pedir solo si cambio lo que compra, no el envio ni el pago. Cuenta tambien
-            # cuando lo pidio el modelo: K21 t4, "Mi nombre es Julio", y K10, que lo pedia en cinco turnos seguidos.
-            memoria.pop("_cmds", None)
-            memoria.update(memoria.pop("_ultimo", None) or {})
-            compra = sorted(f"{K.entero(x.get('cantidad')) or 1} {_id_de(x.get('producto'), tienda_id)}" for x in memoria["pedido"])
-            pidio = re.search(r"\bnombre\b|reserv", K.n(texto))
-            # UNA PREGUNTA DEL CODIGO POR VEZ, e105d5a00b t2: si el presupuesto ya pregunta algo, el tope, eso va primero.
-            if any(p["herramienta"] == "pedido" and p.get("al_cliente") for p in pasos) \
-                    and "?" not in _pegado(pasos, "pedido") \
-                    and not memoria.get("lead") and not pidio and compra != memoria.get("nombre_para"):
-                texto, pidio = texto + "\n\n" + redaccion.pedir_nombre(), True
-            memoria["nombre_para"] = compra if pidio and compra else memoria.get("nombre_para") or []
-            memoria["fuente"] = (antes + ["\n".join(salidas)])[-get_settings().HISTORY_LIMIT:]
-            memoria["dicho"] = (del_cliente + [mensaje])[-get_settings().MEMORIA_TURNOS:]
-            ultimo = _pegado(pasos, "pedido") or _pegado(pasos)
-            log.info("agente_turno", trace_id=trace_id, herramientas=[p["herramienta"] for p in pasos], sin_buscar=faltan,
-                     omitidos=avisos, responde=json.dumps(a, ensure_ascii=False)[:2000],
-                     pide=json.dumps([p["pide"] for p in pasos], ensure_ascii=False)[:3000], hallazgos=malos,
-                     corregido=corregido, entrada=entrada, salida=salida, seg=round(time.time() - t0, 1))
-            return {"respuesta": texto, "responde": a, "pasos": pasos, "hallazgos": malos, "presupuesto": ultimo,
-                    "omitidos": avisos}
-        # El mensaje del modelo vuelve entero, con lo que agrega el proveedor: sin eso, la segunda vuelta da 400.
-        msgs.append(m.model_dump(exclude_none=True))
-        for c in m.tool_calls:
-            if c.function.name == "responder":  # junto con otras: primero lo que devuelven las otras
-                msgs.append({"role": "tool", "tool_call_id": c.id, "content": "Primero mira lo que devolvieron las otras "
-                             "herramientas, y despues llama a responder con sus numeros."})
-                continue
-            try:
-                a = json.loads(c.function.arguments or "{}")
-            except ValueError:
-                a = {}
-            visto = K.n(" ".join(salidas + antes + del_cliente + [mensaje, contexto]))
-            nombre = c.function.name
-            cliente = ""
-            try:
-                # LO QUE BLOQUEA —Firestore, los embeddings— corre en un hilo: el servidor sigue con las otras charlas.
-                res = await asyncio.to_thread(buscar, str(a.get("consulta") or ""), tienda_id, citas, orden) if nombre == "buscar" \
-                    else await asyncio.to_thread(pedido, a, memoria, tienda_id, visto, dijo) if nombre == "pedido" \
-                    else await asyncio.to_thread(presupuesto, {**a, "anotar": False}, memoria, tienda_id, visto, dijo) \
-                    if nombre == "cotizar" \
-                    else await cobrar(a, memoria, user_id, canal, tienda_id, trace_id, dijo) if nombre == "cobrar" \
-                    else calcular(str(a.get("cuenta") or ""))
-                if nombre in ("pedido", "cotizar", "cobrar"):  # al modelo, las dos partes; al cliente, solo la suya
-                    cliente, res = res[0], "\n".join(x for x in res if x)
-            except Exception as e:  # noqa: BLE001 — una herramienta que falla se lo dice al modelo, no al cliente
-                log.error("agente_herramienta_error", trace_id=trace_id, herramienta=nombre,
-                          error=f"{type(e).__name__}: {str(e)[:200]}")
-                res = "La herramienta fallo. Segui con lo que tenes o pedile al cliente lo que falte."
-            pasos.append({"herramienta": nombre, "pide": a, "devuelve": res,
-                          **({"al_cliente": cliente} if nombre in ("pedido", "cotizar", "cobrar") else {})})
-            salidas.append(res)
-            msgs.append({"role": "tool", "tool_call_id": c.id, "content": res})
-    return {"error": "sin respuesta", "pasos": pasos}
 
 
 def memoria_de(conv: dict) -> dict:

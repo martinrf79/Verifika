@@ -4,7 +4,7 @@ Lo escribe `python3 banco_pruebas/diagrama.py` leyendo `app/`. `tests/test_diagr
 
 Limites: analisis estatico. Una referencia es un nombre que aparece en el codigo, no una llamada probada. Lo que se llama por `getattr`, o por texto, no se ve. Columna ALCANCE: `si` = alguna entrada la alcanza; `?` = ninguna la alcanza pero su nombre aparece escrito en otra parte de `app/`, hay que mirarla; `-` = ninguna la alcanza y su nombre no aparece en ningun otro lado de `app/`. Un `-` no prueba que sobre: puede usarla un script o un test.
 
-Funciones y clases de nivel superior: 495. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
+Funciones y clases de nivel superior: 550. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
 
 ## Nivel 1 — el turno
 
@@ -13,12 +13,12 @@ flowchart LR
   C1["1 CANAL<br/>17 funciones"]
   C2["2 PUERTA<br/>3 funciones"]
   C3["3 MEMORIA<br/>34 funciones"]
-  C4["4 CONTEXTO<br/>46 funciones"]
-  C5["5 BUCLE<br/>11 funciones"]
-  C6["6 BUSCAR<br/>142 funciones"]
+  C4["4 CONTEXTO<br/>45 funciones"]
+  C5["5 DOS LLAMADAS<br/>18 funciones"]
+  C6["6 BUSCAR<br/>200 funciones"]
   C7["7 PEDIDO Y CUENTA<br/>158 funciones"]
   C8["8 COBRO<br/>20 funciones"]
-  C9["9 RESPUESTA Y CONTROL<br/>28 funciones"]
+  C9["9 RESPUESTA Y CONTROL<br/>19 funciones"]
   C10["10 TEXTOS Y GUARDAS<br/>17 funciones"]
   C1 --> C2 --> C3 --> C4 --> C5
   C5 --> C6
@@ -35,8 +35,8 @@ Orden del turno: 1 CANAL, 2 PUERTA, 3 MEMORIA, 4 CONTEXTO, 5 BUCLE (el modelo ll
 - **2 PUERTA**: antes del turno: anti-jailbreak y la palabra de reset.
 - **3 MEMORIA**: cargar y guardar la charla: historial, memoria del agente, estado del pedido, Firestore.
 - **4 CONTEXTO**: lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la tienda no vende.
-- **5 BUCLE**: la llamada al modelo, el despacho de sus herramientas y el armado final del turno.
-- **6 BUSCAR**: el catalogo y la FAQ: la tabla con SQL, el motor, los filtros, la compatibilidad, los embeddings de temas.
+- **5 DOS LLAMADAS**: la llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y el turno.
+- **6 BUSCAR**: los cinco nexos con sus embeddings y Jev; el catalogo, la FAQ, el motor, los filtros y la compatibilidad.
 - **7 PEDIDO Y CUENTA**: el pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el ejecutor heredado.
 - **8 COBRO**: el link de pago, los datos de transferencia, el lead y el aviso al dueno.
 - **9 RESPUESTA Y CONTROL**: la respuesta atada, el verificador y los controles de lo que el modelo omitio.
@@ -52,12 +52,12 @@ Cada celda cuenta cuantas funciones de la caja de la fila nombran a una funcion 
 | **1** CANAL |  | · | 2 | 3 |  |  |  |  |  |  | 2 |
 | **2** PUERTA |  |  | · | 2 |  |  |  |  | 1 |  | 1 |
 | **3** MEMORIA |  |  |  | · |  | 1 | 3 | 1 |  |  | 3 |
-| **4** CONTEXTO | 2 |  |  | 9 | · |  | 26 | 10 |  |  | 3 |
-| **5** BUCLE | 4 |  |  |  | 8 | · | 4 | 7 | 1 | 7 | 1 |
-| **6** BUSCAR | 1 |  |  | 23 | 8 |  | · | 7 |  |  | 6 |
-| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 6 |  | 147 | · |  | 1 | 4 |
+| **4** CONTEXTO | 2 |  |  | 9 | · |  | 21 | 10 |  |  | 3 |
+| **5** DOS LLAMADAS | 5 |  |  |  | 2 | · | 13 | 5 | 1 | 1 |  |
+| **6** BUSCAR | 2 |  |  | 23 | 9 |  | · | 8 |  |  | 6 |
+| **7** PEDIDO Y CUENTA | 1 |  |  | 18 | 6 |  | 147 | · |  | 1 | 3 |
 | **8** COBRO | 2 |  |  | 6 |  |  |  | 4 | · |  | 3 |
-| **9** RESPUESTA Y CONTROL |  |  |  |  | 10 |  | 41 | 4 |  | · |  |
+| **9** RESPUESTA Y CONTROL |  |  |  |  | 7 |  | 34 | 4 |  | · |  |
 | **10** TEXTOS Y GUARDAS |  |  |  | 2 |  |  |  |  |  |  | · |
 
 ## Nivel 2 — cada caja
@@ -139,11 +139,11 @@ Cargar y guardar la charla: historial, memoria del agente, estado del pedido, fi
 
 ### 4 CONTEXTO
 
-Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la tienda no vende. 46 funciones, 655 lineas.
+Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la tienda no vende. 45 funciones, 636 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
-| core.flujo.agente | `hoja_reglas` | 11 | 5 | si |
+| core.flujo.agente | `hoja_reglas` | 11 | · | - |
 | core.flujo.agente | `charla` | 8 | 5 | si |
 | core.flujo.agente | `memoria_texto` | 9 | 5 | si |
 | core.flujo.marcador | `_numero` | 2 | · | si |
@@ -158,10 +158,9 @@ Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la
 | core.flujo.marcador | `_sacar` | 8 | · | si |
 | core.flujo.marcador | `_mismo` | 3 | · | si |
 | core.flujo.marcador | `respuesta` | 37 | 7 | si |
-| core.flujo.respuesta | `Citas` (clase) | 19 | 5,6,9 | si |
-| core.flujo.respuesta | `orden_del_cliente` | 19 | 5 | si |
-| core.flujo.tabla | `mapa` | 13 | 5 | si |
-| core.flujo.tabla | `resumen` | 9 | 5 | si |
+| core.flujo.respuesta | `Citas` (clase) | 19 | 6 | ? |
+| core.flujo.tabla | `mapa` | 13 | · | ? |
+| core.flujo.tabla | `resumen` | 9 | · | ? |
 | core.fuente | `_norm` | 3 | · | si |
 | core.fuente | `temas_consultables` | 8 | · | si |
 | core.fuente | `_fichas` | 12 | · | si |
@@ -176,7 +175,7 @@ Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la
 | core.fuente | `criterio_de` | 13 | 6 | si |
 | core.fuente | `politicas_de` | 12 | 6,7 | si |
 | core.fuente | `inventario` | 8 | · | ? |
-| core.fuente | `_cotizar` | 11 | · | si |
+| core.fuente | `_cotizar` | 11 | 6 | si |
 | core.fuente | `_destino_legible` | 6 | · | si |
 | core.fuente | `_destino_estable` | 7 | · | si |
 | core.fuente | `_plazo_de` | 9 | · | si |
@@ -188,29 +187,36 @@ Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la
 | core.guia_compra | `_norm` | 3 | · | si |
 | core.guia_compra | `_singular` | 2 | · | si |
 | core.guia_compra | `_no_vendidas` | 21 | · | si |
-| core.guia_compra | `categoria_no_vendida` | 24 | 5,6 | si |
+| core.guia_compra | `categoria_no_vendida` | 24 | 6 | si |
 
-### 5 BUCLE
+### 5 DOS LLAMADAS
 
-La llamada al modelo, el despacho de sus herramientas y el armado final del turno. 11 funciones, 242 lineas.
+La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y el turno. 18 funciones, 289 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
-| core.flujo.agente | `_llamar` | 10 | · | si |
-| core.flujo.agente | `responder` | 153 | 3 | si |
-| core.llm_reintento | `anotar_llamada_negada` | 4 | · | si |
+| core.flujo.nuevo.llamada0 | `valida` | 3 | · | si |
+| core.flujo.nuevo.llamada0 | `leer` | 8 | · | si |
+| core.flujo.nuevo.llamada0 | `pedir` | 14 | · | si |
+| core.flujo.nuevo.segunda | `herramienta` | 8 | · | si |
+| core.flujo.nuevo.segunda | `vistos_texto` | 9 | · | si |
+| core.flujo.nuevo.segunda | `entrada` | 8 | · | si |
+| core.flujo.nuevo.segunda | `llamar` | 16 | · | si |
+| core.flujo.nuevo.turno | `Vivo` (clase) | 73 | · | si |
+| core.flujo.nuevo.turno | `responder` | 71 | 3 | si |
+| core.llm_reintento | `anotar_llamada_negada` | 4 | · | ? |
 | core.llm_reintento | `sin_cupo` | 3 | · | - |
 | core.llm_reintento | `reiniciar_cupo` | 2 | · | - |
-| core.llm_reintento | `es_transitorio` | 5 | · | si |
-| core.llm_reintento | `espera_sugerida` | 9 | · | si |
-| core.llm_reintento | `llamar_con_reintento` | 34 | · | si |
-| core.llm_reintento | `_settings` | 3 | · | si |
-| core.llm_reintento | `_cliente` | 14 | · | si |
-| core.llm_reintento | `_modelo` | 5 | · | si |
+| core.llm_reintento | `es_transitorio` | 5 | · | ? |
+| core.llm_reintento | `espera_sugerida` | 9 | · | ? |
+| core.llm_reintento | `llamar_con_reintento` | 34 | · | - |
+| core.llm_reintento | `_settings` | 3 | · | ? |
+| core.llm_reintento | `_cliente` | 14 | · | - |
+| core.llm_reintento | `_modelo` | 5 | · | ? |
 
 ### 6 BUSCAR
 
-El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad, los embeddings de temas. 142 funciones, 2765 lineas.
+Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 200 funciones, 3848 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -289,13 +295,13 @@ El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad
 | core.filtros_catalogo | `rankear_por_cercania` | 14 | · | si |
 | core.filtros_catalogo | `dato_que_falla` | 24 | · | si |
 | core.flujo.agente | `_agenda` | 2 | 7 | si |
-| core.flujo.agente | `_vectores` | 20 | · | si |
-| core.flujo.agente | `_base` | 9 | · | si |
-| core.flujo.agente | `_parecidos` | 15 | · | si |
+| core.flujo.agente | `_vectores` | 20 | · | ? |
+| core.flujo.agente | `_base` | 9 | · | ? |
+| core.flujo.agente | `_parecidos` | 15 | · | ? |
 | core.flujo.agente | `_lugares` | 3 | 7,9 | si |
-| core.flujo.agente | `_orden_de` | 5 | 9 | si |
-| core.flujo.agente | `_tema_por_clave` | 7 | · | si |
-| core.flujo.agente | `buscar` | 27 | 5 | si |
+| core.flujo.agente | `_orden_de` | 5 | 9 | ? |
+| core.flujo.agente | `_tema_por_clave` | 7 | · | ? |
+| core.flujo.agente | `buscar` | 27 | · | ? |
 | core.flujo.catalogo | `n` | 3 | 4,5,7,9 | si |
 | core.flujo.catalogo | `productos` | 2 | 4,7,9 | si |
 | core.flujo.catalogo | `rubro` | 3 | 7 | si |
@@ -311,16 +317,74 @@ El catalogo y la faq: la tabla con sql, el motor, los filtros, la compatibilidad
 | core.flujo.catalogo | `_si_no_nombrado` | 10 | 9 | si |
 | core.flujo.catalogo | `_contiene` | 5 | · | si |
 | core.flujo.catalogo | `_monto` | 8 | 4 | si |
-| core.flujo.catalogo | `atar` | 39 | 4,7,9 | si |
+| core.flujo.catalogo | `atar` | 39 | 7,9 | si |
 | core.flujo.catalogo | `cumple` | 14 | 7,9 | si |
 | core.flujo.catalogo | `buscar` | 30 | 7 | si |
+| core.flujo.nuevo.condicion | `_catalogo` | 3 | · | si |
+| core.flujo.nuevo.condicion | `variantes` | 6 | · | si |
+| core.flujo.nuevo.condicion | `Fuente` (clase) | 55 | · | si |
+| core.flujo.nuevo.condicion | `_palabra_producto` | 2 | · | si |
+| core.flujo.nuevo.condicion | `_unidad` | 10 | · | si |
+| core.flujo.nuevo.condicion | `_hallar` | 11 | · | si |
+| core.flujo.nuevo.condicion | `_si_no_por_clave` | 7 | · | si |
+| core.flujo.nuevo.condicion | `_niega` | 12 | · | si |
+| core.flujo.nuevo.condicion | `seguro` | 137 | 5 | si |
+| core.flujo.nuevo.condicion | `etiqueta` | 2 | · | si |
+| core.flujo.nuevo.condicion | `docs_campo` | 5 | · | si |
+| core.flujo.nuevo.condicion | `docs_valor` | 5 | · | si |
+| core.flujo.nuevo.condicion | `Puntajes` (clase) | 17 | · | si |
+| core.flujo.nuevo.condicion | `opciones` | 18 | · | si |
+| core.flujo.nuevo.condicion | `de_jev` | 15 | · | si |
+| core.flujo.nuevo.condicion | `Nexo` (clase) | 60 | · | si |
+| core.flujo.nuevo.condicion | `_filtro` | 4 | · | si |
+| core.flujo.nuevo.condicion | `_cumple` | 5 | · | si |
+| core.flujo.nuevo.condicion | `rubro_de` | 11 | 5 | si |
+| core.flujo.nuevo.condicion | `fuente` | 3 | · | si |
+| core.flujo.nuevo.contrato | `Resultado` (clase) | 7 | · | si |
+| core.flujo.nuevo.contrato | `Linea` (clase) | 5 | 5 | si |
+| core.flujo.nuevo.contrato | `pendiente` | 2 | · | si |
+| core.flujo.nuevo.contrato | `Indice` (clase) | 11 | 5 | si |
+| core.flujo.nuevo.contrato | `ruteo` | 14 | · | si |
+| core.flujo.nuevo.contrato | `nexo_producto` | 12 | · | si |
+| core.flujo.nuevo.contrato | `nexo_tema` | 9 | · | si |
+| core.flujo.nuevo.contrato | `nexo_nombrado` | 16 | · | si |
+| core.flujo.nuevo.contrato | `nexo_condicion` | 29 | · | si |
+| core.flujo.nuevo.contrato | `nexo_destino` | 13 | · | si |
+| core.flujo.nuevo.contrato | `nexos` | 19 | · | si |
+| core.flujo.nuevo.contrato | `filtro` | 12 | · | si |
+| core.flujo.nuevo.contrato | `redactar` | 53 | · | si |
+| core.flujo.nuevo.contrato | `memoria` | 4 | · | si |
+| core.flujo.nuevo.contrato | `flujo` | 5 | 5 | si |
+| core.flujo.nuevo.jev | `llamar` | 15 | 5 | si |
+| core.flujo.nuevo.jev | `preguntas_mensaje` | 22 | 5 | si |
+| core.flujo.nuevo.jev | `preguntas_condicion` | 10 | 5 | si |
+| core.flujo.nuevo.nombrado | `_codigo` | 2 | · | si |
+| core.flujo.nuevo.nombrado | `Nexo` (clase) | 200 | · | si |
+| core.flujo.nuevo.rubro | `n` | 4 | · | si |
+| core.flujo.nuevo.rubro | `fuente` | 8 | · | si |
+| core.flujo.nuevo.rubro | `doc_rubro` | 2 | · | si |
+| core.flujo.nuevo.rubro | `indice_rubros` | 4 | · | si |
+| core.flujo.nuevo.rubro | `etiquetas` | 2 | · | si |
+| core.flujo.nuevo.rubro | `doc_producto` | 4 | · | si |
+| core.flujo.nuevo.rubro | `Nexo` (clase) | 75 | · | si |
+| core.flujo.nuevo.tema | `fuente` | 4 | · | si |
+| core.flujo.nuevo.tema | `docs` | 3 | · | si |
+| core.flujo.nuevo.tema | `_una_letra` | 7 | · | si |
+| core.flujo.nuevo.tema | `Nexo` (clase) | 60 | · | si |
+| core.flujo.nuevo.tema | `_desc` | 2 | · | si |
+| core.flujo.nuevo.vectores | `ruta_indice` | 2 | · | si |
+| core.flujo.nuevo.vectores | `indice` | 8 | · | si |
+| core.flujo.nuevo.vectores | `consultas` | 15 | · | si |
+| core.flujo.nuevo.vectores | `_punto` | 4 | · | si |
+| core.flujo.nuevo.vectores | `puntajes` | 22 | 5 | si |
+| core.flujo.nuevo.vectores | `puntajes_condicion` | 9 | 5 | si |
 | core.flujo.tabla | `_columnas` | 20 | · | si |
-| core.flujo.tabla | `tabla` | 14 | 4,9 | si |
-| core.flujo.tabla | `es_consulta` | 2 | 5 | si |
-| core.flujo.tabla | `columnas` | 2 | 4,9 | si |
-| core.flujo.tabla | `ficha` | 5 | 9 | si |
-| core.flujo.tabla | `con_orden` | 7 | · | si |
-| core.flujo.tabla | `consultar` | 51 | · | si |
+| core.flujo.tabla | `tabla` | 14 | 4 | si |
+| core.flujo.tabla | `es_consulta` | 2 | · | ? |
+| core.flujo.tabla | `columnas` | 2 | · | ? |
+| core.flujo.tabla | `ficha` | 5 | 5 | si |
+| core.flujo.tabla | `con_orden` | 7 | · | ? |
+| core.flujo.tabla | `consultar` | 51 | · | ? |
 | core.fuente_producto | `_norm` | 3 | · | si |
 | core.fuente_producto | `_patron_clave` | 7 | · | si |
 | core.fuente_producto | `_ruta_config` | 15 | · | si |
@@ -394,10 +458,10 @@ El pedido que vive en el codigo, la cuenta, el envio, el reparto del pago y el e
 | core.flujo.agente | `pedido` | 58 | 5,8 | si |
 | core.flujo.agente | `_con_descuento` | 5 | · | si |
 | core.flujo.agente | `presupuesto` | 106 | 5,8 | si |
-| core.flujo.agente | `calcular` | 10 | 5 | si |
-| core.flujo.agente | `_pegado` | 3 | 5 | si |
+| core.flujo.agente | `calcular` | 10 | · | ? |
+| core.flujo.agente | `_pegado` | 3 | · | - |
 | core.flujo.agente | `_id_de` | 2 | 5 | si |
-| core.flujo.agente | `_por_rubro` | 4 | 9 | si |
+| core.flujo.agente | `_por_rubro` | 4 | 9 | ? |
 | core.flujo.borrador | `leer` | 3 | 4 | si |
 | core.flujo.borrador | `_destino` | 7 | · | si |
 | core.flujo.borrador | `_mismo_destino` | 4 | · | si |
@@ -551,22 +615,13 @@ El link de pago, los datos de transferencia, el lead y el aviso al dueno. 20 fun
 
 ### 9 RESPUESTA Y CONTROL
 
-La respuesta atada, el verificador y los controles de lo que el modelo omitio. 28 funciones, 394 lineas.
+La respuesta atada, el verificador y los controles de lo que el modelo omitio. 19 funciones, 275 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
 | core.flujo.agente | `destinos_dichos` | 6 | 7 | si |
-| core.flujo.agente | `sin_buscar` | 14 | 5 | si |
-| core.flujo.agente | `omitidos` | 44 | 5 | si |
-| core.flujo.respuesta | `_A` | 3 | · | si |
-| core.flujo.respuesta | `herramienta_responder` | 17 | 5 | si |
-| core.flujo.respuesta | `_voces` | 18 | · | si |
-| core.flujo.respuesta | `datos_en_libre` | 16 | 5 | si |
-| core.flujo.respuesta | `_valor` | 8 | · | si |
-| core.flujo.respuesta | `_corto` | 7 | · | si |
-| core.flujo.respuesta | `_sin_hola` | 3 | · | si |
-| core.flujo.respuesta | `_elegir_productos` | 9 | · | si |
-| core.flujo.respuesta | `armar` | 38 | 5 | si |
+| core.flujo.agente | `sin_buscar` | 14 | · | - |
+| core.flujo.agente | `omitidos` | 44 | · | - |
 | core.flujo.verificador | `_montos` | 2 | · | si |
 | core.flujo.verificador | `_medidas` | 3 | · | si |
 | core.flujo.verificador | `_pagos` | 4 | · | si |
@@ -581,7 +636,7 @@ La respuesta atada, el verificador y los controles de lo que el modelo omitio. 2
 | core.flujo.verificador | `_compat_general` | 15 | · | si |
 | core.flujo.verificador | `_medios` | 18 | · | si |
 | core.flujo.verificador | `_de_todos` | 12 | · | si |
-| core.flujo.verificador | `sin_marcadas` | 6 | 5 | si |
+| core.flujo.verificador | `sin_marcadas` | 6 | · | - |
 | core.flujo.verificador | `verificar` | 62 | 5 | si |
 
 ### 10 TEXTOS Y GUARDAS
@@ -597,7 +652,7 @@ La prosa fija de la casa y las guardas de salida. 17 funciones, 208 lineas.
 | core.guia_venta_prosa | `temas` | 3 | 4 | si |
 | core.guia_venta_prosa | `disparadores_de` | 4 | 4 | si |
 | core.guia_venta_prosa | `identidad` | 6 | · | ? |
-| core.guia_venta_prosa | `mensaje` | 12 | 0,1,2,3,5,6,7,8 | si |
+| core.guia_venta_prosa | `mensaje` | 12 | 0,1,2,3,6,7,8 | si |
 | core.guia_venta_prosa | `_resultado` | 9 | · | si |
 | core.guia_venta_prosa | `consultar_guia_venta` | 22 | 4 | si |
 | core.guia_venta_prosa | `texto_de` | 4 | · | - |
@@ -610,12 +665,12 @@ La prosa fija de la casa y las guardas de salida. 17 funciones, 208 lineas.
 
 ### 0 INFRA
 
-Configuracion, logs, administracion de la tienda y arranque. 19 funciones, 533 lineas.
+Configuracion, logs, administracion de la tienda y arranque. 19 funciones, 538 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
 | config | `_mensaje_de_la_fuente` | 7 | · | si |
-| config | `Settings` (clase) | 149 | · | si |
+| config | `Settings` (clase) | 154 | · | si |
 | config | `get_settings` | 2 | 4,5,6,8 | si |
 | logger | `_gcp_fields` | 10 | · | si |
 | logger | `setup_logging` | 16 | · | si |
@@ -640,32 +695,59 @@ Los campos de la variable `memoria` que tocan las funciones de `app/`, leidos de
 
 | campo | lo lee | lo escribe |
 |---|---|---|
-| `_cmds` | - | agente.pedido, agente.responder |
-| `_ultimo` | agente.cobrar, agente.estado_de, agente.omitidos, agente.pedido, agente.presupuesto | agente.pedido, agente.presupuesto, agente.responder |
-| `dicho` | agente.responder | agente.responder |
+| `_cmds` | - | agente.pedido, turno.responder |
+| `_ultimo` | agente.cobrar, agente.estado_de, agente.omitidos, agente.pedido, agente.presupuesto | agente.pedido, agente.presupuesto, turno.responder |
+| `dicho` | segunda.entrada, turno.responder | turno.responder |
 | `estado` | agente.estado_de, agente.memoria_texto | - |
-| `fuente` | agente.responder | agente.responder |
-| `lead` | agente.cobrar, agente.responder | agente.cobrar |
-| `mostrado` | agente.estado_de, agente.omitidos, agente.presupuesto, respuesta.armar | - |
-| `nombre_para` | agente.responder | agente.responder |
+| `lead` | agente.cobrar, turno.responder | agente.cobrar |
+| `mostrado` | agente.estado_de, agente.omitidos, agente.presupuesto | - |
+| `nombre_para` | turno.responder | turno.responder |
 | `pago` | agente.cobrar, agente.presupuesto | agente.cobrar |
-| `pedido` | agente.cobrar, agente.estado_de, agente.memoria_texto, agente.presupuesto, agente.responder, respuesta.armar | - |
+| `pedido` | agente.cobrar, agente.estado_de, agente.memoria_texto, agente.presupuesto, turno.responder | - |
 | `tope` | agente.presupuesto | - |
+| `vistos` | segunda.vistos_texto, turno.responder | turno.responder |
 
-## Sin alcance desde las entradas: 11 (7 con `-`, 4 con `?`)
+## Sin alcance desde las entradas: 38 (14 con `-`, 24 con `?`)
 
 Ningun codigo alcanzable desde los webhooks o el orquestador las nombra. Se revisan una por una antes de borrar.
 
 | alcance | caja | modulo | funcion | lineas |
 |---|---|---|---|---|
 | - | 3 | core.estado_venta | `set_current_estado` | 7 |
+| ? | 6 | core.flujo.agente | `_vectores` | 20 |
+| ? | 6 | core.flujo.agente | `_base` | 9 |
+| ? | 6 | core.flujo.agente | `_parecidos` | 15 |
+| ? | 6 | core.flujo.agente | `_orden_de` | 5 |
+| ? | 6 | core.flujo.agente | `_tema_por_clave` | 7 |
+| ? | 6 | core.flujo.agente | `buscar` | 27 |
+| ? | 7 | core.flujo.agente | `calcular` | 10 |
+| - | 7 | core.flujo.agente | `_pegado` | 3 |
+| - | 9 | core.flujo.agente | `sin_buscar` | 14 |
+| ? | 7 | core.flujo.agente | `_por_rubro` | 4 |
+| - | 9 | core.flujo.agente | `omitidos` | 44 |
+| - | 4 | core.flujo.agente | `hoja_reglas` | 11 |
 | ? | 7 | core.flujo.interprete | `datos` | 10 |
+| ? | 4 | core.flujo.respuesta | `Citas` | 19 |
+| ? | 4 | core.flujo.tabla | `mapa` | 13 |
+| ? | 6 | core.flujo.tabla | `es_consulta` | 2 |
+| ? | 6 | core.flujo.tabla | `columnas` | 2 |
+| ? | 4 | core.flujo.tabla | `resumen` | 9 |
+| ? | 6 | core.flujo.tabla | `con_orden` | 7 |
+| ? | 6 | core.flujo.tabla | `consultar` | 51 |
+| - | 9 | core.flujo.verificador | `sin_marcadas` | 6 |
 | ? | 4 | core.fuente | `inventario` | 8 |
 | ? | 10 | core.guardas_salida | `_norm` | 3 |
 | ? | 10 | core.guia_venta_prosa | `identidad` | 6 |
 | - | 10 | core.guia_venta_prosa | `texto_de` | 4 |
+| ? | 5 | core.llm_reintento | `anotar_llamada_negada` | 4 |
 | - | 5 | core.llm_reintento | `sin_cupo` | 3 |
 | - | 5 | core.llm_reintento | `reiniciar_cupo` | 2 |
+| ? | 5 | core.llm_reintento | `es_transitorio` | 5 |
+| ? | 5 | core.llm_reintento | `espera_sugerida` | 9 |
+| - | 5 | core.llm_reintento | `llamar_con_reintento` | 34 |
+| ? | 5 | core.llm_reintento | `_settings` | 3 |
+| - | 5 | core.llm_reintento | `_cliente` | 14 |
+| ? | 5 | core.llm_reintento | `_modelo` | 5 |
 | - | 3 | storage.firestore_client | `register_tienda` | 13 |
 | - | 3 | storage.firestore_client | `upsert_products_batch` | 31 |
 | - | 3 | storage.firestore_client | `set_config` | 2 |

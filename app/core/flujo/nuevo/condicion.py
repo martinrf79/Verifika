@@ -455,13 +455,6 @@ def _cumple(p, f, fx):
     return fx.C.cumple(p, f)
 
 
-def no_filtra(it, r, nx):
-    """Un item que no deja afuera ningun producto del rubro: lo que vale para todo el rubro."""
-    if it["veredicto"] not in ("ata",):
-        return False
-    return len(nx.filas(r, [it])) == len(nx.filas(r, []))
-
-
 
 def rubro_de(l, por_id):
     """(rubro, motivo): el rubro sobre el que corre la condicion, o None con el motivo por el que no corre."""
