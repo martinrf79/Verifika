@@ -229,7 +229,15 @@ class Nexo:
         esta en un modelo, o un codigo con letras y numeros aunque la tienda no lo tenga, "sony xm4", para que la
         identidad diga que no esta en vez de traer todos los Sony."""
         R = self.rub[rubro]
-        ws = self._acomodar([w for w in NR.n(busqueda).split() if w not in self.vacias], R)
+        ws = [w for w in NR.n(busqueda).split() if w not in self.vacias]
+        # LO QUE PIDE CON MAS O MENOS NO ES IDENTIDAD, 17-nov: "mouse logitech el mas barato" tomaba "mas" pegado a la
+        # marca y lo llevaba al "master" del MX Master 3S. Las palabras del orden las toma `nexo_orden`.
+        fx = getattr(getattr(self.idx, "condicion", None), "fx", None)
+        if fx is not None and rubro in fx.campos:
+            import nexo_orden as NO
+            fuera = {k for ks, _ in NO.detectar(ws, set(), rubro, fx) for k in ks}
+            ws = [w for k, w in enumerate(ws) if k not in fuera]
+        ws = self._acomodar(ws, R)
 
         def codigo(w):
             return any(c.isdigit() for c in w) and any(c.isalpha() for c in w)
@@ -332,7 +340,15 @@ class Nexo:
     def _nombra(self, busqueda, rubro):
         """Cuantas palabras de la busqueda nombran algo de ese rubro: marca, nombre de modelo o codigo de su catalogo."""
         R = self.rub[rubro]
-        ws = self._acomodar([w for w in NR.n(busqueda).split() if w not in self.vacias], R)
+        ws = [w for w in NR.n(busqueda).split() if w not in self.vacias]
+        # LO QUE PIDE CON MAS O MENOS NO ES IDENTIDAD, 17-nov: "mouse logitech el mas barato" tomaba "mas" pegado a la
+        # marca y lo llevaba al "master" del MX Master 3S. Las palabras del orden las toma `nexo_orden`.
+        fx = getattr(getattr(self.idx, "condicion", None), "fx", None)
+        if fx is not None and rubro in fx.campos:
+            import nexo_orden as NO
+            fuera = {k for ks, _ in NO.detectar(ws, set(), rubro, fx) for k in ks}
+            ws = [w for k, w in enumerate(ws) if k not in fuera]
+        ws = self._acomodar(ws, R)
         return sum(w in R["marcas"] or w in R["nombres"] or (_codigo(w) and any(w in t for t in R["tokens"])) for w in ws)
 
     def rubro(self, busqueda, elegido):

@@ -65,44 +65,76 @@ def mensajes():
 
 
 # ══ PASO 1, LA LLAMADA 0 ═════════════════════════════════════════════════════
+# LA MEMORIA DE LA BUSQUEDA, 17-nov, orden de Martin: el mensaje que sigue una busqueda anterior, "y en blanco?", "de
+# esos el mas barato", "y teclados?", no tiene producto, y la llamada 0 sola lo dejaba sin busqueda: C35, K11, K17, K18 y
+# K21 en las tres corridas del 16-nov. La llamada 0 recibe lo que el cliente busco en los ultimos turnos y escribe la
+# busqueda completa. El prompt v2 no cambia: la memoria va en el mensaje, y solo si hay turnos antes. El primer mensaje de
+# una charla le llega igual que en las 140, los reales y las 365, y se reusa lo grabado con v2.
+PROMPT0M = "v2m"
+MEMORIA_TURNOS0 = 3
+MEMORIA0 = """ANTES, EN LA MISMA CHARLA, EL CLIENTE BUSCO ESTO, lo mas viejo primero:
+{lineas}
+Si el mensaje sigue una de esas busquedas sin nombrar el producto, o pide otro producto en una frase corta que se apoya
+en la anterior, como "y en blanco?", "de esos el mas barato", "otras marcas" o "y teclados?", escribi en busqueda la
+busqueda completa: el producto y lo que sigue valiendo de antes, con lo nuevo. Lo que el cliente cambia o descarta ya no
+va. Si el mensaje pide otra cosa, o no busca un producto, esto no cuenta."""
+
+
+def entrada0(previas, texto):
+    """El mensaje que recibe la llamada 0: el del cliente, y lo que busco antes si hubo."""
+    ls = [f'- "{l["fragmento"]}" -> busqueda: {l["busqueda"]}' for ls in previas[-MEMORIA_TURNOS0:] for l in ls
+          if l.get("busqueda")]
+    return texto + ("\n\n" + MEMORIA0.format(lineas="\n".join(ls)) if ls else "")
+
+
 def correr_llamada0():
-    """La elegida sobre los mensajes que faltan, en `llamada0_modelos.jsonl` con banco charlas26: el tope de un dolar del
-    modelo cuenta todo el banco, esto y la segunda llamada."""
+    """La elegida sobre los mensajes que faltan, turno por turno, con lo que el cliente busco antes. En
+    `llamada0_modelos.jsonl` con banco charlas26 y prompt v2m: el tope de un dolar cuenta todo el banco."""
     import engranaje0 as E
     import llamada0_modelos as LM
-    hechas = {r["id"] for r in LM.filas() if r["corrida"] == CORRIDA0 and r["prompt"] == PROMPT0
-              and r["banco"] == BANCO and r.get("salida")}
-    falta = [m for m in mensajes() if m[0] not in hechas]
-    print(f"[llamada 0 {CORRIDA0} {PROMPT0}: {len(falta)} por correr]", flush=True)
-    for cid, texto in falta:
-        tope()
-        fila = {"corrida": CORRIDA0, "prompt": PROMPT0, "banco": BANCO, "id": cid, "modelo": LM.MODELOS[CORRIDA0][1]}
-        for intento in range(4):
-            try:
-                salida, e, s, seg, dol, crudo = LM.pedir(CORRIDA0, PROMPT0, texto)
-                fila.update({"entrada": e, "salida_tokens": s, "segundos": seg,
-                             "dolares": round((fila.get("dolares") or 0) + dol, 7)})
-                if E.valido(salida):
-                    fila.update({"salida": salida, "reintentos": intento})
-                    fila.pop("error", None)
-                    break
-                fila["invalida"] = crudo[:300]
-            except Exception as ex:  # noqa: BLE001
-                fila["error"] = f"{type(ex).__name__}: {str(ex)[:300]}"
-                print(f"  {cid} intento {intento}: {fila['error']}", flush=True)
-                time.sleep(5 * (intento + 1))
-        with open(LLAMADA0, "a", encoding="utf-8") as fh:
-            fh.write(json.dumps(fila, ensure_ascii=False) + "\n")
-        print(f"  {cid} {[(l['busqueda'], l['destino']) for l in (fila.get('salida') or {}).get('lineas', [])]}", flush=True)
+    filas = [r for r in LM.filas() if r["corrida"] == CORRIDA0 and r["banco"] == BANCO and r.get("salida")]
+    v2 = {r["id"]: r for r in filas if r["prompt"] == PROMPT0}
+    hechas = {r["id"]: r for r in filas if r["prompt"] == PROMPT0M}
+    for ch, gs in charlas().items():
+        previas = []
+        for g in gs:
+            cid = f"{ch}|{g['turno']}"
+            if cid in hechas:
+                previas.append(hechas[cid]["salida"]["lineas"])
+                continue
+            texto = entrada0(previas, g["mensaje"])
+            fila = {"corrida": CORRIDA0, "prompt": PROMPT0M, "banco": BANCO, "id": cid, "modelo": LM.MODELOS[CORRIDA0][1],
+                    "entrada_texto": texto}
+            if texto == g["mensaje"] and cid in v2:
+                # La misma entrada que la v2: lo grabado vale, sin gasto.
+                fila.update({"salida": v2[cid]["salida"], "dolares": 0, "copiado_de": PROMPT0})
+            else:
+                tope()
+                for intento in range(4):
+                    try:
+                        salida, e, s_, seg, dol, crudo = LM.pedir(CORRIDA0, PROMPT0, texto)
+                        fila.update({"entrada": e, "salida_tokens": s_, "segundos": seg,
+                                     "dolares": round((fila.get("dolares") or 0) + dol, 7)})
+                        if E.valido(salida):
+                            fila.update({"salida": salida, "reintentos": intento})
+                            fila.pop("error", None)
+                            break
+                    except Exception as ex:  # noqa: BLE001
+                        fila["error"] = f"{type(ex).__name__}: {str(ex)[:300]}"
+                        time.sleep(5 * (intento + 1))
+            with open(LLAMADA0, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(fila, ensure_ascii=False) + "\n")
+            previas.append((fila.get("salida") or {}).get("lineas", []))
+            print(f"  {cid} {[(l['busqueda'], l['destino']) for l in previas[-1]]}", flush=True)
 
 
 def llamada0():
-    """{id: [Linea]} de lo grabado; un mensaje sin cosas que buscar, "Sip", da ninguna linea."""
+    """{id: [Linea]} de lo grabado con la memoria de la busqueda; un mensaje sin cosas que buscar, "Sip", da ninguna."""
     import flujo_nuevo as F
     out = {}
     for x in open(LLAMADA0, encoding="utf-8"):
         r = json.loads(x)
-        if r["corrida"] == CORRIDA0 and r["prompt"] == PROMPT0 and r["banco"] == BANCO and r.get("salida"):
+        if r["corrida"] == CORRIDA0 and r["prompt"] == PROMPT0M and r["banco"] == BANCO and r.get("salida"):
             out[r["id"]] = [F.Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
                                     str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
     return out
@@ -319,7 +351,13 @@ def texto_nexos(lineas, citas, tid):
                     pedido = ", ".join(it["parte"] for it in d["items"])
                     cuerpo += [f"  en {d['rubro']}, con {pedido}:"] + [f"  {x}" for x in filas if x]
                 elif r.veredicto == "no hay":
-                    t = f"{d['rubro'].capitalize()} {', '.join(d['partes'])} no hay."
+                    # Lo que no separa nada, "las menos partes chinas" donde todo es de China, se dice con el dato.
+                    t = " ".join([f"En {d['rubro']} no hay sin {it['valor']}: todos tienen {it['campo'].replace('_', ' ')} "
+                                  f"{it['valor']}." if it.get("de_orden") == "menos" else
+                                  f"En {d['rubro']} no hay con {it['campo'].replace('_', ' ')} {it['valor']}."
+                                  for it in d["items"] if it.get("de_orden")]
+                                 + [f"{d['rubro'].capitalize()} {p} no hay." for p in d["partes"]
+                                    if not any(it.get("de_orden") and it["parte"] == p for it in d["items"])])
                     cuerpo += [f"  {citas('dato', t, t)}: {t}"] + (["  lo mas cercano:"] + [f"  {x}" for x in filas if x]
                                                                     if filas else [])
                 else:

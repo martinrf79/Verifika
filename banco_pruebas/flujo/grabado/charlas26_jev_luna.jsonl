@@ -48,3 +48,25 @@
 {"tipo": "c", "rubro": "mouse", "busqueda": "1 mouse, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"1": "solo_producto", "menor cantidad posible de partes chinas; precio no prioritario": "ninguno"}}
 {"tipo": "c", "rubro": "memoria ram", "busqueda": "2 memorias, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"2": "ninguno", "menor cantidad posible de partes chinas; precio no prioritario": "pais_fabricacion|taiwan o china segun linea"}}
 {"tipo": "c", "rubro": "teclado", "busqueda": "1 teclado, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"1": "solo_producto", "menor cantidad posible de partes chinas; precio no prioritario": "ninguno"}}
+{"tipo": "t", "id": "C21|1", "respuestas": {"1": "ninguno"}}
+{"tipo": "t", "id": "C34|1", "respuestas": {"0": "cambio_direccion"}}
+{"tipo": "p", "id": "C34|1", "respuestas": {"0": "ninguno"}}
+{"tipo": "t", "id": "C35|1", "respuestas": {"0": "ninguno"}}
+{"tipo": "t", "id": "C49|3", "respuestas": {"1": "stock_disponibilidad"}}
+{"tipo": "p", "id": "C50|2", "respuestas": {"0": "ninguno"}}
+{"tipo": "p", "id": "K13|2", "respuestas": {"0": "NOT0052"}}
+{"tipo": "t", "id": "K16|2", "respuestas": {"0": "costo_envio"}}
+{"tipo": "p", "id": "C43|1", "respuestas": {"0": "TEC0029"}}
+{"tipo": "c", "rubro": "auriculares", "busqueda": "auriculares con microfono", "partes": {"microfono": "ninguno"}}
+{"tipo": "c", "rubro": "auriculares", "busqueda": "auriculares con microfono para PlayStation 5", "partes": {"microfono para playstation 5": "uso_recomendado|gaming"}}
+{"tipo": "c", "rubro": "mouse", "busqueda": "mouse para oficina, lo mas barato posible", "partes": {"oficina": "ninguno"}}
+{"tipo": "c", "rubro": "teclado", "busqueda": "teclado para oficina, lo mas barato posible", "partes": {"oficina": "solo_producto"}}
+{"tipo": "c", "rubro": "teclado", "busqueda": "teclado para oficina, lo más barato posible", "partes": {"oficina": "ninguno"}}
+{"tipo": "c", "rubro": "teclado", "busqueda": "teclado para oficina, lo más barato posible, 3 unidades", "partes": {"oficina": "ninguno"}}
+{"tipo": "c", "rubro": "teclado", "busqueda": "teclado para oficina, lo más barato posible, 2 unidades", "partes": {"oficina": "ninguno"}}
+{"tipo": "c", "rubro": "auriculares", "busqueda": "2 auriculares, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"precio no prioritario": "ninguno"}}
+{"tipo": "c", "rubro": "auriculares", "busqueda": "1 auricular, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"precio no prioritario": "ninguno"}}
+{"tipo": "c", "rubro": "mouse", "busqueda": "1 mouse, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"precio no prioritario": "ninguno"}}
+{"tipo": "c", "rubro": "memoria ram", "busqueda": "2 memorias, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"precio no prioritario": "ninguno"}}
+{"tipo": "c", "rubro": "teclado", "busqueda": "1 teclado, con la menor cantidad posible de partes chinas; precio no prioritario", "partes": {"precio no prioritario": "ninguno"}}
+{"tipo": "c", "rubro": "auriculares", "busqueda": "auriculares JBL precio", "partes": {"precio": "ninguno"}}

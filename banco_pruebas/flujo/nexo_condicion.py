@@ -202,7 +202,9 @@ def _niega(tokens, i, usados):
 def seguro(busqueda, r, fx):
     """PIEZAS 1 Y 2. [(parte, item)] de lo que el codigo ata solo, y las partes que quedan para la busqueda: [texto]."""
     C = fx.C
-    texto = C.n(busqueda)
+    # LOS SIGNOS NO SON PALABRAS, 17-nov: la llamada 0 elegida separa con comas, "auriculares, 2 unidades, con...", y
+    # "2," o "inalambrico," no se ataban o se ataban a las etiquetas.
+    texto = " ".join(re.sub(r"[,;:!?¿¡()]", " ", C.n(busqueda)).split())
     items = []
     t = C._TOPE.search(texto)
     if t:
@@ -227,6 +229,13 @@ def seguro(busqueda, r, fx):
         if not m:
             continue
         num, u = m.group(1), m.group(2)
+        # LA CANTIDAD NO ES CONDICION, 17-nov: "2 auriculares", "2 unidades". El numero pegado antes del producto, o con
+        # la palabra unidad, es cuantos lleva: lo anota el pedido, no filtra. Se repreguntaba en K20 y K21.
+        unidad_ = i + 1 < len(tokens) and bool(re.fullmatch(r"u|unid\w*", tokens[i + 1]))
+        cantidad_ = i > 0 and tokens[i - 1] == "cantidad" and i - 1 not in usados
+        if not u and (i + 1 in usados or unidad_ or cantidad_):
+            usados.update([i] + ([i + 1] if unidad_ else []) + ([i - 1] if cantidad_ else []))
+            continue
         sig = i + 1 if not u and i + 1 < len(tokens) and i + 1 not in usados and tokens[i + 1].isalpha() \
             and tokens[i + 1] not in C._RELLENO else None
         if sig is not None:
@@ -272,19 +281,12 @@ def seguro(busqueda, r, fx):
                 items.append({"parte": f"{tokens[j]} {num}", "veredicto": "ata", "campo": hit[0], "valor": hit[1],
                               "niega": False, "por": "codigo"})
                 usados.update([i, j])
-    # PIEZA 2b: el orden, con las palabras de lo que `catalogo.ORDEN` sabe ordenar.
-    ordenes = {k.split()[-1]: k for k in C.ORDEN}
-    for i, w in enumerate(tokens):
-        if i in usados:
-            continue
-        k = next((ordenes[x] for x in variantes(w) if x in ordenes), None)
-        if k:
-            # "el mas barato", "lo mas liviano": la gramatica del orden va con el.
-            ks = [i]
-            while ks[0] > 0 and ks[0] - 1 not in usados and tokens[ks[0] - 1] in ("mas", "el", "la", "lo", "los", "las"):
-                ks.insert(0, ks[0] - 1)
-            items.append({"parte": " ".join(tokens[x] for x in ks), "veredicto": "orden", "valor": k, "por": "codigo"})
-            usados.update(ks)
+    # PIEZA 2b: lo que pide con mas o menos, `nexo_orden`, 17-nov: el orden de la tienda, un campo con numeros o un valor
+    # que va primero o ultimo. Antes solo los cuatro de `catalogo.ORDEN`.
+    import nexo_orden as NO
+    for ks, it in NO.detectar(tokens, usados, r, fx):
+        items.append(it)
+        usados.update(ks)
     # PIEZA 2c: los valores de la tienda, la frase mas larga primero; y los campos de si o no por su clave.
     for largo in (3, 2, 1):
         for i in range(len(tokens) - largo + 1):
@@ -467,6 +469,19 @@ class Nexo:
         out = []
         todos = self.fx.por_rubro[r]
         for it in items:
+            if it["veredicto"] == "orden" and "=" in str(it["valor"]):
+                # MAS O MENOS DE UN VALOR QUE NO SEPARA NADA, 17-nov: "las menos partes chinas" donde todo con stock se
+                # fabrica en China no ordena: es no hay, y se dice con lo mas cercano. Lo que nadie trae, no ordena.
+                lado, resto = it["valor"].split(" ", 1)
+                campo, valor = resto.split("=", 1)
+                stock = self.fx.con_stock(r)
+                n = sum(self.fx.C._contiene(self.fx.C._valores(p, campo), valor) for p in stock)
+                if (lado == "menos" and n == len(stock)) or (lado == "mas" and n == 0):
+                    it = dict(it, veredicto="no hay", campo=campo, valor=valor, de_orden=lado)
+                elif n in (0, len(stock)):
+                    continue
+                out.append(it)
+                continue
             if it["veredicto"] == "ata":
                 f = _filtro(it)
                 n = sum(_cumple(p, f, self.fx) for p in todos)
@@ -482,10 +497,10 @@ class Nexo:
         C = self.fx.C
         filtros = [_filtro(it) for it in items if it["veredicto"] in ("ata", "tope")]
         quedan = [p for p in self.fx.con_stock(r) if all(_cumple(p, f, self.fx) for f in filtros)]
-        orden = next((it["valor"] for it in items if it["veredicto"] == "orden"), None)
-        if orden:
-            campo, sentido = C.ORDEN[orden]
-            quedan.sort(key=lambda p: sentido * float(p.get(campo) or 0))
+        ordenes = [it["valor"] for it in items if it["veredicto"] == "orden"]
+        if ordenes:
+            import nexo_orden as NO
+            quedan = NO.ordenar(quedan, ordenes, self.fx)
         out, vistos = [], set()
         for p in quedan:
             m = (p.get("marca"), p.get("modelo") or p["id"])

@@ -195,6 +195,11 @@ def ruteo(linea, idx):
         nexos.append("nombrado")
         if len([w for w in palabras[1:] if w not in idx.marcas]) >= 1:
             nexos.append("condicion")
+    elif linea.fragmento:
+        # Sin producto, lo que pide con mas o menos va sobre la tienda entera: "el articulo mas caro que vendes", 17-nov.
+        import nexo_orden as NO
+        if NO.hay(linea.fragmento, idx.condicion.fx):
+            nexos.append("condicion")
     if linea.fragmento:
         nexos.append("tema")
     if linea.destino:
@@ -249,10 +254,10 @@ def nexo_condicion(linea, idx, por_id):
     """El nexo de condicion, `nexo_condicion`, sobre el rubro que ya decidieron el de producto y el nombrado. None si no
     corre, o si la busqueda no pide nada mas que el producto."""
     import nexo_condicion as NC
-    r, _ = NC.rubro_de(linea, por_id)
-    if r is None:
-        return None
+    r, motivo = NC.rubro_de(linea, por_id)
     nx = idx.condicion
+    if r is None:
+        return orden_tienda(linea, nx) if motivo != "nombrado exists" else None
     items = nx.condicion(linea.busqueda, r)["items"]
     if not items:
         return None
@@ -275,6 +280,28 @@ def nexo_condicion(linea, idx, por_id):
                           "partes": [it["parte"] for it in items if it["veredicto"] == "no hay"] or [linea.busqueda]})
     fs = [fila(p) for p in filas[:3]]
     return Resultado("condicion", [x["id"] for x in fs], fs[0]["id"], "coincide", {"rubro": r, "items": items, "filas": fs})
+
+
+def orden_tienda(linea, nx):
+    """LA TIENDA ENTERA EN EL ORDEN PEDIDO, `nexo_orden`, 17-nov: cuando no hay un rubro de la tienda y el cliente pide con
+    mas o menos. No corre si lo que pide es algo que la tienda declara que no vende: eso es no hay, del nexo de producto."""
+    import nexo_orden as NO
+    prod = next((x for x in linea.nexos if x.nexo == "producto"), None)
+    if prod is not None and not prod.candidatos:
+        return None
+    texto = linea.busqueda or linea.fragmento
+    items = [it for _, it in NO.detectar(NO.palabras(texto, nx.fx), set(), None, nx.fx)]
+    if not items:
+        return None
+    prods, vistos = [], set()
+    for p in NO.ordenar([p for p in nx.fx.prods if nx.fx.C.con_stock(p)], [it["valor"] for it in items], nx.fx):
+        if (p.get("marca"), p.get("modelo") or p["id"]) not in vistos:
+            vistos.add((p.get("marca"), p.get("modelo") or p["id"]))
+            prods.append(p)
+    fs = [{"id": p["id"], "nombre": p["nombre"], "rubro": p["categoria"], "precio": int(float(p["precio_ars"])),
+           "stock": int(p["stock"])} for p in prods[:3]]
+    return Resultado("condicion", [x["id"] for x in fs], fs[0]["id"] if fs else None, "coincide" if fs else "no hay",
+                     {"rubro": "toda la tienda", "items": items, "filas": fs, "partes": [texto]})
 
 
 def nexo_destino(linea):
