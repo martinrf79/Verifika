@@ -181,15 +181,15 @@ def _palabras(t):
     return {w[:-1] if len(w) > 3 and w.endswith("s") else w for w in E.n(t).split()}
 
 
-def lineas_luna():
-    """[(banco, id, fragmento, busqueda, rubros que valen, hay algo que no vende)] con la llamada 0 elegida."""
+def lineas_luna(corrida=("luna", "v2")):
+    """[(banco, id, fragmento, busqueda, rubros que valen, hay algo que no vende)] con esa corrida de la llamada 0."""
     import llamada0_modelos as L
     import reales as RE
-    out = [("140", cid, f, b, {r}, False) for cid, r, f, b in cosas(("luna", "v2")) if b]
+    out = [("140", cid, f, b, {r}, False) for cid, r, f, b in cosas(corrida) if b]
     esperado = {c[0]: (set(c[2].get("rubros", ())), bool(c[2].get("no_vende"))) for c in RE.CASOS}
     esperado.update({c[0]: (set(c[2]["rubros"]), bool(c[2].get("no_vende"))) for c in RE.casos_525()[0]})
     for banco in ("reales", "reales525"):
-        for cid, r in L.corridas_reales(banco)[("luna", "v2")].items():
+        for cid, r in L.corridas_reales(banco)[corrida].items():
             rubs, nv = esperado.get(cid, (set(), False))
             if not rubs or (banco == "reales") != cid.startswith("R"):
                 continue
@@ -200,12 +200,12 @@ def lineas_luna():
     return out
 
 
-def tres_casos():
+def tres_casos(prompt="v2"):
     _, alias, rubros, modelos = NR.fuente()
     ms = list(modelos)
     docs_p = [NR.doc_producto(k, modelos[k], alias) for k in ms]
     ir = NR.indice_rubros(rubros, alias)
-    ls = lineas_luna()
+    ls = lineas_luna(("luna", prompt))
     cache = EMB.cargar()
     vectores(docs_p + [d for _, d in ir], "RETRIEVAL_DOCUMENT", cache)
     vectores(sorted({q for _, _, f, b, _, _ in ls for q in (f, b, f"{f}. {b}" if f else b)}), "RETRIEVAL_QUERY", cache)
@@ -232,7 +232,8 @@ def tres_casos():
         c[caso]["ninguno acierta"] += not any(ok.values())
         filas.append({"banco": banco, "id": cid, "fragmento": f, "busqueda": b, "rubros": sorted(rubs), "caso": caso,
                       "traduccion": trad, "candidatos": cand, "las dos": dos, **{f"ok {k}": v for k, v in ok.items()}})
-    json.dump(filas, open(TRES, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+    json.dump(filas, open(TRES if prompt == "v2" else TRES.replace(".json", f"_{prompt}.json"), "w", encoding="utf-8"),
+              ensure_ascii=False, indent=0)
     return filas, c
 
 
@@ -268,7 +269,8 @@ def informe_tres(filas, c, ver=False):
 
 if __name__ == "__main__":
     if "--tres-casos" in sys.argv:
-        informe_tres(*tres_casos(), "--ver" in sys.argv)
+        p_ = next((x for x in sys.argv[2:] if x.startswith("v")), "v2")
+        informe_tres(*tres_casos(p_), "--ver" in sys.argv)
         sys.exit()
     if "--reales" in sys.argv:
         medir_reales()
