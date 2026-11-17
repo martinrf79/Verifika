@@ -9,12 +9,12 @@ en MAPA.md el mismo dia.
 
 def principal() -> int:
     print("=================== A DONDE IR =====================================")
-    print("  turno        app/core/flujo/turno.py -> agente, ejecutor, verificador")
-    print("  busqueda     app/core/flujo/catalogo.py, motor.py")
+    print("  turno        app/core/flujo/turno.py -> nuevo/turno.py: llamada 0, nexos, segunda")
+    print("  busqueda     app/core/flujo/nuevo/: rubro, tema, nombrado, condicion, vectores, jev")
     print("  plata        app/core/calculadora.py, pago_split.py, pago.py")
     print("  cierre       app/core/flujo/agente.py cobrar, leads.py, pago.py")
     print("  fuente       data/clientes/<tienda>/")
-    print("  la vara      banco_pruebas/agente_replay.py, tests/test_agente.py")
+    print("  la vara      banco_pruebas/flujo/segunda.py, tests/test_flujo_nuevo.py")
     print("  produccion   banco_pruebas/produccion.py")
     print("  el mapa      MAPA.md")
     print("====================================================================")

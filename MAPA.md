@@ -11,13 +11,13 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 
 **Arranque corto:**
 
-1. El camino vivo es `orchestrator` → `flujo.turno.procesar_turno` → `flujo.agente.responder`: la tabla con SQL, ejecutor, verificador.
+1. El camino vivo es `orchestrator` → `flujo.turno.procesar_turno` → `flujo.nuevo.turno.responder`: la llamada 0, los cinco nexos con Jev, la segunda llamada; ejecutor y verificador.
    El motor busca. Lo viejo está en `archivo/` y NO se reenchufa.
 2. Se lee entera la ficha abierta que nombra `PENDIENTE.md` antes de tocar una mejora.
 3. No se crea una función sin mirar si ya existe. La identidad la certifica
    `motor.lo_nombra`; la plata, `calculadora`.
 4. No se cambia el diseño sin preguntarle a Martín.
-5. Cada falla real de WhatsApp entra como caso en `tests/test_agente.py`
+5. Cada falla real de WhatsApp entra como caso en `tests/test_flujo_nuevo.py`
    ANTES de arreglarla.
 
 ## El bot que corre — `app/`
@@ -26,8 +26,14 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | --- | --- |
 | Entrada de WhatsApp y Telegram, webhooks | `app/main.py` |
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
-| El turno entero: la charla, el agente, guardar el historial y su memoria | `app/core/flujo/turno.py` |
-| El agente, FICHA 83: el buscador, el presupuesto, el cobro con el lead, la calculadora y la llamada al modelo | `app/core/flujo/agente.py` |
+| El turno entero: la charla, el flujo nuevo, guardar el historial y su memoria | `app/core/flujo/turno.py` |
+| El flujo nuevo de dos llamadas, FICHA 101: el turno, con sus piezas en vivo y lo que hace si una cae | `app/core/flujo/nuevo/turno.py` |
+| La llamada 0: separa el mensaje en lineas y traduce cada una, el prompt v2 | `app/core/flujo/nuevo/llamada0.py` |
+| Los cinco nexos: rubro y producto, tema, nombrado, condicion; destino y el contrato | `app/core/flujo/nuevo/rubro.py`, `tema.py`, `nombrado.py`, `condicion.py`, `contrato.py` |
+| Los embeddings en vivo contra el indice de la tienda, y Jev en lo dudoso | `app/core/flujo/nuevo/vectores.py`, `jev.py` |
+| El indice de embeddings de la tienda | `data/clientes/<tienda>/indice_embeddings.json.gz` |
+| La segunda llamada chica: retoca el texto del codigo y manda los comandos del pedido | `app/core/flujo/nuevo/segunda.py` |
+| Lo que quedo del agente archivado: el pedido, el presupuesto, el cobro con el lead, la calculadora y la memoria | `app/core/flujo/agente.py` |
 | El verificador: cada afirmacion de la respuesta contra la fuente | `app/core/flujo/verificador.py` |
 | La ficha de un producto en texto y los numeros de lo mostrado | `app/core/flujo/interprete.py` |
 | Lo que dijo el cliente, las lecturas que cierran y lo supuesto hasta que acepta | `app/core/flujo/borrador.py` |
@@ -36,12 +42,12 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Lo que dijo el modelo, llevado a la forma que cumple el ejecutor: la forma normal | `app/core/flujo/normal.py` |
 | Cada pregunta de la agenda, cumplida con las herramientas, y el candado | `app/core/flujo/ejecutor.py` |
 | Identidad de un producto y búsqueda por condiciones | `app/core/flujo/catalogo.py` |
-| El catálogo como tabla: el modelo consulta los productos con SQL, de solo lectura, con el mapa de columnas a la vista | `app/core/flujo/tabla.py` |
+| El catálogo como tabla y la ficha de un producto | `app/core/flujo/tabla.py` |
 | La respuesta al cliente, escrita por el código | `app/core/flujo/redaccion.py` |
 | El estado único de la charla | `app/core/flujo/estado.py` |
 | Índice de la tienda, rubro, cuenta, envío, compatibilidad | `app/core/agente.py` |
 | El motor: buscar, identidad, filtros, cuenta | `app/core/motor.py` |
-| La llamada al modelo y el reintento | `app/core/llm_reintento.py` |
+| La puerta vieja al modelo, sin uso en app/: el banco anota el gasto ahi | `app/core/llm_reintento.py` |
 | Campos y filtros del catálogo | `app/core/filtros_catalogo.py` |
 | Cuenta, precios, envío | `app/core/calculadora.py`, `app/core/envio.py` |
 | Textos del cobro | `app/core/pago.py` |
@@ -84,7 +90,7 @@ en las mismas charlas. Un archivo por paso; todo se califica sin gasto desde `gr
 | Qué querés medir | Archivo |
 | --- | --- |
 | Producción: charlas reales, invariantes, `agente_turno` | `banco_pruebas/produccion.py` |
-| Las 26 charlas grabadas por el agente vivo, sin modelo: la vara del bot | `banco_pruebas/agente_replay.py`, `tests/test_agente.py` |
+| Las 26 charlas por el flujo nuevo con las piezas grabadas, sin modelo: la vara del bot | `banco_pruebas/flujo/segunda.py`, `tests/test_flujo_nuevo.py` |
 | El candado: las charlas reales grabadas con SQL, sin modelo, los turnos que andaban no cambian | `banco_pruebas/examen_real/candado.py`, `tests/test_candado_examen.py` |
 | El diagrama del flujo: las funciones de `app/` en cajas numeradas, el cableado real entre cajas y la memoria; lo genera el código y un test lo cuida | `banco_pruebas/diagrama.py`, `arquitectura/DIAGRAMA_FLUJO.md`, `tests/test_diagrama.py` |
 | En qué caja del flujo se rompe un turno, sin modelo: la traza por cajas y una regla por frontera | `banco_pruebas/traza_cajas.py`, `tests/test_cableado_cajas.py` |

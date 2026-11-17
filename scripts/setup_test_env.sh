@@ -123,10 +123,10 @@ que son los que hacen algo en vez de pedirlo:
 >>> LOS INSTRUMENTOS, y que contesta cada uno <<<
   pytest -q                              bateria offline, sin LLM
   banco_pruebas/produccion.py            charlas reales de Cloud Run
-  banco_pruebas/agente_replay.py         las 26 charlas grabadas por el agente vivo, sin modelo
-  banco_pruebas/agente_replay.py --vivo  lo mismo con el modelo de produccion, con la paga
+  banco_pruebas/flujo/segunda.py s2      las 26 charlas por el flujo nuevo, sin modelo
+  banco_pruebas/flujo/segunda.py --correr <etiqueta>   lo mismo con el modelo, grabado
 
-Camino vivo: orchestrator -> app/core/flujo/turno.procesar_turno -> agente.responder
+Camino vivo: orchestrator -> app/core/flujo/turno.procesar_turno -> nuevo/turno.responder
 Reglas: CLAUDE.md. Donde esta cada cosa: MAPA.md. El plan: CLAUDE.md, seccion 1.
 =============================================================================
 REGLAS
@@ -189,8 +189,8 @@ print("  claves en el entorno: " + "  ".join(env))
 print("  (GCP_SA_KEY_B64 es claude-lector, SOLO LECTURA: con eso"
       " `python3 banco_pruebas/produccion.py` audita tus charlas reales)")
 
-print("  el piso: tests/test_agente.py, las 26 charlas grabadas por el agente vivo, 74 de 75 turnos")
+print("  el piso: tests/test_flujo_nuevo.py, las 26 charlas por el flujo nuevo, 58 de 75 turnos")
 PYEOF
-echo "  el marcador: pytest -q, con el agente adentro: tests/test_agente.py."
+echo "  el marcador: pytest -q, con el flujo nuevo adentro: tests/test_flujo_nuevo.py."
 echo "======================================================================="
 echo ""

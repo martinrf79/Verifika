@@ -17,8 +17,8 @@ anterior, con las historias de cada regla, está en `archivo/documentacion/CLAUD
    literal; `--usuario <numero>` una sola. El entorno trae la cuenta de solo lectura. Sin `gcloud`, comentando
    `/logs` en el issue 31.
 5. **Dónde está cada parte del camino vivo lo dice `MAPA.md`, y sólo ése.** El camino es `orchestrator` →
-   `app/core/flujo/turno.procesar_turno` → `agente.responder`: el modelo busca y escribe, el código pone los datos, el
-   verificador controla. `arquitectura/MAPA_CABLEADO.md` y las fichas hasta la 82 describen caminos ya borrados.
+   `app/core/flujo/turno.procesar_turno` → `nuevo/turno.responder`: la llamada 0 separa y traduce, los cinco nexos
+   con Jev buscan, el código pone los datos y la segunda llamada retoca y manda los comandos del pedido. `arquitectura/MAPA_CABLEADO.md` y las fichas hasta la 82 describen caminos ya borrados.
 
 ---
 
@@ -27,48 +27,44 @@ anterior, con las historias de cada regla, está en `archivo/documentacion/CLAUD
 **El objetivo:** que el bot venda y no alucine. En orden: que responda bien, con la plata bien; que sea
 conciso, sin repetir; que la memoria de la charla no se pierda.
 
-### El flujo de un mensaje, desde el 30-oct
+### El flujo de un mensaje, desde el 17-nov
 
-Por orden de Martín, el turno lo contesta el agente de la FICHA 83, `app/core/flujo/agente.py`. Reemplazó a la lectura
-de la FICHA 81 y al plan del intérprete que traduce, que están en git.
+Por orden de Martín, el turno lo contesta el flujo nuevo de dos llamadas, `app/core/flujo/nuevo/`, FICHA 101. El agente
+de la FICHA 83 quedó archivado: se vuelve a él con git revert.
 
-1. **El modelo vende con herramientas en su idioma:** buscar en castellano libre, presupuesto, cobrar y calcular.
-2. **El código pone los datos:** el buscador devuelve filas reales de la tienda, el ejecutor pone montos, envíos y
-   reparto, y el cobro sale del código de cobro. El presupuesto lo pega el código tal cual.
-3. **El verificador controla cada afirmación** contra lo que devolvieron las herramientas y la charla: datos, productos,
-   atributos, superlativos y stock. Lo que marca vuelve una vez al modelo.
-4. **La memoria** es el historial y la del agente, `memoria_agente`: el pedido anotado, lo último mostrado, el pago y el
-   tope.
+1. **La llamada 0** separa el mensaje en líneas y traduce cada una a una búsqueda, con el modelo de `FLUJO_MODELO`.
+2. **Los cinco nexos** buscan en la tienda: producto, nombrado, condición, tema y destino, con los embeddings de lo que
+   escribió la llamada 0 contra el índice de la tienda, y Jev en lo dudoso. El código arma la respuesta con filas reales.
+3. **La segunda llamada** retoca ese texto y manda los comandos del pedido, la cotización y el cobro, que aplica el
+   código: el ejecutor pone montos, envíos y reparto. El verificador controla el texto; si marca, sale el del código.
+4. **La memoria** es el historial y `memoria_agente`: el pedido anotado, lo cotizado, el pago, el tope, lo que dijo el
+   cliente y lo que ya vio.
 
 ### Lo medido
 
-- **La vara sin modelo:** `tests/test_agente.py`, las 26 charlas grabadas por el agente pasan por el webhook vivo con un
-  modelo falso que repite lo grabado: 74 de 75 turnos, y cada herramienta devuelve lo mismo que cuando se midió. Las
-  casillas que esperaban a Martín se decidieron el 30-oct: vale acertar o repreguntar, lo que importa es no errar.
-- **Con el modelo de producción**, el 30-oct: 72 de 75 con la clave gratis, `agente_replay.py --gratis`. La variación
-  entre corridas es de unos 7 turnos: una corrida sola no separa una mejora chica.
+- **La vara sin modelo:** `tests/test_flujo_nuevo.py`, las 26 charlas pasan por el webhook vivo con las piezas grabadas
+  del banco, `banco_pruebas/flujo/segunda.py`: 58 de 75 turnos el 17-nov. El agente archivado daba 72 a 73 con el
+  modelo; lo que falta, por causa, en `PENDIENTE.md`. Vale acertar o repreguntar, lo que importa es no errar.
+- **Con el modelo**, `segunda.py --correr <etiqueta>`: un centavo por corrida.
 - **Las alucinaciones:** `banco_pruebas/alucinaciones.py` inyecta cada clase en las respuestas grabadas, compatibilidad
   incluida: el verificador caza el 99,3%, con 0 falsas alarmas. Lo que sigue marcado después de corregir no sale.
 - **Lo que falla, por causa**, en `PENDIENTE.md`, SIGUE 1.
 
 ### Lo que sigue
 
-**Toda sesión arranca por la FICHA 101**, `arquitectura/FICHA_101_memoria_segunda_llamada_y_pase.md`: la memoria, la segunda llamada, el flujo nuevo contra el agente y el pase a producción todo junto si lo supera; después, la calibración de los nexos, uno por sesión. Lo medido de la llamada 0 elegida y de la cadena entera, en la FICHA 100, `arquitectura/FICHA_100_la_llamada_0_elegida.md`. El nexo de condición, en la FICHA 99, `arquitectura/FICHA_99_el_nexo_de_condicion.md`. Los otros cuatro, en la FICHA 98, `arquitectura/FICHA_98_los_nexos_hechos_y_el_de_condicion.md`. El detalle y los números, en la FICHA 97, `arquitectura/FICHA_97_el_nexo_de_rubro_y_el_flujo_de_punta_a_punta.md`, con el contrato de la FICHA 96. Antecedentes: la FICHA 95, el momento cero en equipo, la FICHA 94, el engranaje 0 y el nexo por embeddings, la FICHA 93, la llamada 1 con candidatos, y la FICHA 92, `arquitectura/FICHA_92_las_capas_hasta_el_camino_fijo.md`, que sigue el PLAN POR CAPAS, `arquitectura/PLAN_CAPAS.md`, orden de Martín del 9-nov: el tipo de pregunta es
-el mapa de la respuesta. Una llamada separa en una agenda tipada, el código la cumple tipo por tipo con su receta y sus
-condiciones, y otra llamada redacta citando por número. Se avanza una capa por tipo, medida sin modelo sobre lo que los modelos
-ya tradujeron, con la vara de los mismos productos que la agenda a mano y el corte escrito antes. El bucle del agente sale cuando
-el camino nuevo lo supere en las mismas charlas. Lo de antes, FICHAS 87 a 91, queda como diagnóstico; la respuesta atada de la
-FICHA 90 es la caja de redactar del plan.
+**El pase se hizo el 17-nov.** Ahora se calibran los nexos con la llamada 0 elegida, uno por sesión, FICHA 101 sección
+7, `arquitectura/FICHA_101_memoria_segunda_llamada_y_pase.md`, en el orden de `PENDIENTE.md`. Cada arreglo queda en
+producción. Lo medido de la llamada 0 y de la cadena entera, en la FICHA 100; los nexos, en las FICHAS 96 a 99.
 
-El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_agente.py` sin modelo y con tres corridas `--gratis`. Si
-el código cambia lo que lee el modelo, las charlas afectadas se regraban con `--gratis --regrabar`.
+El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_flujo_nuevo.py` sin modelo y con corridas de
+`segunda.py --correr`. Si el código cambia lo que lee el modelo, se graba una corrida nueva.
 
 ### Qué es parche, y cómo no se cae en eso
 
 - **Un arreglo corrige la causa donde vive, y cubre la clase entera.** La prueba: si mañana llega la misma
   falla dicha de otra forma, ¿queda cubierta sin tocar nada?
 - **No se juzga a ojo: se mide.** Un cambio que mueve sólo el caso que lo motivó es parche y no entra. Lo decide
-  `tests/test_agente.py` y la corrida final con el modelo, no la sesión.
+  `tests/test_flujo_nuevo.py` y la corrida final con el modelo, no la sesión.
 - **No se suma un campo, una pregunta o una capa nueva por cada falla.** Ese es el patrón que trajo la
   maraña. Lo que falla seguido, se le achica al modelo.
 - **Si para que pase un caso hay que cambiar un test, sumar una palabra a una lista o poner un umbral, se para
@@ -172,10 +168,9 @@ el código cambia lo que lee el modelo, las charlas afectadas se regraban con `-
 
 ```bash
 python3 -m pytest -q                       # la batería offline, sin modelo
-python3 -m pytest tests/test_agente.py -s       # la vara: las charlas grabadas por el agente vivo, sin modelo
-python3 banco_pruebas/agente_replay.py --ver     # lo mismo, con lo que lee el cliente
-python3 banco_pruebas/agente_replay.py --gratis [K21]   # con el modelo de produccion por la clave gratis
-MARTIN_AUTORIZO_LA_PAGA=<fecha> python3 banco_pruebas/agente_replay.py --vivo   # con el modelo de produccion
+python3 -m pytest tests/test_flujo_nuevo.py -s  # la vara: las 26 charlas por el flujo nuevo, sin modelo
+python3 banco_pruebas/flujo/segunda.py s2 --ver  # lo mismo, con lo que lee el cliente
+python3 banco_pruebas/flujo/segunda.py --correr <etiqueta> [K21]   # con el modelo, cada llamada grabada
 uvicorn app.main:app --reload --port 8080  # correr local
 ```
 
