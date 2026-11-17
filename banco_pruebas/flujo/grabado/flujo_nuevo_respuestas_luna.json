@@ -869,12 +869,18 @@
          "parte": "24 pulgadas",
          "veredicto": "no se ata",
          "por": "codigo"
+        },
+        {
+         "parte": "2 unidades,",
+         "veredicto": "no se ata",
+         "por": "jev"
         }
        ],
        "filas": [],
        "atado": [],
        "partes": [
-        "24 pulgadas"
+        "24 pulgadas",
+        "2 unidades,"
        ]
       }
      },
@@ -967,18 +973,23 @@
        "TEC0006",
        "TEC0007"
       ],
-      "elegido": "TEC0001",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "repreguntar",
       "datos": {
        "rubro": "teclado",
        "items": [
         {
-         "parte": "mecanicos",
+         "parte": "2 unidades",
+         "veredicto": "no se ata",
+         "por": "codigo"
+        },
+        {
+         "parte": "mecanicos,",
          "veredicto": "ata",
          "campo": "switch_teclado",
          "valor": "mecanico",
          "niega": false,
-         "por": "codigo"
+         "por": "jev"
         }
        ],
        "filas": [
@@ -1003,6 +1014,12 @@
          "precio": 287500,
          "stock": 17
         }
+       ],
+       "atado": [
+        "mecanicos,"
+       ],
+       "partes": [
+        "2 unidades"
        ]
       }
      },
@@ -1052,17 +1069,14 @@
     ]
    }
   ],
-  "respuesta": "De 24 pulgadas la ficha de monitor no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Rosario sale $7.000.\nEn teclado, mecanicos, tengo: Teclado Logitech G915 TKL Negro a $512.500, quedan 8; Teclado Logitech G413 TKL SE Blanco a $98.500, quedan 5; Teclado Razer BlackWidow V4 Negro a $287.500, quedan 17.\nEl envio a Neuquen sale $9.500.\nAceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Con tarjeta de credito podes pagar de forma directa o a traves de Mercado Pago, como te quede mas comodo. Por transferencia ademas tenes descuento. Contame que producto te interesa y te paso el total con cada forma de pago.",
+  "respuesta": "De 24 pulgadas, 2 unidades, la ficha de monitor no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Rosario sale $7.000.\nDe 2 unidades la ficha de teclado no dice nada. Con mecanicos, tengo: Teclado Logitech G915 TKL Negro a $512.500; Teclado Logitech G413 TKL SE Blanco a $98.500; Teclado Razer BlackWidow V4 Negro a $287.500. Te sirve alguno, o contame que buscas?\nEl envio a Neuquen sale $9.500.\nAceptamos transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Con tarjeta de credito podes pagar de forma directa o a traves de Mercado Pago, como te quede mas comodo. Por transferencia ademas tenes descuento. Contame que producto te interesa y te paso el total con cada forma de pago.",
   "memoria": [
    "MON0017",
    "MON0008",
    "MON0006",
    "TEC0024",
    "TEC0045",
-   "TEC0043",
-   "TEC0001",
-   "TEC0006",
-   "TEC0007"
+   "TEC0043"
   ]
  },
  "nuevas70 M03": {
@@ -1658,8 +1672,8 @@
        "RAM0013",
        "RAM0025"
       ],
-      "elegido": "RAM0001",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "repreguntar",
       "datos": {
        "rubro": "memoria ram",
        "items": [
@@ -1672,12 +1686,17 @@
          "por": "codigo"
         },
         {
-         "parte": "ddr4",
+         "parte": "ddr4,",
          "veredicto": "ata",
-         "campo": "modelo",
-         "valor": "ddr4",
+         "campo": "tags",
+         "valor": "ddr4,",
          "niega": false,
          "por": "codigo"
+        },
+        {
+         "parte": "cantidad 2",
+         "veredicto": "no se ata",
+         "por": "jev"
         }
        ],
        "filas": [
@@ -1702,6 +1721,13 @@
          "precio": 44000,
          "stock": 10
         }
+       ],
+       "atado": [
+        "8 gb",
+        "ddr4,"
+       ],
+       "partes": [
+        "cantidad 2"
        ]
       }
      },
@@ -2037,8 +2063,8 @@
        "RAM0013",
        "RAM0025"
       ],
-      "elegido": "RAM0001",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "repreguntar",
       "datos": {
        "rubro": "memoria ram",
        "items": [
@@ -2051,12 +2077,17 @@
          "por": "codigo"
         },
         {
-         "parte": "ddr4",
+         "parte": "ddr4,",
          "veredicto": "ata",
-         "campo": "modelo",
-         "valor": "ddr4",
+         "campo": "tags",
+         "valor": "ddr4,",
          "niega": false,
          "por": "codigo"
+        },
+        {
+         "parte": "cantidad 2",
+         "veredicto": "no se ata",
+         "por": "jev"
         }
        ],
        "filas": [
@@ -2081,6 +2112,13 @@
          "precio": 44000,
          "stock": 10
         }
+       ],
+       "atado": [
+        "8 gb",
+        "ddr4,"
+       ],
+       "partes": [
+        "cantidad 2"
        ]
       }
      },
@@ -2179,12 +2217,12 @@
        "rubro": "ssd",
        "items": [
         {
-         "parte": "1 tb",
+         "parte": "1 tb, cantidad 2",
          "veredicto": "ata",
          "campo": "almacenamiento",
          "valor": "1tb",
          "niega": false,
-         "por": "codigo"
+         "por": "jev"
         }
        ],
        "filas": [
@@ -2258,7 +2296,7 @@
     ]
    }
   ],
-  "respuesta": "En memoria ram, 8 gb, ddr4, tengo: Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500, quedan 23; Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro a $48.500, quedan 25; Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro a $44.000, quedan 10.\nEl envio a Tucuman sale $9.500.\nEn memoria ram, 8 gb, ddr4, tengo: Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500, quedan 23; Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro a $48.500, quedan 25; Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro a $44.000, quedan 10.\nEl envio a Cordoba sale $7.500.\nEn ssd, 1 tb, tengo: Ssd Samsung 980 1TB a $44.000, quedan 19; Ssd Samsung 980 PRO 1TB a $117.000, quedan 24; Ssd Samsung 990 PRO 1TB a $183.000, quedan 11.\nEl envio a Cordoba sale $7.500.\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?",
+  "respuesta": "De cantidad 2 la ficha de memoria ram no dice nada. Con 8 gb, ddr4, tengo: Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500; Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro a $48.500; Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro a $44.000. Te sirve alguno, o contame que buscas?\nEl envio a Tucuman sale $9.500.\nDe cantidad 2 la ficha de memoria ram no dice nada. Con 8 gb, ddr4, tengo: Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500; Memoria ram Corsair Vengeance LPX DDR4 3600 8GB Negro a $48.500; Memoria ram G.Skill Ripjaws V DDR4 3200 8GB Negro a $44.000. Te sirve alguno, o contame que buscas?\nEl envio a Cordoba sale $7.500.\nEn ssd, 1 tb, cantidad 2, tengo: Ssd Samsung 980 1TB a $44.000, quedan 19; Ssd Samsung 980 PRO 1TB a $117.000, quedan 24; Ssd Samsung 990 PRO 1TB a $183.000, quedan 11.\nEl envio a Cordoba sale $7.500.\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?",
   "memoria": [
    "RAM0043",
    "RAM0001",
@@ -2281,9 +2319,6 @@
    "RAM0017",
    "RAM0095",
    "RAM0089",
-   "RAM0001",
-   "RAM0013",
-   "RAM0025",
    "RAM0043",
    "RAM0001",
    "RAM0025",
@@ -2305,9 +2340,6 @@
    "RAM0017",
    "RAM0095",
    "RAM0089",
-   "RAM0001",
-   "RAM0013",
-   "RAM0025",
    "SSD0011",
    "SSD0053",
    "SSD0050",
@@ -2394,12 +2426,7 @@
          "por": "codigo"
         },
         {
-         "parte": "microfono",
-         "veredicto": "no se ata",
-         "por": "jev"
-        },
-        {
-         "parte": "oficina en total",
+         "parte": "microfono, 5 unidades, para la oficina, en total",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -2431,8 +2458,7 @@
         "hasta 600 lucas"
        ],
        "partes": [
-        "microfono",
-        "oficina en total"
+        "microfono, 5 unidades, para la oficina, en total"
        ]
       }
      },
@@ -2721,7 +2747,7 @@
     ]
    }
   ],
-  "respuesta": "De microfono, oficina en total la ficha de auriculares no dice nada. Con hasta 600 lucas tengo: Auriculares HyperX Cloud II Negro a $125.500; Auriculares HyperX Cloud Stinger 2 Negro a $70.000; Auriculares Logitech G Pro X Negro a $284.000. Te sirve alguno, o contame que buscas?\nEl envio a San Luis sale $8.000.\nEn webcam, hasta 600 lucas, tengo: Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Logitech C922 Pro a $178.000, quedan 11; Webcam Logitech Brio 100 a $92.000, quedan 1.\nEl envio a San Luis sale $8.000.\nDe 600 lucas la ficha de impresora no dice nada. Con solo, si el total no supera tengo: Impresora Canon Pixma G2160 Negro a $260.000. Te sirve alguno, o contame que buscas?\nEl envio a San Luis sale $8.000.",
+  "respuesta": "De microfono, 5 unidades, para la oficina, en total la ficha de auriculares no dice nada. Con hasta 600 lucas tengo: Auriculares HyperX Cloud II Negro a $125.500; Auriculares HyperX Cloud Stinger 2 Negro a $70.000; Auriculares Logitech G Pro X Negro a $284.000. Te sirve alguno, o contame que buscas?\nEl envio a San Luis sale $8.000.\nEn webcam, hasta 600 lucas, tengo: Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Logitech C922 Pro a $178.000, quedan 11; Webcam Logitech Brio 100 a $92.000, quedan 1.\nEl envio a San Luis sale $8.000.\nDe 600 lucas la ficha de impresora no dice nada. Con solo, si el total no supera tengo: Impresora Canon Pixma G2160 Negro a $260.000. Te sirve alguno, o contame que buscas?\nEl envio a San Luis sale $8.000.",
   "memoria": [
    "AUR0010",
    "AUR0045",
@@ -4083,25 +4109,25 @@
      {
       "nexo": "condicion",
       "candidatos": [
-       "ROU0007"
+       "ROU0007",
+       "ROU0001",
+       "ROU0019"
       ],
       "elegido": null,
-      "veredicto": "no hay",
+      "veredicto": "repreguntar",
       "datos": {
        "rubro": "router",
        "items": [
         {
-         "parte": "wifi 6",
-         "veredicto": "no hay",
-         "campo": "caracteristicas_extra",
-         "valor": "wifi 6",
-         "por": "codigo"
-        },
-        {
-         "parte": "lo mas barato posible",
+         "parte": "lo mas barato",
          "veredicto": "orden",
          "valor": "mas barato",
          "por": "codigo"
+        },
+        {
+         "parte": "6, 2 unidades,",
+         "veredicto": "no se ata",
+         "por": "jev"
         }
        ],
        "filas": [
@@ -4111,10 +4137,27 @@
          "rubro": "router",
          "precio": 42500,
          "stock": 17
+        },
+        {
+         "id": "ROU0001",
+         "nombre": "Router TP-Link Archer C6 Negro",
+         "rubro": "router",
+         "precio": 47500,
+         "stock": 14
+        },
+        {
+         "id": "ROU0019",
+         "nombre": "Router Tenda AC8 Negro",
+         "rubro": "router",
+         "precio": 53500,
+         "stock": 8
         }
        ],
+       "atado": [
+        "lo mas barato"
+       ],
        "partes": [
-        "wifi 6"
+        "6, 2 unidades,"
        ]
       }
      },
@@ -4255,16 +4298,21 @@
        "ROU0001",
        "ROU0019"
       ],
-      "elegido": "ROU0007",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "repreguntar",
       "datos": {
        "rubro": "router",
        "items": [
         {
-         "parte": "lo mas barato posible",
+         "parte": "lo mas barato",
          "veredicto": "orden",
          "valor": "mas barato",
          "por": "codigo"
+        },
+        {
+         "parte": "1 unidad,",
+         "veredicto": "no se ata",
+         "por": "jev"
         }
        ],
        "filas": [
@@ -4289,6 +4337,12 @@
          "precio": 53500,
          "stock": 8
         }
+       ],
+       "atado": [
+        "lo mas barato"
+       ],
+       "partes": [
+        "1 unidad,"
        ]
       }
      },
@@ -4320,7 +4374,7 @@
     ]
    }
   ],
-  "respuesta": "Router wifi 6 no hay. Lo mas cercano: Router Tenda AC10 Negro a $42.500.\nEl envio a Mar del Plata sale $6.000.\nEn router, lo mas barato posible, tengo: Router Tenda AC10 Negro a $42.500, quedan 17; Router TP-Link Archer C6 Negro a $47.500, quedan 14; Router Tenda AC8 Negro a $53.500, quedan 8.\nEl envio a Tandil sale $6.000.",
+  "respuesta": "De 6, 2 unidades, la ficha de router no dice nada. Con lo mas barato tengo: Router Tenda AC10 Negro a $42.500; Router TP-Link Archer C6 Negro a $47.500; Router Tenda AC8 Negro a $53.500. Te sirve alguno, o contame que buscas?\nEl envio a Mar del Plata sale $6.000.\nDe 1 unidad, la ficha de router no dice nada. Con lo mas barato tengo: Router Tenda AC10 Negro a $42.500; Router TP-Link Archer C6 Negro a $47.500; Router Tenda AC8 Negro a $53.500. Te sirve alguno, o contame que buscas?\nEl envio a Tandil sale $6.000.",
   "memoria": [
    "ROU0001",
    "ROU0021",
@@ -4330,10 +4384,7 @@
    "ROU0021",
    "ROU0009",
    "ROU0021",
-   "ROU0015",
-   "ROU0007",
-   "ROU0001",
-   "ROU0019"
+   "ROU0015"
   ]
  },
  "nuevas70 M10": {
@@ -4403,7 +4454,7 @@
        "rubro": "tablet",
        "items": [
         {
-         "parte": "chicos",
+         "parte": "cantidad 2, para chicos",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -4411,7 +4462,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "chicos"
+        "cantidad 2, para chicos"
        ]
       }
      },
@@ -4505,7 +4556,7 @@
     ]
    }
   ],
-  "respuesta": "De chicos la ficha de tablet no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Ushuaia sale $12.000.\nFundas para tablets, cantidad 2 no hay. Lo mas cercano: Tablet Xiaomi Pad 6 Gris a $542.000.",
+  "respuesta": "De cantidad 2, para chicos la ficha de tablet no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Ushuaia sale $12.000.\nFundas para tablets, cantidad 2 no hay. Lo mas cercano: Tablet Xiaomi Pad 6 Gris a $542.000.",
   "memoria": [
    "TAB0025",
    "TAB0020",
@@ -5025,14 +5076,9 @@
          "por": "codigo"
         },
         {
-         "parte": "lo mas economico posible",
+         "parte": "10 unidades, lo mas economico posible, tope total",
          "veredicto": "orden",
          "valor": "mas barato",
-         "por": "codigo"
-        },
-        {
-         "parte": "tope total",
-         "veredicto": "no se ata",
          "por": "jev"
         }
        ],
@@ -5060,11 +5106,10 @@
         }
        ],
        "atado": [
-        "lo mas economico posible"
+        "10 unidades, lo mas economico posible, tope total"
        ],
        "partes": [
-        "300 mil",
-        "tope total"
+        "300 mil"
        ]
       }
      },
@@ -5152,9 +5197,11 @@
      },
      {
       "nexo": "condicion",
-      "candidatos": [],
+      "candidatos": [
+       "TEC0020"
+      ],
       "elegido": null,
-      "veredicto": "repreguntar",
+      "veredicto": "no hay",
       "datos": {
        "rubro": "teclado",
        "items": [
@@ -5166,23 +5213,23 @@
          "por": "codigo"
         },
         {
-         "parte": "lo mas economico posible",
+         "parte": "10 unidades, lo mas economico posible, tope total",
          "veredicto": "orden",
          "valor": "mas barato",
-         "por": "codigo"
-        },
-        {
-         "parte": "tope total",
-         "veredicto": "no se ata",
          "por": "jev"
         }
        ],
-       "filas": [],
-       "atado": [
-        "lo mas economico posible"
+       "filas": [
+        {
+         "id": "TEC0020",
+         "nombre": "Teclado Genius KB-110X Blanco",
+         "rubro": "teclado",
+         "precio": 12000,
+         "stock": 11
+        }
        ],
        "partes": [
-        "tope total"
+        "300 mil"
        ]
       }
      },
@@ -5214,7 +5261,7 @@
     ]
    }
   ],
-  "respuesta": "De 300 mil, tope total la ficha de mouse no dice nada. Con lo mas economico posible tengo: Mouse Genius DX-110 Negro a $8.500; Mouse Logitech M170 Negro a $12.000; Mouse Genius NX-7000 Negro a $14.000. Te sirve alguno, o contame que buscas?\nEl envio a Resistencia sale $9.000.\nDe tope total la ficha de teclado no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Resistencia sale $9.000.",
+  "respuesta": "De 300 mil la ficha de mouse no dice nada. Con 10 unidades, lo mas economico posible, tope total tengo: Mouse Genius DX-110 Negro a $8.500; Mouse Logitech M170 Negro a $12.000; Mouse Genius NX-7000 Negro a $14.000. Te sirve alguno, o contame que buscas?\nEl envio a Resistencia sale $9.000.\nTeclado 300 mil no hay. Lo mas cercano: Teclado Genius KB-110X Blanco a $12.000.\nEl envio a Resistencia sale $9.000.",
   "memoria": [
    "MOU0031",
    "MOU0009",
@@ -5623,12 +5670,12 @@
        "rubro": "almacenamiento externo",
        "items": [
         {
-         "parte": "2 teras",
+         "parte": "2 teras,",
          "veredicto": "ata",
          "campo": "almacenamiento",
          "valor": "2tb",
          "niega": false,
-         "por": "codigo"
+         "por": "jev"
         }
        ],
        "filas": [
@@ -5751,12 +5798,12 @@
        "rubro": "almacenamiento externo",
        "items": [
         {
-         "parte": "2 teras",
+         "parte": "2 teras,",
          "veredicto": "ata",
          "campo": "almacenamiento",
          "valor": "2tb",
          "niega": false,
-         "por": "codigo"
+         "por": "jev"
         }
        ],
        "filas": [
@@ -5812,7 +5859,7 @@
     ]
    }
   ],
-  "respuesta": "En almacenamiento externo, 2 teras, tengo: Almacenamiento externo Seagate Expansion 2TB Negro a $113.000, quedan 22; Almacenamiento externo Western Digital Elements 2TB Negro a $127.500, quedan 22; Almacenamiento externo Toshiba Canvio Basics 2TB Negro a $105.500, quedan 3.\nEl envio a Lanus sale $3.000.\nEn almacenamiento externo, 2 teras, tengo: Almacenamiento externo Seagate Expansion 2TB Negro a $113.000, quedan 22; Almacenamiento externo Western Digital Elements 2TB Negro a $127.500, quedan 22; Almacenamiento externo Toshiba Canvio Basics 2TB Negro a $105.500, quedan 3.\nEl envio a Pilar sale $3.000.",
+  "respuesta": "En almacenamiento externo, 2 teras,, tengo: Almacenamiento externo Seagate Expansion 2TB Negro a $113.000, quedan 22; Almacenamiento externo Western Digital Elements 2TB Negro a $127.500, quedan 22; Almacenamiento externo Toshiba Canvio Basics 2TB Negro a $105.500, quedan 3.\nEl envio a Lanus sale $3.000.\nEn almacenamiento externo, 2 teras,, tengo: Almacenamiento externo Seagate Expansion 2TB Negro a $113.000, quedan 22; Almacenamiento externo Western Digital Elements 2TB Negro a $127.500, quedan 22; Almacenamiento externo Toshiba Canvio Basics 2TB Negro a $105.500, quedan 3.\nEl envio a Pilar sale $3.000.",
   "memoria": [
    "EXT0045",
    "EXT0003",
@@ -5954,8 +6001,8 @@
        "AUR0011",
        "AUR0035"
       ],
-      "elegido": null,
-      "veredicto": "repreguntar",
+      "elegido": "AUR0010",
+      "veredicto": "coincide",
       "datos": {
        "rubro": "auriculares",
        "items": [
@@ -5968,17 +6015,12 @@
          "por": "codigo"
         },
         {
-         "parte": "sony",
+         "parte": "sony,",
          "veredicto": "ata",
-         "campo": "marca",
-         "valor": "sony",
+         "campo": "tags",
+         "valor": "sony,",
          "niega": false,
          "por": "codigo"
-        },
-        {
-         "parte": "precio total con envio",
-         "veredicto": "no se ata",
-         "por": "jev"
         }
        ],
        "filas": [
@@ -6003,13 +6045,6 @@
          "precio": 237500,
          "stock": 20
         }
-       ],
-       "atado": [
-        "inalambricos",
-        "sony"
-       ],
-       "partes": [
-        "precio total con envio"
        ]
       }
      },
@@ -6177,7 +6212,7 @@
          "por": "codigo"
         },
         {
-         "parte": "grande precio total con envio",
+         "parte": "grande, precio total con envio",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -6209,7 +6244,7 @@
         "jbl"
        ],
        "partes": [
-        "grande precio total con envio"
+        "grande, precio total con envio"
        ]
       }
      },
@@ -6241,7 +6276,7 @@
     ]
    }
   ],
-  "respuesta": "De precio total con envio la ficha de auriculares no dice nada. Con inalambricos, sony tengo: Auriculares Sony WH-1000XM5 Blanco a $680.500; Auriculares Sony WH-CH520 Negro a $91.500; Auriculares Sony WH-CH720N Negro a $237.500. Te sirve alguno, o contame que buscas?\nEl envio a Mendoza sale $9.000.\nDe grande precio total con envio la ficha de parlante no dice nada. Con jbl tengo: Parlante JBL Go 3 Negro a $57.000; Parlante JBL Flip 6 Negro a $168.500; Parlante JBL Charge 5 Negro a $210.000. Te sirve alguno, o contame que buscas?\nEl envio a San Rafael sale $9.000.",
+  "respuesta": "En auriculares, inalambricos, sony,, tengo: Auriculares Sony WH-1000XM5 Blanco a $680.500, quedan 1; Auriculares Sony WH-CH520 Negro a $91.500, quedan 8; Auriculares Sony WH-CH720N Negro a $237.500, quedan 20.\nEl envio a Mendoza sale $9.000.\nDe grande, precio total con envio la ficha de parlante no dice nada. Con jbl tengo: Parlante JBL Go 3 Negro a $57.000; Parlante JBL Flip 6 Negro a $168.500; Parlante JBL Charge 5 Negro a $210.000. Te sirve alguno, o contame que buscas?\nEl envio a San Rafael sale $9.000.",
   "memoria": [
    "AUR0037",
    "AUR0010",
@@ -6250,6 +6285,9 @@
    "AUR0035",
    "AUR0037",
    "AUR0010",
+   "AUR0010",
+   "AUR0011",
+   "AUR0035",
    "PAR0028",
    "PAR0013",
    "PAR0010",
@@ -7007,6 +7045,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "webcam",
+       "items": [
+        {
+         "parte": "6 unidades, para aulas",
+         "veredicto": "no se ata",
+         "por": "jev"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "6 unidades, para aulas"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "asesoramiento",
@@ -7089,6 +7148,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "webcam",
+       "items": [
+        {
+         "parte": "6 unidades, para aulas",
+         "veredicto": "no se ata",
+         "por": "jev"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "6 unidades, para aulas"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "asesoramiento",
@@ -7134,7 +7214,7 @@
     ]
    }
   ],
-  "respuesta": "Por webcam Full HD, 6 unidades, para aulas tengo: Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam AverMedia PW313 a $109.500, quedan 18.\nEl envio a Neuquén sale $9.500.\nPor webcam Full HD, 6 unidades, para aulas tengo: Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam AverMedia PW313 a $109.500, quedan 18.\nEl envio a Cipolletti sale $10.000.\nSi, para compras por cantidad o reventa tenemos precios especiales. Contame que productos y que cantidades pensas comprar y te armo una cotizacion mayorista.",
+  "respuesta": "De 6 unidades, para aulas la ficha de webcam no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Neuquén sale $9.500.\nDe 6 unidades, para aulas la ficha de webcam no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Cipolletti sale $10.000.\nSi, para compras por cantidad o reventa tenemos precios especiales. Contame que productos y que cantidades pensas comprar y te armo una cotizacion mayorista.",
   "memoria": [
    "WEB0007",
    "WEB0001",
@@ -8609,7 +8689,7 @@
        "rubro": "mouse",
        "items": [
         {
-         "parte": "lo mas barato posible",
+         "parte": "lo mas barato",
          "veredicto": "orden",
          "valor": "mas barato",
          "por": "codigo"
@@ -8654,7 +8734,7 @@
     ]
    }
   ],
-  "respuesta": "En mouse, lo mas barato posible, tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Logitech M170 Negro a $12.000, quedan 16; Mouse Genius NX-7000 Negro a $14.000, quedan 18.",
+  "respuesta": "En mouse, lo mas barato, tengo: Mouse Genius DX-110 Negro a $8.500, quedan 11; Mouse Logitech M170 Negro a $12.000, quedan 16; Mouse Genius NX-7000 Negro a $14.000, quedan 18.",
   "memoria": [
    "MOU0023",
    "MOU0009",
@@ -8835,13 +8915,7 @@
        "rubro": "notebook",
        "items": [
         {
-         "parte": "la mejor",
-         "veredicto": "orden",
-         "valor": "mas caro",
-         "por": "codigo"
-        },
-        {
-         "parte": "disponible sin limite de precio",
+         "parte": "mejor disponible sin limite de precio",
          "veredicto": "orden",
          "valor": "mas caro",
          "por": "jev"
@@ -8886,7 +8960,7 @@
     ]
    }
   ],
-  "respuesta": "En notebook, la mejor, disponible sin limite de precio, tengo: Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD Gris a $3.100.500, quedan 18; Notebook Asus ROG Strix G16 Ryzen 7 16GB 512GB SSD Gris a $2.827.000, quedan 11; Notebook HP Omen 16 Core i7 16GB 1TB SSD Gris a $2.642.000, quedan 19.",
+  "respuesta": "En notebook, mejor disponible sin limite de precio, tengo: Notebook Asus ROG Strix G16 Core i7 16GB 1TB SSD Gris a $3.100.500, quedan 18; Notebook Asus ROG Strix G16 Ryzen 7 16GB 512GB SSD Gris a $2.827.000, quedan 11; Notebook HP Omen 16 Core i7 16GB 1TB SSD Gris a $2.642.000, quedan 19.",
   "memoria": [
    "NOT0025",
    "NOT0151",
@@ -8965,20 +9039,20 @@
        "rubro": "auriculares",
        "items": [
         {
-         "parte": "inalambricos",
-         "veredicto": "ata",
-         "campo": "conexion",
-         "valor": "inalambrico",
-         "niega": false,
-         "por": "codigo"
-        },
-        {
          "parte": "no chinos",
          "veredicto": "no hay",
          "campo": "pais_fabricacion",
          "valor": "china",
          "niega": true,
          "por": "codigo"
+        },
+        {
+         "parte": "inalambricos,",
+         "veredicto": "ata",
+         "campo": "conexion",
+         "valor": "inalambrico",
+         "niega": false,
+         "por": "jev"
         }
        ],
        "filas": [
@@ -10424,32 +10498,18 @@
        "MOU0004",
        "MOU0015"
       ],
-      "elegido": null,
-      "veredicto": "repreguntar",
+      "elegido": "MOU0001",
+      "veredicto": "coincide",
       "datos": {
        "rubro": "mouse",
        "items": [
         {
-         "parte": "rgb",
+         "parte": "luces rgb, precio",
          "veredicto": "ata",
          "campo": "retroiluminacion",
          "valor": "si",
          "niega": false,
          "si_no": true,
-         "por": "codigo"
-        },
-        {
-         "parte": "luces",
-         "veredicto": "ata",
-         "campo": "retroiluminacion",
-         "valor": "si",
-         "niega": false,
-         "si_no": true,
-         "por": "jev"
-        },
-        {
-         "parte": "precio",
-         "veredicto": "no se ata",
          "por": "jev"
         }
        ],
@@ -10475,13 +10535,6 @@
          "precio": 95500,
          "stock": 4
         }
-       ],
-       "atado": [
-        "rgb",
-        "luces"
-       ],
-       "partes": [
-        "precio"
        ]
       }
      },
@@ -10513,11 +10566,14 @@
     ]
    }
   ],
-  "respuesta": "De precio la ficha de mouse no dice nada. Con rgb, luces tengo: Mouse Logitech G203 Lightsync Negro a $37.500; Mouse Logitech G502 Hero Blanco a $70.000; Mouse Razer Basilisk V3 Negro a $95.500. Te sirve alguno, o contame que buscas?\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?\nEl envio a Córdoba sale $7.500.",
+  "respuesta": "En mouse, luces rgb, precio, tengo: Mouse Logitech G203 Lightsync Negro a $37.500, quedan 5; Mouse Logitech G502 Hero Blanco a $70.000, quedan 2; Mouse Razer Basilisk V3 Negro a $95.500, quedan 4.\nSi, llegamos a todo el pais. A CABA y GBA el envio sale $3.000; al interior depende de la provincia: pasame tu provincia o codigo postal y te digo la tarifa exacta. Y un dato: superando los $250.000 el envio te queda gratis. A donde te lo mandariamos?\nEl envio a Córdoba sale $7.500.",
   "memoria": [
    "MOU0045",
    "MOU0001",
-   "MOU0019"
+   "MOU0019",
+   "MOU0001",
+   "MOU0004",
+   "MOU0015"
   ]
  },
  "nuevas70 A02": {
@@ -11542,6 +11598,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "silla gamer",
+       "items": [
+        {
+         "parte": "2",
+         "veredicto": "no se ata",
+         "por": "jev"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "2"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "stock_disponibilidad",
@@ -11625,58 +11702,28 @@
      },
      {
       "nexo": "condicion",
-      "candidatos": [
-       "SIL0001",
-       "SIL0004",
-       "SIL0007"
-      ],
+      "candidatos": [],
       "elegido": null,
       "veredicto": "repreguntar",
       "datos": {
        "rubro": "silla gamer",
        "items": [
         {
-         "parte": "roja",
-         "veredicto": "ata",
-         "campo": "color",
-         "valor": "rojo",
-         "niega": false,
-         "por": "codigo"
+         "parte": "1",
+         "veredicto": "no se ata",
+         "por": "jev"
         },
         {
-         "parte": "precio total con envio",
+         "parte": "roja, precio total con envio",
          "veredicto": "no se ata",
          "por": "jev"
         }
        ],
-       "filas": [
-        {
-         "id": "SIL0001",
-         "nombre": "Silla gamer Redragon Coeus Negro y rojo",
-         "rubro": "silla gamer",
-         "precio": 405000,
-         "stock": 17
-        },
-        {
-         "id": "SIL0004",
-         "nombre": "Silla gamer Redragon Fishbones Negro y rojo",
-         "rubro": "silla gamer",
-         "precio": 272000,
-         "stock": 7
-        },
-        {
-         "id": "SIL0007",
-         "nombre": "Silla gamer Cougar Armor S Negro y rojo",
-         "rubro": "silla gamer",
-         "precio": 548500,
-         "stock": 19
-        }
-       ],
-       "atado": [
-        "roja"
-       ],
+       "filas": [],
+       "atado": [],
        "partes": [
-        "precio total con envio"
+        "1",
+        "roja, precio total con envio"
        ]
       }
      },
@@ -11708,7 +11755,7 @@
     ]
    }
   ],
-  "respuesta": "Por 2 sillas gamers negras, precio total con envío tengo: Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Redragon Gaia Negro y rojo a $369.500, quedan 5; Silla gamer Cougar Fusion Negro y rojo a $438.500, quedan 10.\nEl envio a Rosario sale $7.000.\nDe precio total con envio la ficha de silla gamer no dice nada. Con roja tengo: Silla gamer Redragon Coeus Negro y rojo a $405.000; Silla gamer Redragon Fishbones Negro y rojo a $272.000; Silla gamer Cougar Armor S Negro y rojo a $548.500. Te sirve alguno, o contame que buscas?\nEl envio a Rosario sale $7.000.",
+  "respuesta": "De 2 la ficha de silla gamer no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Rosario sale $7.000.\nDe 1, roja, precio total con envio la ficha de silla gamer no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Rosario sale $7.000.",
   "memoria": [
    "SIL0001",
    "SIL0022",
@@ -12247,7 +12294,7 @@
        "rubro": "parlante",
        "items": [
         {
-         "parte": "reproduzca musica fuerte para asado",
+         "parte": "reproduzca musica fuerte, para asado",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -12255,7 +12302,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "reproduzca musica fuerte para asado"
+        "reproduzca musica fuerte, para asado"
        ]
       }
      },
@@ -12273,7 +12320,7 @@
     ]
    }
   ],
-  "respuesta": "Vinchas con música, para gym, que no se caigan no hay. Lo mas cercano: Auriculares Sony ULT Wear Negro a $444.000.\nDe reproduzca musica fuerte para asado la ficha de parlante no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "Vinchas con música, para gym, que no se caigan no hay. Lo mas cercano: Auriculares Sony ULT Wear Negro a $444.000.\nDe reproduzca musica fuerte, para asado la ficha de parlante no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "PAR0028",
    "PAR0031",
@@ -12857,7 +12904,7 @@
        "rubro": "microfono",
        "items": [
         {
-         "parte": "notebook buena calidad de audio",
+         "parte": "notebook, buena calidad de audio",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -12865,7 +12912,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "notebook buena calidad de audio"
+        "notebook, buena calidad de audio"
        ]
       }
      },
@@ -12883,7 +12930,7 @@
     ]
    }
   ],
-  "respuesta": "Por cámara web para clases por Meet tengo: Webcam Logitech Brio 100 a $92.000, quedan 1; Webcam Logitech C270 HD a $47.500, quedan 1; Webcam Logitech C920 HD Pro a $141.000, quedan 21.\nDe notebook buena calidad de audio la ficha de microfono no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "Por cámara web para clases por Meet tengo: Webcam Logitech Brio 100 a $92.000, quedan 1; Webcam Logitech C270 HD a $47.500, quedan 1; Webcam Logitech C920 HD Pro a $141.000, quedan 21.\nDe notebook, buena calidad de audio la ficha de microfono no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "WEB0003",
    "WEB0006",
@@ -14074,46 +14121,41 @@
      {
       "nexo": "condicion",
       "candidatos": [
-       "MOU0001",
-       "MOU0004",
-       "MOU0011"
+       "MOU0033"
       ],
-      "elegido": "MOU0001",
-      "veredicto": "coincide",
+      "elegido": null,
+      "veredicto": "repreguntar",
       "datos": {
        "rubro": "mouse",
        "items": [
         {
-         "parte": "cable",
+         "parte": "cable,",
          "veredicto": "ata",
-         "campo": "conexion",
-         "valor": "cable",
+         "campo": "tags",
+         "valor": "cable,",
          "niega": false,
          "por": "codigo"
+        },
+        {
+         "parte": "cantidad 5",
+         "veredicto": "no se ata",
+         "por": "jev"
         }
        ],
        "filas": [
         {
-         "id": "MOU0001",
-         "nombre": "Mouse Logitech G203 Lightsync Negro",
+         "id": "MOU0033",
+         "nombre": "Mouse Logitech G Pro Wireless Negro",
          "rubro": "mouse",
-         "precio": 37500,
-         "stock": 5
-        },
-        {
-         "id": "MOU0004",
-         "nombre": "Mouse Logitech G502 Hero Blanco",
-         "rubro": "mouse",
-         "precio": 70000,
-         "stock": 2
-        },
-        {
-         "id": "MOU0011",
-         "nombre": "Mouse Razer DeathAdder V3 Negro",
-         "rubro": "mouse",
-         "precio": 132000,
-         "stock": 3
+         "precio": 186000,
+         "stock": 24
         }
+       ],
+       "atado": [
+        "cable,"
+       ],
+       "partes": [
+        "cantidad 5"
        ]
       }
      },
@@ -14194,7 +14236,7 @@
        "rubro": "teclado",
        "items": [
         {
-         "parte": "n",
+         "parte": "n, cantidad 5",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -14202,7 +14244,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "n"
+        "n, cantidad 5"
        ]
       }
      },
@@ -14275,6 +14317,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "webcam",
+       "items": [
+        {
+         "parte": "cantidad 5",
+         "veredicto": "no se ata",
+         "por": "jev"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "cantidad 5"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "como_comprar",
@@ -14306,14 +14369,11 @@
     ]
    }
   ],
-  "respuesta": "En mouse, cable, tengo: Mouse Logitech G203 Lightsync Negro a $37.500, quedan 5; Mouse Logitech G502 Hero Blanco a $70.000, quedan 2; Mouse Razer DeathAdder V3 Negro a $132.000, quedan 3.\nDe n la ficha de teclado no dice nada: te muestro los que hay, o contame que buscas.\nPor cámara web, cantidad 5 tengo: Webcam Logitech C920 HD Pro a $141.000, quedan 21; Webcam Razer Kiyo X a $114.500, quedan 5; Webcam Logitech C922 Pro a $178.000, quedan 11.",
+  "respuesta": "De cantidad 5 la ficha de mouse no dice nada. Con cable, tengo: Mouse Logitech G Pro Wireless Negro a $186.000. Te sirve alguno, o contame que buscas?\nDe n, cantidad 5 la ficha de teclado no dice nada: te muestro los que hay, o contame que buscas.\nDe cantidad 5 la ficha de webcam no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "MOU0031",
    "MOU0004",
    "MOU0009",
-   "MOU0001",
-   "MOU0004",
-   "MOU0011",
    "TEC0041",
    "TEC0027",
    "TEC0013",
@@ -14503,7 +14563,7 @@
        "rubro": "microfono",
        "items": [
         {
-         "parte": "mesa para grabar podcast",
+         "parte": "mesa para grabar podcast,",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -14511,7 +14571,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "mesa para grabar podcast"
+        "mesa para grabar podcast,"
        ]
       }
      },
@@ -14529,7 +14589,7 @@
     ]
    }
   ],
-  "respuesta": "En auriculares, usb, tengo: Auriculares Razer Kraken V3 Negro a $145.500, quedan 23; Auriculares Redragon Zeus X Negro a $57.500, quedan 10; Auriculares Razer Kraken Kitty V2 Negro a $273.000, quedan 14.\nDe mesa para grabar podcast la ficha de microfono no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "En auriculares, usb, tengo: Auriculares Razer Kraken V3 Negro a $145.500, quedan 23; Auriculares Redragon Zeus X Negro a $57.500, quedan 10; Auriculares Razer Kraken Kitty V2 Negro a $273.000, quedan 14.\nDe mesa para grabar podcast, la ficha de microfono no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "AUR0017",
    "AUR0045",
@@ -14836,7 +14896,7 @@
        "rubro": "tablet",
        "items": [
         {
-         "parte": "dos para chicos resistentes a golpes",
+         "parte": "dos, para chicos, resistentes a golpes",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -14844,7 +14904,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "dos para chicos resistentes a golpes"
+        "dos, para chicos, resistentes a golpes"
        ]
       }
      },
@@ -14987,7 +15047,7 @@
     ]
    }
   ],
-  "respuesta": "De dos para chicos resistentes a golpes la ficha de tablet no dice nada: te muestro los que hay, o contame que buscas.\nDe pileta la ficha de parlante no dice nada. Con bluetooth tengo: Parlante Logitech Z207 Bluetooth Negro a $66.500; Parlante JBL Go 3 Negro a $57.000; Parlante JBL Flip 6 Negro a $168.500. Te sirve alguno, o contame que buscas?",
+  "respuesta": "De dos, para chicos, resistentes a golpes la ficha de tablet no dice nada: te muestro los que hay, o contame que buscas.\nDe pileta la ficha de parlante no dice nada. Con bluetooth tengo: Parlante Logitech Z207 Bluetooth Negro a $66.500; Parlante JBL Go 3 Negro a $57.000; Parlante JBL Flip 6 Negro a $168.500. Te sirve alguno, o contame que buscas?",
   "memoria": [
    "TAB0025",
    "TAB0010",
@@ -15075,7 +15135,7 @@
          "por": "codigo"
         },
         {
-         "parte": "lo mas barato posible",
+         "parte": "lo mas barato",
          "veredicto": "orden",
          "valor": "mas barato",
          "por": "codigo"
@@ -15190,7 +15250,7 @@
        "rubro": "silla gamer",
        "items": [
         {
-         "parte": "lo mas barato posible",
+         "parte": "lo mas barato",
          "veredicto": "orden",
          "valor": "mas barato",
          "por": "codigo"
@@ -15235,7 +15295,7 @@
     ]
    }
   ],
-  "respuesta": "En monitor, 144 hz, lo mas barato posible, tengo: Monitor AOC 24G2 a $230.500, quedan 9; Monitor AOC 27G2 a $291.000, quedan 19.\nEn silla gamer, lo mas barato posible, tengo: Silla gamer Gamemax GCR07 Negro y rojo a $237.000, quedan 13; Silla gamer Redragon Fishbones Negro y rojo a $272.000, quedan 7; Silla gamer Gamemax GCR08 Negro y rojo a $277.500, quedan 15.",
+  "respuesta": "En monitor, 144 hz, lo mas barato, tengo: Monitor AOC 24G2 a $230.500, quedan 9; Monitor AOC 27G2 a $291.000, quedan 19.\nEn silla gamer, lo mas barato, tengo: Silla gamer Gamemax GCR07 Negro y rojo a $237.000, quedan 13; Silla gamer Redragon Fishbones Negro y rojo a $272.000, quedan 7; Silla gamer Gamemax GCR08 Negro y rojo a $277.500, quedan 15.",
   "memoria": [
    "MON0007",
    "MON0008",
@@ -15529,14 +15589,7 @@
        "rubro": "cooler",
        "items": [
         {
-         "parte": "120 mm",
-         "veredicto": "no hay",
-         "campo": "potencia",
-         "valor": "120mm",
-         "por": "codigo"
-        },
-        {
-         "parte": "luces",
+         "parte": "luces, 120 mm, cantidad 3",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -15544,7 +15597,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "luces"
+        "luces, 120 mm, cantidad 3"
        ]
       }
      },
@@ -15562,7 +15615,7 @@
     ]
    }
   ],
-  "respuesta": "Por gabinete tengo: Gabinete Lian Li Lancool 216 Negro a $226.000, quedan 22; Gabinete Asus Prime AP201 Negro a $172.500, quedan 2; Gabinete Cooler Master MasterBox Q300L Negro a $72.000, quedan 2.\nDe luces la ficha de cooler no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "Por gabinete tengo: Gabinete Lian Li Lancool 216 Negro a $226.000, quedan 22; Gabinete Asus Prime AP201 Negro a $172.500, quedan 2; Gabinete Cooler Master MasterBox Q300L Negro a $72.000, quedan 2.\nDe luces, 120 mm, cantidad 3 la ficha de cooler no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "GAB0019",
    "GAB0011",
@@ -18694,7 +18747,7 @@
          "por": "codigo"
         },
         {
-         "parte": "wi-fi para toda la casa conexion inalambrica estable",
+         "parte": "wi-fi para toda la casa, conexion inalambrica estable",
          "veredicto": "no se ata",
          "por": "jev"
         },
@@ -18707,7 +18760,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "wi-fi para toda la casa conexion inalambrica estable",
+        "wi-fi para toda la casa, conexion inalambrica estable",
         "corte"
        ]
       }
@@ -18726,7 +18779,7 @@
     ]
    }
   ],
-  "respuesta": "De wi-fi para toda la casa conexion inalambrica estable, corte la ficha de router no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "De wi-fi para toda la casa, conexion inalambrica estable, corte la ficha de router no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "ROU0015",
    "ROU0013",
@@ -19274,7 +19327,7 @@
        "rubro": "notebook",
        "items": [
         {
-         "parte": "llevar en la mochila al colegio",
+         "parte": "llevar en la mochila al colegio,",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -19282,7 +19335,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "llevar en la mochila al colegio"
+        "llevar en la mochila al colegio,"
        ]
       }
      },
@@ -19300,7 +19353,7 @@
     ]
    }
   ],
-  "respuesta": "De llevar en la mochila al colegio la ficha de notebook no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "De llevar en la mochila al colegio, la ficha de notebook no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "NOT0044",
    "NOT0151",
@@ -19632,7 +19685,7 @@
        "rubro": "procesador",
        "items": [
         {
-         "parte": "computadora el mas rapido disponible",
+         "parte": "computadora, el mas rapido disponible",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -19640,7 +19693,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "computadora el mas rapido disponible"
+        "computadora, el mas rapido disponible"
        ]
       }
      },
@@ -19658,7 +19711,7 @@
     ]
    }
   ],
-  "respuesta": "De computadora el mas rapido disponible la ficha de procesador no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "De computadora, el mas rapido disponible la ficha de procesador no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "CPU0014",
    "CPU0018",
@@ -19732,7 +19785,7 @@
        "rubro": "ssd",
        "items": [
         {
-         "parte": "silencioso muy rapido para instalar windows",
+         "parte": "silencioso, muy rapido, para instalar windows",
          "veredicto": "no se ata",
          "por": "jev"
         }
@@ -19740,7 +19793,7 @@
        "filas": [],
        "atado": [],
        "partes": [
-        "silencioso muy rapido para instalar windows"
+        "silencioso, muy rapido, para instalar windows"
        ]
       }
      },
@@ -19758,7 +19811,7 @@
     ]
    }
   ],
-  "respuesta": "De silencioso muy rapido para instalar windows la ficha de ssd no dice nada: te muestro los que hay, o contame que buscas.",
+  "respuesta": "De silencioso, muy rapido, para instalar windows la ficha de ssd no dice nada: te muestro los que hay, o contame que buscas.",
   "memoria": [
    "SSD0012",
    "SSD0011",
@@ -22391,6 +22444,11 @@
        "rubro": "ssd",
        "items": [
         {
+         "parte": "4",
+         "veredicto": "no se ata",
+         "por": "jev"
+        },
+        {
          "parte": "480",
          "veredicto": "no se ata",
          "por": "jev"
@@ -22399,6 +22457,7 @@
        "filas": [],
        "atado": [],
        "partes": [
+        "4",
         "480"
        ]
       }
@@ -22486,6 +22545,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "memoria ram",
+       "items": [
+        {
+         "parte": "4",
+         "veredicto": "no se ata",
+         "por": "jev"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "4"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "soporte_configuracion",
@@ -22513,7 +22593,7 @@
     ]
    }
   ],
-  "respuesta": "De 480 la ficha de ssd no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Lanus sale $3.000.\nPor 4 memorias de 8 tengo: Memoria ram Patriot Viper DDR4 3200 8GB Negro a $38.500, quedan 9; Memoria ram Kingston Fury Beast DDR4 3200 8GB Negro a $34.500, quedan 23; Memoria ram ADATA XPG Spectrix DDR4 3600 8GB Negro a $53.000, quedan 18.\nEl envio a Lanus sale $3.000.",
+  "respuesta": "De 4, 480 la ficha de ssd no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Lanus sale $3.000.\nDe 4 la ficha de memoria ram no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Lanus sale $3.000.",
   "memoria": [
    "SSD0001",
    "SSD0002",
@@ -22582,6 +22662,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "silla gamer",
+       "items": [
+        {
+         "parte": "cantidad 2",
+         "veredicto": "no se ata",
+         "por": "jev"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "cantidad 2"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "costo_envio",
@@ -22648,7 +22749,7 @@
     ]
    }
   ],
-  "respuesta": "Por sillas, cantidad 2 tengo: Silla gamer Redragon Coeus Negro y rojo a $405.000, quedan 17; Silla gamer Redragon Gaia Negro y rojo a $369.500, quedan 5; Silla gamer Noblechairs Hero Negro y rojo a $699.500, quedan 15.\nEl envio a Cordoba sale $7.500.\nEscritorios, cantidad 2 no hay.\nEl envio a Cordoba sale $7.500.",
+  "respuesta": "De cantidad 2 la ficha de silla gamer no dice nada: te muestro los que hay, o contame que buscas.\nEl envio a Cordoba sale $7.500.\nEscritorios, cantidad 2 no hay.\nEl envio a Cordoba sale $7.500.",
   "memoria": [
    "SIL0001",
    "SIL0022",
@@ -22720,20 +22821,15 @@
        "AUR0045",
        "AUR0003"
       ],
-      "elegido": null,
-      "veredicto": "repreguntar",
+      "elegido": "AUR0019",
+      "veredicto": "coincide",
       "datos": {
        "rubro": "auriculares",
        "items": [
         {
-         "parte": "baratos",
+         "parte": "10 unidades, baratos, para call center, con microfono incorporado",
          "veredicto": "orden",
          "valor": "mas barato",
-         "por": "codigo"
-        },
-        {
-         "parte": "call center con microfono incorporado",
-         "veredicto": "no se ata",
          "por": "jev"
         }
        ],
@@ -22759,12 +22855,6 @@
          "precio": 70000,
          "stock": 12
         }
-       ],
-       "atado": [
-        "baratos"
-       ],
-       "partes": [
-        "call center con microfono incorporado"
        ]
       }
      },
@@ -22796,11 +22886,14 @@
     ]
    }
   ],
-  "respuesta": "De call center con microfono incorporado la ficha de auriculares no dice nada. Con baratos tengo: Auriculares Redragon Zeus X Negro a $57.500; Auriculares Redragon Pandora Negro a $62.500; Auriculares HyperX Cloud Stinger 2 Negro a $70.000. Te sirve alguno, o contame que buscas?\nEl envio a Rosario sale $7.000.",
+  "respuesta": "En auriculares, 10 unidades, baratos, para call center, con microfono incorporado, tengo: Auriculares Redragon Zeus X Negro a $57.500, quedan 10; Auriculares Redragon Pandora Negro a $62.500, quedan 15; Auriculares HyperX Cloud Stinger 2 Negro a $70.000, quedan 12.\nEl envio a Rosario sale $7.000.",
   "memoria": [
    "AUR0045",
    "AUR0019",
-   "AUR0037"
+   "AUR0037",
+   "AUR0019",
+   "AUR0045",
+   "AUR0003"
   ]
  },
  "nuevas70b B59": {
@@ -22874,14 +22967,9 @@
        "rubro": "motherboard",
        "items": [
         {
-         "parte": "mas economico",
+         "parte": "combo mas economico,",
          "veredicto": "orden",
          "valor": "mas barato",
-         "por": "codigo"
-        },
-        {
-         "parte": "combo",
-         "veredicto": "no se ata",
          "por": "jev"
         },
         {
@@ -22914,10 +23002,9 @@
         }
        ],
        "atado": [
-        "mas economico"
+        "combo mas economico,"
        ],
        "partes": [
-        "combo",
         "oficina"
        ]
       }
@@ -22992,62 +23079,22 @@
      },
      {
       "nexo": "condicion",
-      "candidatos": [
-       "CPU0010",
-       "CPU0011",
-       "CPU0009"
-      ],
+      "candidatos": [],
       "elegido": null,
       "veredicto": "repreguntar",
       "datos": {
        "rubro": "procesador",
        "items": [
         {
-         "parte": "mas economico",
-         "veredicto": "orden",
-         "valor": "mas barato",
-         "por": "codigo"
-        },
-        {
-         "parte": "combo",
-         "veredicto": "no se ata",
-         "por": "jev"
-        },
-        {
-         "parte": "pc de oficina",
+         "parte": "combo mas economico, para pc de oficina",
          "veredicto": "no se ata",
          "por": "jev"
         }
        ],
-       "filas": [
-        {
-         "id": "CPU0010",
-         "nombre": "Procesador Intel Core i3-12100F",
-         "rubro": "procesador",
-         "precio": 95000,
-         "stock": 2
-        },
-        {
-         "id": "CPU0011",
-         "nombre": "Procesador Intel Core i3-14100F",
-         "rubro": "procesador",
-         "precio": 134000,
-         "stock": 1
-        },
-        {
-         "id": "CPU0009",
-         "nombre": "Procesador AMD Ryzen 5 5500",
-         "rubro": "procesador",
-         "precio": 147000,
-         "stock": 14
-        }
-       ],
-       "atado": [
-        "mas economico"
-       ],
+       "filas": [],
+       "atado": [],
        "partes": [
-        "combo",
-        "pc de oficina"
+        "combo mas economico, para pc de oficina"
        ]
       }
      },
@@ -23126,20 +23173,15 @@
        "COO0003",
        "COO0008"
       ],
-      "elegido": null,
-      "veredicto": "repreguntar",
+      "elegido": "COO0002",
+      "veredicto": "coincide",
       "datos": {
        "rubro": "cooler",
        "items": [
         {
-         "parte": "mas economico",
+         "parte": "combo mas economico, para pc de oficina",
          "veredicto": "orden",
          "valor": "mas barato",
-         "por": "codigo"
-        },
-        {
-         "parte": "combo",
-         "veredicto": "no se ata",
          "por": "jev"
         }
        ],
@@ -23165,12 +23207,6 @@
          "precio": 62500,
          "stock": 2
         }
-       ],
-       "atado": [
-        "mas economico"
-       ],
-       "partes": [
-        "combo"
        ]
       }
      },
@@ -23188,7 +23224,7 @@
     ]
    }
   ],
-  "respuesta": "De combo, oficina la ficha de motherboard no dice nada. Con mas economico tengo: Motherboard Gigabyte A520M K a $106.500; Motherboard Gigabyte B550M DS3H a $125.000; Motherboard MSI PRO B550M-VC a $156.500. Te sirve alguno, o contame que buscas?\nDe combo, pc de oficina la ficha de procesador no dice nada. Con mas economico tengo: Procesador Intel Core i3-12100F a $95.000; Procesador Intel Core i3-14100F a $134.000; Procesador AMD Ryzen 5 5500 a $147.000. Te sirve alguno, o contame que buscas?\nDe combo la ficha de cooler no dice nada. Con mas economico tengo: Cooler DeepCool AG400 a $49.000; Cooler Cooler Master Hyper 212 a $53.000; Cooler DeepCool LE500 a $62.500. Te sirve alguno, o contame que buscas?",
+  "respuesta": "De oficina la ficha de motherboard no dice nada. Con combo mas economico, tengo: Motherboard Gigabyte A520M K a $106.500; Motherboard Gigabyte B550M DS3H a $125.000; Motherboard MSI PRO B550M-VC a $156.500. Te sirve alguno, o contame que buscas?\nDe combo mas economico, para pc de oficina la ficha de procesador no dice nada: te muestro los que hay, o contame que buscas.\nEn cooler, combo mas economico, para pc de oficina, tengo: Cooler DeepCool AG400 a $49.000, quedan 15; Cooler Cooler Master Hyper 212 a $53.000, quedan 11; Cooler DeepCool LE500 a $62.500, quedan 2.",
   "memoria": [
    "MBO0006",
    "MBO0001",
@@ -23198,7 +23234,10 @@
    "CPU0001",
    "COO0008",
    "COO0009",
-   "COO0003"
+   "COO0003",
+   "COO0002",
+   "COO0003",
+   "COO0008"
   ]
  },
  "nuevas70b B60": {
@@ -23668,6 +23707,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "impresora",
+       "items": [
+        {
+         "parte": "3 unidades",
+         "veredicto": "no se ata",
+         "por": "codigo"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "3 unidades"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "plazo_envio",
@@ -23695,7 +23755,7 @@
     ]
    }
   ],
-  "respuesta": "Si, emitimos factura A o B segun corresponda, y todos los precios ya incluyen IVA. Si necesitas factura A, pasame tu CUIT al momento de comprar y listo.\nPor impresoras, 3 unidades tengo: Impresora Canon Pixma G3110 Negro a $272.500, quedan 23; Impresora Epson EcoTank L3250 Negro a $277.000, quedan 1; Impresora Brother HL-1212W Negro a $192.000, quedan 12.\nUna vez acreditado el pago, a CABA y GBA llega en 2 a 3 dias habiles, y al interior en 4 a 7 dias habiles. Decime tu zona y te confirmo tambien el costo del envio.\nEl envio a La Plata sale $6.000.",
+  "respuesta": "Si, emitimos factura A o B segun corresponda, y todos los precios ya incluyen IVA. Si necesitas factura A, pasame tu CUIT al momento de comprar y listo.\nDe 3 unidades la ficha de impresora no dice nada: te muestro los que hay, o contame que buscas.\nUna vez acreditado el pago, a CABA y GBA llega en 2 a 3 dias habiles, y al interior en 4 a 7 dias habiles. Decime tu zona y te confirmo tambien el costo del envio.\nEl envio a La Plata sale $6.000.",
   "memoria": [
    "IMP0009",
    "IMP0001",
@@ -23997,6 +24057,27 @@
       ]
      },
      {
+      "nexo": "condicion",
+      "candidatos": [],
+      "elegido": null,
+      "veredicto": "repreguntar",
+      "datos": {
+       "rubro": "webcam",
+       "items": [
+        {
+         "parte": "5 unidades",
+         "veredicto": "no se ata",
+         "por": "codigo"
+        }
+       ],
+       "filas": [],
+       "atado": [],
+       "partes": [
+        "5 unidades"
+       ]
+      }
+     },
+     {
       "nexo": "tema",
       "candidatos": [
        "mayoristas",
@@ -24042,7 +24123,7 @@
     ]
    }
   ],
-  "respuesta": "Por webcam, 5 unidades tengo: Webcam AverMedia PW313 a $109.500, quedan 18; Webcam Logitech StreamCam a $246.000, quedan 24; Webcam Logitech C920 HD Pro a $141.000, quedan 21.\nSi, para compras por cantidad o reventa tenemos precios especiales. Contame que productos y que cantidades pensas comprar y te armo una cotizacion mayorista.\nSi, llegamos a todo el pais por Andreani y OCA. Pasame tu provincia o codigo postal y te digo la tarifa exacta y el plazo. A donde te lo mandariamos?\nEl envio a Ushuaia sale $12.000.",
+  "respuesta": "De 5 unidades la ficha de webcam no dice nada: te muestro los que hay, o contame que buscas.\nSi, para compras por cantidad o reventa tenemos precios especiales. Contame que productos y que cantidades pensas comprar y te armo una cotizacion mayorista.\nSi, llegamos a todo el pais por Andreani y OCA. Pasame tu provincia o codigo postal y te digo la tarifa exacta y el plazo. A donde te lo mandariamos?\nEl envio a Ushuaia sale $12.000.",
   "memoria": [
    "WEB0010",
    "WEB0007",
