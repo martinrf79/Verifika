@@ -1,0 +1,28 @@
+{"banco": "140", "id": "R05", "fragmento": "algo donde guardar las fotos del celu que no sea la nube", "candidatos": ["almacenamiento externo"], "elige": "almacenamiento externo"}
+{"banco": "140", "id": "R07", "fragmento": "eso que se pone adentro de la pc para que corran los jueguitos", "candidatos": ["procesador"], "elige": "ninguno"}
+{"banco": "140", "id": "B34", "fragmento": "el coso que hace que la compu tenga internet sin cable en toda la casa, que no se corte", "candidatos": ["router"], "elige": "router"}
+{"banco": "reales", "id": "R10", "fragmento": "articulo bueno y barato para escribir con mucha garantia", "candidatos": ["teclado", "impresora"], "elige": "teclado"}
+{"banco": "reales", "id": "R14", "fragmento": "Los otros dos artículos", "candidatos": ["auriculares", "cooler", "silla gamer"], "elige": "ninguno"}
+{"banco": "reales", "id": "R29", "fragmento": "el que no tenga cable", "candidatos": ["microfono", "cargador", "router"], "elige": "ninguno"}
+{"banco": "reales", "id": "R30", "fragmento": "el M170 está por debajo de 15 lucas", "candidatos": ["mouse", "monitor", "webcam", "tablet", "cooler"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C01.0.original", "fragmento": "el G305", "candidatos": ["mouse"], "elige": "mouse"}
+{"banco": "reales525", "id": "C04.0.redactada", "fragmento": "el K120", "candidatos": ["teclado", "impresora", "cooler", "monitor"], "elige": "teclado"}
+{"banco": "reales525", "id": "C32.0.original", "fragmento": "entre el G305 y el G203, dame el que sea inalambrico", "candidatos": ["mouse"], "elige": "mouse"}
+{"banco": "reales525", "id": "C32.0.redactada", "fragmento": "De estos dos, el G203 y el G305, dame el inalámbrico", "candidatos": ["mouse"], "elige": "mouse"}
+{"banco": "reales525", "id": "C34.0.redactada", "fragmento": "un G203", "candidatos": ["mouse", "webcam", "teclado", "auriculares", "parlante"], "elige": "mouse"}
+{"banco": "reales525", "id": "C39.0.plano", "fragmento": "el g203 es inalambrico no lo quiero para viajar", "candidatos": ["mouse"], "elige": "mouse"}
+{"banco": "reales525", "id": "C39.0.redactada", "fragmento": "Lo quiero para viajar: el G203 es inalámbrico", "candidatos": ["mouse"], "elige": "mouse"}
+{"banco": "reales525", "id": "C43.0.original", "fragmento": "el K120", "candidatos": ["teclado", "impresora", "cooler", "monitor"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C43.0.plano", "fragmento": "k120", "candidatos": ["teclado", "webcam", "impresora"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C43.0.whatsapp", "fragmento": "el k120", "candidatos": ["teclado", "impresora", "monitor", "cooler"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C43.0.redactada", "fragmento": "K120", "candidatos": ["teclado", "webcam", "impresora"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C43.0.coloquial", "fragmento": "el k120", "candidatos": ["teclado", "impresora", "monitor", "cooler"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C56.0.original", "fragmento": "el K120 negro", "candidatos": ["teclado", "webcam", "impresora"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C56.0.plano", "fragmento": "el k120 negro sale menos de 10 mil llevo dos", "candidatos": ["teclado", "webcam", "auriculares", "impresora"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C56.0.whatsapp", "fragmento": "el k120 negro sale menos de 10 mil", "candidatos": ["teclado", "webcam"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C56.0.redactada", "fragmento": "Tienen 50% de descuento, ¿no?", "candidatos": ["parlante", "auriculares", "ssd", "router"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C56.0.redactada", "fragmento": "el K120 negro queda en menos de 10 mil, llevo dos", "candidatos": ["teclado", "webcam", "impresora", "cooler"], "elige": "ninguno"}
+{"banco": "reales525", "id": "C56.0.coloquial", "fragmento": "si el k120 negro sale menos de 10 mil me llevo 2", "candidatos": ["teclado", "auriculares", "webcam"], "elige": "ninguno"}
+{"banco": "reales525", "id": "K20.0.original", "fragmento": "los otros dos artículos", "candidatos": ["auriculares", "cooler", "silla gamer"], "elige": "ninguno"}
+{"banco": "reales525", "id": "K20.0.whatsapp", "fragmento": "los otros dos artículos", "candidatos": ["auriculares", "cooler", "silla gamer"], "elige": "ninguno"}
+{"banco": "reales525", "id": "K20.0.coloquial", "fragmento": "los otros 2", "candidatos": ["almacenamiento externo", "auriculares", "cooler"], "elige": "auriculares"}

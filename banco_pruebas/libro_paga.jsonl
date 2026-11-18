@@ -30630,3 +30630,4 @@
 {"dia": "2026-11-17", "hora": "17:52:03", "modelo": "gemini-embedding-001", "entrada": 1059, "salida": 0, "dolares": 0.000159, "proceso": 1565}
 {"dia": "2026-11-17", "hora": "17:52:04", "modelo": "gemini-embedding-001", "entrada": 845, "salida": 0, "dolares": 0.000127, "proceso": 1565}
 {"dia": "2026-11-17", "hora": "17:52:05", "modelo": "gemini-embedding-001", "entrada": 975, "salida": 0, "dolares": 0.000146, "proceso": 1565}
+{"dia": "2026-11-18", "hora": "00:51:35", "modelo": "gemini-embedding-001", "entrada": 79, "salida": 0, "dolares": 1.2e-05, "proceso": 639}

@@ -272,7 +272,7 @@ def informe_tres(filas, c, ver=False):
 # un rubro de la tienda, con el indice de rubros o con el de productos, las dos formas medidas. Cuando Luna escribe "?",
 # los embeddings del fragmento traen 8 productos, sus rubros sin repetir van a Jev con el mensaje entero, y Jev elige uno
 # o ninguno. Ninguno es repregunta. La vara es la de los tres casos.
-JEV0 = os.path.join(GRABADO, "llamada0_jev_v7.jsonl")
+JEV0 = os.path.join(GRABADO, "llamada0_jev_v7_con_productos.jsonl")
 
 
 def definida(prompt="v7"):
@@ -323,13 +323,17 @@ def definida(prompt="v7"):
             filas.append({"banco": b, "id": cid, "producto": pr, "rubros": sorted(rs), "rubro": por_rubro,
                           "rubro por producto": por_producto, **{f"ok {k}": v for k, v in ok.items()}})
             continue
-        cand = []
+        cand, nombres = [], collections.defaultdict(list)
         for i in orden(f or q, vp)[:K0]:
             if ms[i][0] not in cand:
                 cand.append(ms[i][0])
+            nombres[ms[i][0]].append(f"{ms[i][1]} {ms[i][2]}")
         if (b, cid, f) not in hechas:
+            # 18-nov, por lo medido: con el rubro y sus alias solos, Jev no sabe que "el K120" es un teclado. Cada
+            # rubro candidato va con los productos de la tienda que trajeron los embeddings.
             qs = {"p0": {"type": "choice",
-                         "criteria": {r: f"{r}, que tambien se dice {', '.join(alias.get(r, [])[:12])}" for r in cand}
+                         "criteria": {r: f"{r}, que tambien se dice {', '.join(alias.get(r, [])[:12])}; en la tienda, "
+                                         f"por ejemplo: {', '.join(nombres[r][:5])}" for r in cand}
                          | {NR.NINGUNO: NR.DESC_NINGUNO},
                          "instructions": f"En la parte \"{f}\" del mensaje, que tipo de producto de la tienda pide el "
                                          "cliente? Si la tienda no tiene ese tipo de producto, ninguno."}}
