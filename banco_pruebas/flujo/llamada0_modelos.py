@@ -49,8 +49,9 @@ MODELOS = {
     # La elegida por Martin el 16-nov, FICHA 100. Desde el 16-nov por la clave directa de OpenAI: por OpenRouter queda
     # poco saldo. Lo grabado hasta el 16-nov vino por OpenRouter; es el mismo modelo. El tope, el ultimo numero, es lo
     # gastado con este modelo en todo el banco: 12 centavos hasta el 16-nov, con 11 ya usados; Martin lo sube a un dolar
-    # el 16-nov para los nexos, la memoria y la segunda llamada.
-    "luna": ("openai", "gpt-6-luna", "low", 0.10, 0.50, 1.00),
+    # el 16-nov para los nexos, la memoria y la segunda llamada, y a 1,10 el 18-nov para grabar las 26 charlas con la
+    # llamada 0 v7: lo gastado en todo el banco ya era 1,29 contando la segunda llamada, y la grabacion cuesta 2 centavos.
+    "luna": ("openai", "gpt-6-luna", "low", 0.10, 0.50, 1.10),
     "qwen": ("openrouter", "qwen/qwen3.8-flash", "none", 0.15, 0.47, 0.06),
     "qwen-low": ("openrouter", "qwen/qwen3.8-flash", "low", 0.15, 0.47, 0.02),
     "luna-medio": ("openrouter", "openai/gpt-6-luna", "medium", 0.10, 0.50, 0.08),
