@@ -63,8 +63,60 @@ def doc_producto(k, filas, alias=None):
 
 
 class Nexo(_A.Nexo):
+    """La regla de la v2, hasta el 18-nov en el bot: tres rubros por la busqueda entera, cinco candidatos, y la funcion de
+    codigo que elige por la primera palabra, con Jev en lo dudoso. El bot usa desde el 18-nov la de la FICHA 102,
+    `app/core/flujo/nuevo/rubro.Nexo.producto`; esta queda para que la calibracion de aca de lo mismo."""
+    n_rubros = RUBROS_CANDIDATOS
+
     def __init__(self):
         super().__init__(TID, json.load(open(PUNTAJES, encoding="utf-8")))
+        # El texto de la tienda de cada modelo, para la funcion que elige.
+        self.texto = {}
+        for k, fs in self.modelos.items():
+            formas = [k[0], k[1], k[2]] + [f["nombre"] for f in fs] + etiquetas(fs) + self.alias.get(k[0], [])
+            self.texto[k] = set(" ".join(n(x) for x in formas).split())
+        # Lo firme de cada modelo: su nombre y su rubro. Lo que solo esta en etiquetas o alias es dudoso.
+        self.firme = {k: set(" ".join(n(x) for x in [k[0]] + [f["nombre"] for f in fs]).split())
+                      for k, fs in self.modelos.items()}
+
+    def llamada0(self, linea):
+        """PIEZA 1: los tres rubros candidatos de lo que tradujo el modelo, entre los que la tienda vende."""
+        return [r for r in self._rank_rubros(str(linea["busqueda"])) if not r.startswith(NO_SE_VENDE)][:self.n_rubros]
+
+    @staticmethod
+    def _lo_dice(busqueda, negativo):
+        """Lo que no se vende gana solo si es lo que pide la busqueda, su primera palabra, como en la funcion que elige:
+        los embeddings proponen y el codigo confirma. "sony xm5" queda cerca de "play 5" por Sony, y en "auriculares
+        ps5" lo pedido son auriculares: la PS5 es con que se usan. Medido el 16-nov en los mensajes reales."""
+        ws = [w for w in n(busqueda).split() if not w.isdigit()]
+        ps = n(negativo[len(NO_SE_VENDE):]).split()
+        return bool(ws) and all(any(w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w)))
+                                    for w in ws[:len(ps)]) for p in ps)
+
+    def elegir(self, linea, candidatos):
+        """PIEZA 3: el primer candidato cuyo texto de la tienda trae la primera palabra de lo que tradujo el modelo."""
+        palabras = [w for w in n(linea["busqueda"]).split() if not w.isdigit()]
+        pedido = palabras[0] if palabras else ""
+
+        def trae(k, donde):
+            return any(w == pedido or (min(len(w), len(pedido)) >= 4 and (w.startswith(pedido) or pedido.startswith(w)))
+                       for w in donde[k])
+        elegido = next((f for f in candidatos if trae(tuple(f["modelo"]), self.texto)), None)
+        # Dudoso: no hay, o se eligio por una palabra que solo esta en etiquetas o alias. Eso lo confirma Jev.
+        dudoso = bool(candidatos) and (elegido is None or not trae(tuple(elegido["modelo"]), self.firme))
+        return {"pedido": pedido, "elegido": elegido, "no_hay": elegido is None, "dudoso": dudoso,
+                "cercano": candidatos[0] if candidatos else None}
+
+    def producto(self, linea):
+        primero = (self._rank_rubros(str(linea["busqueda"])) or [""])[0]
+        rubros = self.llamada0(linea)
+        if primero.startswith(NO_SE_VENDE) and self._lo_dice(linea["busqueda"], primero):
+            # Lo mas parecido es algo que la tienda declara que no vende: no hay, y no se ofrece nada a ciegas.
+            return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
+                    "candidatos": [], "pedido": "", "elegido": None, "no_hay": True, "dudoso": False, "cercano": None}
+        cands = self.busqueda2(linea, rubros)
+        return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
+                "candidatos": cands, **self.elegir(linea, cands)}
 
 
 def _doc_etiquetas(k, filas, alias=None):

@@ -182,7 +182,7 @@ class Nexo:
 
     def nombrado(self, linea):
         """PIEZAS 1 A 3. None si el nexo no corre."""
-        p = self.idx.producto({"busqueda": linea.busqueda, "fragmento": linea.fragmento})
+        p = self.idx.producto(linea.consulta())
         elegido = self.rubro(linea.busqueda, p["elegido"]["rubro"] if p["elegido"] else None)
         exacto = self.rubro(linea.busqueda, None)
         # La identidad la decide la palabra exacta, regla 7.0: si otro rubro nombra mas palabras de la busqueda, con

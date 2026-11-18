@@ -30,6 +30,10 @@ class Linea:
     busqueda: str
     destino: str
     nexos: list = dataclasses.field(default_factory=list)
+    producto: str = None      # el de la llamada 0 v7, o "?"; sin el, la busqueda entera hace de producto
+
+    def consulta(self):
+        return {"busqueda": self.busqueda, "fragmento": self.fragmento, "producto": self.producto}
 
 
 def pendiente(nexo):
@@ -67,16 +71,19 @@ def ruteo(linea, idx):
 
 
 def nexo_producto(linea, idx, jev_producto=None):
-    p = idx.producto({"busqueda": linea.busqueda, "fragmento": linea.fragmento})
+    p = idx.producto(linea.consulta())
     if p.get("dudoso") and jev_producto:
-        # Lo dudoso lo confirma Jev, `nexo_rubro`: uno de los cinco candidatos, o no hay.
+        # Lo dudoso, el producto que la llamada 0 no supo, lo elige Jev entre los rubros candidatos: el mejor producto
+        # de ese rubro, o ninguno.
         v = jev_producto(linea.busqueda)
-        elegido = next((f for f in p["candidatos"] if f["id"] == v), None)
-        p = dict(p, elegido=elegido, no_hay=elegido is None)
+        p = dict(p, elegido=next((f for f in p["candidatos"] if v in (f["id"], f["rubro"])), None))
     ids = [f["id"] for f in p["candidatos"]]
     if p["elegido"]:
         mismos = [f for f in p["candidatos"] if f["rubro"] == p["elegido"]["rubro"]][:3]
         return Resultado("producto", ids, p["elegido"]["id"], "coincide", mismos)
+    if p.get("duda"):
+        # FICHA 102: lo que la llamada 0 no supo y Jev no ubico no se ofrece a ciegas: lo repregunta la segunda llamada.
+        return Resultado("producto", ids, None, "repreguntar", [])
     return Resultado("producto", ids, None, "no hay", [p["cercano"]] if p["cercano"] else [])
 
 
@@ -229,6 +236,10 @@ def redactar(lineas):
                     + (f"; y {len(r.datos) - 5} mas" if len(r.datos) > 5 else "") + ". Cual te interesa?")
             elif r.nexo == "nombrado":
                 partes.append(f"{l.busqueda.capitalize()} no lo tengo.")
+            elif r.nexo == "producto" and r.veredicto == "repreguntar":
+                # Lo que la llamada 0 no supo y Jev no ubico: el codigo no dice nada, y la segunda llamada, que ve la
+                # charla y lo ya mostrado, lo resuelve o pregunta. "me llevo uno", "el primero", "y ese cuanto?".
+                continue
             elif r.nexo == "producto" and r.veredicto == "coincide":
                 partes.append(f"Por {l.busqueda} tengo: " + "; ".join(
                     f"{f['nombre']} a {plata(f['precio'])}, quedan {f['stock']}" for f in r.datos) + ".")

@@ -43,8 +43,8 @@ La llamada 0 definida, v7, sobre las 140, los 40 reales y el primer turno de las
 
 ## 3. Lo que hay hoy en el bot y no es lo decidido
 
-- La llamada 0 es la v2, con una sola búsqueda.
-- El nexo de producto busca con esa búsqueda sola, 3 rubros y 5 productos, sin la regla de la sección 1.
+- Desde el 18-nov la llamada 0 v7 y la regla de la sección 1 están en el bot, `nuevo/llamada0.py` y `nuevo/rubro.py`:
+  el punto 2 de la sección 4 está hecho. Lo medido, en el commit y en `PENDIENTE.md`.
 - El nexo de condición corta la búsqueda con `seguro` antes de los embeddings.
 
 ## 4. Lo que sigue, en este orden, una cosa por sesión, cada una a producción con el ok de Martín

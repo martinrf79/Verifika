@@ -12,8 +12,12 @@ import os
 import re
 
 DATOS = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "data", "clientes"))
-# Calibrados en el banco, `banco_pruebas/flujo/embeddings.py` NEXOS: tres rubros y cinco productos candidatos.
-RUBROS_CANDIDATOS, CANDIDATOS = 3, 5
+# Calibrado en el banco, `banco_pruebas/flujo/embeddings.py` NEXOS: cinco productos candidatos.
+CANDIDATOS = 5
+# FICHA 102: con "?", los productos que traen los embeddings del fragmento. Medido el 16-nov, `embeddings_candidatos.py`:
+# con 8, el correcto entra en 25 de las 28 lineas con "?" del 18-nov.
+K_DUDA = 8
+NO_SABE = "?"
 NINGUNO = "ninguno"
 DESC_NINGUNO = "la tienda no tiene ese tipo de producto: ninguno de estos es lo que pide"
 
@@ -71,23 +75,8 @@ class Nexo:
         self.filas, self.alias, _, self.modelos = fuente(tid)
         p = puntajes
         self.rubros, self.ms, self.q = p["rubros"], [tuple(m) for m in p["modelos"]], p["consultas"]
-        # El texto de la tienda de cada modelo, para la funcion que elige.
-        self.texto = {}
-        for k, fs in self.modelos.items():
-            formas = [k[0], k[1], k[2]] + [f["nombre"] for f in fs] + etiquetas(fs) + self.alias.get(k[0], [])
-            self.texto[k] = set(" ".join(n(x) for x in formas).split())
-        # Lo firme de cada modelo: su nombre y su rubro. Lo que solo esta en etiquetas o alias es dudoso.
-        self.firme = {k: set(" ".join(n(x) for x in [k[0]] + [f["nombre"] for f in fs]).split())
-                      for k, fs in self.modelos.items()}
-
     def _rank_rubros(self, q):
         return [r for _, r in sorted(zip(self.q[q]["r"], self.rubros), reverse=True)] if q else []
-
-    n_rubros = RUBROS_CANDIDATOS
-
-    def llamada0(self, linea):
-        """PIEZA 1: los tres rubros candidatos de lo que tradujo el modelo, entre los que la tienda vende."""
-        return [r for r in self._rank_rubros(str(linea["busqueda"])) if not r.startswith(NO_SE_VENDE)][:self.n_rubros]
 
     def _fila(self, k):
         con = [f for f in self.modelos[k] if int(f["stock"] or 0) > 0]
@@ -97,16 +86,6 @@ class Nexo:
         return {"id": f["id"], "nombre": f["nombre"], "rubro": k[0], "precio": int(float(f["precio_ars"])),
                 "stock": int(f["stock"]), "modelo": list(k)}
 
-    @staticmethod
-    def _lo_dice(busqueda, negativo):
-        """Lo que no se vende gana solo si es lo que pide la busqueda, su primera palabra, como en la funcion que elige:
-        los embeddings proponen y el codigo confirma. "sony xm5" queda cerca de "play 5" por Sony, y en "auriculares
-        ps5" lo pedido son auriculares: la PS5 es con que se usan. Medido el 16-nov en los mensajes reales."""
-        ws = [w for w in n(busqueda).split() if not w.isdigit()]
-        ps = n(negativo[len(NO_SE_VENDE):]).split()
-        return bool(ws) and all(any(w == p or (min(len(w), len(p)) >= 4 and (w.startswith(p) or p.startswith(w)))
-                                    for w in ws[:len(ps)]) for p in ps)
-
     def busqueda2(self, linea, rubros):
         """PIEZA 2: los cinco candidatos, el mejor de cada rubro y los dos que siguen, en el orden de los embeddings."""
         orden = [k for _, k in sorted(zip(self.q[str(linea["busqueda"])]["m"], self.ms), reverse=True) if k[0] in rubros]
@@ -115,28 +94,29 @@ class Nexo:
         resto = [f for f in filas if f not in primeros][:CANDIDATOS - len(primeros)]
         return sorted(primeros + resto, key=filas.index)
 
-    def elegir(self, linea, candidatos):
-        """PIEZA 3: el primer candidato cuyo texto de la tienda trae la primera palabra de lo que tradujo el modelo."""
-        palabras = [w for w in n(linea["busqueda"]).split() if not w.isdigit()]
-        pedido = palabras[0] if palabras else ""
-
-        def trae(k, donde):
-            return any(w == pedido or (min(len(w), len(pedido)) >= 4 and (w.startswith(pedido) or pedido.startswith(w)))
-                       for w in donde[k])
-        elegido = next((f for f in candidatos if trae(tuple(f["modelo"]), self.texto)), None)
-        # Dudoso: no hay, o se eligio por una palabra que solo esta en etiquetas o alias. Eso lo confirma Jev.
-        dudoso = bool(candidatos) and (elegido is None or not trae(tuple(elegido["modelo"]), self.firme))
-        return {"pedido": pedido, "elegido": elegido, "no_hay": elegido is None, "dudoso": dudoso,
-                "cercano": candidatos[0] if candidatos else None}
-
     def producto(self, linea):
-        primero = (self._rank_rubros(str(linea["busqueda"])) or [""])[0]
-        rubros = self.llamada0(linea)
-        if primero.startswith(NO_SE_VENDE) and self._lo_dice(linea["busqueda"], primero):
+        """La regla de la FICHA 102, 18-nov, orden de Martin. Cuando la llamada 0 tradujo, su producto es la verdad: los
+        embeddings del producto solo lo ubican en el rubro mas parecido, y si lo mas parecido es algo que la tienda
+        declara que no vende, no hay. Cuando escribio "?", los embeddings del fragmento traen 8 productos; sus rubros, con
+        esos productos de ejemplo, quedan dudosos para Jev, y ninguno es repregunta. Dentro del rubro, la busqueda entera,
+        producto y condiciones, ordena los candidatos. Medido en el banco, `embeddings_candidatos.py --definida v7`:
+        traducidas 608 de 620; con "?", Jev 22 bien, 6 ninguno y 0 mal de 28. Sin campo producto, el de la v2, la
+        busqueda entera hace de producto."""
+        b = str(linea["busqueda"])
+        pr = str(linea.get("producto") or b).strip()
+        base = {"busqueda": b, "fragmento": linea.get("fragmento"), "pedido": pr, "duda": pr == NO_SABE}
+        if pr == NO_SABE:
+            cerca = [k for _, k in sorted(zip(self.q[str(linea.get("fragmento") or b)]["m"], self.ms), reverse=True)][:K_DUDA]
+            rubros = list(dict.fromkeys(k[0] for k in cerca))
+            ejemplos = {r: [f"{k[1]} {k[2]}" for k in cerca if k[0] == r] for r in rubros}
+            cands = [f for f in (self.busqueda2(linea, [r]) for r in rubros) for f in f[:1]]
+            return {**base, "rubros": [f["rubro"] for f in cands], "ejemplos": ejemplos, "candidatos": cands,
+                    "elegido": None, "no_hay": False, "dudoso": bool(cands), "cercano": None}
+        primero = (self._rank_rubros(pr) or [""])[0]
+        if not primero or primero.startswith(NO_SE_VENDE):
             # Lo mas parecido es algo que la tienda declara que no vende: no hay, y no se ofrece nada a ciegas.
-            return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
-                    "candidatos": [], "pedido": "", "elegido": None, "no_hay": True, "dudoso": False, "cercano": None}
-        cands = self.busqueda2(linea, rubros)
-        return {"busqueda": linea["busqueda"], "fragmento": linea.get("fragmento"), "rubros": rubros,
-                "candidatos": cands, **self.elegir(linea, cands)}
-
+            return {**base, "rubros": [], "candidatos": [], "elegido": None, "no_hay": True, "dudoso": False,
+                    "cercano": None}
+        cands = self.busqueda2(linea, [primero])
+        return {**base, "rubros": [primero], "candidatos": cands, "elegido": cands[0] if cands else None,
+                "no_hay": not cands, "dudoso": False, "cercano": cands[0] if cands else None}

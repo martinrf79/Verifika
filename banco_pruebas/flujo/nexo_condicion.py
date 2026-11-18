@@ -169,16 +169,24 @@ def banco_reales(suf):
 
 
 def banco_charlas():
-    """Las lineas del primer turno de las 26 charlas que tienen vara, con la llamada 0 elegida grabada en `segunda.py`.
-    Solo el primer turno: la condicion corre antes de la memoria."""
-    import flujo_nuevo as F
+    """Las lineas del primer turno de las 26 charlas que tienen vara, por los nexos del bot con lo grabado en `segunda.py`:
+    la llamada 0 v7, los embeddings y Jev. Solo el primer turno: la condicion corre antes de la memoria."""
+    import entorno
     import nexo_condicion_vara as V
     import segunda as S
-    idx = S.indice()
-    por_id = {f["id"]: f for f in idx.filas}
-    j = S.jev_grabado()
-    l0 = {k: v for k, v in S.llamada0().items() if k in V.CHARLAS}
-    return _lineas_flujo(l0, idx, por_id, lambda c, i: j.get(("t", c, i, "")), lambda c, i, b: j.get(("p", c, i, "")))
+    from app.core.flujo.nuevo import rubro as AR
+    entorno.instalar()
+    S.ESTADO.update({"modo": "grabado", "l0": S.llamada0_cruda(), "g": S._puntajes_grabados(), "jev": S._jev_grabado(),
+                     "faltan": []})
+    textos = {f"{ch}|{g['turno']}": g["mensaje"] for ch, gs in S.charlas().items() for g in gs}
+    por_id = {f["id"]: f for f in AR.fuente(S.TIENDA)[0]}
+    piezas, out = S.Grabado(), []
+    for cid in [c for c in S.ESTADO["l0"] if c in V.CHARLAS]:
+        S.ESTADO["cid"] = cid
+        lineas, _, _ = piezas.nexos(textos[cid], piezas.lineas(textos[cid]))
+        out += [(cid, l) + rubro_de(l, por_id) for l in lineas if l.busqueda]
+    S.ESTADO["cid"] = None
+    return out
 
 
 def esperado_525():

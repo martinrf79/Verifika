@@ -3,9 +3,10 @@
 Orden de Martin del 17-nov, FICHA 101: el flujo de dos llamadas reemplaza al agente en el bot. `responder` tiene la misma
 entrada y salida que tenia `agente.responder`, y lo llama `turno.procesar_turno`:
 
-  1. la llamada 0      el mensaje solo, `llamada0.pedir`: una linea por cosa, con fragmento, busqueda y destino.
-  2. los embeddings    las busquedas y los fragmentos contra el indice de la tienda, `vectores.puntajes`.
-  3. Jev               lo dudoso del tema y del producto, en una llamada por mensaje.
+  1. la llamada 0      el mensaje solo, `llamada0.pedir`: una linea por cosa, con fragmento, producto, condiciones y
+                       destino; el producto "?" si no supo cual es.
+  2. los embeddings    el producto, la busqueda y los fragmentos contra el indice de la tienda, `vectores.puntajes`.
+  3. Jev               lo dudoso del tema, y el rubro del producto que la llamada 0 no supo, en una llamada por mensaje.
   4. la condicion      las partes de cada busqueda que el codigo no ato: sus embeddings y Jev, sobre el rubro elegido.
   5. los nexos         `contrato.flujo`: producto, nombrado, condicion, tema y destino, y el texto del codigo.
   6. la segunda        `segunda.llamar`: el texto retocado y los comandos del pedido, que aplica el codigo del agente.
@@ -14,7 +15,8 @@ entrada y salida que tenia `agente.responder`, y lo llama `turno.procesar_turno`
 
 Si un paso falla, el turno sigue con lo que tiene: sin Jev queda lo que eligio el codigo; sin embeddings, sin nexos; sin
 segunda llamada, el texto del codigo. Cada paso se anota con su `trace_id`. Las piezas con red estan en `Vivo`; el banco
-le pasa las suyas, grabadas, a `responder`, y mide este mismo codigo.
+le pasa las suyas a `responder`: hereda de `Vivo` y graba o repite los embeddings, Jev y las dos llamadas, asi mide
+este mismo codigo.
 """
 import asyncio
 import re
@@ -55,14 +57,23 @@ class Vivo:
             log.warning("flujo_jev_error", trace_id=self.trace_id, error=f"{type(e).__name__}: {str(e)[:160]}")
             return {}
 
+    def puntajes(self, consultas, fragmentos):
+        return V.puntajes(self.tid, consultas, fragmentos)
+
+    def puntajes_condicion(self, pedidas):
+        return V.puntajes_condicion(self.tid, pedidas)
+
     def nexos(self, mensaje, crudas):
         """(lineas con sus nexos, texto del codigo, ids mostrados)."""
         tid = self.tid
-        base = [C.Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
-                        str(l.get("destino") or "").strip()) for l in crudas]
+        base = [C.Linea(str(l.get("fragmento") or ""), L0.busqueda(l), str(l.get("destino") or "").strip(),
+                        producto=str(l.get("producto") or "").strip()) for l in crudas]
         if not base:
             return [], "", []
-        prod, tema = V.puntajes(tid, [l.busqueda for l in base], [l.fragmento for l in base])
+        # Los embeddings del producto ubican el rubro; con "?", los del fragmento traen los candidatos; la busqueda
+        # entera ordena dentro del rubro. FICHA 102.
+        prod, tema = self.puntajes([l.busqueda for l in base] + [l.producto for l in base if l.producto != L0.NO_SABE]
+                                   + [l.fragmento for l in base if l.producto == L0.NO_SABE], [l.fragmento for l in base])
         idx = C.Indice(tid, prod, tema, {}, {})
         por_id = {f["id"]: f for f in idx.filas}
         r = self._jev(f"MENSAJE DEL CLIENTE: {mensaje}", J.preguntas_mensaje(idx, base))
@@ -73,14 +84,10 @@ class Vivo:
             return r.get(f"t{i}") if f"t{i}" in r else idx.temas.tema(fragmento)["elegido"]
 
         def jev_producto(busqueda):
-            i = busqs.index(busqueda)
-            if f"p{i}" in r:
-                return r[f"p{i}"]
-            p = idx.producto({"busqueda": busqueda, "fragmento": frags[i]})
-            return p["elegido"]["id"] if p["elegido"] else None
+            return r.get(f"p{busqs.index(busqueda)}")
 
         def copia():
-            return [C.Linea(l.fragmento, l.busqueda, l.destino) for l in base]
+            return [C.Linea(l.fragmento, l.busqueda, l.destino, producto=l.producto) for l in base]
         # La condicion corre sobre el rubro que eligieron producto y nombrado: primero se ven los rubros, despues se
         # piden los embeddings de las partes que el codigo no ato y Jev elige entre los campos candidatos.
         primera, _, _ = C.flujo(copia(), idx, por_id, jev_tema, jev_producto)
@@ -91,7 +98,7 @@ class Vivo:
                 pedidas += [(rubro, l.busqueda, p) for p in NC.seguro(l.busqueda, rubro, idx.condicion.fx)[1]]
         if pedidas:
             consulta = NC.VARIANTES[idx.condicion.variante]["consulta"]
-            idx.condicion.pt.p = V.puntajes_condicion(tid, [(rb, consulta(p, rb, b)) for rb, b, p in pedidas])
+            idx.condicion.pt.p = self.puntajes_condicion([(rb, consulta(p, rb, b)) for rb, b, p in pedidas])
             for rb, b in dict.fromkeys((rb, b) for rb, b, _ in pedidas):
                 partes = [p for x, y, p in pedidas if (x, y) == (rb, b)]
                 e = self._jev(f"BUSQUEDA DEL CLIENTE: {b}\nPRODUCTO: {rb}", J.preguntas_condicion(idx.condicion, b, rb, partes))

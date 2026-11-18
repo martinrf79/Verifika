@@ -4,9 +4,11 @@ Orden de Martin del 17-nov: el flujo de dos llamadas pasa a produccion con el mo
 ["luna"]`, los cinco nexos como quedaron, la memoria que habia en el repo y una segunda llamada chica que solo retoca lo
 que arma el codigo. El agente se archiva. Este archivo es el turno entero en el banco, como va a quedar en `app/`:
 
-  la llamada 0   el prompt v2, sobre el mensaje solo; en el banco, lo grabado de las 26 charlas.
-  los nexos      `flujo_nuevo.flujo` tal cual, con los embeddings de lo que escribio la llamada 0 y Jev en lo dudoso.
-  el codigo      `flujo_nuevo.redactar`: lo que encontraron los nexos, con las filas reales de la tienda.
+  la llamada 0   el prompt v7 desde el 18-nov, FICHA 102, sobre el mensaje solo; en el banco, lo grabado de las 26 charlas.
+  los nexos      los del bot, `nuevo/turno.Vivo.nexos`, con los embeddings y Jev grabados: `Grabado` hereda de `Vivo` y
+                 solo cambia las piezas con red. Lo que falta grabar se pide con `--correr` y queda anotado; sin
+                 `--correr`, una pieza sin grabar corta la corrida con su nombre.
+  el codigo      `contrato.redactar`: lo que encontraron los nexos, con las filas reales de la tienda.
   la segunda     el modelo recibe el texto del codigo, el ultimo mensaje, la charla, la libreta del pedido y lo que el
                  cliente ya vio. Devuelve el texto retocado y, si el cliente compra, cotiza, cambia, saca, dice el pago o
                  da su nombre, los mismos comandos que mandaba el agente. El codigo de produccion los aplica: `agente.pedido`,
@@ -20,10 +22,12 @@ que arma el codigo. El agente se archiva. Este archivo es el turno entero en el 
 LA VARA, la de `agente_replay.py`: turnos cuyas casillas de `vara_58.json` pasan, sobre los 75.
 
     python3 banco_pruebas/flujo/segunda.py --tokens               # cuanto pesa la llamada, sin modelo
+    python3 banco_pruebas/flujo/llamada0_modelos.py --correr luna v7 --banco charlas26   # la llamada 0 de las 75
     python3 banco_pruebas/flujo/segunda.py --correr s1 [C21]      # con el modelo, cada llamada grabada como s1
     python3 banco_pruebas/flujo/segunda.py s1 [--ver] [C21]       # la corrida s1 de nuevo, sin modelo
 """
 import asyncio
+import hashlib
 import json
 import os
 import sys
@@ -32,10 +36,23 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from entorno import GRABADO, REPO  # noqa: E402
 
-BANCO, CORRIDA0, PROMPT0 = "charlas26", "luna", "v2"
+sys.path.insert(0, REPO)
+from app.core.flujo.nuevo import condicion as NC  # noqa: E402
+from app.core.flujo.nuevo import contrato as C  # noqa: E402
+from app.core.flujo.nuevo import llamada0 as L0  # noqa: E402
+from app.core.flujo.nuevo.turno import Vivo  # noqa: E402
+
+BANCO, CORRIDA0, PROMPT0, TIENDA = "charlas26", "luna", "v7", "verifika_prod"
+# La vara del bot desde el 18-nov: la corrida de la segunda llamada sobre la llamada 0 v7, y la de la charla larga. Con la
+# v7 se grabaron dos corridas, s3 con 57 de 75 y s4 con 58: la diferencia es la segunda llamada, C55 t3 y K21 t5 y t6.
+# Fijas en las dos: K21 t1 pasa a bien; C27 t2 pasa a mal, porque el nexo de condicion muestra tres Logitech sin el mas
+# barato y la segunda llamada dice que el M170 estaba entre lo mostrado.
+ETIQUETA, ETIQUETA_LARGA = "s4", "m2"
 LLAMADA0 = os.path.join(GRABADO, "llamada0_modelos.jsonl")
-PUNTAJES = os.path.join(GRABADO, "charlas26_puntajes_luna.json")
-JEV = os.path.join(GRABADO, "charlas26_jev_luna.jsonl")
+# Los embeddings y Jev de las 26 charlas con la llamada 0 v7. Los de la v2, hasta el 18-nov, quedan en la historia:
+# `charlas26_puntajes_luna.json` y `charlas26_jev_luna.jsonl`.
+PUNTAJES = os.path.join(GRABADO, "charlas26_v7_puntajes.json")
+JEV = os.path.join(GRABADO, "charlas26_v7_jev.jsonl")
 SEGUNDA = os.path.join(GRABADO, "segunda_luna.jsonl")
 # Lo que gasto con el modelo elegido la segunda llamada armada con el agente, del 16 al 17-nov, deshecha en e72ec4d: el
 # archivo que lo anotaba quedo en la historia, 2c49a23. Cuenta para el tope de un dolar.
@@ -45,78 +62,134 @@ GASTADO_ANTES = 0.7406
 
 # ══ LO GRABADO DE LAS 26 CHARLAS ═════════════════════════════════════════════
 def charlas():
-    sys.path.insert(0, REPO)
     from banco_pruebas import agente_replay as R
     return R._charlas()
 
 
-def llamada0():
-    """{"charla|turno": [Linea]}: la llamada 0 elegida, prompt v2, sobre cada mensaje solo."""
-    import flujo_nuevo as F
+def llamada0_cruda():
+    """{"charla|turno": [linea]}: la llamada 0 elegida, prompt v7, sobre cada mensaje solo, como la devolvio el modelo."""
     out = {}
     for x in open(LLAMADA0, encoding="utf-8"):
         r = json.loads(x)
         if r["corrida"] == CORRIDA0 and r["prompt"] == PROMPT0 and r["banco"] == BANCO and r.get("salida"):
-            out[r["id"]] = [F.Linea(str(l.get("fragmento") or ""), str(l.get("busqueda") or "").strip(),
-                                    str(l.get("destino") or "").strip()) for l in r["salida"]["lineas"]]
+            out[r["id"]] = r["salida"]["lineas"]
     return out
 
 
-def jev_grabado():
-    out = {}
-    for x in map(json.loads, open(JEV, encoding="utf-8")):
-        if x["tipo"] == "c":
-            out.update({("c", x["rubro"], x["busqueda"], p): e for p, e in x["partes"].items()})
-        else:
-            out.update({(x["tipo"], x["id"], int(i), ""): e for i, e in x["respuestas"].items()})
-    return out
+def llamada0():
+    """{"charla|turno": [Linea]}: las lineas como las arma el bot, `Vivo.nexos`."""
+    return {cid: [C.Linea(str(l.get("fragmento") or ""), L0.busqueda(l), str(l.get("destino") or "").strip(),
+                          producto=str(l.get("producto") or "").strip()) for l in ls]
+            for cid, ls in llamada0_cruda().items()}
 
 
-def indice():
-    """El indice del flujo con los puntajes y Jev de estos mensajes sumados a los grabados."""
-    import flujo_nuevo as F
-    import nexo_rubro as NR
-    import nexo_condicion as NC
-    NR.instalar()
-    idx = F.Indice()
-    p = json.load(open(PUNTAJES, encoding="utf-8"))
-    idx.q = dict(idx.q, **p["producto"])
-    idx.temas.q = dict(idx.temas.q, **p["tema"])
-    for r, xs in p.get("condicion", {}).items():
-        idx.condicion.pt.p.setdefault(NC.VIVA, {}).setdefault(r, {}).update(xs)
-    idx.condicion.jev.update({(r, b, parte): e for (k, r, b, parte), e in jev_grabado().items() if k == "c"})
-    return idx
+def _puntajes_grabados():
+    if os.path.exists(PUNTAJES):
+        return json.load(open(PUNTAJES, encoding="utf-8"))
+    return {"producto": {}, "tema": {}, "condicion": {}}
 
 
-ESTADO = {"etiqueta": "", "modo": "grabado", "charla": "", "turno": 0, "idx": None, "l0": None, "jev": None}
+def _jev_grabado():
+    return {x["clave"]: x["elige"] for x in map(json.loads, open(JEV, encoding="utf-8"))} if os.path.exists(JEV) else {}
 
 
-def nexos(cid):
-    """(lineas con sus nexos, texto del codigo, ids mostrados) de un mensaje, por `flujo_nuevo.flujo`."""
-    import flujo_nuevo as F
-    idx, j = ESTADO["idx"], ESTADO["jev"]
-    ls = [F.Linea(l.fragmento, l.busqueda, l.destino) for l in ESTADO["l0"].get(cid, [])]
-    frags, busqs = [l.fragmento for l in ls], [l.busqueda for l in ls]
-    return F.flujo(ls, idx, {f["id"]: f for f in idx.filas}, lambda f: j.get(("t", cid, frags.index(f), "")),
-                   lambda b: j.get(("p", cid, busqs.index(b), "")))
+ESTADO = {"etiqueta": "", "modo": "grabado", "charla": "", "turno": 0, "l0": None, "g": None, "jev": None, "faltan": []}
 
 
 # ══ LAS PIEZAS DEL BANCO ═════════════════════════════════════════════════════
 # El turno es el del bot, `app/core/flujo/nuevo/turno.responder`, desde el 17-nov. El banco le pasa sus piezas: la llamada
-# 0 grabada, los nexos con los puntajes y Jev grabados, y la segunda llamada grabada o con el modelo, anotada.
+# 0 grabada, los embeddings y Jev grabados, y la segunda llamada grabada o con el modelo, anotada.
 def gastado():
     import llamada0_modelos as LM
     hechas = [json.loads(x) for x in open(SEGUNDA, encoding="utf-8")] if os.path.exists(SEGUNDA) else []
     return GASTADO_ANTES + LM.gastado(lambda r: r["corrida"] == CORRIDA0) + sum(r.get("dolares") or 0 for r in hechas)
 
 
-class Grabado:
-    def lineas(self, mensaje):
-        cid = ESTADO.get("cid") or f"{ESTADO['charla']}|{ESTADO['turno']}"
-        return [{"fragmento": l.fragmento, "busqueda": l.busqueda, "destino": l.destino} for l in ESTADO["l0"].get(cid, [])]
+class SinGrabar(RuntimeError):
+    pass
 
-    def nexos(self, mensaje, crudas):
-        return nexos(ESTADO.get("cid") or f"{ESTADO['charla']}|{ESTADO['turno']}")
+
+def _falta(que, cuales):
+    """Sin `--correr`, lo que no esta grabado corta la corrida: se anota y `correr` lo dice al final."""
+    ESTADO["faltan"].append((ESTADO.get("cid") or f"{ESTADO['charla']}|{ESTADO['turno']}", que, cuales))
+    raise SinGrabar(f"sin grabar: {que} {cuales[:3]}")
+
+
+def _consultas_banco(textos, tid=None, docs=()):
+    """`vectores.consultas` por la puerta del banco, `embeddings.pedir`: con la gratis, o con la paga si Martin la
+    autorizo en la sesion, `MARTIN_AUTORIZO_LA_PAGA`, anotada en el libro de la paga. Los documentos ya estan en el
+    indice de la tienda: lo controla `tests/test_indice_embeddings.py`."""
+    import embeddings as EMB
+    ts = [t for t in dict.fromkeys(textos) if t]
+    return dict(zip(ts, EMB.pedir(ts, EMB.CONSULTA, EMB.cargar(), callado=True)))
+
+
+def grabar_con_el_banco():
+    from app.core.flujo.nuevo import vectores as V
+    V.consultas = _consultas_banco
+
+
+class Grabado(Vivo):
+    """Las piezas del bot, `Vivo`, con la red grabada: los nexos corren con el codigo del bot."""
+
+    def __init__(self):
+        super().__init__(TIENDA, "banco")
+
+    @staticmethod
+    def _cid():
+        return ESTADO.get("cid") or f"{ESTADO['charla']}|{ESTADO['turno']}"
+
+    def lineas(self, mensaje):
+        if self._cid() not in ESTADO["l0"]:
+            _falta("llamada 0", [self._cid()])
+        return ESTADO["l0"][self._cid()]
+
+    def _guardar(self):
+        json.dump(ESTADO["g"], open(PUNTAJES, "w", encoding="utf-8"), ensure_ascii=False)
+
+    def puntajes(self, consultas, fragmentos):
+        g = ESTADO["g"]
+        cs, fs = [q for q in dict.fromkeys(consultas) if q], [f for f in dict.fromkeys(fragmentos) if f]
+        fp, ft = [q for q in cs if q not in g["producto"]], [f for f in fs if f not in g["tema"]]
+        if fp or ft:
+            if ESTADO["modo"] == "grabado":
+                _falta("embeddings", fp + ft)
+            p, t = super().puntajes(fp, ft)
+            for k, v in (("rubros", p["rubros"]), ("modelos", p["modelos"]), ("temas", t["temas"])):
+                if g.setdefault(k, v) != v:
+                    raise RuntimeError(f"la tienda cambio desde que se grabo: {k}; se graba de nuevo")
+            g["producto"].update(p["consultas"])
+            g["tema"].update(t["consultas"])
+            self._guardar()
+        return ({"rubros": g["rubros"], "modelos": g["modelos"], "consultas": {q: g["producto"][q] for q in cs}},
+                {"temas": g["temas"], "consultas": {f: g["tema"][f] for f in fs}})
+
+    def puntajes_condicion(self, pedidas):
+        g = ESTADO["g"]["condicion"]
+        falta = [(r, q) for r, q in dict.fromkeys(pedidas) if q not in g.get(r, {})]
+        if falta:
+            if ESTADO["modo"] == "grabado":
+                _falta("embeddings de condicion", [q for _, q in falta])
+            for r, xs in super().puntajes_condicion(falta)[NC.VIVA].items():
+                g.setdefault(r, {}).update(xs)
+            self._guardar()
+        return {NC.VIVA: {r: {q: g[r][q] for x, q in pedidas if x == r} for r, _ in pedidas}}
+
+    def _jev(self, state, qs):
+        if not qs:
+            return {}
+        clave = hashlib.sha1(json.dumps([state, qs], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+        if clave in ESTADO["jev"]:
+            return ESTADO["jev"][clave]
+        if ESTADO["modo"] == "grabado":
+            _falta("Jev", list(qs))
+        import jev as BJ
+        r, _ = BJ.llamar_jev(state, qs, "charlas26_v7")
+        ESTADO["jev"][clave] = r
+        with open(JEV, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"clave": clave, "id": self._cid(), "preguntas": {k: q["instructions"] for k, q in qs.items()},
+                                 "elige": r}, ensure_ascii=False) + "\n")
+        return r
 
     async def segunda(self, usuario):
         """La segunda llamada del bot, `segunda.llamar`, grabada con su costo; o lo grabado, sin modelo."""
@@ -126,7 +199,7 @@ class Grabado:
                 r = json.loads(x)
                 if (r["etiqueta"], r["charla"], r["turno"]) == clave:
                     return r["argumentos"]
-            raise RuntimeError(f"sin grabar: {clave}")
+            _falta("segunda llamada", [str(clave)])
         import llamada0_modelos as LM
         from app.core.flujo.nuevo import segunda as S
         _, modelo, _, pe, ps, tope = LM.MODELOS[CORRIDA0]
@@ -156,7 +229,10 @@ def instalar(modo="grabado", etiqueta=""):
     from banco_pruebas import clon_produccion as C
     C.instalar()
     from app.core.flujo.nuevo import turno as T
-    ESTADO.update({"modo": modo, "etiqueta": etiqueta, "idx": indice(), "l0": llamada0(), "jev": jev_grabado()})
+    ESTADO.update({"modo": modo, "etiqueta": etiqueta, "l0": llamada0_cruda(), "g": _puntajes_grabados(),
+                   "jev": _jev_grabado(), "faltan": []})
+    if modo != "grabado":
+        grabar_con_el_banco()
     # El bot llama a `nuevo/turno.responder` desde `turno.procesar_turno`: el banco le pone sus piezas.
     _RESPONDER.setdefault("vivo", T.responder)
     vistos = []
@@ -189,6 +265,8 @@ def correr(etiqueta, ids=None, modo="grabado"):
         out["filas"] += filas
         if modo != "grabado":
             print(f"{ch}: {sum(not f['malas'] for f in filas)} de {len(filas)}", flush=True)
+    if ESTADO["faltan"]:
+        raise SinGrabar(f"{len(ESTADO['faltan'])} piezas sin grabar, se graban con --correr: {ESTADO['faltan'][:3]}")
     return out
 
 
@@ -212,6 +290,8 @@ def larga(etiqueta, modo="grabado"):
         ESTADO.update({"turno": i, "cid": cid})
         texto = "\n".join(asyncio.run(C.turno("larga", textos[cid])))
     ESTADO["cid"] = None
+    if ESTADO["faltan"]:
+        raise SinGrabar(f"{len(ESTADO['faltan'])} piezas sin grabar, se graban con --correr: {ESTADO['faltan'][:3]}")
     n = texto.lower()
     ok = "posadas" in n and "47.500" in texto
     print(f"LA CHARLA LARGA, corrida {etiqueta}: {len(LARGA)} turnos; ultima respuesta {'BIEN' if ok else 'MAL'}: "
@@ -225,6 +305,7 @@ def tokens():
     from app.core.flujo import agente as A
     instalar()
     from app.core.flujo.nuevo import segunda as S
+    piezas = Grabado()
     base = len(S.CONSIGNA) + len(json.dumps(S.herramienta(), ensure_ascii=False))
     largos = []
     for ch, gs in charlas().items():
@@ -232,7 +313,7 @@ def tokens():
         historial, memoria = [], A.memoria_de({})
         for g in gs:
             ESTADO["turno"] = g["turno"]
-            _, codigo, ids = nexos(f"{ch}|{g['turno']}")
+            _, codigo, ids = piezas.nexos(g["mensaje"], piezas.lineas(g["mensaje"]))
             largos.append(base + len(S.entrada(g["mensaje"], historial, memoria, codigo, "verifika_prod")))
             historial += [{"role": "user", "content": g["mensaje"]}, {"role": "assistant", "content": codigo}]
             memoria["dicho"] = (memoria.get("dicho") or []) + [g["mensaje"]]

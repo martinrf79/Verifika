@@ -53,7 +53,13 @@ PUNTAJES = grabado("flujo_nuevo_puntajes.json")
 PROMPT = E.PROMPT["v1"].replace("No contestes", """- destino: el lugar a donde hay que enviarlo, solo si el cliente lo
   dijo; si no, vacio.
 No contestes""")
-from app.core.flujo.nuevo.llamada0 import ESQUEMA  # noqa: E402  — el de la llamada 0 del bot
+# El esquema de tres campos de la v1 y la v2, el del bot hasta el 18-nov. Desde el 18-nov el bot usa el de la v7,
+# `app/core/flujo/nuevo/llamada0.ESQUEMA`, con el producto y las condiciones en dos campos.
+_S = {"type": "string"}
+ESQUEMA = {"type": "object", "additionalProperties": False, "required": ["lineas"], "properties": {"lineas": {
+    "type": "array", "items": {"type": "object", "additionalProperties": False,
+                               "required": ["fragmento", "busqueda", "destino"],
+                               "properties": {"fragmento": _S, "busqueda": _S, "destino": _S}}}}}
 
 
 # ══ EL CONTRATO, EL RUTEO, LOS NEXOS Y REDACTAR, EN app/ DESDE EL 17-NOV ═════

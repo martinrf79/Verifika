@@ -28,7 +28,7 @@ Una sola página. No cuenta el estado ni las reglas: eso es el bloque 0 de
 | Despacho, anti-jailbreak, reset | `app/core/orchestrator.py` |
 | El turno entero: la charla, el flujo nuevo, guardar el historial y su memoria | `app/core/flujo/turno.py` |
 | El flujo nuevo de dos llamadas, FICHA 101: el turno, con sus piezas en vivo y lo que hace si una cae | `app/core/flujo/nuevo/turno.py` |
-| La llamada 0: separa el mensaje en lineas y traduce cada una, el prompt v2 | `app/core/flujo/nuevo/llamada0.py` |
+| La llamada 0: separa el mensaje en lineas con producto, condiciones y destino, el prompt v7; "?" si no sabe el producto | `app/core/flujo/nuevo/llamada0.py` |
 | Los cinco nexos: rubro y producto, tema, nombrado, condicion; destino y el contrato | `app/core/flujo/nuevo/rubro.py`, `tema.py`, `nombrado.py`, `condicion.py`, `contrato.py` |
 | Los embeddings en vivo contra el indice de la tienda, y Jev en lo dudoso | `app/core/flujo/nuevo/vectores.py`, `jev.py` |
 | El indice de embeddings de la tienda | `data/clientes/<tienda>/indice_embeddings.json.gz` |
@@ -71,10 +71,10 @@ en las mismas charlas. Un archivo por paso; todo se califica sin gasto desde `gr
 | --- | --- |
 | Las rutas y el código de producción sin red ni modelo, que comparten todos los pasos | `banco_pruebas/flujo/entorno.py` |
 | El flujo de punta a punta, contrato de la FICHA 96, y el nexo de destino | `banco_pruebas/flujo/flujo_nuevo.py` |
-| La llamada 0: prompts, modelos y su vara; la elegida es `MODELOS["luna"]` con el prompt v2 | `banco_pruebas/flujo/llamada0_modelos.py`, `llamada0_vara.py`, `engranaje0.py` |
+| La llamada 0: prompts, modelos y su vara; la elegida es `MODELOS["luna"]` con el prompt v7, FICHA 102 | `banco_pruebas/flujo/llamada0_modelos.py`, `llamada0_vara.py`, `engranaje0.py` |
 | Los embeddings: la receta, la única función que pide vectores, el registro de cada nexo y el índice de la tienda | `banco_pruebas/flujo/embeddings.py`, `vectores/` |
 | Cuántos candidatos hacen falta | `banco_pruebas/flujo/embeddings_candidatos.py` |
-| Nexo de rubro y producto | `banco_pruebas/flujo/nexo_rubro.py` |
+| Nexo de rubro y producto; la regla de la v2, hasta el 18-nov | `banco_pruebas/flujo/nexo_rubro.py` |
 | Nexo de tema de la FAQ | `banco_pruebas/flujo/nexo_tema.py` |
 | Nexo de producto nombrado | `banco_pruebas/flujo/nexo_nombrado.py` |
 | Nexo de condición y su vara | `banco_pruebas/flujo/nexo_condicion.py`, `nexo_condicion_vara.py` |

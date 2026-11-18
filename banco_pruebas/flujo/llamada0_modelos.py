@@ -61,9 +61,8 @@ TOPE_OPENROUTER = 0.20
 # v1, el de hoy: el engranaje 0 mas el destino. v2, lo que la FICHA 99 le pide a la llamada 0: la condicion en cada
 # linea, tambien la del mensaje entero; una linea por producto y por variante; lo corregido no cuenta; nada se pierde.
 PROMPTS = {"v1": F.PROMPT}
-# La v2 vive en `app/core/flujo/nuevo/llamada0.py` desde el 17-nov: es la del bot, una sola copia.
-from app.core.flujo.nuevo.llamada0 import PROMPT as _V2  # noqa: E402
-PROMPTS["v2"] = _V2
+# La v2, la del bot del 17 al 18-nov. Desde el 18-nov el bot usa la v7, FICHA 102: la v2 queda aca, para lo grabado.
+PROMPTS["v2"] = 'Sos el primer paso de un sistema que atiende clientes de una tienda online. Del mensaje del cliente,\ndevolve una linea por cada cosa que pide o pregunta, sin dejar ninguna afuera aunque el mensaje sea largo:\n- fragmento: la parte del mensaje que lo dice, con las palabras del cliente.\n- busqueda: lo que escribirias en el buscador de una tienda online para encontrarlo, con el producto primero y despues\n  todo lo que el cliente pide de el: marca, modelo, medida, capacidad, color, tipo, precio o tope por unidad. Lo que\n  dice para varios productos o para todo el mensaje, como "todo inalambrico" o "lo mas barato posible", va repetido\n  en la busqueda de cada linea a la que se aplica. Vacio si no busca un producto.\n- destino: el lugar a donde hay que enviarlo, solo si el cliente lo dijo; si no, vacio.\nUn producto por linea: si pide dos productos, o dos variantes del mismo, como uno negro y uno rojo, van en lineas\nseparadas. Si el cliente se corrige, vale lo ultimo que dijo.\nNo contestes ni decidas nada. Tu unica fuente es lo que escribio el cliente.'
 
 # v4, 17-nov, orden de Martin: la v2 separa bien pero escribe de mas en la busqueda, la cantidad, comentarios y signos,
 # y el nexo de condicion los toma por condiciones. Las mismas tres cosas por linea; la busqueda atada a producto y
@@ -131,6 +130,9 @@ PROMPTS["v7"] = PROMPTS["v6"].replace(
     """- producto: que tipo de producto busca, con el nombre que usaria la tienda. Si busca un producto pero no sabes cual
   es, escribi solo un signo de pregunta: ?. Vacio si no busca un producto.""")
 assert PROMPTS["v7"] != PROMPTS["v6"]
+# Desde el 18-nov la v7 es la del bot, `app/core/flujo/nuevo/llamada0.py`: tiene que ser la misma que se midio.
+from app.core.flujo.nuevo import llamada0 as _L0  # noqa: E402
+assert _L0.PROMPT == PROMPTS["v7"], "el prompt del bot no es la v7 medida"
 
 # v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
 # condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,
@@ -165,10 +167,12 @@ ESQUEMAS = {"v3": {"type": "object", "additionalProperties": False, "required": 
         "properties": {"fragmento": _S, "condiciones": {"type": "array", "items": _S}, "busqueda": _S,
                        "destino": _S}}}}}}
 
-ESQUEMAS["v6"] = ESQUEMAS["v7"] = {"type": "object", "additionalProperties": False, "required": ["lineas"], "properties": {
+ESQUEMAS["v6"] = {"type": "object", "additionalProperties": False, "required": ["lineas"], "properties": {
     "lineas": {"type": "array", "items": {
         "type": "object", "additionalProperties": False, "required": ["fragmento", "producto", "condiciones", "destino"],
         "properties": {"fragmento": _S, "producto": _S, "condiciones": _S, "destino": _S}}}}}
+ESQUEMAS["v7"] = _L0.ESQUEMA
+assert ESQUEMAS["v7"] == ESQUEMAS["v6"]
 
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
@@ -265,6 +269,10 @@ def casos_de(banco):
     """[(banco, id, mensaje)]: "140", las de `flujo_nuevo`; "reales" y "reales525", las de `reales.py`."""
     if banco == "140":
         return [(b, cid, t) for b, cid, t, _, _ in F.bancos()]
+    if banco == "charlas26":
+        # Las 26 charlas de la vara del bot, un mensaje por turno, "charla|turno": las lee `segunda.py`.
+        import segunda as SG
+        return [(banco, f"{ch}|{g['turno']}", g["mensaje"]) for ch, gs in SG.charlas().items() for g in gs]
     if banco == "nombrados38":
         from nombrados38 import CASOS
         return [(banco, cid, t) for cid, t, _ in CASOS]

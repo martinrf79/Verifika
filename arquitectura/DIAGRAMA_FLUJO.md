@@ -4,7 +4,7 @@ Lo escribe `python3 banco_pruebas/diagrama.py` leyendo `app/`. `tests/test_diagr
 
 Limites: analisis estatico. Una referencia es un nombre que aparece en el codigo, no una llamada probada. Lo que se llama por `getattr`, o por texto, no se ve. Columna ALCANCE: `si` = alguna entrada la alcanza; `?` = ninguna la alcanza pero su nombre aparece escrito en otra parte de `app/`, hay que mirarla; `-` = ninguna la alcanza y su nombre no aparece en ningun otro lado de `app/`. Un `-` no prueba que sobre: puede usarla un script o un test.
 
-Funciones y clases de nivel superior: 531. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
+Funciones y clases de nivel superior: 532. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
 
 ## Nivel 1 — el turno
 
@@ -14,7 +14,7 @@ flowchart LR
   C2["2 PUERTA<br/>3 funciones"]
   C3["3 MEMORIA<br/>34 funciones"]
   C4["4 CONTEXTO<br/>41 funciones"]
-  C5["5 DOS LLAMADAS<br/>18 funciones"]
+  C5["5 DOS LLAMADAS<br/>19 funciones"]
   C6["6 BUSCAR<br/>190 funciones"]
   C7["7 PEDIDO Y CUENTA<br/>156 funciones"]
   C8["8 COBRO<br/>20 funciones"]
@@ -187,10 +187,11 @@ Lo que ve el modelo: reglas, mapa de la tabla, lo que el cliente dijo, lo que la
 
 ### 5 DOS LLAMADAS
 
-La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y el turno. 18 funciones, 289 lineas.
+La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y el turno. 19 funciones, 302 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
+| core.flujo.nuevo.llamada0 | `busqueda` | 8 | · | si |
 | core.flujo.nuevo.llamada0 | `valida` | 3 | · | si |
 | core.flujo.nuevo.llamada0 | `leer` | 8 | · | si |
 | core.flujo.nuevo.llamada0 | `pedir` | 14 | · | si |
@@ -198,7 +199,7 @@ La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y
 | core.flujo.nuevo.segunda | `vistos_texto` | 9 | · | si |
 | core.flujo.nuevo.segunda | `entrada` | 8 | · | si |
 | core.flujo.nuevo.segunda | `llamar` | 16 | · | si |
-| core.flujo.nuevo.turno | `Vivo` (clase) | 73 | · | si |
+| core.flujo.nuevo.turno | `Vivo` (clase) | 78 | · | si |
 | core.flujo.nuevo.turno | `responder` | 71 | 3 | si |
 | core.llm_reintento | `anotar_llamada_negada` | 4 | · | ? |
 | core.llm_reintento | `sin_cupo` | 3 | · | - |
@@ -212,7 +213,7 @@ La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y
 
 ### 6 BUSCAR
 
-Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 190 funciones, 3708 lineas.
+Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 190 funciones, 3697 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -331,22 +332,22 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.flujo.nuevo.condicion | `rubro_de` | 11 | 5 | si |
 | core.flujo.nuevo.condicion | `fuente` | 3 | · | si |
 | core.flujo.nuevo.contrato | `Resultado` (clase) | 7 | · | si |
-| core.flujo.nuevo.contrato | `Linea` (clase) | 5 | 5 | si |
+| core.flujo.nuevo.contrato | `Linea` (clase) | 9 | 5 | si |
 | core.flujo.nuevo.contrato | `pendiente` | 2 | · | si |
 | core.flujo.nuevo.contrato | `Indice` (clase) | 11 | 5 | si |
 | core.flujo.nuevo.contrato | `ruteo` | 14 | · | si |
-| core.flujo.nuevo.contrato | `nexo_producto` | 12 | · | si |
+| core.flujo.nuevo.contrato | `nexo_producto` | 15 | · | si |
 | core.flujo.nuevo.contrato | `nexo_tema` | 9 | · | si |
 | core.flujo.nuevo.contrato | `nexo_nombrado` | 16 | · | si |
 | core.flujo.nuevo.contrato | `nexo_condicion` | 29 | · | si |
 | core.flujo.nuevo.contrato | `nexo_destino` | 13 | · | si |
 | core.flujo.nuevo.contrato | `nexos` | 19 | · | si |
 | core.flujo.nuevo.contrato | `filtro` | 12 | · | si |
-| core.flujo.nuevo.contrato | `redactar` | 53 | · | si |
+| core.flujo.nuevo.contrato | `redactar` | 57 | · | si |
 | core.flujo.nuevo.contrato | `memoria` | 4 | · | si |
 | core.flujo.nuevo.contrato | `flujo` | 5 | 5 | si |
 | core.flujo.nuevo.jev | `llamar` | 15 | 5 | si |
-| core.flujo.nuevo.jev | `preguntas_mensaje` | 22 | 5 | si |
+| core.flujo.nuevo.jev | `preguntas_mensaje` | 23 | 5 | si |
 | core.flujo.nuevo.jev | `preguntas_condicion` | 10 | 5 | si |
 | core.flujo.nuevo.nombrado | `_codigo` | 2 | · | si |
 | core.flujo.nuevo.nombrado | `Nexo` (clase) | 200 | · | si |
@@ -356,7 +357,7 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.flujo.nuevo.rubro | `indice_rubros` | 4 | · | si |
 | core.flujo.nuevo.rubro | `etiquetas` | 2 | · | si |
 | core.flujo.nuevo.rubro | `doc_producto` | 4 | · | si |
-| core.flujo.nuevo.rubro | `Nexo` (clase) | 75 | · | si |
+| core.flujo.nuevo.rubro | `Nexo` (clase) | 52 | · | si |
 | core.flujo.nuevo.tema | `fuente` | 4 | · | si |
 | core.flujo.nuevo.tema | `docs` | 3 | · | si |
 | core.flujo.nuevo.tema | `_una_letra` | 7 | · | si |

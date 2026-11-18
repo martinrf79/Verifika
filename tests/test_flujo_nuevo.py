@@ -2,8 +2,8 @@
 
 Reemplaza a `test_agente.py`: el agente quedo archivado, se vuelve a el con git revert. Las 26 charlas pasan por el webhook
 entero del clon, `turno.procesar_turno` -> `nuevo/turno.responder`, con las piezas grabadas del banco,
-`banco_pruebas/flujo/segunda.py`: la llamada 0 elegida, los puntajes de los embeddings y Jev de cada nexo, y la segunda
-llamada de la corrida s2. El codigo que corre es el del bot: los nexos, el texto del codigo, el control, los comandos del
+`banco_pruebas/flujo/segunda.py`: la llamada 0 v7 desde el 18-nov, FICHA 102, los puntajes de los embeddings y Jev de cada
+nexo, y la segunda llamada de la corrida `segunda.ETIQUETA`. El codigo que corre es el del bot: los nexos, el texto del codigo, el control, los comandos del
 pedido y la memoria.
 
   bien      turnos cuyas casillas de `vara_58.json` pasan: el piso es lo medido el 17-nov, 58 de 75.
@@ -34,7 +34,7 @@ def S():
 
 @pytest.fixture(scope="module")
 def corrida(S):
-    return S.correr("s2")
+    return S.correr(S.ETIQUETA)
 
 
 def test_las_26_charlas_no_bajan_del_piso(corrida):
@@ -49,7 +49,7 @@ def test_la_memoria_vuelve_en_el_turno_siguiente(S, corrida):
     turno: como lista de listas Firestore lo rechazaba y la memoria se perdia sin aviso, corrida s1 del 17-nov."""
     from app.storage import firestore_client as fc
     from banco_pruebas import clon_produccion as C
-    S.correr("s2", ["C50"])
+    S.correr(S.ETIQUETA, ["C50"])
     m = (fc.get_conversation("agente_C50", tienda_id=C.TIENDA) or {}).get("memoria_agente") or {}
     assert m.get("vistos") and all(isinstance(v, dict) and v.get("ids") for v in m["vistos"])
     assert m.get("pedido") and "G203" in str(m["pedido"])
@@ -80,7 +80,7 @@ class _Rota:
 @pytest.mark.parametrize("falla", ["segunda", "nexos", "lineas"])
 def test_si_una_pieza_cae_el_cliente_igual_recibe_respuesta(S, corrida, falla):
     from app.core.flujo import agente as A
-    S.ESTADO.update({"charla": "K16", "turno": 0, "cid": None, "etiqueta": "s2", "modo": "grabado"})
+    S.ESTADO.update({"charla": "K16", "turno": 0, "cid": None, "etiqueta": S.ETIQUETA, "modo": "grabado"})
     r = asyncio.run(S._RESPONDER["vivo"]("quiero 2 mouse genius dx-110 negro y 1 teclado logitech k120 negro, cuanto sale?",
                                          [], A.memoria_de({}), "u_rota", "telegram", "verifika_prod", "t",
                                          piezas=_Rota(falla, S.Grabado())))
@@ -107,8 +107,8 @@ def test_el_indice_de_la_tienda_tiene_cada_documento_de_los_nexos(S):
     assert not faltan, faltan[:5]
 
 
-@pytest.mark.xfail(strict=True, reason="A MEDIAS: la charla larga de 22 turnos, 17-nov. El lugar del primer turno llega al "
-                                       "ultimo y el total sale bien, 47.500, pero dice Misiones y no Posadas: la llamada 0 "
-                                       "no marca destino en 'soy de Posadas, Misiones' y la segunda llamada toma la provincia.")
+@pytest.mark.xfail(strict=True, reason="A MEDIAS: la charla larga de 22 turnos, 17-nov. La llamada 0 no marca destino "
+                                       "en 'soy de Posadas, Misiones'. Con la v2 el total salia, 47.500, con Misiones y no "
+                                       "Posadas; con la v7, corrida m2 del 18-nov, la segunda llamada pregunta la localidad.")
 def test_la_charla_larga_recuerda_la_ciudad_del_primer_turno(S, corrida):
-    assert S.larga("m1")
+    assert S.larga(S.ETIQUETA_LARGA)

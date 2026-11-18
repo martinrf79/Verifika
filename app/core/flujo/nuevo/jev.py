@@ -50,16 +50,17 @@ def preguntas_mensaje(idx, lineas):
                            "instructions": f"En la parte \"{l.fragmento}\" del mensaje, el cliente pregunta por alguna "
                                            "de estas reglas de la tienda?"}
         if l.busqueda:
-            p = idx.producto({"busqueda": l.busqueda, "fragmento": l.fragmento})
+            p = idx.producto(l.consulta())
             if p.get("dudoso"):
+                # FICHA 102: el producto que la llamada 0 no supo. Cada rubro candidato con sus alias y los productos de
+                # la tienda que trajeron los embeddings: sin ellos Jev no sabe que "el K120" es un teclado. Medido el
+                # 18-nov, `embeddings_candidatos.py --definida v7`: 22 bien, 6 ninguno y 0 mal de 28.
                 qs[f"p{i}"] = {"type": "choice",
-                               "criteria": {f["id"]: f"{f['nombre']}, del rubro {f['rubro']}, que tambien se dice "
-                                                     f"{', '.join(idx.alias.get(f['rubro'], [])[:12])}"
-                                            for f in p["candidatos"]} | {NR.NINGUNO: NR.DESC_NINGUNO},
-                               "instructions": f"En la parte \"{l.fragmento or l.busqueda}\" del mensaje, que "
-                                               f"significa \"{l.busqueda}\", cual de estos productos de la tienda es "
-                                               "del tipo que pide el cliente? Si la tienda no tiene ese tipo de "
-                                               "producto, ninguno."}
+                               "criteria": {r: f"{r}, que tambien se dice {', '.join(idx.alias.get(r, [])[:12])}; en la "
+                                               f"tienda, por ejemplo: {', '.join(p['ejemplos'][r][:5])}"
+                                            for r in p["rubros"]} | {NR.NINGUNO: NR.DESC_NINGUNO},
+                               "instructions": f"En la parte \"{l.fragmento}\" del mensaje, que tipo de producto de la "
+                                               "tienda pide el cliente? Si la tienda no tiene ese tipo de producto, ninguno."}
     return qs
 
 
