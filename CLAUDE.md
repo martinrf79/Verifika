@@ -52,9 +52,9 @@ de la FICHA 83 quedó archivado: se vuelve a él con git revert.
 
 ### Lo que sigue
 
-**El pase se hizo el 17-nov.** Ahora se calibran los nexos con la llamada 0 elegida, uno por sesión, FICHA 101 sección
-7, `arquitectura/FICHA_101_memoria_segunda_llamada_y_pase.md`, en el orden de `PENDIENTE.md`. Cada arreglo queda en
-producción. Lo medido de la llamada 0 y de la cadena entera, en la FICHA 100; los nexos, en las FICHAS 96 a 99.
+**El pase se hizo el 17-nov.** El 18-nov quedó definida la llamada 0 y el orden para calibrar los nexos con ella, uno
+por sesión: FICHA 102, `arquitectura/FICHA_102_la_llamada_0_definida.md`, en el orden de `PENDIENTE.md`. Cada arreglo
+queda en producción. Lo medido antes, de la llamada 0 en la FICHA 100; los nexos, en las FICHAS 96 a 99.
 
 El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_flujo_nuevo.py` sin modelo y con corridas de
 `segunda.py --correr`. Si el código cambia lo que lee el modelo, se graba una corrida nueva.
