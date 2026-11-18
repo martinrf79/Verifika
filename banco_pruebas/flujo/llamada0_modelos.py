@@ -121,6 +121,16 @@ Un producto por linea: si pide dos productos, o dos variantes del mismo, como un
 separadas. Varias unidades iguales van en una linea, salvo que vayan a destinos distintos: una linea por destino. Si el
 cliente se corrige, vale lo ultimo que dijo. No contestes ni decidas nada. Tu unica fuente es lo que escribio el cliente."""
 
+# v7, 18-nov, orden de Martin: la v6 con una sola diferencia. Cuando Luna traduce, su producto es la verdad; cuando no
+# sabe que producto es, lo dice: escribe "?" en el producto, y ahi los embeddings del fragmento traen 8 candidatos y elige
+# Jev. El codigo no puede adivinar cuando Luna no tradujo: "mouse" tambien son las palabras del cliente.
+PROMPTS["v7"] = PROMPTS["v6"].replace(
+    """- producto: que tipo de producto busca, con el nombre que usaria la tienda. Si no sabes que producto es, deja las
+  palabras del cliente, corrigiendo solo la ortografia. Vacio si no busca un producto.""",
+    """- producto: que tipo de producto busca, con el nombre que usaria la tienda. Si busca un producto pero no sabes cual
+  es, escribi solo un signo de pregunta: ?. Vacio si no busca un producto.""")
+assert PROMPTS["v7"] != PROMPTS["v6"]
+
 # v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
 # condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,
 # despues una linea por cada uno con sus condiciones en una lista, y un ejemplo inventado que no esta en ningun banco.
@@ -154,7 +164,7 @@ ESQUEMAS = {"v3": {"type": "object", "additionalProperties": False, "required": 
         "properties": {"fragmento": _S, "condiciones": {"type": "array", "items": _S}, "busqueda": _S,
                        "destino": _S}}}}}}
 
-ESQUEMAS["v6"] = {"type": "object", "additionalProperties": False, "required": ["lineas"], "properties": {
+ESQUEMAS["v6"] = ESQUEMAS["v7"] = {"type": "object", "additionalProperties": False, "required": ["lineas"], "properties": {
     "lineas": {"type": "array", "items": {
         "type": "object", "additionalProperties": False, "required": ["fragmento", "producto", "condiciones", "destino"],
         "properties": {"fragmento": _S, "producto": _S, "condiciones": _S, "destino": _S}}}}}
@@ -231,11 +241,14 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
-    if base == "v6" and isinstance(salida, dict):
-        # La vara lee la busqueda: el producto y las condiciones juntos. Los dos campos quedan grabados.
+    if base in ("v6", "v7") and isinstance(salida, dict):
+        # La vara lee la busqueda: el producto y las condiciones juntos. Los dos campos quedan grabados. Con la v7, el
+        # producto que Luna no supo, "?", es el fragmento: la vara lo cuenta como no traducido.
         for l in salida.get("lineas") or []:
             if isinstance(l, dict):
-                l["busqueda"] = f"{l.get('producto') or ''} {l.get('condiciones') or ''}".strip()
+                pr = str(l.get("producto") or "").strip()
+                pr = str(l.get("fragmento") or "") if pr == "?" else pr
+                l["busqueda"] = f"{pr} {l.get('condiciones') or ''}".strip()
     return salida, e, s, seg, round(dol, 7), crudo
 
 
@@ -596,7 +609,7 @@ def sobrantes_reales(corridas=(("gemini-lite", "v1"), ("gemini-lite", "v2"), ("l
 _CANTIDAD = re.compile(r"\b\d+\s*(?:unidad(?:es)?|u)\b|\bcantidad\s*:?\s*\d+|\bx\s?\d+\b|\b\d+\s?x\b")
 
 
-def de_mas(corridas_=(("luna", "v2"), ("luna", "v2#2"), ("luna", "v4"), ("luna", "v5"), ("luna", "v5#2"), ("luna", "v6"))):
+def de_mas(corridas_=(("luna", "v2"), ("luna", "v2#2"), ("luna", "v4"), ("luna", "v5"), ("luna", "v5#2"), ("luna", "v6"), ("luna", "v7"))):
     print("\nLO QUE ESCRIBE DE MAS EN LA BUSQUEDA · las 140, los reales y el primer turno de las 365")
     print(f"  {'corrida':12} {'busquedas':>10} {'con signos':>11} {'con cantidad':>13} {'palabras promedio':>18}")
     filas_ = {}

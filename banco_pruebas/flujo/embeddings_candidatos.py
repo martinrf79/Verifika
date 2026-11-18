@@ -267,7 +267,104 @@ def informe_tres(filas, c, ver=False):
                   f"· dos {r['las dos']}{'' if r['ok las dos'] else ' X'} · {r['fragmento'][:50]!r} / {r['busqueda'][:40]!r}")
 
 
+# ══ LA LLAMADA 0 DEFINIDA: LUNA COMO VERDAD, Y EMBEDDINGS CON JEV SOLO EN LO QUE NO SUPO (18-nov) ═════════════════════
+# Orden de Martin del 18-nov. Con la v7, cuando Luna traduce, su producto es la verdad: los embeddings solo lo ubican en
+# un rubro de la tienda, con el indice de rubros o con el de productos, las dos formas medidas. Cuando Luna escribe "?",
+# los embeddings del fragmento traen 8 productos, sus rubros sin repetir van a Jev con el mensaje entero, y Jev elige uno
+# o ninguno. Ninguno es repregunta. La vara es la de los tres casos.
+JEV0 = os.path.join(GRABADO, "llamada0_jev_v7.jsonl")
+
+
+def definida(prompt="v7"):
+    import llamada0_modelos as L
+    import jev as J
+    _, alias, rubros, modelos = NR.fuente()
+    ms = list(modelos)
+    docs_p = [NR.doc_producto(k, modelos[k], alias) for k in ms]
+    ir = NR.indice_rubros(rubros, alias)
+    textos = {("140", cid): t for _, cid, t in L.casos_de("140")}
+    textos.update({(b, cid): t for b in ("reales", "reales525") for _, cid, t in L.casos_de(b)})
+    crudo = {}
+    for r in L.filas():
+        if r["corrida"] == "luna" and r["prompt"] == prompt and r.get("salida"):
+            tag = "140" if r["banco"] in ("nuevas70", "nuevas70b") else r["banco"]
+            for l in r["salida"]["lineas"]:
+                crudo[(tag, r["id"], str(l.get("fragmento") or ""), str(l.get("busqueda") or ""))] = l
+    ls = [(b, cid, f, q, rs, nv, crudo.get((b, cid, f, q), {})) for b, cid, f, q, rs, nv in lineas_luna(("luna", prompt))]
+    cache = EMB.cargar()
+    vectores(docs_p + [d for _, d in ir], "RETRIEVAL_DOCUMENT", cache)
+    vectores(sorted({x for b, cid, f, q, rs, nv, l in ls
+                     for x in ([f] if str(l.get("producto")).strip() == "?" else [str(l.get("producto") or q)]) if x}),
+             "RETRIEVAL_QUERY", cache)
+    vp = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for d in docs_p]
+    vr = [cache[f"RETRIEVAL_DOCUMENT|{d}"] for _, d in ir]
+
+    def orden(q, vs):
+        x = cache[f"RETRIEVAL_QUERY|{q}"]
+        return sorted(range(len(vs)), key=lambda i: -sum(a * c for a, c in zip(x, vs[i])))
+    hechas = {}
+    if os.path.exists(JEV0):
+        for x in map(json.loads, open(JEV0, encoding="utf-8")):
+            hechas[(x["banco"], x["id"], x["fragmento"])] = x["elige"]
+    c, filas = collections.defaultdict(collections.Counter), []
+    for b, cid, f, q, rs, nv, l in ls:
+        pr = str(l.get("producto") or "").strip()
+        if pr != "?":
+            rt = ir[orden(pr or q, vr)[0]][0]
+            por_rubro = "ninguno" if rt.startswith(NR.NO_SE_VENDE) else rt
+            por_producto = ms[orden(pr or q, vp)[0]][0]
+            ok = {"indice de rubros": por_rubro in rs, "indice de productos": por_producto in rs}
+            if nv and not any(ok.values()):
+                c["traducidas"]["fuera: pide algo que no se vende"] += 1
+                continue
+            c["traducidas"]["lineas"] += 1
+            for k, v in ok.items():
+                c["traducidas"][f"bien con el {k}"] += v
+            filas.append({"banco": b, "id": cid, "producto": pr, "rubros": sorted(rs), "rubro": por_rubro,
+                          "rubro por producto": por_producto, **{f"ok {k}": v for k, v in ok.items()}})
+            continue
+        cand = []
+        for i in orden(f or q, vp)[:K0]:
+            if ms[i][0] not in cand:
+                cand.append(ms[i][0])
+        if (b, cid, f) not in hechas:
+            qs = {"p0": {"type": "choice",
+                         "criteria": {r: f"{r}, que tambien se dice {', '.join(alias.get(r, [])[:12])}" for r in cand}
+                         | {NR.NINGUNO: NR.DESC_NINGUNO},
+                         "instructions": f"En la parte \"{f}\" del mensaje, que tipo de producto de la tienda pide el "
+                                         "cliente? Si la tienda no tiene ese tipo de producto, ninguno."}}
+            res, _ = J.llamar_jev(f"MENSAJE DEL CLIENTE: {textos.get((b, cid), f)}", qs, "llamada0_v7")
+            hechas[(b, cid, f)] = res.get("p0")
+            with open(JEV0, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps({"banco": b, "id": cid, "fragmento": f, "candidatos": cand,
+                                     "elige": res.get("p0")}, ensure_ascii=False) + "\n")
+        e = hechas[(b, cid, f)]
+        if nv and e not in rs and cand[0] not in rs:
+            c["sin traducir"]["fuera: pide algo que no se vende"] += 1
+            continue
+        c["sin traducir"]["lineas"] += 1
+        c["sin traducir"]["Jev bien"] += e in rs
+        c["sin traducir"]["Jev ninguno, repregunta"] += e == NR.NINGUNO
+        c["sin traducir"]["Jev mal"] += e not in rs and e != NR.NINGUNO
+        c["sin traducir"]["el primer candidato, sin Jev, bien"] += cand[0] in rs
+        c["sin traducir"]["el correcto entre los candidatos"] += any(x in rs for x in cand)
+        filas.append({"banco": b, "id": cid, "fragmento": f, "rubros": sorted(rs), "candidatos": cand, "jev": e})
+    print(f"\nLA LLAMADA 0 DEFINIDA, {prompt}: Luna como verdad cuando traduce; embeddings y Jev cuando escribe ?")
+    for k, x in c.items():
+        print(f"  {k:12} " + " · ".join(f"{a} {n}" for a, n in x.items()))
+    for x in filas:
+        if "jev" in x:
+            print(f"    ? {x['banco']:9} {x['id']:20} {x['rubros']} jev {x['jev']} · cand {x['candidatos'][:4]} · {x['fragmento'][:60]!r}")
+        elif not x["ok indice de rubros"] or not x["ok indice de productos"]:
+            print(f"    T {x['banco']:9} {x['id']:20} {x['rubros']} rubros {x['rubro']} · productos "
+                  f"{x['rubro por producto']} · {x['producto']!r}")
+    return filas, c
+
+
 if __name__ == "__main__":
+    if "--definida" in sys.argv:
+        definida(next((x for x in sys.argv[2:] if x.startswith("v")), "v7"))
+        sys.exit()
     if "--tres-casos" in sys.argv:
         p_ = next((x for x in sys.argv[2:] if x.startswith("v")), "v2")
         informe_tres(*tres_casos(p_), "--ver" in sys.argv)
