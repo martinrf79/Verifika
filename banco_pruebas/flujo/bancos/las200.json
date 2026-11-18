@@ -1,0 +1,1205 @@
+{
+ "de_donde": "18-nov, orden de Martin: las 200 dificiles, preguntas iniciales sin memoria, `llamada0_jerga.py --armar`. Congeladas: no se tocan.",
+ "casos": [
+  {
+   "banco": "reales",
+   "id": "R01",
+   "texto": "Hola quien eres",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R02",
+   "texto": "Pasame catalogo",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R03",
+   "texto": "Okay dame el precio de los dos artículos más baratos que tengas en la tienda y de los dos más caros en total serían cuatro artículos de los cuales luego te diré a dónde sería el envío Dime qué medios de pago reciben Y si tienen descuentos por cantidad",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R04",
+   "texto": "entre el G305 y el G203, dame el que sea inalámbrico",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R05",
+   "texto": "si el G305 anda con Mac, me lo llevo",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R06",
+   "texto": "tienen 50 off, no",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R07",
+   "texto": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R08",
+   "texto": "Tienes algun articulo queno sea fabricado en china",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R09",
+   "texto": "Dame precio del articulo mas caro que vendes",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R10",
+   "texto": "Tenes algun articulo bueno y barato para escribir con mucha garantia.",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R11",
+   "texto": "Que dispositivo para juegos tenes",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R12",
+   "texto": "Voy a empezar con placas de video, sabes cual calienta menos.",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R13",
+   "texto": "Tienen celulares",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R14",
+   "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R15",
+   "texto": "Me confundi pero serian 7 cosas, no tenes teclados",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R16",
+   "texto": "Que medios de pago tenes aparte de transferencia",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R17",
+   "texto": "Esta bien son 7 cosas en total , mi error, el teclado tambien. Decime si tenes descuento con tarjeta o transferencia, que me conviene mas.",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R18",
+   "texto": "Dame precio de 3 auriculares, dos mouse y 4 memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes de estados unidos posibles.  Dos auriculares y dos mouse será envío a Córdoba capital. Un teclado y 3 memorias será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta transferencia, ya que veré en la fase siguiente cómo seguimos",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R19",
+   "texto": "Quiero precio de 4 mouse y 2 monitor. Un mouse y el monitor van a Rosario, lo otro va a Mendoza, y sumame una webcam para Mendoza",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R20",
+   "texto": "Ok \"¿Qué cuotas tienen?",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R21",
+   "texto": "Necesito tres mouse, dos teclados y un par de auriculares. No quiero gastar más de 600 mil en total. Dos mouse y un teclado van a Rosario, el resto a Neuquén, y sumame una webcam para Rosario. Pago la mitad con transferencia y la mitad con Mastercard",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R22",
+   "texto": "¿Cuánto tarda el envío a Neuquén",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R23",
+   "texto": "Tienen garantía?”",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R24",
+   "texto": "Necesito tres mouse, dos teclados y un par de auriculares, no más de 600 mil. Dos mouse y un teclado a Rosario, el resto a Neuquén, sumame una webcam para Rosario. Pago mitad transferencia y mitad Mastercard",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R25",
+   "texto": "cuanto sale el envio a Posadas",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R26",
+   "texto": "jaja buenisimo gracias crack, che y el G305 tiene garantia",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R27",
+   "texto": "de cuanto es la garantia del g305",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R28",
+   "texto": "que tenes en mouse Logitech, teclados Logitech y auriculares JBL",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R29",
+   "texto": "de estos dos, el G502 Hero y el G305, mandame el que no tenga cable",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R30",
+   "texto": "si el M170 está por debajo de 15 lucas me llevo tres",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R31",
+   "texto": "Dame precio de mause con luces cicodelicas",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R32",
+   "texto": "quiero el K380 pero solo si funciona con mi iPad",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R33",
+   "texto": "Quiero un Logitech M170",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R34",
+   "texto": "sumame también un Redragon Cobra",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R35",
+   "texto": "que auriculares accesibles tienen",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R36",
+   "texto": "dame precio de un teclado el mas eco, si no me alcanza necesito cuotas o llevare unos auriculares",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R37",
+   "texto": "tenés auriculares que anden con la PS5",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R38",
+   "texto": "¿el mouse M170 anda con la Play?",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R39",
+   "texto": "dame el mouse más liviano",
+   "por": "real"
+  },
+  {
+   "banco": "reales",
+   "id": "R40",
+   "texto": "hola el teclado K120 inalambrico ese cuanto sale? creo que se llama asi",
+   "por": "real"
+  },
+  {
+   "banco": "reales525",
+   "id": "C01.0.original",
+   "texto": "tenes el G305?",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C02.0.whatsapp",
+   "texto": "q palrantes tenes",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C03.0.whatsapp",
+   "texto": "cunatos dpi tiene el g502 hero",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C04.0.redactada",
+   "texto": "¿Cuánto cuesta el K120? Es inalámbrico, ¿no?",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C05.0.whatsapp",
+   "texto": "busco una noetbook con 16 gb de ram",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C06.0.coloquial",
+   "texto": "busco un mouse sin cable, de ser posible logitech",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C06.0.redactada",
+   "texto": "Quiero un mouse inalámbrico; si es Logitech, mejor.",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C07.0.plano",
+   "texto": "un mouse que no sea genius",
+   "por": "la forma mas dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C07.0.redactada",
+   "texto": "Busco un mouse de cualquier marca menos Genius.",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C08.0.coloquial",
+   "texto": "busco tablet lo menos chino posible",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C08.0.redactada",
+   "texto": "Quiero una tablet que tenga lo menos posible de fabricación china.",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C09.0.coloquial",
+   "texto": "cual es el monitor mas barato q tenes",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C10.0.whatsapp",
+   "texto": "cunato sale el envio a posadas",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C11.0.whatsapp",
+   "texto": "hacen fatcura a",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C12.0.whatsapp",
+   "texto": "tineen 50 por ciento off en todo no",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C13.0.whatsapp",
+   "texto": "soy reevndedor tienen precio mayorista",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C13.0.coloquial",
+   "texto": "soy revendedor, hay precio por mayor?",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C14.0.whatsapp",
+   "texto": "q covniene ddr4 o ddr5",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C15.0.whatsapp",
+   "texto": "me llevo dos g305 nergos",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C16.0.coloquial",
+   "texto": "el k120 negro me lo llevo, pago 70 transferencia y 30 mercado pago",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C17.0.whatsapp",
+   "texto": "cunato sale el g305 y q teclados mecanicos tenes",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C18.0.whatsapp",
+   "texto": "tenes auris jbl y cunato sale mandarlos a cordoba",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C19.0.whatsapp",
+   "texto": "el g203 tiene stock y hacen fatcura a",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C20.0.whatsapp",
+   "texto": "suamme dos k120 negros y un g203 negro",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C21.0.whatsapp",
+   "texto": "queiro un g305 negro y un k120 negro",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C22.0.whatsapp",
+   "texto": "el g305 sirve para jugar cunato sale",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C23.0.whatsapp",
+   "texto": "queiro el g305 en blanco y un k120",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C24.0.whatsapp",
+   "texto": "telcado y mouse los dos lo mas baratos posible",
+   "por": "la forma mas dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C24.0.plano",
+   "texto": "teclado y mouse los dos lo mas baratos posible",
+   "por": "segunda forma dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C25.0.whatsapp",
+   "texto": "dos g305 nergos y tres k120 blancos cuanto es",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C26.0.redactada",
+   "texto": "Quiero enviar un G203 a Rosario y otro a Mendoza. ¿Cuánto cuesta cada envío?",
+   "por": "la forma mas dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C27.0.whatsapp",
+   "texto": "motsrame mouse logitech",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C28.0.whatsapp",
+   "texto": "si no hay g502 hero en negro paasme el g305",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C29.0.whatsapp",
+   "texto": "si el g305 anda con mac me lo llevo",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C30.0.redactada",
+   "texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible, ¿qué otra memoria tienen?",
+   "por": "la forma mas dificil, 4"
+  },
+  {
+   "banco": "reales525",
+   "id": "C30.0.whatsapp",
+   "texto": "tengo una pc de esrcitorio con placa ddr5 si la kingston fury beast ddr4 16gb no le sirve q otra memoria hay",
+   "por": "segunda forma dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C31.0.whatsapp",
+   "texto": "suamme un mx master 3s negro y dos g305 negros si pasa de 300 mil saca el mx",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C32.0.redactada",
+   "texto": "De estos dos, el G203 y el G305, dame el inalámbrico.",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C32.0.original",
+   "texto": "entre el G305 y el G203, dame el que sea inalambrico",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C33.0.coloquial",
+   "texto": "quiero teclado redragon, ah no mejor logitech",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C33.0.original",
+   "texto": "quiero un teclado Redragon, ah no, mejor Logitech",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C34.0.redactada",
+   "texto": "¿Cuánto cuesta enviar un G203 a Rosario?",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C35.0.whatsapp",
+   "texto": "busco un mouse gamer logitech",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C36.0.whatsapp",
+   "texto": "el g305 anda con mi mac",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C37.0.whatsapp",
+   "texto": "tengo una noetbook q memoria ram le sirve",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C38.0.whatsapp",
+   "texto": "cunato sale la kingston fury beast ddr4 16gb",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C39.0.plano",
+   "texto": "el g203 es inalambrico no lo quiero para viajar",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C39.0.redactada",
+   "texto": "Lo quiero para viajar: el G203 es inalámbrico, ¿verdad?",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C40.0.whatsapp",
+   "texto": "me diejron q el envio es gratis a todo el pais no",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C41.0.whatsapp",
+   "texto": "soy juiblado tienen descuento",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C42.0.original",
+   "texto": "quiero una notebook con 64 GB de RAM por menos de 200 mil",
+   "por": "la forma mas dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C42.0.whatsapp",
+   "texto": "queiro una notebook con 64 gb de ram x menos de 200 mil",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C43.0.whatsapp",
+   "texto": "cunato sale el k120",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C43.0.coloquial",
+   "texto": "cuanto esta el k120",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C44.0.whatsapp",
+   "texto": "cunato salen el g305 y el g203",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C45.0.whatsapp",
+   "texto": "busco un mouse logitech con cable",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C46.0.plano",
+   "texto": "busco un teclado que no sea redragon",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C46.0.redactada",
+   "texto": "Busco un teclado de cualquier marca menos Redragon.",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C47.0.whatsapp",
+   "texto": "hola soy de posadas misiones",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C47.1.whatsapp",
+   "texto": "cunato me sale el g203 negro con envio",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C48.0.whatsapp",
+   "texto": "me llevo un g305 negro",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C49.0.whatsapp",
+   "texto": "cunato sale el teclado logitech k120 negro",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C49.1.whatsapp",
+   "texto": "y auris jbl tenes",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C49.2.whatsapp",
+   "texto": "tenes wecbams",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C50.0.whatsapp",
+   "texto": "estoy entre el g203 y el g305",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C51.0.whatsapp",
+   "texto": "cunato sale el g305 negro y mandame ese a cordoba",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C52.0.whatsapp",
+   "texto": "q tenes en mouse logitech telcados logitech y auris jbl",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C53.0.whatsapp",
+   "texto": "cunato sale el g502 hero",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C54.0.redactada",
+   "texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?",
+   "por": "la forma mas dificil, 6"
+  },
+  {
+   "banco": "reales525",
+   "id": "C54.0.coloquial",
+   "texto": "tengo fuente de 550w, cual es la placa de video mas potente q banca",
+   "por": "segunda forma dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C55.0.whatsapp",
+   "texto": "cunato salen el g305 negro y el g203 negro",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C55.1.whatsapp",
+   "texto": "me gusta el g305",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C56.0.redactada",
+   "texto": "Tienen 50% de descuento, ¿no? Entonces, si el K120 negro queda en menos de 10 mil, llevo dos.",
+   "por": "la forma mas dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "C56.0.whatsapp",
+   "texto": "tineen 50 off no entonces si el k120 negro sale menos de 10 mil llevo dos",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "C57.0.whatsapp",
+   "texto": "cual es la caiptal de francia",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "C58.0.whatsapp",
+   "texto": "jaja buneisimo gracias crack che y el g305 tiene garantia",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "K03.0.plano",
+   "texto": "dos auriculares y dos mouse los mas baratos sumame todo con envio a cordoba capital",
+   "por": "la forma mas dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "K03.0.redactada",
+   "texto": "Quiero dos mouse y dos auriculares, los más baratos. Sumá todo con el envío a Córdoba capital.",
+   "por": "segunda forma dificil, 1"
+  },
+  {
+   "banco": "reales525",
+   "id": "K06.0.coloquial",
+   "texto": "necesito 2 mouse y 2 teclados lo mas barato. un envio a cordoba colon 1500 y otro a rio tercero sabatini 2000, pago con transferencia",
+   "por": "la forma mas dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "K06.0.plano",
+   "texto": "necesito 2 teclados y 2 mouse los mas baratos un envio a cordoba a colon 1500 y otro a rio tercero a sabatini 2000 pago transferencia",
+   "por": "segunda forma dificil, 2"
+  },
+  {
+   "banco": "reales525",
+   "id": "K07.0.coloquial",
+   "texto": "hola precio de 2 mouse 2 teclados y 2 auris los mas baratos. 1 mouse y 1 teclado a rosario, 1 teclado y 1 auri a concordia y el resto a rio cuarto. pasame precios y como se puede pagar",
+   "por": "la forma mas dificil, 3"
+  },
+  {
+   "banco": "reales525",
+   "id": "K07.0.plano",
+   "texto": "hola quisiera preguntar precio por dos mouse dos teclados y dos auriculares los mas baratos que tengan el un mouse y un teclado es envio a rosario un teclado y un auricular es envio a concordia y lo demas sera enviado a rio cuarto pasame los precios y cuales serian las modalidades de pagos",
+   "por": "segunda forma dificil, 3"
+  },
+  {
+   "banco": "reales525",
+   "id": "K10.0.whatsapp",
+   "texto": "hola estoy aramndo un setup tenes mouse y auris",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "K10.2.whatsapp",
+   "texto": "q auris con mircofono tenes",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "K10.4.whatsapp",
+   "texto": "cunatas cuotas puedo hacer y aceptan tarjeta de debito",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "K11.0.coloquial",
+   "texto": "hola busco mouse y teclado para la ofi",
+   "por": "la forma mas dificil, 10"
+  },
+  {
+   "banco": "reales525",
+   "id": "K11.0.original",
+   "texto": "hola, ando viendo mouse y teclado para la oficina",
+   "por": "segunda forma dificil, 9"
+  },
+  {
+   "banco": "reales525",
+   "id": "K11.3.whatsapp",
+   "texto": "che y aprate hacen factura a",
+   "por": "la forma mas dificil, 0"
+  },
+  {
+   "banco": "reales525",
+   "id": "K20.0.whatsapp",
+   "texto": "dame prceio de dos auris dos mouse y dos memorias el precio no seria tan importante lo q si q necesito q lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya q vere en la fase siguiente como seguimos",
+   "por": "la forma mas dificil, 5"
+  },
+  {
+   "banco": "reales525",
+   "id": "K20.0.original",
+   "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "por": "segunda forma dificil, 5"
+  },
+  {
+   "banco": "reales525",
+   "id": "K21.0.original",
+   "texto": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+   "por": "la forma mas dificil, 9"
+  },
+  {
+   "banco": "reales525",
+   "id": "K21.0.plano",
+   "texto": "dame precio de dos auriculares dos mouse y dos memorias el precio no seria tan importante lo que si que necesito que lleven las menos partes chinas posibles un auricular y un mouse sera envio a cordoba capital un teclado y un mouse sera envio a concordia los otros dos articulos seran con envio a posadas divide el presupuesto en setenta treinta ya que vere en la fase siguiente como seguimos",
+   "por": "segunda forma dificil, 6"
+  },
+  {
+   "banco": "reales525",
+   "id": "K21.1.whatsapp",
+   "texto": "en relaidad son 7 articulos el teclado va a concordia lo demas esta bien",
+   "por": "la forma mas dificil, 11"
+  },
+  {
+   "banco": "reales525",
+   "id": "K21.1.coloquial",
+   "texto": "son 7 articulos en realidad, el teclado a concordia, lo otro esta bien",
+   "por": "segunda forma dificil, 11"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M05",
+   "texto": "Para la oficina: 5 auriculares con microfono, 5 webcams y 1 impresora multifuncion. Todo a San Luis. Si pasa los 600 lucas sacame la impresora",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M07",
+   "texto": "necesito 3 cargadores tipo c rapidos y 3 parlantitos bluetooth para regalar, mandame la mitad a Posadas y la otra mitad a Corrientes",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M09",
+   "texto": "2 routers wifi 6 y 1 mesh para la casa de mis viejos, los routers a Mar del Plata y el mesh a Tandil, lo mas barato posible",
+   "por": "fallo en 4 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M11",
+   "texto": "me pasas precio de 3 microfonos para streaming y 3 brazos articulados? 1 a cada uno: Rio Cuarto, Villa Maria y San Francisco",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M12",
+   "texto": "necesito 10 mouse y 10 teclados de los mas economicos para un cyber, todo a Resistencia, tengo 300 mil maximo",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M13",
+   "texto": "un monitor 27 de 144hz, una placa de video que lo aproveche y un gabinete con buen aire, a Comodoro",
+   "por": "fallo en 20 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M16",
+   "texto": "para el estudio de mi viejo: impresora, 2 cartuchos y una silla comoda, a Santiago del Estero",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M18",
+   "texto": "me armas presupuesto de 6 webcams full hd para aulas, 3 a Neuquen capital y 3 a Cipolletti, si hay descuento por cantidad avisame",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R04",
+   "texto": "una compu que se pliegue y me la pueda llevar al laburo",
+   "por": "fallo en 6 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R05",
+   "texto": "algo donde guardar las fotos del celu que no sea la nube",
+   "por": "fallo en 6 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R06",
+   "texto": "el aparato para sacar copias de los papeles de la escuela",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R07",
+   "texto": "eso que se pone adentro de la pc para que corran los jueguitos",
+   "por": "fallo en 10 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R08",
+   "texto": "la caja grande donde va todo lo de la pc",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R10",
+   "texto": "lo que va en la oreja para escuchar musica sin molestar a nadie en el bondi",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R12",
+   "texto": "lo que le da la corriente a la pc",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R13",
+   "texto": "la plaqueta madre donde enchufas todo",
+   "por": "fallo en 11 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R15",
+   "texto": "una pantallita tactil para que mi abuela lea el diario",
+   "por": "fallo en 12 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R16",
+   "texto": "el chiche que le pones a la notebook para que vaya mas rapido, memoria se llama?",
+   "por": "fallo en 3 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "R17",
+   "texto": "la cajita de musica que llevas a la playa",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "O01",
+   "texto": "un mouse que no me funda el bolsillo",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "O02",
+   "texto": "un teclado que no haga ruido, que mi novia duerme",
+   "por": "fallo en 3 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "O04",
+   "texto": "auriculares que no tengan cable y que no sean chinos",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "O06",
+   "texto": "la placa de video mas bestia que tengan",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "O09",
+   "texto": "un parlante que se banque el agua de la pileta",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "F06",
+   "texto": "vi en mercado libre la misma notebook mas barata, me igualan el precio?",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "A02",
+   "texto": "hola buen dia queria saber si tienen notebooks con dieciseis de ram y que sean livianas para la facultad",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "A03",
+   "texto": "si hola necesito un headset para jugar a la play bueno no la play la compu eh que tenga micro",
+   "por": "fallo en 3 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "A07",
+   "texto": "si mira es para mi hijo que juega fortnite necesita una placa de video que le corra a ciento cuarenta y cuatro",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "A08",
+   "texto": "buenas tardes eh quisiera saber el precio del parlante jbl flip y si tienen en color azul",
+   "por": "fallo en 6 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "A09",
+   "texto": "hola necesito un charger de sesenta y cinco watts para la notebook tipo ce",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "A10",
+   "texto": "ehh dos sillas gamers negras y una roja mandalas a rosario y cuanto es todo con envio",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B02",
+   "texto": "busco unas vinchas con musica para el gym que no se caigan y un aparatito que tire musica fuerte para el asado del domingo",
+   "por": "fallo en 6 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B03",
+   "texto": "quiero la cajita que le da corriente a la pc, de 650, y la caja metalica donde va todo adentro con vidrio templado",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B06",
+   "texto": "tenes el chirimbolo que tira el wifi por toda la casa? y el enchufe ese rapido para el celu tipo c",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B07",
+   "texto": "la maquinita para imprimir las tareas de los pibes y un pendrive grandote o disquito para backupear las fotos, mandame todo a Merlo",
+   "por": "fallo en 15 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B11",
+   "texto": "un sillon de esos de streamer con apoyabrazos y la tablita para dibujar, bueno la tablet, para mi hija",
+   "por": "fallo en 13 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B13",
+   "texto": "che, los cascos con micro para jugar online y el mic de mesa para grabar podcast, los dos usb",
+   "por": "fallo en 8 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B14",
+   "texto": "necesito una fuente certificada oro de 750 y una placa de video de 8 gigas, va todo a Mar del Plata y pago con transferencia",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B15",
+   "texto": "dos tablets para los chicos que aguanten golpes y un parlantito bluetooth para la pileta",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B16",
+   "texto": "busco un monitor gamer de 144 para el cuarto y una silla que no me destruya la espalda, lo mas barato posible",
+   "por": "fallo en 4 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B18",
+   "texto": "quiero cambiar el gabo y ponerle mas coolers con luces, que entren 3 de 120",
+   "por": "fallo en 5 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B23",
+   "texto": "venden celulares? si no, un cargador rapido y unos auriculares inalambricos",
+   "por": "fallo en 3 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B31",
+   "texto": "lo que se pone en la cabeza para escuchar sin molestar a nadie de noche",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B33",
+   "texto": "eso que se enchufa por usb para guardar las pelis y llevarlas a lo de mi vieja",
+   "por": "fallo en 4 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B34",
+   "texto": "el coso que hace que la compu tenga internet sin cable en toda la casa, que no se corte",
+   "por": "fallo en 6 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B38",
+   "texto": "algo para que mi abuelo vea a los nietos por videollamada desde la compu",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B39",
+   "texto": "la cosa plana con boton que se usa con la mano derecha para jugar al lol",
+   "por": "fallo en 4 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B41",
+   "texto": "una compu que se pueda llevar en la mochila al cole y que la bateria dure todo el dia",
+   "por": "fallo en 4 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B42",
+   "texto": "la caja grande donde van todas las piezas de la pc gamer, con luces",
+   "por": "fallo en 2 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B45",
+   "texto": "el chip que hace todos los calculos de la compu, el mas rapido que tengan",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B46",
+   "texto": "un disco que no hace ruido y es rapidisimo para instalar windows",
+   "por": "fallo en 18 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B53",
+   "texto": "hola si queria una tableta para leer libros y un cargador de repuesto para la misma",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B54",
+   "texto": "eh buenas una silla de gamer y un monitor curvo de treinta y dos para mi sobrino que cumple",
+   "por": "fallo en 3 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B55",
+   "texto": "3 parlantes, uno a Jujuy, uno a Formosa y uno a Rio Gallegos, que no pase los 50 lucas cada uno",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B56",
+   "texto": "quiero 4 discos solidos de 480 para las pcs del local y 4 memorias de 8, todo a Lanus, pago en efectivo",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B58",
+   "texto": "10 auriculares baratos para un call center en Rosario, con microfono incorporado",
+   "por": "fallo en 4 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B59",
+   "texto": "una placa madre, un micro y un cooler, el combo mas economico que tengan para una pc de oficina",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B62",
+   "texto": "tienen garantia oficial las placas de video? y cuotas sin interes con que tarjetas",
+   "por": "fallo en 5 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B63",
+   "texto": "si compro una notebook me la arman con windows? y puedo retirar por el local",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B66",
+   "texto": "necesito un mousepad, digo un mouse, y un keyboard gamer con switches red",
+   "por": "fallo en 1 corridas"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M08",
+   "texto": "armame una pc: un micro ryzen 5, una mother que lo banque, 16 de ram y una fuente de 650. Va a Jujuy",
+   "por": "4 cosas pedidas, nunca fallo"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B47",
+   "texto": "eh hola mira quiero un headset eh un micro aparte y una webcam full hd es para empezar a streamear en twitch mandamelo a tigre",
+   "por": "3 cosas pedidas, nunca fallo"
+  },
+  {
+   "banco": "nuevas70",
+   "id": "M03",
+   "texto": "che q sale una note para la facu de mi hija + un mouse inalambrico y una mochila? todo a Bahia Blanca",
+   "por": "3 cosas pedidas, nunca fallo"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B12",
+   "texto": "mandame cotizacion de 5 mouses con cable, 5 teclados con ñ y 5 camaritas web para la oficina, factura A",
+   "por": "3 cosas pedidas, nunca fallo"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B20",
+   "texto": "un procesador intel de los nuevos con su mother que sea compatible y 32 de ram ddr5",
+   "por": "3 cosas pedidas, nunca fallo"
+  },
+  {
+   "banco": "nuevas70b",
+   "id": "B21",
+   "texto": "necesito una notebook, una funda acolchada para llevarla y un mouse inalambrico chiquito",
+   "por": "3 cosas pedidas, nunca fallo"
+  }
+ ]
+}

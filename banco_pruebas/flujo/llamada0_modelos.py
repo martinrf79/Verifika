@@ -134,6 +134,17 @@ assert PROMPTS["v7"] != PROMPTS["v6"]
 from app.core.flujo.nuevo import llamada0 as _L0  # noqa: E402
 assert _L0.PROMPT == PROMPTS["v7"], "el prompt del bot no es la v7 medida"
 
+# v8, 18-nov, orden de Martin: la v7 igual en separar, traducir y el destino; lo unico distinto es lo que Luna no traduce.
+# En vez de "?", que borraba las palabras del cliente, las deja entre corchetes, corrigiendo solo la ortografia. Lo que
+# esta entre corchetes lo buscan los embeddings contra los productos de la tienda y elige Jev, `llamada0_jerga.py`.
+PROMPTS["v8"] = PROMPTS["v7"].replace(
+    """Si busca un producto pero no sabes cual
+  es, escribi solo un signo de pregunta: ?. Vacio si no busca un producto.""",
+    """Si busca un producto pero no sabes cual
+  es, o no sabes como se llama, escribi las palabras del cliente entre corchetes, corrigiendo solo la ortografia:
+  [asi]. Vacio si no busca un producto.""")
+assert PROMPTS["v8"] != PROMPTS["v7"]
+
 # v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
 # condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,
 # despues una linea por cada uno con sus condiciones en una lista, y un ejemplo inventado que no esta en ningun banco.
@@ -173,6 +184,7 @@ ESQUEMAS["v6"] = {"type": "object", "additionalProperties": False, "required": [
         "properties": {"fragmento": _S, "producto": _S, "condiciones": _S, "destino": _S}}}}}
 ESQUEMAS["v7"] = _L0.ESQUEMA
 assert ESQUEMAS["v7"] == ESQUEMAS["v6"]
+ESQUEMAS["v8"] = ESQUEMAS["v6"]
 
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
@@ -246,13 +258,14 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
-    if base in ("v6", "v7") and isinstance(salida, dict):
+    if base in ("v6", "v7", "v8") and isinstance(salida, dict):
         # La vara lee la busqueda: el producto y las condiciones juntos. Los dos campos quedan grabados. Con la v7, el
-        # producto que Luna no supo, "?", es el fragmento: la vara lo cuenta como no traducido.
+        # producto que Luna no supo, "?", es el fragmento: la vara lo cuenta como no traducido. Con la v8, lo que esta
+        # entre corchetes, sin los corchetes.
         for l in salida.get("lineas") or []:
             if isinstance(l, dict):
                 pr = str(l.get("producto") or "").strip()
-                pr = str(l.get("fragmento") or "") if pr == "?" else pr
+                pr = str(l.get("fragmento") or "") if pr == "?" else pr.replace("[", "").replace("]", "").strip()
                 l["busqueda"] = f"{pr} {l.get('condiciones') or ''}".strip()
     return salida, e, s, seg, round(dol, 7), crudo
 
@@ -273,6 +286,10 @@ def casos_de(banco):
         # Las 26 charlas de la vara del bot, un mensaje por turno, "charla|turno": las lee `segunda.py`.
         import segunda as SG
         return [(banco, f"{ch}|{g['turno']}", g["mensaje"]) for ch, gs in SG.charlas().items() for g in gs]
+    if banco == "200":
+        # Las 200 dificiles del 18-nov, `llamada0_jerga.py --armar`: cada una con su banco de origen.
+        d = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bancos", "las200.json"), encoding="utf-8"))
+        return [(c["banco"], c["id"], c["texto"]) for c in d["casos"]]
     if banco == "nombrados38":
         from nombrados38 import CASOS
         return [(banco, cid, t) for cid, t, _ in CASOS]
