@@ -179,6 +179,18 @@ Reglas:
 - Si se corrige, vale lo ultimo que dijo."""
 NEXOS9 = ["producto", "nombrado", "condicion", "tema", "destino", "otro"]
 
+# v10, 19-nov, orden de Martin, por la latencia del v9: lo mas sencillo. Cada linea es un solo texto, la parte del
+# mensaje con las palabras del cliente, la ortografia corregida y la jerga traducida; lo que no sabe, entre corchetes.
+# El destino queda adentro del texto y lo saca el nexo de destino; Luna solo separa por lugar.
+PROMPTS["v10"] = """Sos el primer paso de una tienda online. No contestas ni decidis nada. La unica fuente de verdad es el mensaje
+del cliente.
+Separa el mensaje en lineas: una por cada cosa que pide o pregunta, sin dejar ninguna afuera. Si la misma cosa va
+a lugares distintos, una linea por lugar.
+Cada linea es la parte del mensaje con las palabras del cliente: corregi la ortografia, escribi los numeros en
+cifras y traduci la jerga a como se dice en una tienda argentina. Lo que no sepas que es, dejalo entre corchetes.
+Lo que dice para todo el mensaje, como "todo inalambrico", va en cada linea a la que se aplica.
+No agregues, no elijas entre opciones y no resuelvas lo que el cliente no dijo."""
+
 
 def lineas_de_filas(filas):
     """Las filas de la v9 como las lineas que leen la vara y los nexos de hoy: una por pedido, la busqueda con el producto,
@@ -242,6 +254,8 @@ ESQUEMAS["v9"] = {"type": "object", "additionalProperties": False, "required": [
         "properties": {"pedido": {"type": "integer"},
                        "nexo": {"type": "string", "enum": ["producto", "nombrado", "condicion", "tema", "destino", "otro"]},
                        "dijo": _S, "texto": _S, "cantidad": _S}}}}}
+ESQUEMAS["v10"] = {"type": "object", "additionalProperties": False, "required": ["textos"], "properties": {
+    "textos": {"type": "array", "items": _S}}}
 
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
@@ -315,6 +329,11 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
+    if base == "v10" and isinstance(salida, dict) and isinstance(salida.get("textos"), list):
+        # Cada texto es su linea: la vara lee la busqueda sin corchetes; el producto lleva el texto entero, para que
+        # `llamada0_jerga.py` encuentre lo que quedo entre corchetes.
+        salida["lineas"] = [{"fragmento": str(t), "producto": str(t), "condiciones": "", "destino": "",
+                             "busqueda": str(t).replace("[", "").replace("]", "")} for t in salida["textos"]]
     if base == "v9" and isinstance(salida, dict) and isinstance(salida.get("filas"), list):
         salida["lineas"] = lineas_de_filas(salida["filas"])
     if base in ("v6", "v7", "v8") and isinstance(salida, dict):

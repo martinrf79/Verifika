@@ -29,8 +29,10 @@ from entorno import GRABADO  # noqa: E402
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LAS200 = os.path.join(AQUI, "bancos", "las200.json")
-JERGA = os.path.join(GRABADO, "llamada0_jerga_v8.jsonl")
-CORRIDA, PROMPT = "luna", "v8"
+CORRIDA = "luna"
+# El prompt de la corrida, "--prompt v10"; sin el, el v8 del 18-nov.
+PROMPT = sys.argv[sys.argv.index("--prompt") + 1] if "--prompt" in sys.argv else "v8"
+JERGA = os.path.join(GRABADO, f"llamada0_jerga_{PROMPT}.jsonl")
 K = 8
 FORMAS = ("whatsapp", "coloquial", "plano", "redactada", "original")
 
@@ -139,7 +141,7 @@ def jerga():
                            "instructions": f"En la parte \"{l.get('fragmento')}\" del mensaje, el cliente escribio "
                                            f"\"{q}\". Que tipo de producto de la tienda pide? Si la tienda no tiene ese "
                                            "tipo de producto, ninguno."}
-        r, tok = llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "llamada0_jerga_v8")
+        r, tok = llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, f"llamada0_jerga_{PROMPT}")
         with open(JERGA, "a", encoding="utf-8") as fh:
             fh.write(json.dumps({"banco": k[0], "id": k[1], "jev": r, "tokens": tok,
                                  "preguntas": {q: {**info[q], "elige": r.get(q)} for q in qs}}, ensure_ascii=False) + "\n")
