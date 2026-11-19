@@ -1,0 +1,20 @@
+{"grupo": "1 fila", "banco": "reales525", "id": "K21.1.whatsapp", "filas": 1, "preguntas": 2, "tokens": 816, "segundos": 0.386, "error": null}
+{"grupo": "1 fila", "banco": "reales525", "id": "C42.0.whatsapp", "filas": 1, "preguntas": 2, "tokens": 902, "segundos": 0.19, "error": null}
+{"grupo": "1 fila", "banco": "reales525", "id": "C06.0.redactada", "filas": 1, "preguntas": 2, "tokens": 954, "segundos": 0.158, "error": null}
+{"grupo": "1 fila", "banco": "neg100", "id": "D12", "filas": 1, "preguntas": 2, "tokens": 993, "segundos": 0.156, "error": null}
+{"grupo": "1 fila", "banco": "nuevas70", "id": "R08", "filas": 1, "preguntas": 2, "tokens": 1038, "segundos": 0.149, "error": null}
+{"grupo": "1 fila", "banco": "reales525", "id": "C41.0.whatsapp", "filas": 1, "preguntas": 2, "tokens": 1130, "segundos": 0.172, "error": null}
+{"grupo": "1 fila", "banco": "reales525", "id": "C47.0.whatsapp", "filas": 1, "preguntas": 2, "tokens": 1384, "segundos": 0.158, "error": null}
+{"grupo": "2 o 3 filas", "banco": "nuevas70b", "id": "B16", "filas": 2, "preguntas": 4, "tokens": 1419, "segundos": 0.157, "error": null}
+{"grupo": "2 o 3 filas", "banco": "neg100", "id": "X22", "filas": 2, "preguntas": 4, "tokens": 1566, "segundos": 0.143, "error": null}
+{"grupo": "2 o 3 filas", "banco": "reales", "id": "R05", "filas": 2, "preguntas": 4, "tokens": 1691, "segundos": 0.206, "error": null}
+{"grupo": "2 o 3 filas", "banco": "nuevas70b", "id": "B18", "filas": 2, "preguntas": 4, "tokens": 1816, "segundos": 0.151, "error": null}
+{"grupo": "2 o 3 filas", "banco": "reales525", "id": "C19.0.whatsapp", "filas": 2, "preguntas": 4, "tokens": 1915, "segundos": 0.165, "error": null}
+{"grupo": "2 o 3 filas", "banco": "reales525", "id": "C52.0.whatsapp", "filas": 3, "preguntas": 6, "tokens": 2241, "segundos": 0.18, "error": null}
+{"grupo": "2 o 3 filas", "banco": "reales525", "id": "K21.1.coloquial", "filas": 3, "preguntas": 6, "tokens": 2893, "segundos": 0.183, "error": null}
+{"grupo": "las 6 mas grandes", "banco": "reales525", "id": "K20.0.whatsapp", "filas": 8, "preguntas": 16, "tokens": 6696, "segundos": 0.194, "error": null}
+{"grupo": "las 6 mas grandes", "banco": "reales525", "id": "K07.0.plano", "filas": 8, "preguntas": 16, "tokens": 5514, "segundos": 0.204, "error": null}
+{"grupo": "las 6 mas grandes", "banco": "reales", "id": "R18", "filas": 7, "preguntas": 14, "tokens": 5884, "segundos": 0.181, "error": null}
+{"grupo": "las 6 mas grandes", "banco": "reales525", "id": "K20.0.original", "filas": 7, "preguntas": 14, "tokens": 5511, "segundos": 0.203, "error": null}
+{"grupo": "las 6 mas grandes", "banco": "reales", "id": "R14", "filas": 6, "preguntas": 12, "tokens": 4986, "segundos": 0.214, "error": null}
+{"grupo": "las 6 mas grandes", "banco": "reales525", "id": "K21.0.plano", "filas": 6, "preguntas": 12, "tokens": 4975, "segundos": 0.177, "error": null}
