@@ -110,7 +110,15 @@ def _candidatos(F, q):
     for k in prods:
         ej[k[0]].append(f"{k[1]} {k[2]}")
     rubros = list(dict.fromkeys([k[0] for k in prods] + [d for d in docs if not d.startswith(F.NR.NO_SE_VENDE)]))
-    return {"productos": [list(k) for k in prods], "rubros": rubros, "ejemplos": {r: ej[r][:5] for r in rubros}, "no_se_vende": [d for d in docs if d.startswith(F.NR.NO_SE_VENDE)],
+    # Corrida e: los 5 productos mas parecidos de cada rubro, de los 15; si el rubro entro solo por su documento, de todo el catalogo.
+    por_rubro = collections.defaultdict(list)
+    for k in prods:
+        por_rubro[k[0]].append(k)
+    ej_e = {}
+    for r in rubros:
+        ks = por_rubro[r][:5] or _top(q, [x for x in F.prod if x[0][0] == r], 5)
+        ej_e[r] = [F.modelos[k][0]["nombre"] for k in ks]
+    return {"productos": [list(k) for k in prods], "ejemplos_e": ej_e, "rubros": rubros, "ejemplos": {r: ej[r][:5] for r in rubros}, "no_se_vende": [d for d in docs if d.startswith(F.NR.NO_SE_VENDE)],
             "temas": temas}
 
 
@@ -133,11 +141,13 @@ def _preguntas(F, filas, cands, filtros):
             crit = {}
             if CORRIDA == "d":
                 crit = {k: d for k, (_, d) in _opciones_d(F, c).items()}
+            elif CORRIDA == "e":
+                crit = {r: f"{r}: en la tienda, por ejemplo: {', '.join(c['ejemplos_e'][r])}" for r in c["rubros"]}
             else:
                 for r in c["rubros"]:
                     crit[r] = f"{r}: tambien se dice {', '.join(F.alias.get(r, [])[:12])}; en la tienda, por ejemplo: {', '.join(c['ejemplos'][r])}"
             nsv = list(c["no_se_vende"])
-            if CORRIDA in ("b", "c") and filtros[i] is not None and F.NR.NO_SE_VENDE + filtros[i] not in nsv:
+            if CORRIDA in ("b", "c", "e") and filtros[i] is not None and F.NR.NO_SE_VENDE + filtros[i] not in nsv:
                 nsv.append(F.NR.NO_SE_VENDE + filtros[i])  # la clave de la fila es solo una opcion mas: Jev decide
             for d in nsv:
                 crit[d] = f"la tienda declara que no vende {d[len(F.NR.NO_SE_VENDE):]}"
