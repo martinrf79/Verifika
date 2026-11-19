@@ -52,8 +52,8 @@ de la FICHA 83 quedó archivado: se vuelve a él con git revert.
 
 ### Lo que sigue
 
-**El pase se hizo el 17-nov.** El 18-nov quedó definida la llamada 0 y el orden para calibrar los nexos con ella, uno
-por sesión: FICHA 102, `arquitectura/FICHA_102_la_llamada_0_definida.md`, en el orden de `PENDIENTE.md`. Cada arreglo
+**El pase se hizo el 17-nov.** El 19-nov, en el banco: Luna solo separa, los embeddings buscan por sección y Jev elige,
+FICHA 103, `arquitectura/FICHA_103_separar_buscar_elegir.md`, en el orden de `PENDIENTE.md`; el bot sigue con la FICHA 102. Cada arreglo
 queda en producción. Lo medido antes, de la llamada 0 en la FICHA 100; los nexos, en las FICHAS 96 a 99.
 
 El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_flujo_nuevo.py` sin modelo y con corridas de
