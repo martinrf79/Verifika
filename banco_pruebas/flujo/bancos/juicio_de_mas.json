@@ -1,0 +1,1708 @@
+[
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "F06",
+  "fila": 0,
+  "fila_texto": "Vi en Mercado Libre la misma notebook más barata",
+  "tipo": "rubro",
+  "elegido": "notebook",
+  "veredicto": "mal",
+  "razon": "compara un precio con otra tienda, no pide una notebook"
+ },
+ {
+  "corridas": [
+   "b"
+  ],
+  "banco": "reales",
+  "id": "R17",
+  "fila": 0,
+  "fila_texto": "Está bien, son 7 cosas en total, mi error, el teclado también.",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C14.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Qué conviene, DDR4 o DDR5?",
+  "tipo": "rubro",
+  "elegido": "memoria ram",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C15.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "me llevo dos g305 negros",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C16.0.coloquial",
+  "fila": 0,
+  "fila_texto": "el K120 negro me lo llevo, pago 70 transferencia y 30 Mercado Pago",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C20.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "sumame dos k120 negros",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C20.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "y un g203 negro",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C21.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "quiero un g305 negro",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C21.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "y un k120 negro",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C23.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "quiero el g305 en blanco",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C23.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "y un k120",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C25.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "dos g305 negros",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C25.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "tres k120 blancos",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C26.0.redactada",
+  "fila": 0,
+  "fila_texto": "Quiero enviar un G203 a Rosario. ¿Cuánto cuesta cada envío?",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C29.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "el g305 me lo llevo",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C31.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "Súmame un mx master 3s negro; si pasa de 300 mil saca el mx",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C36.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿El G305 anda con mi Mac?",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C37.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "tengo una notebook qué memoria RAM le sirve",
+  "tipo": "rubro",
+  "elegido": "memoria ram",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C48.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "me llevo un g305 negro",
+  "tipo": "rubro",
+  "elegido": "mouse",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K20.0.original",
+  "fila": 6,
+  "fila_texto": "Un teclado será envío a Concordia. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K20.0.whatsapp",
+  "fila": 5,
+  "fila_texto": "Un teclado será envío a Concordia. El precio no sería tan importante, lo que sí, que necesito que lleven las menos partes chinas posibles. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K21.0.original",
+  "fila": 3,
+  "fila_texto": "Un teclado será envío a Concordia. El precio no sería tan importante. Lo que sí que necesito es que lleve las menos partes chinas posibles. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K21.0.plano",
+  "fila": 5,
+  "fila_texto": "Dame precio de un teclado. El precio no sería tan importante, lo que sí, que necesito que lleven las menos partes chinas posibles. Será envío a Concordia. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos.",
+  "tipo": "rubro",
+  "elegido": "teclado",
+  "veredicto": "bien",
+  "razon": "la fila pide o nombra un producto de ese tipo"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "A02",
+  "fila": 0,
+  "fila_texto": "Hola, buen día, quería saber si tienen notebooks con dieciséis de RAM y que sean livianas para la facultad.",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "A03",
+  "fila": 0,
+  "fila_texto": "Sí, hola, necesito un headset para jugar a la Play, bueno, no la Play, la compu, eh, que tenga micro.",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "A07",
+  "fila": 0,
+  "fila_texto": "Sí, mira, es para mi hijo que juega Fortnite. Necesita una placa de video que le corra a ciento cuarenta y cuatro.",
+  "tipo": "tema",
+  "elegido": "especificaciones",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pregunta un dato tecnico de un modelo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "A08",
+  "fila": 1,
+  "fila_texto": "Y si tienen en color azul",
+  "tipo": "tema",
+  "elegido": "stock_disponibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si hay o si tienen disponible"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "A10",
+  "fila": 2,
+  "fila_texto": "cuánto es todo con envío",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M03",
+  "fila": 0,
+  "fila_texto": "Che, ¿qué sale una note para la facu de mi hija? Todo a Bahía Blanca.",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta cuanto cuesta el envio"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M03",
+  "fila": 2,
+  "fila_texto": "Y una mochila, todo a Bahía Blanca.",
+  "tipo": "tema",
+  "elegido": "envios",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta si hacen envios"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M05",
+  "fila": 1,
+  "fila_texto": "Para la oficina: 5 webcams. Todo a San Luis.",
+  "tipo": "tema",
+  "elegido": "envios",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta si hacen envios"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M07",
+  "fila": 1,
+  "fila_texto": "3 parlantitos Bluetooth para regalar, mandame la mitad a Posadas y la otra mitad a Corrientes",
+  "tipo": "tema",
+  "elegido": "envios",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta si hacen envios"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M08",
+  "fila": 0,
+  "fila_texto": "Armame una PC: un micro Ryzen 5. Va a Jujuy.",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M13",
+  "fila": 1,
+  "fila_texto": "una placa de video que lo aproveche, a Comodoro",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "mal",
+  "razon": "no pregunta si algo es compatible"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M16",
+  "fila": 0,
+  "fila_texto": "para el estudio de mi viejo: impresora, a Santiago del Estero",
+  "tipo": "tema",
+  "elegido": "envios",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta si hacen envios"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "M18",
+  "fila": 1,
+  "fila_texto": "Si hay descuento por cantidad, avísame",
+  "tipo": "tema",
+  "elegido": "mayoristas",
+  "veredicto": "bien",
+  "razon": "pide descuento por cantidad"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "O02",
+  "fila": 0,
+  "fila_texto": "un teclado que no haga ruido, que mi novia duerme",
+  "tipo": "tema",
+  "elegido": "teclado_mecanico_membrana",
+  "veredicto": "bien",
+  "razon": "pide un teclado silencioso, que es lo que explica ese tema"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "O04",
+  "fila": 0,
+  "fila_texto": "auriculares que no tengan cable y que no sean chinos",
+  "tipo": "tema",
+  "elegido": "fabricacion",
+  "veredicto": "bien",
+  "razon": "pide que no sea fabricado en China, el pais de fabricacion"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "O06",
+  "fila": 0,
+  "fila_texto": "la placa de video más bestia que tengan",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "O09",
+  "fila": 0,
+  "fila_texto": "un parlante que se banque el agua de la pileta",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70",
+  "id": "R04",
+  "fila": 0,
+  "fila_texto": "una compu que se pliegue y me la pueda llevar al laburo",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B07",
+  "fila": 0,
+  "fila_texto": "la maquinita para imprimir las tareas de los pibes, mandame todo a Merlo",
+  "tipo": "tema",
+  "elegido": "envios",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta si hacen envios"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B07",
+  "fila": 1,
+  "fila_texto": "y un pendrive grandote para backupear las fotos, mandame todo a Merlo",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta cuanto cuesta el envio"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B12",
+  "fila": 0,
+  "fila_texto": "mandame cotizacion de 5 mouses con cable para la oficina, factura A",
+  "tipo": "tema",
+  "elegido": "datos_fiscales",
+  "veredicto": "bien",
+  "razon": "pide factura A"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B14",
+  "fila": 1,
+  "fila_texto": "necesito una placa de video de 8 gigas, va todo a Mar del Plata y pago con transferencia",
+  "tipo": "tema",
+  "elegido": "como_comprar",
+  "veredicto": "mal",
+  "razon": "pide o cuenta lo que compra, no pregunta como se compra"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B15",
+  "fila": 0,
+  "fila_texto": "dos tablets para los chicos que aguanten golpes",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B16",
+  "fila": 0,
+  "fila_texto": "busco un monitor gamer de 144 para el cuarto, lo más barato posible",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B20",
+  "fila": 0,
+  "fila_texto": "un procesador Intel de los nuevos",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "b"
+  ],
+  "banco": "nuevas70b",
+  "id": "B20",
+  "fila": 1,
+  "fila_texto": "su mother que sea compatible",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B20",
+  "fila": 2,
+  "fila_texto": "32 de RAM DDR5",
+  "tipo": "tema",
+  "elegido": "especificaciones",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pregunta un dato tecnico de un modelo"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B38",
+  "fila": 0,
+  "fila_texto": "algo para que mi abuelo vea a los nietos por videollamada desde la compu",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B39",
+  "fila": 0,
+  "fila_texto": "la cosa plana con botón que se usa con la mano derecha para jugar al LoL",
+  "tipo": "tema",
+  "elegido": "mouse_dpi",
+  "veredicto": "mal",
+  "razon": "describe el producto, no pregunta por los dpi"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B41",
+  "fila": 0,
+  "fila_texto": "una compu que se pueda llevar en la mochila al cole y que la batería dure todo el día",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B47",
+  "fila": 0,
+  "fila_texto": "Eh, hola, mira, quiero un headset. Es para empezar a streamear en Twitch. Mándamelo a Tigre.",
+  "tipo": "tema",
+  "elegido": "como_comprar",
+  "veredicto": "mal",
+  "razon": "pide o cuenta lo que compra, no pregunta como se compra"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B56",
+  "fila": 0,
+  "fila_texto": "quiero 4 discos sólidos de 480 para las pcs del local, todo a Lanús, pago en efectivo",
+  "tipo": "tema",
+  "elegido": "como_comprar",
+  "veredicto": "mal",
+  "razon": "pide o cuenta lo que compra, no pregunta como se compra"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B59",
+  "fila": 0,
+  "fila_texto": "una placa madre, el combo más económico que tengan para una PC de oficina",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B62",
+  "fila": 0,
+  "fila_texto": "¿Tienen garantía oficial las placas de video?",
+  "tipo": "tema",
+  "elegido": "garantia",
+  "veredicto": "bien",
+  "razon": "pregunta o pide por la garantia"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B62",
+  "fila": 1,
+  "fila_texto": "¿Y cuotas sin interés con qué tarjetas?",
+  "tipo": "tema",
+  "elegido": "cuotas",
+  "veredicto": "bien",
+  "razon": "pregunta por cuotas"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B63",
+  "fila": 1,
+  "fila_texto": "y puedo retirar por el local",
+  "tipo": "tema",
+  "elegido": "retiro_local",
+  "veredicto": "bien",
+  "razon": "pregunta por retirar en el local"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "nuevas70b",
+  "id": "B66",
+  "fila": 1,
+  "fila_texto": "y un keyboard gamer con switches red",
+  "tipo": "tema",
+  "elegido": "teclado_mecanico_membrana",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pregunta la diferencia mecanico o membrana"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R03",
+  "fila": 2,
+  "fila_texto": "Dime qué medios de pago reciben.",
+  "tipo": "tema",
+  "elegido": "formas_pago",
+  "veredicto": "bien",
+  "razon": "pregunta que medios de pago hay"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R03",
+  "fila": 3,
+  "fila_texto": "¿Y si tienen descuentos por cantidad?",
+  "tipo": "tema",
+  "elegido": "mayoristas",
+  "veredicto": "bien",
+  "razon": "pide descuento por cantidad"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R04",
+  "fila": 0,
+  "fila_texto": "Entre el G305 y el G203, dame el que sea inalámbrico.",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R05",
+  "fila": 0,
+  "fila_texto": "¿El G305 anda con Mac?",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R06",
+  "fila": 0,
+  "fila_texto": "¿Tienen 50 off, no?",
+  "tipo": "tema",
+  "elegido": "promociones",
+  "veredicto": "bien",
+  "razon": "pregunta por un descuento o promo"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R07",
+  "fila": 0,
+  "fila_texto": "Dame precio de 7 artículos: 2 notebooks. Pásame de acuerdo a la crisis el presupuesto. Envío de los dos primeros a La Plata y los otros 5 envíos: 2 a Villa María y 3 a Toledo.",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta cuanto cuesta el envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R08",
+  "fila": 0,
+  "fila_texto": "¿Tienes algún artículo que no sea fabricado en China?",
+  "tipo": "tema",
+  "elegido": "fabricacion",
+  "veredicto": "bien",
+  "razon": "pide que no sea fabricado en China, el pais de fabricacion"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R10",
+  "fila": 0,
+  "fila_texto": "¿Tenés algún artículo bueno y barato para escribir con mucha garantía?",
+  "tipo": "tema",
+  "elegido": "garantia",
+  "veredicto": "bien",
+  "razon": "pregunta o pide por la garantia"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R12",
+  "fila": 0,
+  "fila_texto": "Voy a empezar con placas de video",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "b"
+  ],
+  "banco": "reales",
+  "id": "R12",
+  "fila": 1,
+  "fila_texto": "¿Sabes cuál calienta menos?",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "bien",
+  "razon": "pide ayuda para elegir entre opciones"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R16",
+  "fila": 0,
+  "fila_texto": "¿Qué medios de pago tenés aparte de transferencia?",
+  "tipo": "tema",
+  "elegido": "formas_pago",
+  "veredicto": "bien",
+  "razon": "pregunta que medios de pago hay"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R17",
+  "fila": 1,
+  "fila_texto": "Decime si tenés descuento con tarjeta o transferencia, qué me conviene más.",
+  "tipo": "tema",
+  "elegido": "descuento_transferencia",
+  "veredicto": "bien",
+  "razon": "pregunta por el descuento de tarjeta o transferencia"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R19",
+  "fila": 0,
+  "fila_texto": "Quiero precio de 4 mouse. Un mouse va a Rosario.",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta cuanto cuesta el envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R20",
+  "fila": 0,
+  "fila_texto": "¿Qué cuotas tienen?",
+  "tipo": "tema",
+  "elegido": "cuotas",
+  "veredicto": "bien",
+  "razon": "pregunta por cuotas"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R21",
+  "fila": 3,
+  "fila_texto": "Súmame una webcam para Rosario. No quiero gastar más de 600 mil en total. Pago la mitad con transferencia y la mitad con Mastercard.",
+  "tipo": "tema",
+  "elegido": "formas_pago",
+  "veredicto": "mal",
+  "razon": "cuenta como va a pagar, no pregunta que medios hay"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R22",
+  "fila": 0,
+  "fila_texto": "¿Cuánto tarda el envío a Neuquén?",
+  "tipo": "tema",
+  "elegido": "plazo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto tarda el envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R23",
+  "fila": 0,
+  "fila_texto": "¿Tienen garantía?",
+  "tipo": "tema",
+  "elegido": "garantia",
+  "veredicto": "bien",
+  "razon": "pregunta o pide por la garantia"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R24",
+  "fila": 3,
+  "fila_texto": "Sumame una webcam para Rosario, no más de 600 mil. Pago mitad transferencia y mitad Mastercard.",
+  "tipo": "tema",
+  "elegido": "formas_pago",
+  "veredicto": "mal",
+  "razon": "cuenta como va a pagar, no pregunta que medios hay"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R25",
+  "fila": 0,
+  "fila_texto": "cuánto sale el envío a Posadas",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R26",
+  "fila": 0,
+  "fila_texto": "jaja buenísimo gracias crack, che y el G305 tiene garantía",
+  "tipo": "tema",
+  "elegido": "garantia",
+  "veredicto": "bien",
+  "razon": "pregunta o pide por la garantia"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R27",
+  "fila": 0,
+  "fila_texto": "de cuánto es la garantía del g305",
+  "tipo": "tema",
+  "elegido": "garantia",
+  "veredicto": "bien",
+  "razon": "pregunta o pide por la garantia"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R29",
+  "fila": 0,
+  "fila_texto": "de estos dos, el G502 Hero, mandame el que no tenga cable",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R30",
+  "fila": 0,
+  "fila_texto": "si el M170 está por debajo de 15 lucas me llevo tres",
+  "tipo": "tema",
+  "elegido": "promociones",
+  "veredicto": "mal",
+  "razon": "pone una condicion de precio, no pregunta por promos"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R32",
+  "fila": 0,
+  "fila_texto": "quiero el K380 pero solo si funciona con mi iPad",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R33",
+  "fila": 0,
+  "fila_texto": "Quiero un Logitech M170",
+  "tipo": "tema",
+  "elegido": "como_comprar",
+  "veredicto": "mal",
+  "razon": "pide o cuenta lo que compra, no pregunta como se compra"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R36",
+  "fila": 0,
+  "fila_texto": "Dame precio de un teclado, el más eco.",
+  "tipo": "tema",
+  "elegido": "teclado_mecanico_membrana",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pregunta la diferencia mecanico o membrana"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R36",
+  "fila": 1,
+  "fila_texto": "Si no me alcanza, necesito cuotas.",
+  "tipo": "tema",
+  "elegido": "cuotas",
+  "veredicto": "bien",
+  "razon": "pregunta por cuotas"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R37",
+  "fila": 0,
+  "fila_texto": "¿Tenés auriculares que anden con la PS5?",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales",
+  "id": "R38",
+  "fila": 0,
+  "fila_texto": "¿El mouse M170 anda con la Play?",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C03.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "cuántos dpi tiene el g502 hero",
+  "tipo": "tema",
+  "elegido": "mouse_dpi",
+  "veredicto": "bien",
+  "razon": "pregunta cuantos dpi tiene"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C08.0.coloquial",
+  "fila": 0,
+  "fila_texto": "busco tablet lo menos chino posible",
+  "tipo": "tema",
+  "elegido": "fabricacion",
+  "veredicto": "bien",
+  "razon": "pide que no sea fabricado en China, el pais de fabricacion"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C08.0.redactada",
+  "fila": 0,
+  "fila_texto": "Quiero una tablet que tenga lo menos posible de fabricación china.",
+  "tipo": "tema",
+  "elegido": "fabricacion",
+  "veredicto": "bien",
+  "razon": "pide que no sea fabricado en China, el pais de fabricacion"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C10.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Cuánto sale el envío a Posadas?",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C14.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Qué conviene, DDR4 o DDR5?",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "bien",
+  "razon": "pide ayuda para elegir entre opciones"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C16.0.coloquial",
+  "fila": 0,
+  "fila_texto": "el K120 negro me lo llevo, pago 70 transferencia y 30 Mercado Pago",
+  "tipo": "tema",
+  "elegido": "formas_pago",
+  "veredicto": "mal",
+  "razon": "cuenta como va a pagar, no pregunta que medios hay"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C17.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "qué teclados mecánicos tenés",
+  "tipo": "tema",
+  "elegido": "teclado_mecanico_membrana",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pregunta la diferencia mecanico o membrana"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C18.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "¿Cuánto sale mandarlos a Córdoba?",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C19.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "el g203 tiene stock",
+  "tipo": "tema",
+  "elegido": "stock_disponibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si hay o si tienen disponible"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C19.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "y hacen factura a",
+  "tipo": "tema",
+  "elegido": "datos_fiscales",
+  "veredicto": "bien",
+  "razon": "pide factura A"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C26.0.redactada",
+  "fila": 0,
+  "fila_texto": "Quiero enviar un G203 a Rosario. ¿Cuánto cuesta cada envío?",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C28.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "si no hay g502 hero en negro pásame el g305",
+  "tipo": "tema",
+  "elegido": "stock_disponibilidad",
+  "veredicto": "mal",
+  "razon": "dice que pase a otro si no hay, no pregunta si hay"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C29.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "el g305 me lo llevo",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C30.0.redactada",
+  "fila": 0,
+  "fila_texto": "Mi PC de escritorio tiene una placa DDR5. Si la Kingston Fury Beast DDR4 16GB no es compatible",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C30.0.redactada",
+  "fila": 1,
+  "fila_texto": "¿qué otra memoria tienen?",
+  "tipo": "tema",
+  "elegido": "especificaciones",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pregunta un dato tecnico de un modelo"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C30.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "Tengo una PC de escritorio con placa DDR5, ¿la Kingston Fury Beast DDR4 16 GB no le sirve?",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C32.0.original",
+  "fila": 0,
+  "fila_texto": "Entre el G305 y el G203, dame el que sea inalámbrico.",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C34.0.redactada",
+  "fila": 0,
+  "fila_texto": "¿Cuánto cuesta enviar un G203 a Rosario?",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C36.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿El G305 anda con mi Mac?",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C37.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "tengo una notebook qué memoria RAM le sirve",
+  "tipo": "tema",
+  "elegido": "compatibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si anda con otra cosa o pide que sea compatible"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C43.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Cuánto sale el k120?",
+  "tipo": "tema",
+  "elegido": "precios_iva",
+  "veredicto": "mal",
+  "razon": "pregunta el precio de un producto, no si incluye IVA"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C44.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "¿Cuánto salen el g203?",
+  "tipo": "tema",
+  "elegido": "precios_iva",
+  "veredicto": "mal",
+  "razon": "pregunta el precio de un producto, no si incluye IVA"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C47.1.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Cuánto me sale el G203 negro con envío?",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C49.2.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Tenés webcams?",
+  "tipo": "tema",
+  "elegido": "stock_disponibilidad",
+  "veredicto": "bien",
+  "razon": "pregunta si hay o si tienen disponible"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C50.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "estoy entre el g203",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "bien",
+  "razon": "pide ayuda para elegir entre opciones"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C51.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Cuánto sale el g305 negro?",
+  "tipo": "tema",
+  "elegido": "precios_iva",
+  "veredicto": "mal",
+  "razon": "pregunta el precio de un producto, no si incluye IVA"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C51.0.whatsapp",
+  "fila": 1,
+  "fila_texto": "Mándame el g305 negro a Córdoba.",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta cuanto cuesta el envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C54.0.coloquial",
+  "fila": 0,
+  "fila_texto": "Tengo fuente de 550w, ¿cuál es la placa de video más potente que banca?",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "bien",
+  "razon": "pide ayuda para elegir entre opciones"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C54.0.redactada",
+  "fila": 0,
+  "fila_texto": "Mi fuente es de 550 watts. ¿Cuál es la placa de video más potente que puede soportar?",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "bien",
+  "razon": "pide ayuda para elegir entre opciones"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C55.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "cuánto salen el g305 negro",
+  "tipo": "tema",
+  "elegido": "precios_iva",
+  "veredicto": "mal",
+  "razon": "pregunta el precio de un producto, no si incluye IVA"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "C58.0.whatsapp",
+  "fila": 0,
+  "fila_texto": "jaja buenísimo gracias crack che y el G305 tiene garantía",
+  "tipo": "tema",
+  "elegido": "garantia",
+  "veredicto": "bien",
+  "razon": "pregunta o pide por la garantia"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K03.0.plano",
+  "fila": 0,
+  "fila_texto": "dos auriculares los más baratos sumame todo con envío a Córdoba capital",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "b",
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K03.0.redactada",
+  "fila": 0,
+  "fila_texto": "Quiero dos mouse, los más baratos. Sumá todo con el envío a Córdoba capital.",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "bien",
+  "razon": "pregunta cuanto cuesta el envio o el total con envio"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K06.0.coloquial",
+  "fila": 1,
+  "fila_texto": "2 teclados lo más barato. Un envío a Córdoba Colón 1500 y otro a Río Tercero Sabatini 2000, pago con transferencia.",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta cuanto cuesta el envio"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K07.0.coloquial",
+  "fila": 0,
+  "fila_texto": "Hola, precio de 2 mouse, los más baratos. 1 mouse a Rosario y el resto a Río Cuarto.",
+  "tipo": "tema",
+  "elegido": "costo_envio",
+  "veredicto": "mal",
+  "razon": "solo dice a donde va, no pregunta cuanto cuesta el envio"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K10.2.whatsapp",
+  "fila": 0,
+  "fila_texto": "¿Qué auris con micrófono tenés?",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ },
+ {
+  "corridas": [
+   "c"
+  ],
+  "banco": "reales525",
+  "id": "K11.0.original",
+  "fila": 0,
+  "fila_texto": "hola, ando viendo mouse para la oficina",
+  "tipo": "tema",
+  "elegido": "asesoramiento",
+  "veredicto": "mal",
+  "razon": "pide un producto, no pide ayuda para elegir"
+ }
+]
