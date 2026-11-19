@@ -145,6 +145,57 @@ PROMPTS["v8"] = PROMPTS["v7"].replace(
   [asi]. Vacio si no busca un producto.""")
 assert PROMPTS["v8"] != PROMPTS["v7"]
 
+# v9, 19-nov, orden de Martin, por la entrevista a Luna del 19-nov: cada fila es una parte del mensaje con su nexo, y las
+# partes de una misma cosa llevan el mismo numero de pedido. La fuente de verdad es el mensaje: no agrega, no inventa, no
+# elige y no resuelve lo que el cliente no dijo. Lo que no sabe, entre corchetes. La cantidad en su campo, que es lo que
+# Luna pidio: sin ella duplicaba lineas. Sin ejemplo armado, que en la v3 hacia copiar.
+PROMPTS["v9"] = """Sos el primer paso de una tienda online. No contestas ni decidis nada: anotas lo que pide el cliente, en filas.
+La unica fuente de verdad es el mensaje del cliente. No agregues, no inventes, no completes, no elijas entre
+opciones y no resuelvas lo que el cliente no dijo.
+
+Cada fila es una parte del mensaje con su nexo:
+- producto: el tipo de producto que busca.
+- nombrado: la marca o el modelo que nombra.
+- condicion: como tiene que ser o para que lo quiere: medida, color, tipo, origen, uso, compatibilidad, precio,
+  tope, el mas barato.
+- tema: una pregunta sobre la tienda y no sobre un producto: pago, cuotas, envios, garantia, factura, descuentos.
+- destino: el lugar a donde lo manda.
+- otro: lo que no es nada de eso: saludos, comentarios, preguntas que no son de la tienda.
+
+Campos de cada fila:
+- pedido: el numero de la cosa que pide; las filas de una misma cosa llevan el mismo numero. Tema y otro, 0.
+- dijo y texto: en dijo, la parte del mensaje que corresponde a esa fila, copiada del mensaje. En texto, esa misma
+  parte lista para buscar: con la ortografia corregida y los numeros en cifras; en producto, el nombre comun del
+  producto, traducido si es jerga. Si no sabes que es o a que se refiere, en texto van las palabras del cliente
+  entre corchetes: [asi].
+- cantidad: las unidades, si las dijo; si no, vacio.
+
+Reglas:
+- Si nombra opciones para elegir, como dos modelos y "el que no tenga cable", van las dos en una fila nombrado, sin elegir.
+- Si pregunta por cualquier producto de la tienda, como "el articulo mas caro", el texto del producto es: toda la tienda.
+- Lo que dice para todo el mensaje, como "todo inalambrico", va en cada pedido al que se aplica.
+- Un pedido por cosa y por destino. Si no dice que cosa va a cada lugar, no lo repartas: anota lo que dijo, como
+  "[los otros dos articulos]", con su destino.
+- Si se corrige, vale lo ultimo que dijo."""
+NEXOS9 = ["producto", "nombrado", "condicion", "tema", "destino", "otro"]
+
+
+def lineas_de_filas(filas):
+    """Las filas de la v9 como las lineas que leen la vara y los nexos de hoy: una por pedido, la busqueda con el producto,
+    lo nombrado y las condiciones, sin corchetes; el fragmento, lo que dijo el cliente. Tema y otro, una linea cada uno."""
+    por, out = {}, []
+    for f in filas:
+        if f.get("nexo") in ("tema", "otro") or not f.get("pedido"):
+            out.append({"fragmento": f.get("dijo", ""), "busqueda": "", "destino": "", "producto": "", "condiciones": ""})
+            continue
+        por.setdefault(f["pedido"], []).append(f)
+    for p, fs in por.items():
+        de = lambda nx: " ".join(str(f.get("texto") or "") for f in fs if f.get("nexo") == nx).replace("[", "").replace("]", "").strip()
+        pr, cond = de("producto"), " ".join(x for x in (de("nombrado"), de("condicion")) if x)
+        out.append({"fragmento": " ".join(str(f.get("dijo") or "") for f in fs), "producto": pr, "condiciones": cond,
+                    "busqueda": f"{pr} {cond}".strip(), "destino": de("destino")})
+    return out
+
 # v3, 16-nov, orden de Martin: lo que falla la v2 es la estructura, partir un producto en dos lineas y perder
 # condiciones, sobre todo las del mensaje entero. Todo dentro de la llamada: primero la lista de productos distintos,
 # despues una linea por cada uno con sus condiciones en una lista, y un ejemplo inventado que no esta en ningun banco.
@@ -185,6 +236,12 @@ ESQUEMAS["v6"] = {"type": "object", "additionalProperties": False, "required": [
 ESQUEMAS["v7"] = _L0.ESQUEMA
 assert ESQUEMAS["v7"] == ESQUEMAS["v6"]
 ESQUEMAS["v8"] = ESQUEMAS["v6"]
+ESQUEMAS["v9"] = {"type": "object", "additionalProperties": False, "required": ["filas"], "properties": {
+    "filas": {"type": "array", "items": {
+        "type": "object", "additionalProperties": False, "required": ["pedido", "nexo", "dijo", "texto", "cantidad"],
+        "properties": {"pedido": {"type": "integer"},
+                       "nexo": {"type": "string", "enum": ["producto", "nombrado", "condicion", "tema", "destino", "otro"]},
+                       "dijo": _S, "texto": _S, "cantidad": _S}}}}}
 
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
@@ -258,6 +315,8 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
+    if base == "v9" and isinstance(salida, dict) and isinstance(salida.get("filas"), list):
+        salida["lineas"] = lineas_de_filas(salida["filas"])
     if base in ("v6", "v7", "v8") and isinstance(salida, dict):
         # La vara lee la busqueda: el producto y las condiciones juntos. Los dos campos quedan grabados. Con la v7, el
         # producto que Luna no supo, "?", es el fragmento: la vara lo cuenta como no traducido. Con la v8, lo que esta
