@@ -415,6 +415,10 @@ def casos_de(banco):
         # Las 200 dificiles del 18-nov, `llamada0_jerga.py --armar`: cada una con su banco de origen.
         d = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bancos", "las200.json"), encoding="utf-8"))
         return [(c["banco"], c["id"], c["texto"]) for c in d["casos"]]
+    if banco == "neg100":
+        # Lo que la tienda no vende, lo que la FAQ no cubre y lo fuera de tema, solo y mezclado, del 19-nov.
+        from negativos100 import CASOS
+        return [(banco, cid, t) for cid, t, _ in CASOS]
     if banco == "nombrados38":
         from nombrados38 import CASOS
         return [(banco, cid, t) for cid, t, _ in CASOS]
