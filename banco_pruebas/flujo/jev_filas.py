@@ -43,8 +43,20 @@ INSTR_P = ('En la parte "{f}" del mensaje, ¿cual de estos tipos de producto de 
            'lo que pide esa parte ES ese producto. ' + (REGLA_A if CORRIDA == "a" else REGLA_B) + ' Si nombra opciones, como dos modelos, '
            'elegi el tipo de producto, sin elegir el modelo. Si se refiere a algo sin decir que es, como "los otros dos", '
            'es ninguno.')
-INSTR_T = ('En la parte "{f}" del mensaje, ¿el cliente pregunta por alguna de estas reglas de la tienda? Elegi una solo si '
-           'la pregunta es sobre eso. Si pregunta algo que ninguna cubre, es ninguno.')
+if CORRIDA in ("c", "d"):
+    # Consigna libre, 19-nov: sin reglas, el mensaje entero y "si ninguna corresponde, ninguno". La d ofrece los 15
+    # productos candidatos en vez de los rubros.
+    INSTR_P = ('Leé el mensaje entero del cliente. En la parte "{f}", ¿cual de estas opciones corresponde a lo que el cliente '
+               'pide o pregunta? Si ninguna corresponde, ninguno.')
+    if CORRIDA == "d":
+        INSTR_P = ('Leé el mensaje entero del cliente. En la parte "{f}", ¿cual de estos productos de la tienda corresponde a lo '
+                   'que el cliente pide o pregunta? Si pide un tipo de producto en general, elegí el que mejor le corresponda de '
+                   'ese tipo. Si ninguno corresponde, ninguno.')
+    INSTR_T = ('Leé el mensaje entero del cliente. En la parte "{f}", ¿cual de estas reglas de la tienda corresponde a lo que '
+               'el cliente pregunta? Si ninguna corresponde, ninguno.')
+else:
+    INSTR_T = ('En la parte "{f}" del mensaje, ¿el cliente pregunta por alguna de estas reglas de la tienda? Elegi una solo si '
+               'la pregunta es sobre eso. Si pregunta algo que ninguna cubre, es ninguno.')
 
 
 def _mensajes():
@@ -75,7 +87,7 @@ def _fuente():
     tema = [(t, v(a)) for t, a in NT.docs(*NT.fuente())]
     nx = SimpleNamespace(faq={f["tema"]: f for f in faq})
     nv = json.load(open(os.path.join(NR._A.DATOS, NR.TID, "no_vendidas.json"), encoding="utf-8"))["no_vendidas"]
-    return SimpleNamespace(NR=NR, NT=NT, alias=alias, rub=rub, prod=prod, tema=tema, nx=nx,
+    return SimpleNamespace(modelos=modelos, NR=NR, NT=NT, alias=alias, rub=rub, prod=prod, tema=tema, nx=nx,
                            no_vendidas=sorted(nv, key=lambda x: -len(NR.n(x))))
 
 
@@ -98,8 +110,19 @@ def _candidatos(F, q):
     for k in prods:
         ej[k[0]].append(f"{k[1]} {k[2]}")
     rubros = list(dict.fromkeys([k[0] for k in prods] + [d for d in docs if not d.startswith(F.NR.NO_SE_VENDE)]))
-    return {"rubros": rubros, "ejemplos": {r: ej[r][:5] for r in rubros}, "no_se_vende": [d for d in docs if d.startswith(F.NR.NO_SE_VENDE)],
+    return {"productos": [list(k) for k in prods], "rubros": rubros, "ejemplos": {r: ej[r][:5] for r in rubros}, "no_se_vende": [d for d in docs if d.startswith(F.NR.NO_SE_VENDE)],
             "temas": temas}
+
+
+def _opciones_d(F, c):
+    """Corrida d: {clave: (rubro, descripcion)} de los 15 productos candidatos. La clave es "<marca> <modelo>" y, si se
+    repite, el mismo modelo en dos rubros, lleva el rubro; la descripcion, el rubro y el nombre del catalogo."""
+    cuenta = collections.Counter(f"{m} {mo}" for _, m, mo in c["productos"])
+    out = {}
+    for r, m, mo in c["productos"]:
+        clave = f"{m} {mo}" if cuenta[f"{m} {mo}"] == 1 else f"{m} {mo} ({r})"
+        out[clave] = (r, f"{r}: {F.modelos[(r, m, mo)][0]['nombre']}")
+    return out
 
 
 def _preguntas(F, filas, cands, filtros):
@@ -108,10 +131,13 @@ def _preguntas(F, filas, cands, filtros):
         c = cands[i]
         if CORRIDA != "a" or filtros[i] is None:
             crit = {}
-            for r in c["rubros"]:
-                crit[r] = f"{r}: tambien se dice {', '.join(F.alias.get(r, [])[:12])}; en la tienda, por ejemplo: {', '.join(c['ejemplos'][r])}"
+            if CORRIDA == "d":
+                crit = {k: d for k, (_, d) in _opciones_d(F, c).items()}
+            else:
+                for r in c["rubros"]:
+                    crit[r] = f"{r}: tambien se dice {', '.join(F.alias.get(r, [])[:12])}; en la tienda, por ejemplo: {', '.join(c['ejemplos'][r])}"
             nsv = list(c["no_se_vende"])
-            if CORRIDA != "a" and filtros[i] is not None and F.NR.NO_SE_VENDE + filtros[i] not in nsv:
+            if CORRIDA in ("b", "c") and filtros[i] is not None and F.NR.NO_SE_VENDE + filtros[i] not in nsv:
                 nsv.append(F.NR.NO_SE_VENDE + filtros[i])  # la clave de la fila es solo una opcion mas: Jev decide
             for d in nsv:
                 crit[d] = f"la tienda declara que no vende {d[len(F.NR.NO_SE_VENDE):]}"
@@ -156,6 +182,8 @@ def correr():
             return
         rec = {"banco": banco, "id": cid, "mensaje": texto, "filas": filas, "candidatos": cands, "filtro": filtros,
                "decide": CORRIDA == "a", "jev": r, "tokens": tokens}
+        if CORRIDA == "d":
+            rec["mapa"] = [{k: v[0] for k, v in _opciones_d(F, c).items()} for c in cands]
         with lock:
             with open(SALIDA, "a") as fh:
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -183,7 +211,8 @@ def _respuesta_p(r, i):
     """La respuesta de producto de la fila i: el filtro de codigo, solo en la corrida a, o lo que eligio Jev."""
     if r["filtro"][i] is not None and r.get("decide", True):
         return "no se vende: " + r["filtro"][i]
-    return r["jev"].get(f"p{i}", "ninguno")
+    x = r["jev"].get(f"p{i}", "ninguno")
+    return r["mapa"][i].get(x, x) if r.get("mapa") else x  # corrida d: del producto elegido a su rubro
 
 
 def _rubro(x):
