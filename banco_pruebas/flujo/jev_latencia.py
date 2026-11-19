@@ -7,12 +7,18 @@ tal y no se reintenta. En serie, una por vez. Los 20 se reparten por tamano: 7 d
 de mas filas y mas tokens. Se eligen parejos por tokens dentro de cada grupo. Graba en `grabado/jev_latencia.jsonl`.
 
     python3 banco_pruebas/flujo/jev_latencia.py
+    python3 banco_pruebas/flujo/jev_latencia.py --sin-cache   # dos pasadas con un encabezado distinto en cada llamada
+
+Con --sin-cache el state lleva "PRUEBA <nonce>" adelante, un nonce nuevo por llamada, para que Jev no conteste de lo
+guardado; graba en `grabado/jev_latencia_sin_cache.jsonl` con el campo pasada y la cuenta de las elecciones que
+coinciden con las de la corrida b.
 """
 import json
 import os
 import statistics
 import sys
 import time
+import uuid
 
 sys.argv += ["--corrida", "b"]
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +26,8 @@ sys.path.insert(0, AQUI)
 import jev_filas as JF  # noqa: E402
 from entorno import GRABADO  # noqa: E402
 
-SALIDA = os.path.join(GRABADO, "jev_latencia.jsonl")
+SIN_CACHE = "--sin-cache" in sys.argv
+SALIDA = os.path.join(GRABADO, "jev_latencia_sin_cache.jsonl" if SIN_CACHE else "jev_latencia.jsonl")
 
 
 def elegir():
@@ -39,21 +46,30 @@ def elegir():
 def main():
     from app.core.flujo.nuevo.jev import llamar
     F = JF._fuente()
-    hechos = {r["id"] for r in map(json.loads, open(SALIDA))} if os.path.exists(SALIDA) else set()
-    for grupo, rs in elegir():
+    hechos = {(r["id"], r.get("pasada")) for r in map(json.loads, open(SALIDA))} if os.path.exists(SALIDA) else set()
+    for pasada in ((1, 2) if SIN_CACHE else (None,)):
+      for grupo, rs in elegir():
         for r in rs:
-            if r["id"] in hechos:
+            if (r["id"], pasada) in hechos:
                 continue
             qs = JF._preguntas(F, r["filas"], r["candidatos"], r["filtro"])
             t0 = time.perf_counter()
-            err, tokens = None, None
+            err, tokens, resp = None, None, None
+            state = f"MENSAJE DEL CLIENTE: {r['mensaje']}"
+            if SIN_CACHE:
+                state = f"PRUEBA {uuid.uuid4().hex[:8]}\n" + state
             try:
-                _, tokens = llamar(f"MENSAJE DEL CLIENTE: {r['mensaje']}", qs, espera=15, intentos=1)
+                resp, tokens = llamar(state, qs, espera=15, intentos=1)
             except Exception as e:  # noqa: BLE001
                 err = repr(e)
             seg = time.perf_counter() - t0
             rec = {"grupo": grupo, "banco": r["banco"], "id": r["id"], "filas": len(r["filas"]), "preguntas": len(qs),
                    "tokens": tokens if tokens is not None else r["tokens"], "segundos": round(seg, 3), "error": err}
+            if SIN_CACHE:
+                rec["pasada"] = pasada
+                rec["coinciden"] = sum(resp.get(k) == r["jev"].get(k) for k in qs) if resp else None
+                rec["elecciones"] = len(qs)
+                rec["distintas"] = {k: [r["jev"].get(k), resp.get(k)] for k in qs if resp and resp.get(k) != r["jev"].get(k)}
             with open(SALIDA, "a") as fh:
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
             print(rec)
@@ -61,6 +77,8 @@ def main():
 
 def resumen():
     rs = list(map(json.loads, open(SALIDA)))
+    if SIN_CACHE:
+        print("elecciones que coinciden con la corrida b:", sum(r["coinciden"] or 0 for r in rs), "de", sum(r["elecciones"] for r in rs if not r["error"]))
     for g in ("1 fila", "2 o 3 filas", "las 6 mas grandes"):
         xs = [r for r in rs if r["grupo"] == g]
         ok = [r["segundos"] for r in xs if not r["error"]]
