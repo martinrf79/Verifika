@@ -145,6 +145,22 @@ PROMPTS["v8"] = PROMPTS["v7"].replace(
   [asi]. Vacio si no busca un producto.""")
 assert PROMPTS["v8"] != PROMPTS["v7"]
 
+# v12, 19-nov, orden de Martin: el v8, que fue el mejor de las 200, con las tres cosas que justifico la entrevista a Luna.
+# Las opciones para elegir van juntas, sin elegir; lo que el cliente nombra sin decir que es va entre llaves, sin
+# resolver, y no pasa por los embeddings ni por Jev, que son solo para la jerga entre corchetes; y lo que pregunta por
+# cualquier producto de la tienda lleva "toda la tienda".
+PROMPTS["v12"] = PROMPTS["v8"].replace(
+    """  [asi]. Vacio si no busca un producto.""",
+    """  [asi]. Si pregunta por cualquier producto de la tienda, como "el articulo mas caro", escribi: toda la tienda. Si
+  se refiere a productos sin decir cuales son, escribi sus palabras entre llaves, sin resolverlas: {asi}. Vacio si
+  no busca un producto.""").replace(
+    """Un producto por linea: si pide dos productos, o dos variantes del mismo, como uno negro y uno rojo, van en lineas
+separadas.""",
+    """Un producto por linea: si pide dos productos, o dos variantes del mismo, como uno negro y uno rojo, van en lineas
+separadas. Si nombra opciones para que se elija una, como dos modelos y "el que no tenga cable", van juntas en una
+sola linea con la condicion, sin elegir.""")
+assert PROMPTS["v12"].count("{asi}") == 1 and "sin elegir" in PROMPTS["v12"]
+
 # v9, 19-nov, orden de Martin, por la entrevista a Luna del 19-nov: cada fila es una parte del mensaje con su nexo, y las
 # partes de una misma cosa llevan el mismo numero de pedido. La fuente de verdad es el mensaje: no agrega, no inventa, no
 # elige y no resuelve lo que el cliente no dijo. Lo que no sabe, entre corchetes. La cantidad en su campo, que es lo que
@@ -263,6 +279,7 @@ ESQUEMAS["v6"] = {"type": "object", "additionalProperties": False, "required": [
 ESQUEMAS["v7"] = _L0.ESQUEMA
 assert ESQUEMAS["v7"] == ESQUEMAS["v6"]
 ESQUEMAS["v8"] = ESQUEMAS["v6"]
+ESQUEMAS["v12"] = ESQUEMAS["v6"]
 ESQUEMAS["v9"] = {"type": "object", "additionalProperties": False, "required": ["filas"], "properties": {
     "filas": {"type": "array", "items": {
         "type": "object", "additionalProperties": False, "required": ["pedido", "nexo", "dijo", "texto", "cantidad"],
@@ -352,14 +369,14 @@ def pedir(corrida, prompt, texto):
                              "busqueda": str(t).replace("[", "").replace("]", "")} for t in salida["textos"]]
     if base == "v9" and isinstance(salida, dict) and isinstance(salida.get("filas"), list):
         salida["lineas"] = lineas_de_filas(salida["filas"])
-    if base in ("v6", "v7", "v8") and isinstance(salida, dict):
+    if base in ("v6", "v7", "v8", "v12") and isinstance(salida, dict):
         # La vara lee la busqueda: el producto y las condiciones juntos. Los dos campos quedan grabados. Con la v7, el
         # producto que Luna no supo, "?", es el fragmento: la vara lo cuenta como no traducido. Con la v8, lo que esta
         # entre corchetes, sin los corchetes.
         for l in salida.get("lineas") or []:
             if isinstance(l, dict):
                 pr = str(l.get("producto") or "").strip()
-                pr = str(l.get("fragmento") or "") if pr == "?" else pr.replace("[", "").replace("]", "").strip()
+                pr = str(l.get("fragmento") or "") if pr == "?" else re.sub(r"[\[\]{}]", "", pr).strip()
                 l["busqueda"] = f"{pr} {l.get('condiciones') or ''}".strip()
     return salida, e, s, seg, round(dol, 7), crudo
 
