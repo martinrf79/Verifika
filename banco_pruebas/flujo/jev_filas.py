@@ -14,6 +14,8 @@ candidatos de la fuente de la tienda y Jev elige. Este guion mide esa eleccion s
 
     python3 banco_pruebas/flujo/jev_filas.py            # corre lo que falta y califica
     python3 banco_pruebas/flujo/jev_filas.py --calificar   # solo califica
+    python3 banco_pruebas/flujo/jev_filas.py --corrida b   # la segunda corrida: sin filtro de codigo y otra regla del accesorio
+    python3 banco_pruebas/flujo/jev_filas.py --calificar --corrida b
 """
 import collections
 import json
@@ -29,11 +31,16 @@ sys.path.insert(0, os.path.join(AQUI, "bancos"))
 from entorno import GRABADO  # noqa: E402
 
 PROMPT = "v13"
-SALIDA = os.path.join(GRABADO, "jev_filas_v13.jsonl")
+# Dos corridas. La "a" es la primera: el filtro de codigo decide por palabra y la regla del accesorio. La "b" saca el
+# filtro (la clave de no_vendidas.json que trae la fila solo suma una opcion para Jev) y cambia la regla del accesorio.
+CORRIDA = sys.argv[sys.argv.index("--corrida") + 1] if "--corrida" in sys.argv else "a"
+SALIDA = os.path.join(GRABADO, "jev_filas_v13.jsonl" if CORRIDA == "a" else f"jev_filas_v13{CORRIDA}.jsonl")
 CUALQUIERA = "cualquier producto de la tienda"
+REGLA_A = ('Si pide un accesorio, un repuesto o algo para usar con el, como cartuchos para una impresora o un soporte para '
+           'un monitor, es ninguno.')
+REGLA_B = 'Si pide un producto que no es ninguno de los de la lista, aunque sea para usar con uno de ellos, es ninguno.'
 INSTR_P = ('En la parte "{f}" del mensaje, ¿cual de estos tipos de producto de la tienda pide el cliente? Elegi uno solo si '
-           'lo que pide esa parte ES ese producto. Si pide un accesorio, un repuesto o algo para usar con el, como '
-           'cartuchos para una impresora o un soporte para un monitor, es ninguno. Si nombra opciones, como dos modelos, '
+           'lo que pide esa parte ES ese producto. ' + (REGLA_A if CORRIDA == "a" else REGLA_B) + ' Si nombra opciones, como dos modelos, '
            'elegi el tipo de producto, sin elegir el modelo. Si se refiere a algo sin decir que es, como "los otros dos", '
            'es ninguno.')
 INSTR_T = ('En la parte "{f}" del mensaje, ¿el cliente pregunta por alguna de estas reglas de la tienda? Elegi una solo si '
@@ -99,11 +106,14 @@ def _preguntas(F, filas, cands, filtros):
     qs = {}
     for i, f in enumerate(filas):
         c = cands[i]
-        if filtros[i] is None:
+        if CORRIDA != "a" or filtros[i] is None:
             crit = {}
             for r in c["rubros"]:
                 crit[r] = f"{r}: tambien se dice {', '.join(F.alias.get(r, [])[:12])}; en la tienda, por ejemplo: {', '.join(c['ejemplos'][r])}"
-            for d in c["no_se_vende"]:
+            nsv = list(c["no_se_vende"])
+            if CORRIDA != "a" and filtros[i] is not None and F.NR.NO_SE_VENDE + filtros[i] not in nsv:
+                nsv.append(F.NR.NO_SE_VENDE + filtros[i])  # la clave de la fila es solo una opcion mas: Jev decide
+            for d in nsv:
                 crit[d] = f"la tienda declara que no vende {d[len(F.NR.NO_SE_VENDE):]}"
             crit[CUALQUIERA] = "pregunta por todos los productos de la tienda, como el articulo mas caro"
             crit["ninguno"] = "no pide un producto, o pide uno que no es ninguno de estos"
@@ -139,13 +149,13 @@ def correr():
         qs = _preguntas(F, filas, cands, filtros)
         try:
             # Sin filas no hay pregunta que hacer, y la API rechaza el pedido vacio con 422: se graba sin llamar.
-            r, tokens = ({}, 0) if not qs else llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "jev_filas_v13")
+            r, tokens = ({}, 0) if not qs else llamar_jev(f"MENSAJE DEL CLIENTE: {texto}", qs, "jev_filas_v13" + CORRIDA)
         except Exception as e:  # noqa: BLE001
             errores.append((banco, cid, repr(e)))
             print("ERROR", banco, cid, repr(e))
             return
         rec = {"banco": banco, "id": cid, "mensaje": texto, "filas": filas, "candidatos": cands, "filtro": filtros,
-               "jev": r, "tokens": tokens}
+               "decide": CORRIDA == "a", "jev": r, "tokens": tokens}
         with lock:
             with open(SALIDA, "a") as fh:
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -161,14 +171,17 @@ def _n(t):
 
 
 def _filas_con(palabras, filas):
-    """Las filas que traen todas las palabras, por sus primeras cinco letras: "joysticks" toma "joystick"."""
-    ws = [w[:5] for w in _n(palabras).split()]
-    return [i for i, f in enumerate(filas) if all(any(x.startswith(w) for x in _n(f).split()) for w in ws)]
+    """Las filas que traen todas las palabras, cada una entera o en plural: "joysticks" toma "joystick", y "mousepad" ya
+    no toma "mouse". Antes eran las primeras cinco letras y "mousepad" tomaba la fila "mouse inalambrico"."""
+    def igual(a, b):
+        return a == b or a + "s" == b or a + "es" == b or b + "s" == a or b + "es" == a
+    ws = _n(palabras).split()
+    return [i for i, f in enumerate(filas) if all(any(igual(w, x) for x in _n(f).split()) for w in ws)]
 
 
 def _respuesta_p(r, i):
-    """La respuesta de producto de la fila i: el filtro de codigo o lo que eligio Jev."""
-    if r["filtro"][i] is not None:
+    """La respuesta de producto de la fila i: el filtro de codigo, solo en la corrida a, o lo que eligio Jev."""
+    if r["filtro"][i] is not None and r.get("decide", True):
         return "no se vende: " + r["filtro"][i]
     return r["jev"].get(f"p{i}", "ninguno")
 
@@ -257,7 +270,7 @@ def calificar():
             x = dict(ps)[i]
             if x == "ninguno" or x.startswith("no se vende: "):
                 c["neg no_vende acierto"] += 1
-                if r["filtro"][i] is not None:
+                if r["filtro"][i] is not None and r.get("decide", True):
                     c["neg no_vende acierto por el filtro"] += 1
             else:
                 c["neg no_vende error"] += 1
