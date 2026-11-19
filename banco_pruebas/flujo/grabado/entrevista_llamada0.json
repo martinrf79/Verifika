@@ -1,0 +1,660 @@
+{
+ "R29": {
+  "banco": "reales",
+  "falla": "eligio entre productos",
+  "mensaje": "de estos dos, el G502 Hero y el G305, mandame el que no tenga cable",
+  "grabado": [
+   {
+    "fragmento": "el que no tenga cable",
+    "producto": "mouse",
+    "condiciones": "G305 sin cable",
+    "destino": ""
+   }
+  ],
+  "repetidas": [
+   [
+    {
+     "fragmento": "el G502 Hero",
+     "producto": "mouse",
+     "condiciones": "modelo G502 Hero sin cable",
+     "destino": ""
+    },
+    {
+     "fragmento": "el G305",
+     "producto": "mouse",
+     "condiciones": "modelo G305 sin cable",
+     "destino": ""
+    }
+   ],
+   [
+    {
+     "fragmento": "el G502 Hero",
+     "producto": "Mouse G502 Hero",
+     "condiciones": "sin cable",
+     "destino": ""
+    },
+    {
+     "fragmento": "el G305",
+     "producto": "Mouse G305",
+     "condiciones": "sin cable",
+     "destino": ""
+    }
+   ],
+   [
+    {
+     "fragmento": "el que no tenga cable",
+     "producto": "mouse",
+     "condiciones": "G305 inalámbrico",
+     "destino": ""
+    }
+   ]
+  ],
+  "como_lo_penso": "{\"lineas\": [{\"fragmento\": \"Para cada línea, en una o dos oraciones: a. de qué parte del mensaje la sacaste; b. si decidiste algo que el cliente no dijo, qué fue y por qué; c. si algo del mensaje no quedó en ninguna línea, qué fue y por qué lo dejaste afuera\", \"producto\": \"\", \"condiciones\": \"\", \"destino\": \"\"}]}",
+  "esperado": "Una sola linea de mouse con los dos modelos que nombra el cliente y la condicion: \"G502 Hero o G305, sin cable\". Elegir cual no tiene cable es responder: lo hace el que conoce la tienda, despues.",
+  "devolucion": "1. Elegí el G305 y descarté el G502 Hero, en vez de dejar ambos modelos como opciones en una sola línea.\n2. Me empujó «Un producto por línea: si pide dos productos, o dos variantes del mismo [...] van en líneas separadas»; interpreté las dos opciones como productos separados y resolví cuál cumplía la condición.\n3. Agregaría: «Si el cliente plantea opciones y pide elegir según una condición, conservá todas las opciones en una línea y expresá la condición sin decidir cuál la cumple».\n4. Se puede escribir con los campos actuales: producto «mouse» y condiciones «G502 Hero o G305, sin cable».",
+  "dolares": 0.001052,
+  "cuando": "2026-11-19 03:18"
+ },
+ "R07": {
+  "banco": "reales",
+  "falla": "perdio destinos",
+  "mensaje": "Dame precio de 7 articulos 2 notebooks 1 microfono y los demas serian memorias pasame ee acuerdo a la crisis el presupuesto. Envio de los dos primeros a la plata y los otros 5 envios 2 a villa maria y 3 a toledo",
+  "grabado": [
+   {
+    "fragmento": "2 notebooks",
+    "producto": "notebook",
+    "condiciones": "",
+    "destino": "La Plata"
+   },
+   {
+    "fragmento": "1 microfono",
+    "producto": "micrófono",
+    "condiciones": "",
+    "destino": ""
+   },
+   {
+    "fragmento": "los demas serian memorias",
+    "producto": "memoria",
+    "condiciones": "",
+    "destino": ""
+   }
+  ],
+  "repetidas": [
+   [
+    {
+     "fragmento": "2 notebooks",
+     "producto": "notebook",
+     "condiciones": "presupuesto acorde a la crisis",
+     "destino": "La Plata"
+    },
+    {
+     "fragmento": "1 microfono",
+     "producto": "micrófono",
+     "condiciones": "presupuesto acorde a la crisis",
+     "destino": "Villa María"
+    },
+    {
+     "fragmento": "los demas serian memorias",
+     "producto": "memoria",
+     "condiciones": "presupuesto acorde a la crisis",
+     "destino": "Villa María"
+    },
+    {
+     "fragmento": "los demas serian memorias",
+     "producto": "memoria",
+     "condiciones": "presupuesto acorde a la crisis",
+     "destino": "Toledo"
+    }
+   ],
+   [
+    {
+     "fragmento": "2 notebooks",
+     "producto": "notebook",
+     "condiciones": "lo más barato posible",
+     "destino": "La Plata"
+    },
+    {
+     "fragmento": "1 microfono",
+     "producto": "micrófono",
+     "condiciones": "lo más barato posible",
+     "destino": "Villa María"
+    },
+    {
+     "fragmento": "los demas serian memorias",
+     "producto": "memoria",
+     "condiciones": "lo más barato posible",
+     "destino": "Villa María"
+    },
+    {
+     "fragmento": "los demas serian memorias",
+     "producto": "memoria",
+     "condiciones": "lo más barato posible",
+     "destino": "Toledo"
+    }
+   ],
+   [
+    {
+     "fragmento": "2 notebooks",
+     "producto": "notebook",
+     "condiciones": "lo más barato posible",
+     "destino": "La Plata"
+    },
+    {
+     "fragmento": "1 microfono",
+     "producto": "micrófono",
+     "condiciones": "lo más barato posible",
+     "destino": "Villa María y Toledo"
+    },
+    {
+     "fragmento": "los demas serian memorias",
+     "producto": "memoria",
+     "condiciones": "lo más barato posible",
+     "destino": "Villa María y Toledo"
+    }
+   ]
+  ],
+  "como_lo_penso": "{\"lineas\": [{\"fragmento\": \"si algo no lo podés hacer bien o siempre igual, decilo\", \"producto\": \"\", \"condiciones\": \"\", \"destino\": \"\"}, {\"fragmento\": \"de qué parte del mensaje la sacaste\", \"producto\": \"\", \"condiciones\": \"\", \"destino\": \"\"}, {\"fragmento\": \"si decidiste algo que el cliente no dijo, qué fue y por qué\", \"producto\": \"\", \"condiciones\": \"\", \"destino\": \"\"}, {\"fragmento\": \"si algo del mensaje no quedó en ninguna línea, qué fue y por qué lo dejaste afuera\", \"producto\": \"\", \"condiciones\": \"\", \"destino\": \"\"}]}",
+  "esperado": "Ninguno de los tres destinos se pierde. Los dos primeros, las notebooks, a La Plata. Los otros 5, el microfono y las memorias, van 2 a Villa Maria y 3 a Toledo: el cliente no dice cuales van a cada lugar, asi que Villa Maria y Toledo tienen que quedar, sin repartirlos a ojo, con lo que el cliente dijo de ellos: \"los otros 5\".",
+  "devolucion": "1. Omití Villa María y Toledo, y asigné La Plata solo a las notebooks; tampoco dejé claro que los otros 5 incluyen el micrófono y las memorias.\n2. Me empujó a repartirlos la instrucción «Una línea por destino»; pero el cliente no dijo cuáles productos van a cada destino.\n3. Agregaría: «Si el cliente no especifica qué productos van a cada destino, conservá esa ambigüedad y asociá los destinos al grupo tal como lo nombró, sin repartir productos».\n4. Con los campos actuales no puedo representar bien ese grupo ambiguo: faltaría un campo para el grupo de productos y sus destinos sin asignación individual.",
+  "dolares": 0.001517,
+  "cuando": "2026-11-19 03:18"
+ },
+ "K21.0.original": {
+  "banco": "reales525",
+  "falla": "perdio un destino y conto de mas",
+  "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+  "grabado": [
+   {
+    "fragmento": "dos auriculares",
+    "producto": "auriculares",
+    "condiciones": "con la menor cantidad posible de partes chinas",
+    "destino": ""
+   },
+   {
+    "fragmento": "un auricular",
+    "producto": "auriculares",
+    "condiciones": "con la menor cantidad posible de partes chinas",
+    "destino": "Córdoba capital"
+   },
+   {
+    "fragmento": "dos mouse",
+    "producto": "mouse",
+    "condiciones": "con la menor cantidad posible de partes chinas",
+    "destino": ""
+   },
+   {
+    "fragmento": "un mouse",
+    "producto": "mouse",
+    "condiciones": "con la menor cantidad posible de partes chinas",
+    "destino": "Córdoba capital"
+   },
+   {
+    "fragmento": "un mouse",
+    "producto": "mouse",
+    "condiciones": "con la menor cantidad posible de partes chinas",
+    "destino": "Concordia"
+   },
+   {
+    "fragmento": "dos memorias",
+    "producto": "memorias",
+    "condiciones": "con la menor cantidad posible de partes chinas",
+    "destino": ""
+   },
+   {
+    "fragmento": "un teclado",
+    "producto": "teclado",
+    "condiciones": "con la menor cantidad posible de partes chinas",
+    "destino": "Concordia"
+   }
+  ],
+  "repetidas": [
+   [
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "Un teclado",
+     "producto": "teclado",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "un mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": ""
+    }
+   ],
+   [
+    {
+     "fragmento": "un auricular",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": ""
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "un teclado",
+     "producto": "teclado",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "un mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Posadas"
+    }
+   ],
+   [
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "posadas"
+    },
+    {
+     "fragmento": "Un teclado",
+     "producto": "teclado",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    }
+   ]
+  ],
+  "como_lo_penso": "1. **“dos auriculares”**: Sale de la primera oración. Repetí aquí la condición de tener la menor cantidad posible de partes chinas, que se aplica a los productos; dejé el destino vacío porque no lo determiné para esta línea.\n\n2. **“un auricular”**: Sale de “Un auricular … será envío a Córdoba capital”. Lo separé del total de dos auriculares para asignarle el destino, y repetí la condición general.\n\n3. **“dos mouse”**: Sale de la primera oración. Repetí la condición general, pero fue inconsistente dejar aquí dos mouse además de crear líneas separadas para mouse con destinos.\n\n4. **“un mouse”**: Sale de “Un auricular y un mouse será envío a Córdoba capital”. Lo separé para asignarle ese destino y repetí la condición general.\n\n5. **“un mouse”**: Sale de “Un teclado y un mouse será envío a Concordia”. Lo separé para asignarle ese destino y repetí la condición general.\n\n6. **“dos memorias”**: Sale de la primera oración. Repetí la condición general, pero no asigné destino; debí considerar “Los otros dos artículos serán con envío a posadas”, aunque no queda claro cuáles son esos dos artículos.\n\n7. **“un teclado”**: Sale de “Un teclado … será envío a Concordia”. Lo incluí aunque no aparece en la lista inicial de productos, porque el cliente sí lo mencionó después; repetí la condición general.\n\nDejé fuera “El precio no sería tan importante” porque no especifica un precio máximo ni una característica del producto; y “Divide el presupuesto en setenta treinta” porque se refiere al presupuesto, no a cómo debe ser un producto. También omití el destino Posadas: debí reflejarlo, pero no supe a qué dos artículos asignarlo con certeza.",
+  "esperado": "Dos auriculares, dos mouse y dos memorias, y el teclado que nombra al repartir. Un auricular y un mouse a Cordoba capital; un teclado y un mouse a Concordia; \"los otros dos articulos\" a Posadas, sin decidir cuales son, porque el cliente no lo dice. Ningun destino se pierde y no aparece un tercer mouse.",
+  "devolucion": "1. Duplicé productos al separar las cantidades totales de las asignadas a destinos, dejé sin destino los dos artículos restantes y no representé explícitamente que “los otros dos artículos” son una referencia sin resolver.\n2. Me empujó “Un producto por línea” y “Varias unidades iguales van en una línea, salvo que vayan a destinos distintos: una línea por destino”. No dice cómo repartir una cantidad total entre destinos ni cómo conservar una referencia ambigua.\n3. Agregaría: “No sumes a la cantidad total los productos mencionados al asignar destinos: reparte las unidades indicadas, sin crear unidades adicionales. Si el cliente dice ‘los otros’ sin identificar cuáles, conserva esa referencia sin asignarla a productos concretos.”\n4. No se puede expresar completamente con los campos actuales: falta un campo para cantidad y otro para indicar que el destino aplica a productos referidos de forma ambigua, sin decidir cuáles son.",
+  "dolares": 0.002169,
+  "cuando": "2026-11-19 03:19"
+ },
+ "K20.0.original": {
+  "banco": "reales525",
+  "falla": "resolvio lo que el cliente no dijo",
+  "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+  "grabado": [
+   {
+    "fragmento": "dos auriculares",
+    "producto": "auriculares",
+    "condiciones": "las menos partes chinas posibles",
+    "destino": "Córdoba capital"
+   },
+   {
+    "fragmento": "dos auriculares",
+    "producto": "auriculares",
+    "condiciones": "las menos partes chinas posibles",
+    "destino": ""
+   },
+   {
+    "fragmento": "dos mouse",
+    "producto": "mouse",
+    "condiciones": "las menos partes chinas posibles",
+    "destino": "Córdoba capital"
+   },
+   {
+    "fragmento": "dos mouse",
+    "producto": "mouse",
+    "condiciones": "las menos partes chinas posibles",
+    "destino": "Concordia"
+   },
+   {
+    "fragmento": "dos memorias",
+    "producto": "memorias",
+    "condiciones": "las menos partes chinas posibles",
+    "destino": "Posadas"
+   },
+   {
+    "fragmento": "dos memorias",
+    "producto": "memorias",
+    "condiciones": "las menos partes chinas posibles",
+    "destino": "Posadas"
+   },
+   {
+    "fragmento": "Un teclado",
+    "producto": "teclado",
+    "condiciones": "las menos partes chinas posibles",
+    "destino": "Concordia"
+   }
+  ],
+  "repetidas": [
+   [
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": ""
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": ""
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": ""
+    },
+    {
+     "fragmento": "Un auricular",
+     "producto": "auricular",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "un mouse será envío a Córdoba capital",
+     "producto": "mouse",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "Un teclado",
+     "producto": "teclado",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "un mouse será envío a Concordia",
+     "producto": "mouse",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "Los otros dos artículos serán con envío a posadas",
+     "producto": "",
+     "condiciones": "con las menos partes chinas posibles",
+     "destino": "posadas"
+    }
+   ],
+   [
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": ""
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "un mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Posadas"
+    },
+    {
+     "fragmento": "un teclado",
+     "producto": "teclado",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    }
+   ],
+   [
+    {
+     "fragmento": "un auricular ... envío a Córdoba capital",
+     "producto": "auriculares",
+     "condiciones": "con la menor cantidad posible de partes chinas el precio no sería tan importante",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "un mouse ... envío a Córdoba capital",
+     "producto": "mouse",
+     "condiciones": "con la menor cantidad posible de partes chinas el precio no sería tan importante",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "un teclado ... envío a Concordia",
+     "producto": "teclado",
+     "condiciones": "con la menor cantidad posible de partes chinas el precio no sería tan importante",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "un mouse ... envío a Concordia",
+     "producto": "mouse",
+     "condiciones": "con la menor cantidad posible de partes chinas el precio no sería tan importante",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias ... Los otros dos artículos serán con envío a posadas",
+     "producto": "[memorias]",
+     "condiciones": "con la menor cantidad posible de partes chinas el precio no sería tan importante",
+     "destino": "Posadas"
+    }
+   ]
+  ],
+  "como_lo_penso": "1. **Auriculares — Córdoba capital:** Lo asocié con “Un auricular… será envío a Córdoba capital”. Interpreté que ese destino correspondía a una unidad de las dos.\n\n2. **Auriculares — sin destino:** Supuse que uno de los auriculares restantes iba a otro destino, aunque el mensaje no lo especifica.\n\n3. **Mouse — Córdoba capital:** Lo asocié con “un mouse será envío a Córdoba capital”, otra vez interpretándolo como una unidad.\n\n4. **Mouse — Concordia:** Lo asocié con “un mouse será envío a Concordia”.\n\n5. **Memorias — Posadas:** Supuse que una memoria era uno de “los otros dos artículos” destinados a Posadas.\n\n6. **Memorias — Posadas:** Repetí esa suposición para la segunda memoria; no estaba dicho que esos dos artículos fueran las memorias.\n\n7. **Teclado — Concordia:** Lo tomé de “Un teclado… será envío a Concordia”, aunque el teclado no figuraba en la lista inicial de productos.\n\nRepetí “las menos partes chinas posibles” como condición para todos los productos, porque parecía aplicar a todos. Dejé afuera “el precio no sería tan importante” porque no fija un precio o tope; también excluí “setenta treinta” como instrucción sobre el presupuesto, no sobre el producto. El mensaje es ambiguo y contradictorio en cantidades y destinos: no debí resolverlo asignando productos a los destinos sin más.",
+  "esperado": "Lo mismo que K21: \"los otros dos articulos\" a Posadas queda como lo dijo el cliente, sin decidir que son las dos memorias. No aparece una linea de mas.",
+  "devolucion": "1. Asigné “los otros dos artículos” a las dos memorias, aunque el cliente no dijo cuáles eran; además, añadí una línea sin destino y dupliqué destinos y productos en vez de conservar esa referencia tal cual.\n\n2. Me empujó la instrucción “Un producto por línea” junto con “una línea por destino”: intenté completar las asignaciones para cumplirlas.\n\n3. Agregaría: “Si el destino se refiere a productos no identificados, conserva la referencia del cliente como fragmento y no la asignes a productos concretos. No añadas líneas para completar cantidades o destinos que el cliente no especificó”.\n\n4. No se puede expresar “los otros dos artículos” como una referencia ambigua en los campos actuales sin decidir qué productos son. Haría falta un campo para conservar esa referencia tal cual, o permitir que el producto quede vacío y el fragmento la registre.",
+  "dolares": 0.002017,
+  "cuando": "2026-11-19 03:19"
+ },
+ "R14": {
+  "banco": "reales",
+  "falla": "resolvio lo que el cliente no dijo",
+  "mensaje": "Dame precio de dos auriculares, dos mouse y dos memorias. El precio no sería tan importante. Lo que sí que necesito que lleven las menos partes chinas posibles. Un auricular y un mouse será envío a Córdoba capital. Un teclado y un mouse será envío a Concordia. Los otros dos artículos serán con envío a posadas. Divide el presupuesto en setenta treinta, ya que veré en la fase siguiente cómo seguimos",
+  "grabado": [
+   {
+    "fragmento": "dos auriculares",
+    "producto": "auriculares",
+    "condiciones": "la menor cantidad posible de partes chinas",
+    "destino": "Córdoba capital"
+   },
+   {
+    "fragmento": "un auricular",
+    "producto": "auriculares",
+    "condiciones": "la menor cantidad posible de partes chinas",
+    "destino": "Posadas"
+   },
+   {
+    "fragmento": "dos mouse",
+    "producto": "mouse",
+    "condiciones": "la menor cantidad posible de partes chinas",
+    "destino": "Córdoba capital"
+   },
+   {
+    "fragmento": "un mouse",
+    "producto": "mouse",
+    "condiciones": "la menor cantidad posible de partes chinas",
+    "destino": "Concordia"
+   },
+   {
+    "fragmento": "un teclado",
+    "producto": "teclado",
+    "condiciones": "la menor cantidad posible de partes chinas",
+    "destino": "Concordia"
+   },
+   {
+    "fragmento": "dos memorias",
+    "producto": "memorias",
+    "condiciones": "la menor cantidad posible de partes chinas",
+    "destino": "Posadas"
+   }
+  ],
+  "repetidas": [
+   [
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "la menor cantidad posible de partes chinas",
+     "destino": ""
+    },
+    {
+     "fragmento": "un auricular",
+     "producto": "auriculares",
+     "condiciones": "la menor cantidad posible de partes chinas",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "la menor cantidad posible de partes chinas",
+     "destino": ""
+    },
+    {
+     "fragmento": "un mouse",
+     "producto": "mouse",
+     "condiciones": "la menor cantidad posible de partes chinas",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "un mouse",
+     "producto": "mouse",
+     "condiciones": "la menor cantidad posible de partes chinas",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "la menor cantidad posible de partes chinas",
+     "destino": "Posadas"
+    },
+    {
+     "fragmento": "un teclado",
+     "producto": "teclado",
+     "condiciones": "la menor cantidad posible de partes chinas",
+     "destino": "Concordia"
+    }
+   ],
+   [
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "Un teclado",
+     "producto": "teclado",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Posadas"
+    }
+   ],
+   [
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos auriculares",
+     "producto": "auriculares",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": ""
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Córdoba capital"
+    },
+    {
+     "fragmento": "dos mouse",
+     "producto": "mouse",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    },
+    {
+     "fragmento": "dos memorias",
+     "producto": "memorias",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "posadas"
+    },
+    {
+     "fragmento": "Un teclado",
+     "producto": "teclado",
+     "condiciones": "las menos partes chinas posibles",
+     "destino": "Concordia"
+    }
+   ]
+  ],
+  "como_lo_penso": "1. **«dos auriculares» → Córdoba capital:** Lo saqué de «dos auriculares». Supuse que los dos iban a Córdoba, aunque el mensaje solo asigna allí un auricular; además, así conté auriculares de más.\n\n2. **«un auricular» → Posadas:** Lo inferí de «los otros dos artículos serán con envío a posadas», suponiendo que uno era el auricular. El mensaje no lo especifica, y también excedí la cantidad pedida.\n\n3. **«dos mouse» → Córdoba capital:** Lo saqué de «dos mouse». Supuse que ambos iban a Córdoba, aunque solo se asigna allí un mouse; también conté mouse de más.\n\n4. **«un mouse» → Concordia:** Lo saqué de «un teclado y un mouse será envío a Concordia». Esta parte sí corresponde al texto.\n\n5. **«un teclado» → Concordia:** Lo saqué literalmente de esa misma frase, pero lo incluí aunque el cliente no había pedido un teclado entre los productos iniciales.\n\n6. **«dos memorias» → Posadas:** Lo saqué de «dos memorias» y supuse que ambas eran los «otros dos artículos». El mensaje no identifica qué artículos van a Posadas.\n\nTambién dejé afuera «el precio no sería tan importante», aunque debía reflejarlo como condición de precio. Omití el reparto «setenta treinta» porque las instrucciones excluyen el pago.",
+  "esperado": "Lo mismo: Cordoba capital, Concordia y \"los otros dos articulos\" a Posadas, sin decidir cuales son.",
+  "devolucion": "1. Asigné artículos concretos a Posadas y agrupé cantidades con destinos que el cliente no especificó; debía dejar «los otros dos artículos» sin identificar.\n2. Me empujó «Un producto por linea» junto con «una linea por destino». No hay una regla explícita para conservar referencias ambiguas como «los otros dos artículos».\n3. Agregaría: «No infieras qué productos corresponden a un destino cuando el cliente no los identifica; conserva expresiones como “los otros dos artículos” literalmente, en una línea aparte».\n4. No se puede representar fielmente con los campos actuales: falta un campo para una referencia de producto ambigua, sin producto identificado.",
+  "dolares": 0.001888,
+  "cuando": "2026-11-19 03:20"
+ }
+}
