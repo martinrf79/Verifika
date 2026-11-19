@@ -161,6 +161,19 @@ separadas. Si nombra opciones para que se elija una, como dos modelos y "el que 
 sola linea con la condicion, sin elegir.""")
 assert PROMPTS["v12"].count("{asi}") == 1 and "sin elegir" in PROMPTS["v12"]
 
+# v13, 19-nov, orden de Martin: Luna solo separa y corrige la ortografia. Cada fila son partes del mensaje con las
+# palabras del cliente, sin cambiar ni agregar ninguna, y no falta nada; los codigos de producto quedan como estan. La
+# jerga la absorben los embeddings, que traen 15 candidatos de toda la fuente de la tienda, y elige Jev: medido el 19-nov
+# sobre las filas del v12, con las palabras del cliente el correcto esta entre los 15 en 236 de 238.
+PROMPTS["v13"] = """Sos el primer paso de una tienda online. No contestas ni decidis nada. La unica fuente de verdad es el mensaje
+del cliente, y tu unico trabajo es separarlo en filas.
+Una fila por cada producto que pide y por cada pregunta que hace. Cada fila son partes del mensaje con las palabras del
+cliente: solo corregi los errores de ortografia, sin cambiar ni agregar ninguna palabra. Los codigos y modelos de
+producto, como G305 o K120, quedan como estan. Si una parte vale para varias filas, como el lugar de envio, la
+forma de pago o "todo inalambrico", copiala en cada fila a la que se aplica.
+No puede faltar nada: cada palabra del mensaje que pide, pregunta o dice como tiene que ser algo tiene que quedar en
+alguna fila, aunque el mensaje sea largo."""
+
 # v9, 19-nov, orden de Martin, por la entrevista a Luna del 19-nov: cada fila es una parte del mensaje con su nexo, y las
 # partes de una misma cosa llevan el mismo numero de pedido. La fuente de verdad es el mensaje: no agrega, no inventa, no
 # elige y no resuelve lo que el cliente no dijo. Lo que no sabe, entre corchetes. La cantidad en su campo, que es lo que
@@ -289,6 +302,7 @@ ESQUEMAS["v9"] = {"type": "object", "additionalProperties": False, "required": [
 ESQUEMAS["v10"] = {"type": "object", "additionalProperties": False, "required": ["textos"], "properties": {
     "textos": {"type": "array", "items": _S}}}
 ESQUEMAS["v11"] = ESQUEMAS["v10"]
+ESQUEMAS["v13"] = ESQUEMAS["v10"]
 
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
@@ -362,7 +376,7 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
-    if base in ("v10", "v11") and isinstance(salida, dict) and isinstance(salida.get("textos"), list):
+    if base in ("v10", "v11", "v13") and isinstance(salida, dict) and isinstance(salida.get("textos"), list):
         # Cada texto es su linea: la vara lee la busqueda sin corchetes; el producto lleva el texto entero, para que
         # `llamada0_jerga.py` encuentre lo que quedo entre corchetes.
         salida["lineas"] = [{"fragmento": str(t), "producto": str(t), "condiciones": "", "destino": "",
