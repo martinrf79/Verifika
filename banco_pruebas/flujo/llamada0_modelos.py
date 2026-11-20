@@ -174,6 +174,19 @@ forma de pago o "todo inalambrico", copiala en cada fila a la que se aplica.
 No puede faltar nada: cada palabra del mensaje que pide, pregunta o dice como tiene que ser algo tiene que quedar en
 alguna fila, aunque el mensaje sea largo."""
 
+# v14f1 y v14f3, 20-nov, orden de Martin: Luna separa, como la v13, y ademas traduce al vocabulario de la tienda: despues de
+# cada parte que sabe traducir, el nombre del vocabulario entre corchetes. El marcador {ficha} lleva el vocabulario, que
+# arma `luna_ficha.py` por codigo desde `alias.json`: la f1, el mismo para todos los mensajes; la f3, el de cada mensaje,
+# con lo que traen los embeddings de sus trozos, ya grabado en `embeddings_antes.jsonl`. Mismo prompt en las dos.
+PROMPTS["v14f1"] = """Sos el primer paso de una tienda online. No contestas ni decidis nada. La unica fuente de verdad es el mensaje del cliente.
+Separa el mensaje en filas: una por cada producto que pide y una por cada pregunta que hace. Cada palabra del mensaje que pide, pregunta o dice como tiene que ser algo tiene que quedar en alguna fila, aunque el mensaje sea largo. Lo que vale para varias filas, como el lugar de envio, la forma de pago o "todo inalambrico", copialo en cada fila a la que se aplica. Los codigos y modelos de producto, como G305 o K120, quedan como estan.
+En cada fila van las palabras del cliente entre llaves, con solo la ortografia corregida, sin cambiar ni agregar ninguna. Despues de cada parte que sabes traducir al vocabulario de la tienda, escribi entre corchetes el nombre del vocabulario que le corresponde: el producto, la caracteristica o la pregunta. Lo que no esta en el vocabulario, o no sabes que es, queda solo entre llaves.
+No elijas entre opciones y no resuelvas lo que el cliente no dijo.
+
+VOCABULARIO DE LA TIENDA
+{ficha}"""
+PROMPTS["v14f3"] = PROMPTS["v14f1"]
+
 # v9, 19-nov, orden de Martin, por la entrevista a Luna del 19-nov: cada fila es una parte del mensaje con su nexo, y las
 # partes de una misma cosa llevan el mismo numero de pedido. La fuente de verdad es el mensaje: no agrega, no inventa, no
 # elige y no resuelve lo que el cliente no dijo. Lo que no sabe, entre corchetes. La cantidad en su campo, que es lo que
@@ -303,6 +316,7 @@ ESQUEMAS["v10"] = {"type": "object", "additionalProperties": False, "required": 
     "textos": {"type": "array", "items": _S}}}
 ESQUEMAS["v11"] = ESQUEMAS["v10"]
 ESQUEMAS["v13"] = ESQUEMAS["v10"]
+ESQUEMAS["v14f1"] = ESQUEMAS["v14f3"] = ESQUEMAS["v10"]
 
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
@@ -316,6 +330,9 @@ def pedir(corrida, prompt, texto):
     # "v3#2" es la segunda corrida del prompt v3: el mismo prompt, otra muestra.
     base = prompt.split("#")[0]
     sistema = PROMPTS[base]
+    if "{ficha}" in sistema:
+        import luna_ficha
+        sistema = sistema.replace("{ficha}", luna_ficha.ficha(base, texto))
     esquema = ESQUEMAS.get(base, F.ESQUEMA)
     usuario = f"MENSAJE DEL CLIENTE: {texto}"
     fmt = {"type": "json_schema", "json_schema": {"name": "lineas", "strict": True, "schema": esquema}}
@@ -376,7 +393,7 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
-    if base in ("v10", "v11", "v13") and isinstance(salida, dict) and isinstance(salida.get("textos"), list):
+    if base in ("v10", "v11", "v13", "v14f1", "v14f3") and isinstance(salida, dict) and isinstance(salida.get("textos"), list):
         # Cada texto es su linea: la vara lee la busqueda sin corchetes; el producto lleva el texto entero, para que
         # `llamada0_jerga.py` encuentre lo que quedo entre corchetes.
         salida["lineas"] = [{"fragmento": str(t), "producto": str(t), "condiciones": "", "destino": "",
