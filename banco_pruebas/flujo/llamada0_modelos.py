@@ -186,6 +186,14 @@ No elijas entre opciones y no resuelvas lo que el cliente no dijo.
 VOCABULARIO DE LA TIENDA
 {ficha}"""
 PROMPTS["v14f3"] = PROMPTS["v14f1"]
+# v14f1b, 21-nov, orden de Martin: la v14f1 con una frase para la clase de lo mencionado de paso, medida el 20-nov en
+# "una mochila para la notebook", "tinta para la impresora": entre corchetes solo lo que el cliente pide o pregunta.
+PROMPTS["v14f1b"] = PROMPTS["v14f1"].replace(
+    "No elijas entre opciones",
+    "Entre corchetes va solo lo que el cliente pide o pregunta. Lo que nombra para describir otra cosa, como lo que ya tiene o\n"
+    "aquello para lo que es el producto, como la notebook en \"una mochila para la notebook\", queda solo entre llaves.\n"
+    "No elijas entre opciones")
+assert PROMPTS["v14f1b"] != PROMPTS["v14f1"]
 
 # v9, 19-nov, orden de Martin, por la entrevista a Luna del 19-nov: cada fila es una parte del mensaje con su nexo, y las
 # partes de una misma cosa llevan el mismo numero de pedido. La fuente de verdad es el mensaje: no agrega, no inventa, no
@@ -316,7 +324,7 @@ ESQUEMAS["v10"] = {"type": "object", "additionalProperties": False, "required": 
     "textos": {"type": "array", "items": _S}}}
 ESQUEMAS["v11"] = ESQUEMAS["v10"]
 ESQUEMAS["v13"] = ESQUEMAS["v10"]
-ESQUEMAS["v14f1"] = ESQUEMAS["v14f3"] = ESQUEMAS["v10"]
+ESQUEMAS["v14f1"] = ESQUEMAS["v14f3"] = ESQUEMAS["v14f1b"] = ESQUEMAS["v10"]
 
 
 # ══ LAS CORRIDAS ═════════════════════════════════════════════════════════════
@@ -393,7 +401,7 @@ def pedir(corrida, prompt, texto):
         salida = json.loads(t[t.find("{"):t.rfind("}") + 1])
     except Exception:  # noqa: BLE001
         salida = None
-    if base in ("v10", "v11", "v13", "v14f1", "v14f3") and isinstance(salida, dict) and isinstance(salida.get("textos"), list):
+    if base in ("v10", "v11", "v13", "v14f1", "v14f3", "v14f1b") and isinstance(salida, dict) and isinstance(salida.get("textos"), list):
         # Cada texto es su linea: la vara lee la busqueda sin corchetes; el producto lleva el texto entero, para que
         # `llamada0_jerga.py` encuentre lo que quedo entre corchetes.
         salida["lineas"] = [{"fragmento": str(t), "producto": str(t), "condiciones": "", "destino": "",

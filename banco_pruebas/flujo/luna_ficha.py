@@ -81,7 +81,7 @@ def _f3_por_texto():
 
 def ficha(prompt, texto):
     """El vocabulario que va en el lugar de {ficha}: v14f1, el de la tienda entera; v14f3, el del mensaje."""
-    return _f1() if prompt == "v14f1" else _f3_por_texto()[texto]
+    return _f1() if prompt.startswith("v14f1") else _f3_por_texto()[texto]
 
 
 # ══ LA VARA ══════════════════════════════════════════════════════════════════
@@ -258,7 +258,7 @@ def medir(prompt, conj, msgs, voc, alias_rubro, runs, ver=False):
 def main():
     msgs, voc, alias_rubro, runs = cargar()
     ver = sys.argv[sys.argv.index("--ver") + 1] if "--ver" in sys.argv else None
-    prompts = ("v14f1", "v14f3", "v7", "v13")
+    prompts = ("v14f1", "v14f1b", "v14f3", "v7", "v13")
     for conj, nom in (("200", "LAS 200"), ("neg100", "LOS 100 NEGATIVOS")):
         print(f"\n{nom}")
         res = {p: medir(p, conj, msgs, voc, alias_rubro, runs) for p in prompts}
