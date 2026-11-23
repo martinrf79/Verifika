@@ -151,8 +151,9 @@ def cargar():
     runs = collections.defaultdict(dict)
     for x in open(MODELOS, encoding="utf-8"):
         r = json.loads(x)
-        if r["corrida"] == "luna" and r.get("salida"):
-            runs[r["prompt"]][(r["banco"], r["id"])] = r
+        if r["corrida"] in ("luna", "luna-none") and r.get("salida"):
+            # Sin razonamiento, 23-nov: el mismo prompt, otra columna.
+            runs[r["prompt"] + ("·none" if r["corrida"] == "luna-none" else "")][(r["banco"], r["id"])] = r
     return msgs, voc, alias_rubro, runs
 
 
@@ -258,7 +259,7 @@ def medir(prompt, conj, msgs, voc, alias_rubro, runs, ver=False):
 def main():
     msgs, voc, alias_rubro, runs = cargar()
     ver = sys.argv[sys.argv.index("--ver") + 1] if "--ver" in sys.argv else None
-    prompts = ("v14f1", "v14f1b", "v14f3", "v7", "v13")
+    prompts = ("v14f1", "v14f1b", "v14f1b·none", "v14f3", "v7", "v13")
     for conj, nom in (("200", "LAS 200"), ("neg100", "LOS 100 NEGATIVOS")):
         print(f"\n{nom}")
         res = {p: medir(p, conj, msgs, voc, alias_rubro, runs) for p in prompts}

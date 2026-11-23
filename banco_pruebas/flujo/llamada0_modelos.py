@@ -55,6 +55,9 @@ MODELOS = {
     "qwen": ("openrouter", "qwen/qwen3.8-flash", "none", 0.15, 0.47, 0.06),
     "qwen-low": ("openrouter", "qwen/qwen3.8-flash", "low", 0.15, 0.47, 0.02),
     "luna-medio": ("openrouter", "openai/gpt-6-luna", "medium", 0.10, 0.50, 0.08),
+    # 23-nov, orden de Martin: Luna sin razonamiento, para ver si baja la latencia sin perder rubros. En 20 mensajes,
+    # 1,45 s de mediana contra 3,4. Tope de 5 centavos para los 300.
+    "luna-none": ("openai", "gpt-6-luna", "none", 0.10, 0.50, 0.05),
 }
 TOPE_OPENROUTER = 0.20
 
