@@ -52,10 +52,12 @@ de la FICHA 83 quedó archivado: se vuelve a él con git revert.
 
 ### Lo que sigue
 
-**El pase se hizo el 17-nov.** El 21-nov, en el banco: Luna separa y traduce con la ficha del vocabulario de la tienda,
-FICHA 104, `arquitectura/FICHA_104_luna_traduce_con_la_ficha.md`; lo que no traduce va a los embeddings y a Jev de la
-FICHA 103; en el orden de `PENDIENTE.md`; el bot sigue con la FICHA 102. Cada arreglo
-queda en producción. Lo medido antes, de la llamada 0 en la FICHA 100; los nexos, en las FICHAS 96 a 99.
+**El pase se hizo el 17-nov.** En el banco, el 21-nov, Luna separa y traduce con la ficha del vocabulario de la
+tienda, FICHA 104. El 23-nov, el traductor que verifica elige entre los 15 candidatos con las filas recortadas y
+reemplaza a Jev y al nexo de condición, FICHA 105, `arquitectura/FICHA_105_traductor_que_verifica.md`; ahí están
+también la regla de validez de toda prueba y cómo usar Sonnet sin gastar de más. Se sigue el orden de `PENDIENTE.md`,
+y el bot sigue con la FICHA 102. Cada arreglo queda en producción. Lo medido antes: la llamada 0 en la FICHA 100 y los
+nexos en las FICHAS 96 a 99.
 
 El resto está en `PENDIENTE.md`. Cada arreglo se mide con `tests/test_flujo_nuevo.py` sin modelo y con corridas de
 `segunda.py --correr`. Si el código cambia lo que lee el modelo, se graba una corrida nueva.

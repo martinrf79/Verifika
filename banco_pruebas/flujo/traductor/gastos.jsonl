@@ -1,0 +1,185 @@
+{"que": "embedding V01", "clave": "gratis", "tokens": 6, "usd_nominal": 9e-07}
+{"que": "embedding V02", "clave": "gratis", "tokens": 6, "usd_nominal": 9e-07}
+{"que": "embedding V03", "clave": "gratis", "tokens": 6, "usd_nominal": 9e-07}
+{"que": "embedding V04", "clave": "gratis", "tokens": 9, "usd_nominal": 1.3e-06}
+{"que": "embedding V05", "clave": "gratis", "tokens": 11, "usd_nominal": 1.6e-06}
+{"que": "embedding V06", "clave": "gratis", "tokens": 7, "usd_nominal": 1.1e-06}
+{"que": "embedding V07", "clave": "gratis", "tokens": 13, "usd_nominal": 1.9e-06}
+{"que": "embedding V08", "clave": "gratis", "tokens": 24, "usd_nominal": 3.6e-06}
+{"que": "embedding V09", "clave": "gratis", "tokens": 9, "usd_nominal": 1.3e-06}
+{"que": "embedding V10", "clave": "gratis", "tokens": 10, "usd_nominal": 1.5e-06}
+{"que": "embedding V11", "clave": "gratis", "tokens": 7, "usd_nominal": 1.1e-06}
+{"que": "embedding V12", "clave": "gratis", "tokens": 9, "usd_nominal": 1.3e-06}
+{"que": "embedding V13", "clave": "gratis", "tokens": 12, "usd_nominal": 1.8e-06}
+{"que": "embedding V14", "clave": "gratis", "tokens": 5, "usd_nominal": 8e-07}
+{"que": "embedding V15", "clave": "gratis", "tokens": 12, "usd_nominal": 1.8e-06}
+{"que": "embedding V16", "clave": "gratis", "tokens": 15, "usd_nominal": 2.3e-06}
+{"que": "embedding V17", "clave": "gratis", "tokens": 6, "usd_nominal": 9e-07}
+{"que": "embedding V18", "clave": "gratis", "tokens": 10, "usd_nominal": 1.5e-06}
+{"que": "embedding V19", "clave": "gratis", "tokens": 9, "usd_nominal": 1.3e-06}
+{"que": "embedding V20", "clave": "gratis", "tokens": 10, "usd_nominal": 1.5e-06}
+{"que": "embedding V21", "clave": "gratis", "tokens": 7, "usd_nominal": 1.1e-06}
+{"que": "embedding V22", "clave": "gratis", "tokens": 13, "usd_nominal": 1.9e-06}
+{"que": "embedding V23", "clave": "gratis", "tokens": 10, "usd_nominal": 1.5e-06}
+{"que": "embedding V24", "clave": "gratis", "tokens": 8, "usd_nominal": 1.2e-06}
+{"que": "embedding V25", "clave": "gratis", "tokens": 16, "usd_nominal": 2.4e-06}
+{"que": "embedding V26", "clave": "gratis", "tokens": 10, "usd_nominal": 1.5e-06}
+{"que": "embedding V27", "clave": "gratis", "tokens": 14, "usd_nominal": 2.1e-06}
+{"que": "embedding V28", "clave": "gratis", "tokens": 10, "usd_nominal": 1.5e-06}
+{"que": "embedding V29", "clave": "gratis", "tokens": 15, "usd_nominal": 2.3e-06}
+{"que": "embedding V30", "clave": "gratis", "tokens": 13, "usd_nominal": 1.9e-06}
+{"que": "embedding V31", "clave": "gratis", "tokens": 5, "usd_nominal": 8e-07}
+{"que": "embedding V32", "clave": "gratis", "tokens": 7, "usd_nominal": 1.1e-06}
+{"que": "embedding V33", "clave": "gratis", "tokens": 18, "usd_nominal": 2.7e-06}
+{"que": "embedding V34", "clave": "gratis", "tokens": 8, "usd_nominal": 1.2e-06}
+{"que": "embedding V35", "clave": "gratis", "tokens": 25, "usd_nominal": 3.8e-06}
+{"que": "embedding V36", "clave": "gratis", "tokens": 15, "usd_nominal": 2.3e-06}
+{"que": "embedding V37", "clave": "gratis", "tokens": 11, "usd_nominal": 1.6e-06}
+{"que": "embedding V38", "clave": "gratis", "tokens": 12, "usd_nominal": 1.8e-06}
+{"que": "embedding V39", "clave": "gratis", "tokens": 7, "usd_nominal": 1.1e-06}
+{"que": "embedding V40", "clave": "gratis", "tokens": 9, "usd_nominal": 1.3e-06}
+{"que": "embedding V41", "clave": "gratis", "tokens": 15, "usd_nominal": 2.3e-06}
+{"que": "embedding V42", "clave": "gratis", "tokens": 9, "usd_nominal": 1.3e-06}
+{"que": "embedding V43", "clave": "gratis", "tokens": 13, "usd_nominal": 1.9e-06}
+{"que": "embedding V44", "clave": "gratis", "tokens": 15, "usd_nominal": 2.3e-06}
+{"que": "embedding V45", "clave": "gratis", "tokens": 19, "usd_nominal": 2.9e-06}
+{"que": "embedding V46", "clave": "gratis", "tokens": 12, "usd_nominal": 1.8e-06}
+{"que": "embedding V47", "clave": "gratis", "tokens": 11, "usd_nominal": 1.6e-06}
+{"que": "embedding V48", "clave": "gratis", "tokens": 10, "usd_nominal": 1.5e-06}
+{"que": "extractor V01", "clave": "paga", "tin": 512, "tout": 123, "usd_nominal": 0.000313, "usd_real": 0.000313}
+{"que": "verificador V01", "clave": "paga", "tin": 4399, "tout": 1327, "usd_nominal": 0.00309, "usd_real": 0.00309}
+{"que": "extractor V13", "clave": "paga", "tin": 520, "tout": 102, "usd_nominal": 0.000283, "usd_real": 0.000283}
+{"que": "verificador V13", "clave": "paga", "tin": 4574, "tout": 1886, "usd_nominal": 0.003973, "usd_real": 0.003973}
+{"que": "extractor V14", "clave": "paga", "tin": 511, "tout": 122, "usd_nominal": 0.000311, "usd_real": 0.000311}
+{"que": "extractor V14", "clave": "paga", "tin": 511, "tout": 122, "usd_nominal": 0.000311, "usd_real": 0.000311}
+{"que": "verificador V14", "clave": "paga", "tin": 4677, "tout": 646, "usd_nominal": 0.002138, "usd_real": 0.002138}
+{"que": "extractor V01", "clave": "paga", "tin": 512, "tout": 123, "usd_nominal": 0.000313, "usd_real": 0.000313}
+{"que": "verificador V01", "clave": "paga", "tin": 4399, "tout": 1327, "usd_nominal": 0.00309, "usd_real": 0.00309}
+{"que": "extractor V02", "clave": "paga", "tin": 512, "tout": 122, "usd_nominal": 0.000311, "usd_real": 0.000311}
+{"que": "verificador V02", "clave": "paga", "tin": 4416, "tout": 1358, "usd_nominal": 0.003141, "usd_real": 0.003141}
+{"que": "extractor V03", "clave": "paga", "tin": 513, "tout": 123, "usd_nominal": 0.000313, "usd_real": 0.000313}
+{"que": "verificador V03", "clave": "paga", "tin": 4382, "tout": 1360, "usd_nominal": 0.003135, "usd_real": 0.003135}
+{"que": "extractor V04", "clave": "paga", "tin": 512, "tout": 119, "usd_nominal": 0.000307, "usd_real": 0.000307}
+{"que": "verificador V04", "clave": "paga", "tin": 5216, "tout": 693, "usd_nominal": 0.002344, "usd_real": 0.002344}
+{"que": "extractor V05", "clave": "paga", "tin": 515, "tout": 126, "usd_nominal": 0.000318, "usd_real": 0.000318}
+{"que": "extractor V06", "clave": "paga", "tin": 513, "tout": 124, "usd_nominal": 0.000314, "usd_real": 0.000314}
+{"que": "verificador V06", "clave": "paga", "tin": 4390, "tout": 1268, "usd_nominal": 0.002999, "usd_real": 0.002999}
+{"que": "extractor V07", "clave": "paga", "tin": 517, "tout": 120, "usd_nominal": 0.000309, "usd_real": 0.000309}
+{"que": "verificador V07", "clave": "paga", "tin": 4824, "tout": 667, "usd_nominal": 0.002207, "usd_real": 0.002207}
+{"que": "extractor V08", "clave": "paga", "tin": 529, "tout": 121, "usd_nominal": 0.000314, "usd_real": 0.000314}
+{"que": "verificador V08", "clave": "paga", "tin": 4710, "tout": 695, "usd_nominal": 0.00222, "usd_real": 0.00222}
+{"que": "extractor V09", "clave": "paga", "tin": 514, "tout": 130, "usd_nominal": 0.000324, "usd_real": 0.000324}
+{"que": "verificador V09", "clave": "paga", "tin": 4565, "tout": 1355, "usd_nominal": 0.003174, "usd_real": 0.003174}
+{"que": "extractor V10", "clave": "paga", "tin": 513, "tout": 123, "usd_nominal": 0.000313, "usd_real": 0.000313}
+{"que": "extractor V11", "clave": "paga", "tin": 511, "tout": 123, "usd_nominal": 0.000312, "usd_real": 0.000312}
+{"que": "extractor V12", "clave": "paga", "tin": 516, "tout": 127, "usd_nominal": 0.00032, "usd_real": 0.00032}
+{"que": "extractor V13", "clave": "paga", "tin": 520, "tout": 102, "usd_nominal": 0.000283, "usd_real": 0.000283}
+{"que": "verificador V13", "clave": "paga", "tin": 4574, "tout": 1886, "usd_nominal": 0.003973, "usd_real": 0.003973}
+{"que": "extractor V14", "clave": "paga", "tin": 511, "tout": 122, "usd_nominal": 0.000311, "usd_real": 0.000311}
+{"que": "verificador V14", "clave": "paga", "tin": 4677, "tout": 646, "usd_nominal": 0.002138, "usd_real": 0.002138}
+{"que": "extractor V15", "clave": "paga", "tin": 522, "tout": 130, "usd_nominal": 0.000325, "usd_real": 0.000325}
+{"que": "verificador V15", "clave": "paga", "tin": 4902, "tout": 1265, "usd_nominal": 0.003123, "usd_real": 0.003123}
+{"que": "extractor V16", "clave": "paga", "tin": 521, "tout": 125, "usd_nominal": 0.000318, "usd_real": 0.000318}
+{"que": "verificador V16", "clave": "paga", "tin": 4680, "tout": 680, "usd_nominal": 0.00219, "usd_real": 0.00219}
+{"que": "extractor V17", "clave": "paga", "tin": 511, "tout": 123, "usd_nominal": 0.000312, "usd_real": 0.000312}
+{"que": "verificador V17", "clave": "paga", "tin": 4688, "tout": 647, "usd_nominal": 0.002142, "usd_real": 0.002142}
+{"que": "extractor V18", "clave": "paga", "tin": 516, "tout": 126, "usd_nominal": 0.000318, "usd_real": 0.000318}
+{"que": "extractor V19", "clave": "paga", "tin": 516, "tout": 126, "usd_nominal": 0.000318, "usd_real": 0.000318}
+{"que": "extractor V20", "clave": "paga", "tin": 514, "tout": 125, "usd_nominal": 0.000316, "usd_real": 0.000316}
+{"que": "extractor V21", "clave": "paga", "tin": 512, "tout": 123, "usd_nominal": 0.000313, "usd_real": 0.000313}
+{"que": "verificador V21", "clave": "paga", "tin": 5575, "tout": 1360, "usd_nominal": 0.003434, "usd_real": 0.003434}
+{"que": "extractor V22", "clave": "paga", "tin": 522, "tout": 124, "usd_nominal": 0.000316, "usd_real": 0.000316}
+{"que": "verificador V22", "clave": "paga", "tin": 5558, "tout": 1306, "usd_nominal": 0.003348, "usd_real": 0.003348}
+{"que": "extractor V23", "clave": "paga", "tin": 514, "tout": 93, "usd_nominal": 0.000268, "usd_real": 0.000268}
+{"que": "verificador V23", "clave": "paga", "tin": 4729, "tout": 1354, "usd_nominal": 0.003213, "usd_real": 0.003213}
+{"que": "extractor V24", "clave": "paga", "tin": 511, "tout": 92, "usd_nominal": 0.000266, "usd_real": 0.000266}
+{"que": "verificador V24", "clave": "paga", "tin": 5017, "tout": 1360, "usd_nominal": 0.003294, "usd_real": 0.003294}
+{"que": "extractor V25", "clave": "paga", "tin": 527, "tout": 134, "usd_nominal": 0.000333, "usd_real": 0.000333}
+{"que": "verificador V25", "clave": "paga", "tin": 5529, "tout": 1996, "usd_nominal": 0.004376, "usd_real": 0.004376}
+{"que": "extractor V26", "clave": "paga", "tin": 520, "tout": 127, "usd_nominal": 0.00032, "usd_real": 0.00032}
+{"que": "verificador V26", "clave": "paga", "tin": 4871, "tout": 695, "usd_nominal": 0.00226, "usd_real": 0.00226}
+{"que": "extractor V27", "clave": "paga", "tin": 520, "tout": 125, "usd_nominal": 0.000318, "usd_real": 0.000318}
+{"que": "extractor V28", "clave": "paga", "tin": 515, "tout": 123, "usd_nominal": 0.000313, "usd_real": 0.000313}
+{"que": "verificador V28", "clave": "paga", "tin": 5181, "tout": 1965, "usd_nominal": 0.004243, "usd_real": 0.004243}
+{"que": "extractor V29", "clave": "paga", "tin": 524, "tout": 126, "usd_nominal": 0.00032, "usd_real": 0.00032}
+{"que": "verificador V29", "clave": "paga", "tin": 4590, "tout": 724, "usd_nominal": 0.002233, "usd_real": 0.002233}
+{"que": "extractor V30", "clave": "paga", "tin": 519, "tout": 131, "usd_nominal": 0.000326, "usd_real": 0.000326}
+{"que": "verificador V30", "clave": "paga", "tin": 4590, "tout": 2005, "usd_nominal": 0.004155, "usd_real": 0.004155}
+{"que": "extractor V31", "clave": "paga", "tin": 514, "tout": 130, "usd_nominal": 0.000324, "usd_real": 0.000324}
+{"que": "extractor V32", "clave": "paga", "tin": 515, "tout": 126, "usd_nominal": 0.000318, "usd_real": 0.000318}
+{"que": "extractor V33", "clave": "paga", "tin": 527, "tout": 122, "usd_nominal": 0.000315, "usd_real": 0.000315}
+{"que": "extractor V34", "clave": "paga", "tin": 512, "tout": 125, "usd_nominal": 0.000316, "usd_real": 0.000316}
+{"que": "extractor V35", "clave": "paga", "tin": 530, "tout": 130, "usd_nominal": 0.000327, "usd_real": 0.000327}
+{"que": "verificador V35", "clave": "paga", "tin": 4576, "tout": 2588, "usd_nominal": 0.005026, "usd_real": 0.005026}
+{"que": "extractor V36", "clave": "paga", "tin": 520, "tout": 128, "usd_nominal": 0.000322, "usd_real": 0.000322}
+{"que": "extractor V37", "clave": "paga", "tin": 515, "tout": 126, "usd_nominal": 0.000318, "usd_real": 0.000318}
+{"que": "verificador V37", "clave": "paga", "tin": 4551, "tout": 678, "usd_nominal": 0.002155, "usd_real": 0.002155}
+{"que": "extractor V38", "clave": "paga", "tin": 515, "tout": 93, "usd_nominal": 0.000268, "usd_real": 0.000268}
+{"que": "verificador V38", "clave": "paga", "tin": 5041, "tout": 633, "usd_nominal": 0.00221, "usd_real": 0.00221}
+{"que": "extractor V39", "clave": "paga", "tin": 513, "tout": 122, "usd_nominal": 0.000311, "usd_real": 0.000311}
+{"que": "extractor V40", "clave": "paga", "tin": 516, "tout": 130, "usd_nominal": 0.000324, "usd_real": 0.000324}
+{"que": "verificador V40", "clave": "paga", "tin": 4605, "tout": 1246, "usd_nominal": 0.00302, "usd_real": 0.00302}
+{"que": "extractor V41", "clave": "paga", "tin": 522, "tout": 127, "usd_nominal": 0.000321, "usd_real": 0.000321}
+{"que": "extractor V42", "clave": "paga", "tin": 517, "tout": 99, "usd_nominal": 0.000278, "usd_real": 0.000278}
+{"que": "extractor V43", "clave": "paga", "tin": 518, "tout": 125, "usd_nominal": 0.000317, "usd_real": 0.000317}
+{"que": "extractor V44", "clave": "paga", "tin": 522, "tout": 130, "usd_nominal": 0.000325, "usd_real": 0.000325}
+{"que": "verificador V44", "clave": "paga", "tin": 4578, "tout": 1356, "usd_nominal": 0.003178, "usd_real": 0.003178}
+{"que": "extractor V45", "clave": "paga", "tin": 523, "tout": 132, "usd_nominal": 0.000329, "usd_real": 0.000329}
+{"que": "verificador V45", "clave": "paga", "tin": 6534, "tout": 1364, "usd_nominal": 0.00368, "usd_real": 0.00368}
+{"que": "extractor V46", "clave": "paga", "tin": 517, "tout": 127, "usd_nominal": 0.00032, "usd_real": 0.00032}
+{"que": "verificador V46", "clave": "paga", "tin": 4402, "tout": 1299, "usd_nominal": 0.003049, "usd_real": 0.003049}
+{"que": "extractor V47", "clave": "paga", "tin": 519, "tout": 133, "usd_nominal": 0.000329, "usd_real": 0.000329}
+{"que": "verificador V47", "clave": "paga", "tin": 4538, "tout": 1243, "usd_nominal": 0.002999, "usd_real": 0.002999}
+{"que": "extractor V48", "clave": "paga", "tin": 515, "tout": 98, "usd_nominal": 0.000276, "usd_real": 0.000276}
+{"que": "verificador V48", "clave": "paga", "tin": 4717, "tout": 1955, "usd_nominal": 0.004112, "usd_real": 0.004112}
+{"que": "podado V01", "clave": "paga", "tin": 1812, "tout": 123, "usd_nominal": 0.000638, "usd_real": 0.000638}
+{"que": "podado V02", "clave": "paga", "tin": 1827, "tout": 140, "usd_nominal": 0.000667, "usd_real": 0.000667}
+{"que": "podado V03", "clave": "paga", "tin": 1810, "tout": 124, "usd_nominal": 0.000638, "usd_real": 0.000638}
+{"que": "podado V01", "clave": "paga", "tin": 1812, "tout": 123, "usd_nominal": 0.000638, "usd_real": 0.000638}
+{"que": "podado V02", "clave": "paga", "tin": 1827, "tout": 140, "usd_nominal": 0.000667, "usd_real": 0.000667}
+{"que": "podado V03", "clave": "paga", "tin": 1810, "tout": 124, "usd_nominal": 0.000638, "usd_real": 0.000638}
+{"que": "podado V04", "clave": "paga", "tin": 2060, "tout": 103, "usd_nominal": 0.000669, "usd_real": 0.000669}
+{"que": "podado V05", "clave": "paga", "tin": 1847, "tout": 162, "usd_nominal": 0.000705, "usd_real": 0.000705}
+{"que": "podado V06", "clave": "paga", "tin": 1808, "tout": 143, "usd_nominal": 0.000666, "usd_real": 0.000666}
+{"que": "podado V07", "clave": "paga", "tin": 1758, "tout": 56, "usd_nominal": 0.000523, "usd_real": 0.000523}
+{"que": "podado V08", "clave": "paga", "tin": 1911, "tout": 157, "usd_nominal": 0.000713, "usd_real": 0.000713}
+{"que": "podado V09", "clave": "paga", "tin": 1904, "tout": 401, "usd_nominal": 0.001077, "usd_real": 0.001077}
+{"que": "podado V10", "clave": "paga", "tin": 1839, "tout": 92, "usd_nominal": 0.000598, "usd_real": 0.000598}
+{"que": "podado V11", "clave": "paga", "tin": 1854, "tout": 92, "usd_nominal": 0.000602, "usd_real": 0.000602}
+{"que": "podado V12", "clave": "paga", "tin": 1895, "tout": 84, "usd_nominal": 0.0006, "usd_real": 0.0006}
+{"que": "podado V13", "clave": "paga", "tin": 1909, "tout": 83, "usd_nominal": 0.000602, "usd_real": 0.000602}
+{"que": "podado V14", "clave": "paga", "tin": 2127, "tout": 51, "usd_nominal": 0.000608, "usd_real": 0.000608}
+{"que": "podado V15", "clave": "paga", "tin": 2027, "tout": 102, "usd_nominal": 0.00066, "usd_real": 0.00066}
+{"que": "podado V16", "clave": "paga", "tin": 2143, "tout": 103, "usd_nominal": 0.00069, "usd_real": 0.00069}
+{"que": "podado V17", "clave": "paga", "tin": 2143, "tout": 52, "usd_nominal": 0.000614, "usd_real": 0.000614}
+{"que": "podado V18", "clave": "paga", "tin": 1816, "tout": 141, "usd_nominal": 0.000665, "usd_real": 0.000665}
+{"que": "podado V19", "clave": "paga", "tin": 1958, "tout": 118, "usd_nominal": 0.000666, "usd_real": 0.000666}
+{"que": "podado V20", "clave": "paga", "tin": 1815, "tout": 106, "usd_nominal": 0.000613, "usd_real": 0.000613}
+{"que": "podado V21", "clave": "paga", "tin": 1932, "tout": 123, "usd_nominal": 0.000668, "usd_real": 0.000668}
+{"que": "podado V22", "clave": "paga", "tin": 1931, "tout": 133, "usd_nominal": 0.000682, "usd_real": 0.000682}
+{"que": "podado V23", "clave": "paga", "tin": 1967, "tout": 116, "usd_nominal": 0.000666, "usd_real": 0.000666}
+{"que": "podado V24", "clave": "paga", "tin": 1836, "tout": 123, "usd_nominal": 0.000643, "usd_real": 0.000643}
+{"que": "podado V25", "clave": "paga", "tin": 1922, "tout": 585, "usd_nominal": 0.001358, "usd_real": 0.001358}
+{"que": "podado V26", "clave": "paga", "tin": 1977, "tout": 427, "usd_nominal": 0.001135, "usd_real": 0.001135}
+{"que": "podado V27", "clave": "paga", "tin": 1871, "tout": 122, "usd_nominal": 0.000651, "usd_real": 0.000651}
+{"que": "podado V28", "clave": "paga", "tin": 1858, "tout": 99, "usd_nominal": 0.000613, "usd_real": 0.000613}
+{"que": "podado V29", "clave": "paga", "tin": 1926, "tout": 538, "usd_nominal": 0.001288, "usd_real": 0.001288}
+{"que": "podado V30", "clave": "paga", "tin": 1877, "tout": 102, "usd_nominal": 0.000622, "usd_real": 0.000622}
+{"que": "podado V31", "clave": "paga", "tin": 1899, "tout": 82, "usd_nominal": 0.000598, "usd_real": 0.000598}
+{"que": "podado V32", "clave": "paga", "tin": 1819, "tout": 83, "usd_nominal": 0.000579, "usd_real": 0.000579}
+{"que": "podado V33", "clave": "paga", "tin": 1899, "tout": 172, "usd_nominal": 0.000733, "usd_real": 0.000733}
+{"que": "podado V34", "clave": "paga", "tin": 1862, "tout": 143, "usd_nominal": 0.00068, "usd_real": 0.00068}
+{"que": "podado V35", "clave": "paga", "tin": 1921, "tout": 641, "usd_nominal": 0.001442, "usd_real": 0.001442}
+{"que": "podado V36", "clave": "paga", "tin": 1898, "tout": 110, "usd_nominal": 0.000639, "usd_real": 0.000639}
+{"que": "podado V37", "clave": "paga", "tin": 1653, "tout": 428, "usd_nominal": 0.001055, "usd_real": 0.001055}
+{"que": "podado V38", "clave": "paga", "tin": 2044, "tout": 59, "usd_nominal": 0.000599, "usd_real": 0.000599}
+{"que": "podado V39", "clave": "paga", "tin": 1808, "tout": 115, "usd_nominal": 0.000624, "usd_real": 0.000624}
+{"que": "podado V40", "clave": "paga", "tin": 1829, "tout": 103, "usd_nominal": 0.000612, "usd_real": 0.000612}
+{"que": "podado V41", "clave": "paga", "tin": 1917, "tout": 106, "usd_nominal": 0.000638, "usd_real": 0.000638}
+{"que": "podado V42", "clave": "paga", "tin": 1879, "tout": 106, "usd_nominal": 0.000629, "usd_real": 0.000629}
+{"que": "podado V43", "clave": "paga", "tin": 1843, "tout": 94, "usd_nominal": 0.000602, "usd_real": 0.000602}
+{"que": "podado V44", "clave": "paga", "tin": 1923, "tout": 401, "usd_nominal": 0.001082, "usd_real": 0.001082}
+{"que": "podado V45", "clave": "paga", "tin": 2282, "tout": 577, "usd_nominal": 0.001436, "usd_real": 0.001436}
+{"que": "podado V46", "clave": "paga", "tin": 1818, "tout": 98, "usd_nominal": 0.000602, "usd_real": 0.000602}
+{"que": "podado V47", "clave": "paga", "tin": 1907, "tout": 84, "usd_nominal": 0.000603, "usd_real": 0.000603}
+{"que": "podado V48", "clave": "paga", "tin": 1916, "tout": 149, "usd_nominal": 0.000702, "usd_real": 0.000702}
