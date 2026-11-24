@@ -4,7 +4,7 @@ Lo escribe `python3 banco_pruebas/diagrama.py` leyendo `app/`. `tests/test_diagr
 
 Limites: analisis estatico. Una referencia es un nombre que aparece en el codigo, no una llamada probada. Lo que se llama por `getattr`, o por texto, no se ve. Columna ALCANCE: `si` = alguna entrada la alcanza; `?` = ninguna la alcanza pero su nombre aparece escrito en otra parte de `app/`, hay que mirarla; `-` = ninguna la alcanza y su nombre no aparece en ningun otro lado de `app/`. Un `-` no prueba que sobre: puede usarla un script o un test.
 
-Funciones y clases de nivel superior: 532. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
+Funciones y clases de nivel superior: 533. Entradas: `process_message`, `_declarar_config_efectiva`, `_precalentar_cache`, `health`, `health_tienda`, `root`, `telegram_webhook`, `upload_catalog`, `upload_faq`, `whatsapp_verify`, `whatsapp_webhook`
 
 ## Nivel 1 — el turno
 
@@ -15,7 +15,7 @@ flowchart LR
   C3["3 MEMORIA<br/>34 funciones"]
   C4["4 CONTEXTO<br/>41 funciones"]
   C5["5 DOS LLAMADAS<br/>19 funciones"]
-  C6["6 BUSCAR<br/>190 funciones"]
+  C6["6 BUSCAR<br/>191 funciones"]
   C7["7 PEDIDO Y CUENTA<br/>156 funciones"]
   C8["8 COBRO<br/>20 funciones"]
   C9["9 RESPUESTA Y CONTROL<br/>16 funciones"]
@@ -213,7 +213,7 @@ La llamada 0 que separa y traduce, la segunda que retoca y manda los comandos, y
 
 ### 6 BUSCAR
 
-Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 190 funciones, 3697 lineas.
+Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los filtros y la compatibilidad. 191 funciones, 3699 lineas.
 
 | modulo | funcion | lineas | nombrada desde las cajas | alcance |
 |---|---|---|---|---|
@@ -233,6 +233,7 @@ Los cinco nexos con sus embeddings y jev; el catalogo, la faq, el motor, los fil
 | core.coherencia_datos | `_filas` | 6 | · | si |
 | core.coherencia_datos | `_clave` | 3 | · | si |
 | core.coherencia_datos | `_choca` | 11 | · | si |
+| core.coherencia_datos | `valores_del_nombre` | 2 | · | si |
 | core.coherencia_datos | `modelo_contra_planilla` | 15 | · | si |
 | core.coherencia_datos | `prosa_despues_de_ingerir` | 15 | · | si |
 | core.coherencia_datos | `compat_fuera_de_vocabulario` | 19 | · | si |

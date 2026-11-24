@@ -3,8 +3,8 @@ import csv
 import os
 
 from app.core.contexto_turno import tienda_por_defecto
-from app.core.fuente_producto import (_norm, _valores_de, specs_config,
-                                       specs_por_modelo)
+from app.core.fuente_producto import (_UNIDADES_FAMILIA, _norm, _valores_de,
+                                       specs_config, specs_por_modelo)
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -43,13 +43,20 @@ def _choca(valores_a: set, valores_b: set) -> list:
 
 
 # ── 1. el modelo contra su planilla curada ──────────────────────────────────
+# En el nombre de un modelo, un numero pegado a letras es casi siempre su codigo: Archer AX23, RTX 4080, G305. Solo es un
+# dato si lleva unidad, "16GB", "750W", "144Hz", o si es el tipo de memoria, "DDR5". Medido el 24-nov: el chequeo leia
+# AX23 como "23 AX" de wifi y daba cinco falsas alarmas en los routers al cargar el catalogo.
+def valores_del_nombre(modelo: str) -> set:
+    return {(f, n) for f, n in _valores_de(modelo) if f in _UNIDADES_FAMILIA or f == "ddr"}
+
+
 def modelo_contra_planilla(tienda_id: str | None = None) -> list:
     """El nombre del MODELO manda: es lo que identifica al producto real."""
     tienda_id = tienda_id or tienda_por_defecto()
     problemas = []
     for clave, specs in specs_por_modelo(tienda_id).items():
         _marca, modelo, _cat = clave
-        del_nombre = _valores_de(modelo)
+        del_nombre = valores_del_nombre(modelo)
         if not del_nombre:
             continue
         for sid, valor in specs.items():

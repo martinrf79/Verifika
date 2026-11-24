@@ -140,7 +140,7 @@ nombre y se anota en el guion, como la corrida 1.
 
 ## 8. Lo pendiente de Martin
 
-- **El aviso de la carga del catalogo**, "el modelo contra su planilla: 5": son falsas alarmas del chequeo de
-  `app/core/coherencia_datos.py`, que lee los codigos Archer AX23, AX55, AX73, Tenda AC10 y AC8 como velocidad del
-  wifi. El arreglo de clase es una lista de una palabra, DDR, y por eso se consulta. FICHA 106, seccion 7.
+- **El aviso de la carga del catalogo** quedo arreglado el 24-nov, con el ok de Martin: del nombre del modelo solo
+  cuenta lo que lleva unidad o el tipo de memoria DDR, `coherencia_datos.valores_del_nombre`, con su test
+  `tests/test_coherencia_modelo.py`. La proxima carga tiene que salir sin incoherencias.
 - **El cableado en `app/`**, cuando la seccion 4 lo deje listo.
