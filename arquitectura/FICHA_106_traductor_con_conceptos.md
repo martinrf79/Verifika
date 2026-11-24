@@ -99,7 +99,18 @@ se cumple. Lo que la fuente no trae no se infiere: se dice que no hay dato.
      para fijar umbrales.
    - Lo que el examen muestra de la fuente real: casi todo es rubro, marca, modelo, orden y cantidad; atributos 17,
      plataformas 2 y compatibilidad 2. La jerga dificil de esos casilleros esta en los bancos escritos, no en lo real.
-3. **SIGUE: la memoria verificada**, con sus controles. Se mide sobre frases repetidas del repo.
+   - **La linea de base y tres arreglos, 24-nov**, `examen/plan.md`, `medir_reglas.py` y `comparar.py`: el resolvedor
+     de `reglas/` contra el examen y las tres muestras de antes; entra un cambio solo si no empeora en ninguna. Sin
+     dudosas, en las frases de un pedido del examen, acierta, repregunta, erra: base 55, 20, 21; hoy 37, 48, 11.
+     - La causa mayor: e5 chico pasa 0,9 con pedazos cortos, "rosario" es rosado, "rio" rojo, "2" es 2K.
+     - Entraron: un numero suelto no va a los embeddings; una palabra que la base no conoce va a lo dudoso, no a un
+       concepto; "no hay" solo con la frase entendida entera. Bajan los errores en las cuatro y suben las repreguntas,
+       que son el verificador.
+     - No entraron: `numeros.py` en el filtro no movio nada; el nexo de nombrado del bot sobre la frase cruda empeora
+       en las cuatro, porque espera la linea limpia de la llamada 0: relleno como modelo, dos modelos juntos, la
+       negacion. Va con la cascada, paso 7.
+     - El examen se miro para hallar estas causas: sus numeros pesan menos que los de las otras tres.
+3. **SIGUE: la memoria verificada**, con sus controles. Se mide sobre frases repetidas del repo y contra el examen.
 4. **La jerga por tandas:** el repo primero; despues sintetica que escribe Sonnet por personas, un abuelo, un gamer,
    alguien apurado, con errores de tipeo; despues expresiones de foros publicos. Cada tanda en el mismo formato y medida
    contra el examen. El techo: cuando sumar un 20% mas de frases sube menos de un punto, se para. Se estima entre 20 y 50
