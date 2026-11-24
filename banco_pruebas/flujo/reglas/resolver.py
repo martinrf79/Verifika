@@ -51,17 +51,35 @@ COLORES = {c for c, conds, _ in B.BASE if conds[0][0] == "color"}
 VISTA = {k: B.vista(k) for k in K.MOD}
 MEMO = {}
 
+UNIDAD_MOD = re.compile(r"^\d+(gb|tb|w|hz|mhz|mah)$")
 # ── marcas y modelos, por codigo ────────────────────────────────────────────────────────────────────────────
 MARCAS = {B.nrm(k[1]): k[1] for k in K.MOD}
 NOVENDE = {B.nrm(w) for w in json.load(open(os.path.join(AQUI, "../../../data/clientes/verifika_prod/no_vendidas.json"),
                                             encoding="utf-8"))["no_vendidas"]}
-MODELOS = {}  # token o nombre normalizado -> claves
+# Las palabras que nombran un modelo, con el calculo del nexo de nombrado del bot: el nombre propio del rubro, que no
+# esta en descripciones ni atributos, "kumara", y no "gaming"; y todo codigo de letras y numeros del nombre, "i5",
+# "ddr4", "m4", salvo las medidas, "16gb". Varias palabras del mismo modelo acotan: "nitro" e "i5" son la Nitro 5 i5.
+sys.path.insert(0, os.path.join(AQUI, "..", "..", ".."))
+from app.core.flujo.nuevo import rubro as NRB  # noqa: E402
+from app.core.flujo.nuevo.nombrado import Nexo as _Nexo  # noqa: E402
+
+
+class _Idx:
+    tid = "verifika_prod"
+    filas, alias, _, _m = NRB.fuente(tid)
+
+
+NOMBRES = {r: R["nombres"] for r, R in _Nexo(_Idx).rub.items()}
+MODELOS = {}  # nombre entero o palabra de identidad, normalizados -> claves
+MEDIDAS = {}  # una medida del nombre, "16gb", acota los modelos ya nombrados; sola no nombra
 for k in K.MOD:
     n = B.nrm(k[2])
     MODELOS.setdefault(n, set()).add(k)
-    t0 = n.split()[0]
-    if re.search(r"\d", t0) or len(t0) >= 5:
-        MODELOS.setdefault(t0, set()).add(k)
+    for t in n.split():
+        if UNIDAD_MOD.match(t):
+            MEDIDAS.setdefault(t, set()).add(k)
+        elif (re.search(r"\d", t) and re.search(r"[a-z]", t)) or (t in NOMBRES.get(k[0], ()) and len(t) >= 4):
+            MODELOS.setdefault(t, set()).add(k)
 CONOCIDAS = {w for _, _, e in ENT for w in e.split()} | {w for x in NOVENDE for w in x.split()}
 CONOC_LISTA = sorted(CONOCIDAS)
 UNIDAD = re.compile(r"^\d+(gb|tb|hz|mm|w|mah|k|p|lucas?|mil)?$")
@@ -90,7 +108,7 @@ def trozos(ts):
 def resolver(fr, alto, bajo, topes=None):
     ts = tokens(fr)
     usado = [False] * len(ts)
-    marcas, modelos, desconocido, sin_marca = set(), set(), [], set()
+    marcas, modelos, desconocido, sin_marca, grupos = set(), set(), [], set(), []
     # lo que la tienda no vende, por palabra exacta de no_vendidas.json; no cuenta si es para que sirve, "para la play 5"
     novende = []
     for n in range(3, 0, -1):
@@ -114,16 +132,22 @@ def resolver(fr, alto, bajo, topes=None):
                     marcas.add(MARCAS[w])
                 usado[i:i + n] = [True] * n
             elif w in MODELOS and not (n == 1 and w in VACIAS):
-                modelos |= MODELOS[w]; usado[i:i + n] = [True] * n
+                grupos.append(MODELOS[w]); usado[i:i + n] = [True] * n
     for i, t in enumerate(ts):
         if usado[i] or t in VACIAS:
             continue
         if re.match(r"^[a-z]+\d+[a-z0-9]*$", t) and not UNIDAD.match(t) and t not in CONOCIDAS:
             parecido = difflib.get_close_matches(t, [m for m in MODELOS if re.search(r"\d", m)], 1, 0.85)
             if parecido:
-                modelos |= MODELOS[parecido[0]]; usado[i] = True
+                grupos.append(MODELOS[parecido[0]]); usado[i] = True
             else:
                 desconocido.append(t)
+    # varias palabras del mismo modelo acotan; si no tienen modelo en comun, son modelos distintos: "g305 y g203"
+    comun = set.intersection(*grupos) if grupos else set()
+    modelos = comun or set().union(*grupos)
+    for t in ts:
+        if modelos and t in MEDIDAS and modelos & MEDIDAS[t]:
+            modelos &= MEDIDAS[t]
     # las pulgadas las lee el codigo: "24 pulgadas", "de 27"; el tamano esta en el nombre del modelo
     pulgadas = None
     m = re.search(r"\b(\d{2})\s*(pulgadas|pulg|pulgada|\")", fr.lower()) or re.search(r"\b(monitor|pantalla|tele|moni)\s+de\s+(\d{2})\b", B.nrm(fr))
@@ -143,7 +167,7 @@ def resolver(fr, alto, bajo, topes=None):
                 usado[i] = True
     # el resto contra la base embebida
     tz = [(a, b, w) for a, b, w in trozos(ts) if not any(usado[a:b])]
-    sel, amarillos = [], []
+    sel, amarillos, ajenas = [], [], []
     if tz:
         nuevos = [w for _, _, w in tz if w not in MEMO]
         if nuevos:
@@ -159,7 +183,7 @@ def resolver(fr, alto, bajo, topes=None):
             tipo, conc, ex = ENT[mejor[j]]
             # una palabra que la base no conoce no se adivina por parecido: "rosario" no es rosado ni "rio" es rojo.
             # Vale si esta en las expresiones de la base o es un error de tipeo de una, con la vara de los modelos;
-            # si no, va a lo dudoso, que es el verificador, y no a una condicion.
+            # si no, se aparta: se ignora si el resto de la frase ya dice que busca, y si no, se repregunta.
             conocida = all(t in VACIAS or t in CONOCIDAS or difflib.get_close_matches(t, CONOC_LISTA, 1, 0.85)
                            for t in w.split())
             if s >= alto and conocida:
@@ -171,6 +195,8 @@ def resolver(fr, alto, bajo, topes=None):
                     neg = True
                 sel.append((tipo, conc, neg, w, round(s, 3)))
                 tomado[a:b] = [True] * (b - a)
+            elif not conocida:
+                ajenas.append((tipo, conc, w, round(s, 3)))
             else:
                 amarillos.append((tipo, conc, w, round(s, 3)))
         amarillos = [x for x in amarillos if not any(x[2] in s[3] or s[3] in x[2] for s in sel)]
@@ -182,6 +208,7 @@ def resolver(fr, alto, bajo, topes=None):
     if desconocido or novende:
         return "no_hay", [], info
     if not (rubros or marcas or modelos):
+        amarillos += ajenas
         entendidas = {w for _, _, _, x, _ in sel for w in x.split()}
         resto = [t for i, t in enumerate(ts) if not usado[i] and t not in VACIAS and t not in entendidas]
         return ("repregunta" if (conds or amarillos or resto) else "no_hay"), [], info

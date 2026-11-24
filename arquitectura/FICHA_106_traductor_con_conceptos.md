@@ -99,17 +99,19 @@ se cumple. Lo que la fuente no trae no se infiere: se dice que no hay dato.
      para fijar umbrales.
    - Lo que el examen muestra de la fuente real: casi todo es rubro, marca, modelo, orden y cantidad; atributos 17,
      plataformas 2 y compatibilidad 2. La jerga dificil de esos casilleros esta en los bancos escritos, no en lo real.
-   - **La linea de base y tres arreglos, 24-nov**, `examen/plan.md`, `medir_reglas.py` y `comparar.py`: el resolvedor
-     de `reglas/` contra el examen y las tres muestras de antes; entra un cambio solo si no empeora en ninguna. Sin
-     dudosas, en las frases de un pedido del examen, acierta, repregunta, erra: base 55, 20, 21; hoy 37, 48, 11.
-     - La causa mayor: e5 chico pasa 0,9 con pedazos cortos, "rosario" es rosado, "rio" rojo, "2" es 2K.
-     - Entraron: un numero suelto no va a los embeddings; una palabra que la base no conoce va a lo dudoso, no a un
-       concepto; "no hay" solo con la frase entendida entera. Bajan los errores en las cuatro y suben las repreguntas,
-       que son el verificador.
-     - No entraron: `numeros.py` en el filtro no movio nada; el nexo de nombrado del bot sobre la frase cruda empeora
-       en las cuatro, porque espera la linea limpia de la llamada 0: relleno como modelo, dos modelos juntos, la
-       negacion. Va con la cascada, paso 7.
-     - El examen se miro para hallar estas causas: sus numeros pesan menos que los de las otras tres.
+   - **La linea de base y los arreglos, 24-nov**, `examen/plan.md`, `medir_reglas.py` y `comparar.py`: el resolvedor
+     de `reglas/` contra el examen y las tres muestras de antes; un cambio entra solo si no empeora en ninguna. Sin
+     dudosas, aciertos y errores: examen de 55 y 21 a 65 y 17; las 48 de 27 y 4 a 28 y 2; muestra2 de 24 y 3 a 25 y 2;
+     muestra3 de 20 y 6 a 21 y 5. Mejoran los dos numeros en las cuatro.
+     - La causa mayor era e5 chico: pasa 0,9 con pedazos cortos, "rosario" es rosado, "rio" rojo, "2" es 2K.
+     - Entraron: un numero suelto no va a los embeddings; una palabra que la base no conoce no dispara un concepto, y
+       se ignora si el resto dice que busca; "no hay" solo con la frase entendida; el indice de modelos con los nombres
+       propios del nexo del bot, los codigos de dentro del nombre, las palabras que acotan y las medidas que acotan.
+     - Probado y descartado: mandar toda palabra desconocida al verificador, que bajaba errores pero tapaba aciertos,
+       20 en el examen; `numeros.py` en el filtro; el nexo de nombrado del bot sobre la frase cruda, que espera la
+       linea limpia de la llamada 0 y va con la cascada, paso 7.
+     - Quedan: rubro errado, "charger", "aparato con teclas"; capacidades sin leer; palabras conocidas con otro
+       sentido, "revender en negro". El examen se miro para hallar estas causas: pesan mas las otras tres.
 3. **SIGUE: la memoria verificada**, con sus controles. Se mide sobre frases repetidas del repo y contra el examen.
 4. **La jerga por tandas:** el repo primero; despues sintetica que escribe Sonnet por personas, un abuelo, un gamer,
    alguien apurado, con errores de tipeo; despues expresiones de foros publicos. Cada tanda en el mismo formato y medida
