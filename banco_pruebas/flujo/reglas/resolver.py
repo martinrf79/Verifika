@@ -47,6 +47,7 @@ for c, _, ex in B.BASE:
         ENT.append(("cond", c, B.nrm(e)))
 EV = emb([e for _, _, e in ENT])
 CONDS = {c: conds for c, conds, _ in B.BASE}
+COLORES = {c for c, conds, _ in B.BASE if conds[0][0] == "color"}
 VISTA = {k: B.vista(k) for k in K.MOD}
 MEMO = {}
 
@@ -61,6 +62,7 @@ for k in K.MOD:
     t0 = n.split()[0]
     if re.search(r"\d", t0) or len(t0) >= 5:
         MODELOS.setdefault(t0, set()).add(k)
+CONOCIDAS = {w for _, _, e in ENT for w in e.split()} | {w for x in NOVENDE for w in x.split()}
 UNIDAD = re.compile(r"^\d+(gb|tb|hz|mm|w|mah|k|p|lucas?|mil)?$")
 VACIAS = set(B.nrm("""hola buenas buen dia che tenes tenez tienen tienes tendras hay quiero quisiera queria busco buscando
 necesito dame decime pasame poneme agrega agregame sumale sumame me te le lo la los las el un una unos unas de del para pa
@@ -87,7 +89,7 @@ def trozos(ts):
 def resolver(fr, alto, bajo, topes=None):
     ts = tokens(fr)
     usado = [False] * len(ts)
-    marcas, modelos, desconocido = set(), set(), []
+    marcas, modelos, desconocido, sin_marca = set(), set(), [], set()
     # lo que la tienda no vende, por palabra exacta de no_vendidas.json; no cuenta si es para que sirve, "para la play 5"
     novende = []
     for n in range(3, 0, -1):
@@ -105,13 +107,17 @@ def resolver(fr, alto, bajo, topes=None):
                 continue
             w = " ".join(ts[i:i + n])
             if w in MARCAS:
-                marcas.add(MARCAS[w]); usado[i:i + n] = [True] * n
+                if re.search(r"\b(no|sin|nada de|menos)( sea| sean| es)?( de)?( la| el)?( marca)?$", " ".join(ts[max(0, i - 4):i])):
+                    sin_marca.add(MARCAS[w])
+                else:
+                    marcas.add(MARCAS[w])
+                usado[i:i + n] = [True] * n
             elif w in MODELOS and not (n == 1 and w in VACIAS):
                 modelos |= MODELOS[w]; usado[i:i + n] = [True] * n
     for i, t in enumerate(ts):
         if usado[i] or t in VACIAS:
             continue
-        if re.match(r"^[a-z]+\d+[a-z0-9]*$", t) and not UNIDAD.match(t):
+        if re.match(r"^[a-z]+\d+[a-z0-9]*$", t) and not UNIDAD.match(t) and t not in CONOCIDAS:
             parecido = difflib.get_close_matches(t, [m for m in MODELOS if re.search(r"\d", m)], 1, 0.85)
             if parecido:
                 modelos |= MODELOS[parecido[0]]; usado[i] = True
@@ -161,16 +167,20 @@ def resolver(fr, alto, bajo, topes=None):
     rubros = {c for t, c, n, _, _ in sel if t == "rubro" and not n}
     conds = [(c, n) for t, c, n, _, _ in sel if t == "cond"]
     info = {"rubros": sorted(rubros), "marcas": sorted(marcas), "modelos": sorted(m[2] for m in modelos), "conds": conds,
-            "amarillos": amarillos, "desconocido": desconocido, "novende": novende, "pulgadas": pulgadas}
+            "amarillos": amarillos, "desconocido": desconocido, "novende": novende, "pulgadas": pulgadas,
+            "sin_marca": sorted(sin_marca)}
     if desconocido or novende:
         return "no_hay", [], info
     if not (rubros or marcas or modelos):
-        return ("repregunta" if (conds or amarillos) else "no_hay"), [], info
+        entendidas = {w for _, _, _, x, _ in sel for w in x.split()}
+        resto = [t for i, t in enumerate(ts) if not usado[i] and t not in VACIAS and t not in entendidas]
+        return ("repregunta" if (conds or amarillos or resto) else "no_hay"), [], info
     # Lo ambiguo se pregunta, regla 7.0: dos rubros en una linea, o una marca sin rubro que esta en varios rubros.
     if len(rubros) > 1 or (not rubros and not modelos and len({k[0] for k in K.MOD if k[1] in marcas}) > 1):
         return "repregunta", [], info
     ks = [k for k in K.MOD if (not rubros or k[0] in rubros) and (not marcas or k[1] in marcas)
-          and (not modelos or k in modelos)]
+          and (not modelos or k in modelos) and k[1] not in sin_marca]
+    nombrados = list(ks) if modelos else []
     orden = None
     for c, neg in conds:
         for cond in CONDS[c]:
@@ -185,6 +195,8 @@ def resolver(fr, alto, bajo, topes=None):
         ks = [k for k in ks if pulgadas in k[2]]
     for d, n in (topes or []):
         ks = [k for k in ks if (VISTA[k]["precio"] <= n if d == "max" else VISTA[k]["precio"] >= n)]
+    if not ks and nombrados and not any(c in COLORES for c, _ in conds):
+        ks = nombrados
     if not ks:
         return "no_hay", [], info
     if [a for a in amarillos if a[0] == "cond"]:
@@ -268,11 +280,11 @@ def probar():
     print(f"tiempo por frase: mediana {statistics.median(seg) * 1000:.0f} ms, p90 {seg[int(len(seg) * .9) - 1] * 1000:.0f} ms")
 
 
-def probar2():
-    """La muestra nueva, muestra2.py, congelada en hash2.txt, con los mismos cortes."""
-    import acept as A, hashlib
-    from muestra2 import M2
-    assert hashlib.sha256(open(os.path.join(AQUI, "muestra2.py"), "rb").read()).hexdigest() in open(os.path.join(AQUI, "hash2.txt")).read()
+def probar2(n="2"):
+    """Una muestra nueva, muestra2.py o muestra3.py, congelada en su hash, con los mismos cortes."""
+    import acept as A, hashlib, importlib
+    M2 = getattr(importlib.import_module("muestra" + n), "M" + n)
+    assert hashlib.sha256(open(os.path.join(AQUI, f"muestra{n}.py"), "rb").read()).hexdigest() in open(os.path.join(AQUI, f"hash{n}.txt")).read()
     c = json.load(open(CORTES))
     out, seg = [], []
     for f, fr, r, dud, _ in M2:
@@ -283,7 +295,7 @@ def probar2():
         dec, of, info = resolver(fr, c["alto"], c["bajo"], topes(fr))
         seg.append(time.time() - t)
         out.append({"id": f, "dudosa": dud, "frase": fr, "dec": dec, "of": [k[2] for k in of], "c": corregir(dec, of, sorted(ac)), **info})
-    with open(os.path.join(AQUI, "prueba2.jsonl"), "w") as fh:
+    with open(os.path.join(AQUI, f"prueba{n}_{os.environ.get('ETIQ', 'e5')}.jsonl"), "w") as fh:
         for o in out:
             fh.write(json.dumps(o, ensure_ascii=False) + "\n")
     print("todas", len(out), cuenta([o["c"] for o in out]))
@@ -301,8 +313,8 @@ if __name__ == "__main__":
         validar()
     elif q == "probar":
         probar()
-    elif q == "probar2":
-        probar2()
+    elif q in ("probar2", "probar3"):
+        probar2(q[-1])
     else:
         c = json.load(open(CORTES))
         print(resolver(q, c["alto"], c["bajo"], topes(q)))
