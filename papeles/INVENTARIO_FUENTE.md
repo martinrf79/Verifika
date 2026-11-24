@@ -19,7 +19,7 @@ Productos en el repo: **880** | categorias: **22** | specs preguntables: **30**
 | dimensiones | ficha: medidas | 880/880 | - |
 | contenido_caja | ficha: que trae | 880/880 | - |
 | uso_recomendado | ficha: uso | 880/880 | - |
-| caracteristicas_extra | ficha: specs | 880/880 | - |
+| caracteristicas_extra | ficha: specs | 871/880 | - |
 | marca | buscador | 880/880 | - |
 | modelo | certificador de modelo puntual | 880/880 | - |
 | color | buscador, variantes | 861/880 | - |
@@ -46,7 +46,7 @@ Cada celda = productos de esa categoria con el dato / productos donde la spec ap
 | lector_tarjetas | - | - | - | - | - | - | 22/22 | - | - | - | - | - | 171/171 | - | - | - | - | - | - | 27/27 | - | 10/10 | 230/230 |
 | resistencia_agua | - | 46/46 | - | - | - | - | - | - | - | - | - | 52/52 | - | 36/36 | - | - | - | - | - | - | 48/48 | - | 182/182 |
 | ram | - | - | - | - | - | - | - | 96/96 | - | - | 15/15 | - | 171/171 | - | - | - | - | - | - | 27/27 | - | - | 309/309 |
-| almacenamiento | 72/72 | - | - | - | - | - | - | - | - | - | - | - | 171/171 | - | - | - | - | - | 60/60 | 27/27 | - | - | 330/330 |
+| almacenamiento | 72/72 | - | - | - | - | - | - | - | - | - | - | - | 171/171 | - | - | - | - | - | 60/60 | 24/27 | - | - | 327/330 |
 | garantia | 72/72 | 46/46 | 20/20 | 14/14 | 15/15 | 30/30 | 22/22 | 96/96 | 24/24 | 24/24 | 15/15 | 52/52 | 171/171 | 36/36 | 18/18 | 19/19 | 22/22 | 39/39 | 60/60 | 27/27 | 48/48 | 10/10 | 880/880 |
 | procesador | - | - | - | - | - | - | - | - | - | - | 15/15 | - | 171/171 | - | - | 19/19 | - | - | - | 27/27 | - | - | 232/232 |
 | resolucion | - | - | - | - | - | - | - | - | - | 24/24 | - | - | 171/171 | - | - | - | - | - | - | 27/27 | - | 10/10 | 232/232 |
@@ -96,5 +96,5 @@ Temas de FAQ sin categoria espejo: **23**. NO es un hueco: el modelo los pide po
 
 ## 4. Calidad del dato: spec fantasma depurada
 
-Fichas del CSV que traian una spec de OTRO producto pegada: **399/880**. La ingesta las depura dejando la spec avalada por el nombre del propio producto.
+Fichas del CSV que traian una spec de OTRO producto pegada: **418/880**. La ingesta las depura dejando la spec avalada por el nombre del propio producto.
 

@@ -62,7 +62,15 @@ CANALES = {"Z313": "2.1", "Z207 Bluetooth": "2.0", "R1280T": "2.0", "Go 3": "por
            "SP-HF180": "2.0", "Z625 THX": "2.1", "Z906 5.1": "5.1", "R1700BT": "2.0", "Charge 5": "portatil",
            "Clip 4": "portatil", "SW-2.1 375": "2.1"}
 SOLO_CAMBIA = {("webcam", "C270 HD"): "HD 720p", ("microfono", "MV7"): "USB y XLR",
-               ("impresora", "HL-1212W"): "solo impresora, laser monocromatica"}
+               ("impresora", "HL-1212W"): "solo impresora, laser monocromatica",
+               # 24-nov, segunda vuelta con busqueda: puertos que el fabricante confirma; si hay versiones distintas, solo
+               # lo que vale para todas. Vacio es sacar la afirmacion de plantilla sin poner otra.
+               ("cargador", "Nano II 65W"): "65W, 1 puerto USB-C", ("cargador", "PowerPort III 20W"): "20W, 1 puerto USB-C",
+               ("cargador", "GaN5 65W"): "65W, USB-C", ("cargador", "Mi 33W"): "33W, 1 USB-C y 1 USB-A",
+               ("cargador", "511 Nano 3"): "30W, 1 puerto USB-C", ("cargador", "735 GaN 65W"): "65W, 2 USB-C y 1 USB-A",
+               ("cargador", "GaN5 Pro 100W"): "100W, 2 USB-C y 2 USB-A", ("cargador", "25W Super Fast"): "25W, 1 puerto USB-C",
+               ("cargador", "67W Turbo"): "67W", ("cargador", "Nexode 65W"): "65W, USB-C",
+               ("tablet", "Galaxy Tab A9"): "64GB", ("tablet", "Tab M10"): "", ("silla gamer", "Ergo Mesh"): ""}
 RESOL_TAGS = {"Full HD": ["full hd", "fhd", "1080p"], "QHD": ["qhd", "2k", "1440p"], "WUXGA": ["wuxga"],
               "UltraWide": ["ultrawide"], "UWQHD": ["ultrawide", "uwqhd"], "DQHD": ["dqhd", "super ultrawide"]}
 
@@ -146,7 +154,7 @@ def tags_nuevas(p, vieja, nueva, s):
     if p["categoria"] == "monitor":
         sacar |= {"1080p", "1920x1080", "75 hz", "75hz", "fhd", "full hd", "ips", "panel ips", "colores precisos"}
     tags = [t for t in tags if t not in sacar]
-    poner = {nueva.lower()}
+    poner = {nueva.lower()} | {w for w in re.split(r"[ ,]+", nueva.lower()) if re.search(r"\d|usb", w) and not re.fullmatch(r"\d{1,2}", w)} if nueva else set()
     if p["categoria"] == "monitor":
         if s.get("panel"):
             poner |= {s["panel"].lower(), f"panel {s['panel'].lower()}"}
@@ -176,11 +184,11 @@ def main(grabar):
         k = (p["categoria"], p["marca"], p["modelo"])
         nueva = extra_nueva(p, S.get(k, {}), C.get(k, {}))
         vieja = p["caracteristicas_extra"]
-        if not nueva or nueva == vieja:
+        if nueva is None or nueva == vieja:
             continue
         for campo in ("descripcion", "descripcion_rica"):
             if f". {vieja}." in p[campo]:
-                p[campo] = p[campo].replace(f". {vieja}.", f". {nueva}.", 1)
+                p[campo] = p[campo].replace(f". {vieja}.", f". {nueva}." if nueva else ".", 1)
             else:
                 print("  AVISO sin el texto viejo en", campo, p["id"])
         p["tags"] = tags_nuevas(p, vieja, nueva, S.get(k, {}))

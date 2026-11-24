@@ -129,8 +129,12 @@ repregunta, erra, tiempo y costo. Ademas, lo aprendido aca:
 - **Subir `productos.csv` a Firestore despues del deploy**, con `/admin/upload-catalog`. El comando esta en el chat del
   24-nov y abajo.
 - **Las reglas dudosas:** "que no sea chino" cuando todo se fabrica en China, "el mas bestia", "que no haga ruido".
-- **Los datos sin certeza en la fuente:** las pulgadas del Samsung ViewFinity S6; la capacidad de las tablets, que dicen
-  128GB todas; el tipo de conector de los cargadores, que dicen USB-C todos; y si todas las sillas son reclinables.
+- **Las pulgadas del Samsung ViewFinity S6:** se vende en 24, 27 y 32 y el nombre de la tienda no dice cual; queda vacio
+  hasta que Martin diga cual vende. Lo demas se resolvio con busqueda el 24-nov: los cargadores con potencia y puertos
+  del fabricante, y el Xiaomi 67W Turbo solo con la potencia porque tiene versiones con y sin USB-C; la Galaxy Tab A9 en
+  64GB, la unica en Argentina; la Lenovo Tab M10 sin capacidad, porque no existe de 128GB; las demas tablets siguen en
+  128GB, que es una version que existe; la ProSeat Ergo Mesh sin "reclinable", porque no se pudo confirmar. Conviene
+  que la tienda ponga la capacidad en el nombre de las tablets.
 
 Carga del catalogo, desde Cloud Shell, despues del deploy:
 
