@@ -19,3 +19,19 @@ etiquetado, por frase. Acierto si coincide, de mas si marco algo que no esta, de
 
 Informe: N, acierta, repregunta, erra, con y sin dudosas, de un pedido y de varios; casilleros; tiempo por frase,
 mediana y p90; costo cero. Diez frases revisadas a mano contra lo grabado. Resultados en `base_reglas.jsonl`.
+
+PLAN DE LA LLAMADA UNICA, escrito antes de correr (24-nov-2026, orden de Martin)
+
+Hipotesis: una sola llamada de Luna que separa, traduce y elige la fila acierta como la cadena de dos llamadas de la
+FICHA 105, sin pagar la segunda vuelta de latencia.
+- Antes de Luna, los embeddings: el mensaje entero y cada trozo separado por punto, coma, "//" o " y ", contra el indice
+  de productos de la tienda, gemini-embedding-001 con la gratis; 15 del mensaje mas 5 por trozo, sin repetir, hasta 30.
+- Luna, gpt-6-luna con razonamiento bajo, como la llamada 0: el prompt v14f1b con la ficha f1, y al final la tarea del
+  verificador podado: por cada fila que pide un producto, las filas de la tienda que cumplen todo y las dudosas con el
+  dato que falta. Las filas de la tienda van recortadas como en `podado.fila`.
+- El codigo decide como el podado: alguna sirve, ofrece hasta tres; dudosas, repregunta; nada, no hay. El tope de plata
+  lo aplica el codigo con el precio de la fila.
+Metrica: `examen.corregir` sobre las 102 frases de un pedido, sin dudosas aparte; la de varios, por linea. Tiempo de punta
+a punta, embeddings mas Luna, mediana y p90; costo. Tres casos primero; resultados grabados al momento en
+`llamada_unica.jsonl`; tope de gasto de la corrida, 15 centavos; diez revisados a mano.
+Base para comparar: el resolvedor por reglas, 65 aciertos y 17 errores en las 96 limpias, y lo de la FICHA 105.

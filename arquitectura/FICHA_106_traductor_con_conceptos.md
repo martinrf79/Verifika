@@ -112,6 +112,19 @@ se cumple. Lo que la fuente no trae no se infiere: se dice que no hay dato.
        linea limpia de la llamada 0 y va con la cascada, paso 7.
      - Quedan: rubro errado, "charger", "aparato con teclas"; capacidades sin leer; palabras conocidas con otro
        sentido, "revender en negro". El examen se miro para hallar estas causas: pesan mas las otras tres.
+   - **La llamada unica, 24-nov**, `examen/llamada_unica.py`, plan en `examen/plan.md`, orden de Martin: los embeddings
+     del mensaje y sus trozos traen hasta 30 filas; Luna, con el v14f1b y la ficha f1, separa, traduce y en la misma
+     llamada elige las filas que sirven y las dudosas, como el verificador podado, mas un orden de la lista cerrada. El
+     codigo aplica el tope de plata y decide.
+     - 97 de 138 frases: la cuota gratis de embeddings se acabo y el resto va otro dia, sin la paga.
+     - En las 78 limpias de un pedido: 55 aciertan, 17 repreguntan, 6 yerran. El resolvedor por reglas, en las mismas:
+       55, 13 y 10.
+     - Latencia de punta a punta, mediana 5,1 segundos y p90 7,8; Luna sola 4,1, lo mismo que la llamada 0 de hoy. Elegir
+       la fila no agrega una vuelta. Unos 6 dolares cada 10 mil mensajes.
+     - Los errores que quedan son del orden: el codigo ordena solo entre los 30 candidatos, y el mas barato de la tienda
+       puede no estar. 13 de 19 lineas mal en las frases de varios pedidos. Es el punto 2 de la FICHA 105.
+     - La primera corrida tuvo dos fallas del guion, la plata leida en codigos de modelo y la pregunta por un producto
+       marcada como no producto; queda en `llamada_unica_c1.jsonl`.
 3. **SIGUE: la memoria verificada**, con sus controles. Se mide sobre frases repetidas del repo y contra el examen.
 4. **La jerga por tandas:** el repo primero; despues sintetica que escribe Sonnet por personas, un abuelo, un gamer,
    alguien apurado, con errores de tipeo; despues expresiones de foros publicos. Cada tanda en el mismo formato y medida
