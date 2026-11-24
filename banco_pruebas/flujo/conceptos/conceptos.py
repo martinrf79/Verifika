@@ -63,6 +63,9 @@ ATRIBUTOS = {
     "usb_c": ("atributo", [("conecta_por", "alguno", ["puerto_usb_c"])]),
     "mecanico": ("atributo", [("switch_teclado", "tiene", ["mecanico"])]),
     "membrana": ("atributo", [("switch_teclado", "tiene", ["membrana"])]),
+    "silencioso": ("atributo", [("switch_teclado", "tiene", ["membrana", "tijera"])]),
+    "con_microfono": ("atributo", [("microfono", "empieza", ["si"])]),
+    "cancelacion_ruido": ("atributo", [("cancelacion_ruido", "empieza", ["si"])]),
     "con_luces": ("atributo", [("retroiluminacion", "empieza", ["si"])]),
     "sin_luces": ("atributo", [("retroiluminacion", "empieza", ["no"])]),
     "resistente_agua": ("atributo", [("resistencia_agua", "empieza", ["si"])]),
@@ -80,7 +83,8 @@ ATRIBUTOS = {
 }
 ORDENES = {"mas_barato": ("precio", "asc"), "mas_caro": ("precio", "desc"), "mas_liviano": ("peso", "asc"),
            "mas_pesado": ("peso", "desc"), "mas_capacidad": ("capacidad_gb", "desc"), "mas_potente_w": ("potencia_w", "desc"),
-           "mas_hz": ("hz", "desc")}
+           "mas_hz": ("hz", "desc"), "mas_ram": ("ram_gb", "desc"), "mas_pulgadas": ("pulgadas", "desc"),
+           "mas_nucleos": ("nucleos", "desc")}
 
 
 def armar():

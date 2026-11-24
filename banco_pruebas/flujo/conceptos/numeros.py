@@ -5,7 +5,7 @@ leer(frase, rubro=None) -> [{"tipo", "campo", "op", "valor", "texto"}]
   capacidad  capacidad_gb, o ram_gb y disco_gb en notebooks: "16 gigas", "1 tera", "dieciseis de ram", "512 de disco"
   potencia   potencia_w: "65 watts", "sesenta y cinco w"
   hz         hz minimo: "144hz", "de 165 hz"
-  pulgadas   pulgadas: la fuente no las trae, sale con op "sin_dato" para que se diga que no hay dato
+  pulgadas   pulgadas, igual: de la ficha, `pulgadas` de specs_por_modelo.csv
   cantidad   cuantas unidades: "dos teclados", "me llevo 3"; no filtra
 Los numeros en letras se pasan a cifras antes de leer. Un codigo de modelo, "k380", "g305", no es numero.
 """
@@ -96,10 +96,10 @@ def leer(frase, rubro=None):
         poner("hz", "hz", "min", float(m.group(1)), m.group(0), m)
     # pulgadas
     for m in re.finditer(r"(\d+(?:\.\d+)?)\s*(pulgadas?|pulg|\")", s + " ") or []:
-        poner("pulgadas", "pulgadas", "sin_dato", float(m.group(1)), m.group(0), m)
+        poner("pulgadas", "pulgadas", "igual", float(m.group(1)), m.group(0), m)
     m = re.search(r"\b(monitor|pantalla|moni|tele)\s+de\s+(\d{2})\b(?!\s*(hz|gb|w))", s)
     if m and not any(o["tipo"] == "pulgadas" for o in out):
-        poner("pulgadas", "pulgadas", "sin_dato", float(m.group(2)), m.group(0), m)
+        poner("pulgadas", "pulgadas", "igual", float(m.group(2)), m.group(0), m)
     # cantidad: un numero chico pegado a un producto o a "llevo"; no los que ya leyo otro lector
     for m in re.finditer(r"\b(llevo|quiero|necesito|dame|pasame|serian|son)?\s*(\d{1,2})\b(?!\s*(gb|tb|w|hz|de ram|pulg|lucas|mil|k\b))", s):
         n = int(m.group(2))
@@ -116,8 +116,8 @@ CASOS = [  # (frase, rubro, lo que tiene que salir como (tipo, campo, op, valor)
     ("notebook de 64 gb de ram por menos de 200 mil", "notebook", [("plata", "precio", "max", 200000), ("capacidad", "ram_gb", "igual", 64)]),
     ("notebooks con dieciseis de ram", "notebook", [("capacidad", "ram_gb", "igual", 16)]),
     ("un charger de sesenta y cinco watts", "cargador", [("potencia", "potencia_w", "igual", 65)]),
-    ("monitor 24 pulgadas 144hz", "monitor", [("hz", "hz", "min", 144), ("pulgadas", "pulgadas", "sin_dato", 24)]),
-    ("un monitor de 27 con envio", "monitor", [("pulgadas", "pulgadas", "sin_dato", 27)]),
+    ("monitor 24 pulgadas 144hz", "monitor", [("hz", "hz", "min", 144), ("pulgadas", "pulgadas", "igual", 24)]),
+    ("un monitor de 27 con envio", "monitor", [("pulgadas", "pulgadas", "igual", 27)]),
     ("agregame un ssd samsung 980 de 1tb", "ssd", [("capacidad", "capacidad_gb", "igual", 1000)]),
     ("mostrame mouse hasta 50 mil", "mouse", [("plata", "precio", "max", 50000)]),
     ("tenes el g305?", "mouse", []),

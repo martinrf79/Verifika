@@ -82,14 +82,24 @@ se cumple. Lo que la fuente no trae no se infiere: se dice que no hay dato.
      todos los modelos de la mayoria de los rubros se reescribio desde la ficha, la compatibilidad o el dato del
      fabricante. Se sumaron pulgadas, microfono, cancelacion de ruido, fuente recomendada y nucleos. Lo dudoso quedo
      vacio. Indice de embeddings rehecho; la vara sigue en 58 de 75; la bateria pasa.
-   - Falta en este paso: sumar a `conceptos.py` los atributos de los campos nuevos, `microfono`, `cancelacion_ruido`, y
-     `silencioso` como teclas de membrana o tijera; y que `fuente.py` lea `pulgadas` de la ficha, hoy en None.
-2. **SIGUE: el examen fijo.** Unas 150 frases reales, de produccion, del examen real y de los bancos, que no esten en las
-   muestras ya usadas, etiquetadas por casillero con los ids de `conceptos.json`: que palabras son que casillero y a que
-   concepto apuntan, y la respuesta correcta como regla sobre el catalogo. Congelado con hash. Nunca se usa para entrenar
-   ni para fijar umbrales. Las dudosas, marcadas y con la decision de Martin cuando haga falta. El formato de etiqueta es
-   uno solo y sirve para la memoria, para entrenar y para medir.
-3. **La memoria verificada**, con sus controles. Se mide sobre frases repetidas del repo.
+   - Cerrado el 24-nov: `conceptos.py` suma `con_microfono`, `cancelacion_ruido` y `silencioso`, membrana o tijera, y
+     los ordenes por ram, pulgadas y nucleos; `fuente.py` lee de la ficha pulgadas, microfono, cancelacion, nucleos y
+     fuente recomendada; `numeros.py` filtra por pulgadas en vez de decir que no hay dato.
+2. **HECHO: el examen fijo**, `banco_pruebas/flujo/examen/`. El pozo, `pozo.py`: los mensajes de clientes de produccion,
+   vivos y archivados, bajados el 24-nov solo con el texto y los telefonos y mails tapados, mas la cosecha; sin las 48 de la FICHA 105, muestra2,
+   muestra3, sus casos base, ni ninguna frase del ajuste de e5. Las frases de los bancos ya estaban todas usadas.
+   - De ese pozo, 138 frases escritas por personas, una por frase base, que piden o preguntan por productos sin
+     depender de turnos anteriores; afuera los barridos por plantilla y las variantes de tipeo que armaron las sesiones.
+   - `etiquetas.py`: un solo formato. Cada frase en pedidos, cada pedido con sus casilleros, el pedazo literal y el
+     concepto o el valor, el modo, exigido, negado, preguntado o anulado, y las salidas que valen. 193 pedidos, 11
+     dudosas con su motivo.
+   - La respuesta correcta es una regla: `examen.aceptables` filtra la fuente con lo exigido. Al congelar se controla
+     que cada pedazo este en la frase, que cada concepto y modelo exista, y que lo esperado cuadre con el catalogo.
+   - Congelado en `examen.json` con `hash.txt`; `examen.py --verificar` lo controla. Nunca se usa para entrenar ni
+     para fijar umbrales.
+   - Lo que el examen muestra de la fuente real: casi todo es rubro, marca, modelo, orden y cantidad; atributos 17,
+     plataformas 2 y compatibilidad 2. La jerga dificil de esos casilleros esta en los bancos escritos, no en lo real.
+3. **SIGUE: la memoria verificada**, con sus controles. Se mide sobre frases repetidas del repo.
 4. **La jerga por tandas:** el repo primero; despues sintetica que escribe Sonnet por personas, un abuelo, un gamer,
    alguien apurado, con errores de tipeo; despues expresiones de foros publicos. Cada tanda en el mismo formato y medida
    contra el examen. El techo: cuando sumar un 20% mas de frases sube menos de un punto, se para. Se estima entre 20 y 50
@@ -125,9 +135,10 @@ repregunta, erra, tiempo y costo. Ademas, lo aprendido aca:
 
 ## 7. Lo que queda pendiente de Martin
 
-- **El push.** Hay commits en `main` local sin pushear. El de la fuente corregida deploya, porque toca `data/`.
-- **Subir `productos.csv` a Firestore despues del deploy**, con `/admin/upload-catalog`. El comando esta en el chat del
-  24-nov y abajo.
+- **El aviso de la carga del catalogo del 24-nov**, "el modelo contra su planilla: 5": son falsas alarmas. El chequeo
+  de `app/core/coherencia_datos.py` lee el codigo del modelo, Archer AX23, AX55 y AX73, Tenda AC10 y AC8, como si fuera
+  la velocidad del wifi y lo compara con la planilla, que esta bien. El arreglo de clase es que en el nombre del modelo
+  un numero pegado a letras sea codigo, salvo el tipo de memoria DDR; eso es una lista de una palabra, y se consulta.
 - **Las reglas dudosas:** "que no sea chino" cuando todo se fabrica en China, "el mas bestia", "que no haga ruido".
 - **Las pulgadas del Samsung ViewFinity S6:** se vende en 24, 27 y 32 y el nombre de la tienda no dice cual; queda vacio
   hasta que Martin diga cual vende. Lo demas se resolvio con busqueda el 24-nov: los cargadores con potencia y puertos

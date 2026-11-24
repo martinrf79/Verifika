@@ -64,6 +64,9 @@ def vista(k):
         "resistencia_agua": s.get("resistencia_agua") or "", "bateria": s.get("bateria") or "",
         "hz": _num(s.get("hz"), "hz"), "potencia_w": _num(s.get("potencia"), "w"),
         "memoria_video_gb": _gb(s.get("memoria_video")),
+        "microfono": s.get("microfono") or "", "cancelacion_ruido": s.get("cancelacion_ruido") or "",
+        "pulgadas": _num(s.get("pulgadas"), "pulgadas"), "nucleos": _num(s.get("nucleos"), "nucleos"),
+        "fuente_recomendada_w": _num(s.get("fuente_recomendada"), "w"),
     }
     # La capacidad, segun el rubro: en el nombre del modelo, o la primera de la ficha.
     v["capacidad_gb"] = None
@@ -78,9 +81,7 @@ def vista(k):
     v["disco_gb"] = _gb(mod) if rub == "notebook" else None
     if rub == "cargador" and v["potencia_w"] is None:
         v["potencia_w"] = _num(mod, "w")
-    # Las pulgadas: la fuente no las trae en ningun campo. Solo estan implicitas en algunos nombres, y sacarlas de ahi
-    # es inventar un dato. Quedan sin dato hasta que la fuente las tenga: el bot dice que no tiene el dato.
-    v["pulgadas"] = None
+    # Las pulgadas salen de la ficha, `pulgadas`, nunca del nombre: el monitor que no las tiene queda sin dato.
     return v
 
 

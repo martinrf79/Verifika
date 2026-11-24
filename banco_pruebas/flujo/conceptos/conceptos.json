@@ -643,6 +643,49 @@
   ],
   "filas": 7
  },
+ "atributo:silencioso": {
+  "tipo": "atributo",
+  "nombre": "silencioso",
+  "cond": [
+   [
+    "switch_teclado",
+    "tiene",
+    [
+     "membrana",
+     "tijera"
+    ]
+   ]
+  ],
+  "filas": 9
+ },
+ "atributo:con_microfono": {
+  "tipo": "atributo",
+  "nombre": "con microfono",
+  "cond": [
+   [
+    "microfono",
+    "empieza",
+    [
+     "si"
+    ]
+   ]
+  ],
+  "filas": 21
+ },
+ "atributo:cancelacion_ruido": {
+  "tipo": "atributo",
+  "nombre": "cancelacion ruido",
+  "cond": [
+   [
+    "cancelacion_ruido",
+    "empieza",
+    [
+     "si"
+    ]
+   ]
+  ],
+  "filas": 4
+ },
  "atributo:con_luces": {
   "tipo": "atributo",
   "nombre": "con luces",
@@ -902,7 +945,7 @@
     "desc"
    ]
   ],
-  "filas": 171
+  "filas": 170
  },
  "orden:mas_potente_w": {
   "tipo": "orden",
@@ -914,7 +957,7 @@
     "desc"
    ]
   ],
-  "filas": 51
+  "filas": 69
  },
  "orden:mas_hz": {
   "tipo": "orden",
@@ -927,5 +970,41 @@
    ]
   ],
   "filas": 90
+ },
+ "orden:mas_ram": {
+  "tipo": "orden",
+  "nombre": "mas ram",
+  "cond": [
+   [
+    "ram_gb",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 57
+ },
+ "orden:mas_pulgadas": {
+  "tipo": "orden",
+  "nombre": "mas pulgadas",
+  "cond": [
+   [
+    "pulgadas",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 23
+ },
+ "orden:mas_nucleos": {
+  "tipo": "orden",
+  "nombre": "mas nucleos",
+  "cond": [
+   [
+    "nucleos",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 19
  }
 }
