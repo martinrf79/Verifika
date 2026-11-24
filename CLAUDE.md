@@ -55,7 +55,7 @@ de la FICHA 83 quedó archivado: se vuelve a él con git revert.
 **El pase se hizo el 17-nov.** En el banco, el 21-nov, Luna separa y traduce con la ficha del vocabulario de la
 tienda, FICHA 104. El 23-nov, el traductor que verifica elige entre los 15 candidatos con las filas recortadas y
 reemplaza a Jev y al nexo de condición, FICHA 105, `arquitectura/FICHA_105_traductor_que_verifica.md`; ahí están
-también la regla de validez de toda prueba y cómo usar Sonnet sin gastar de más. El 24-nov, el traductor por casilleros y la fuente corregida, FICHA 106, `arquitectura/FICHA_106_traductor_con_conceptos.md`: se sigue por su sección 4. Se sigue el orden de `PENDIENTE.md`,
+también la regla de validez de toda prueba y cómo usar Sonnet sin gastar de más. El 24-nov, el traductor por casilleros y la fuente corregida, FICHA 106, y después la llamada única, FICHA 107, `arquitectura/FICHA_107_la_llamada_unica.md`: Luna separa, traduce y elige la fila en una sola vuelta. Se sigue por la sección 4 de la 107. Se sigue el orden de `PENDIENTE.md`,
 y el bot sigue con la FICHA 102. Cada arreglo queda en producción. Lo medido antes: la llamada 0 en la FICHA 100 y los
 nexos en las FICHAS 96 a 99.
 
