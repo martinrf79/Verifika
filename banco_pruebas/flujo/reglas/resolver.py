@@ -131,6 +131,10 @@ def resolver(fr, alto, bajo, topes=None):
         for i, t in enumerate(ts):
             if t in (pulgadas, "pulgadas", "pulgada", "pulg"):
                 usado[i] = True
+    # un numero suelto lo lee el codigo, nunca los embeddings: "2" no es 2K ni "4080" es 1080
+    for i, t in enumerate(ts):
+        if t.isdigit():
+            usado[i] = True
     # la plata la lee el codigo: los numeros, sus unidades y "hasta" no van a los embeddings
     if topes:
         for i, t in enumerate(ts):

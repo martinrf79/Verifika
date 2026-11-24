@@ -70,6 +70,51 @@ def aceptables(pedido):
     return out
 
 
+IDENTIFICA = {"ofrecer", "sin_dato", "no_compatible", "rechazar"}
+
+
+def _orden_ok(pedido, primero):
+    """Si el pedido pide un orden, el primero ofrecido tiene que ser el primero de los aceptables en ese orden."""
+    for c in pedido["cas"]:
+        if c["tipo"] == "orden":
+            campo, _, sentido = CONC[c["valor"]]["cond"][0]
+            vals = [F.VISTA[k][campo] for k in aceptables(pedido) if F.VISTA[k][campo] is not None]
+            if vals and F.VISTA[primero][campo] != (min(vals) if sentido == "asc" else max(vals)):
+                return False
+    return True
+
+
+def corregir(e, dec, of):
+    """La salida de un traductor para la frase e: dec en ofrece, no_hay, repregunta; of, las claves ofrecidas.
+    Devuelve acierta, erra o repregunta. Ver plan.md."""
+    if dec == "repregunta":
+        return "repregunta"
+    if dec == "no_hay":
+        return "acierta" if any("no_hay" in p["esperados"] for p in e["pedidos"]) else "erra"
+    of = [tuple(k) for k in of]
+    for p in e["pedidos"]:
+        ac = set(aceptables(p))
+        if of and IDENTIFICA & set(p["esperados"]) and all(k in ac for k in of) and _orden_ok(p, of[0]):
+            return "acierta"
+    return "erra"
+
+
+def etiquetado(e, tipo):
+    """Lo etiquetado de un tipo en la frase, exigido: rubros por nombre, marcas y modelos."""
+    out = set()
+    for p in e["pedidos"]:
+        for c in p["cas"]:
+            if c["tipo"] != tipo or c["modo"] not in ("", "pregunta"):
+                continue
+            if tipo == "rubro":
+                out |= {CONC[i]["nombre"] for i in _ids(c)}
+            elif tipo == "marca":
+                out.add(c["valor"])
+            elif tipo == "modelo":
+                out |= set(c["valor"])
+    return out
+
+
 def controlar(texto, e):
     """Lista de problemas de una etiqueta; vacia si esta bien."""
     malos = []
