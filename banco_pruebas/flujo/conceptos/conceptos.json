@@ -1,0 +1,931 @@
+{
+ "rubro:almacenamiento_externo": {
+  "tipo": "rubro",
+  "nombre": "almacenamiento externo",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "almacenamiento externo"
+   ]
+  ],
+  "filas": 36
+ },
+ "rubro:auriculares": {
+  "tipo": "rubro",
+  "nombre": "auriculares",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "auriculares"
+   ]
+  ],
+  "filas": 23
+ },
+ "rubro:cargador": {
+  "tipo": "rubro",
+  "nombre": "cargador",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "cargador"
+   ]
+  ],
+  "filas": 10
+ },
+ "rubro:cooler": {
+  "tipo": "rubro",
+  "nombre": "cooler",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "cooler"
+   ]
+  ],
+  "filas": 14
+ },
+ "rubro:fuente": {
+  "tipo": "rubro",
+  "nombre": "fuente",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "fuente"
+   ]
+  ],
+  "filas": 15
+ },
+ "rubro:gabinete": {
+  "tipo": "rubro",
+  "nombre": "gabinete",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "gabinete"
+   ]
+  ],
+  "filas": 15
+ },
+ "rubro:impresora": {
+  "tipo": "rubro",
+  "nombre": "impresora",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "impresora"
+   ]
+  ],
+  "filas": 11
+ },
+ "rubro:memoria_ram": {
+  "tipo": "rubro",
+  "nombre": "memoria ram",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "memoria ram"
+   ]
+  ],
+  "filas": 48
+ },
+ "rubro:microfono": {
+  "tipo": "rubro",
+  "nombre": "microfono",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "microfono"
+   ]
+  ],
+  "filas": 12
+ },
+ "rubro:monitor": {
+  "tipo": "rubro",
+  "nombre": "monitor",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "monitor"
+   ]
+  ],
+  "filas": 24
+ },
+ "rubro:motherboard": {
+  "tipo": "rubro",
+  "nombre": "motherboard",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "motherboard"
+   ]
+  ],
+  "filas": 15
+ },
+ "rubro:mouse": {
+  "tipo": "rubro",
+  "nombre": "mouse",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "mouse"
+   ]
+  ],
+  "filas": 26
+ },
+ "rubro:notebook": {
+  "tipo": "rubro",
+  "nombre": "notebook",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "notebook"
+   ]
+  ],
+  "filas": 57
+ },
+ "rubro:parlante": {
+  "tipo": "rubro",
+  "nombre": "parlante",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "parlante"
+   ]
+  ],
+  "filas": 12
+ },
+ "rubro:placa_de_video": {
+  "tipo": "rubro",
+  "nombre": "placa de video",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "placa de video"
+   ]
+  ],
+  "filas": 18
+ },
+ "rubro:procesador": {
+  "tipo": "rubro",
+  "nombre": "procesador",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "procesador"
+   ]
+  ],
+  "filas": 19
+ },
+ "rubro:router": {
+  "tipo": "rubro",
+  "nombre": "router",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "router"
+   ]
+  ],
+  "filas": 11
+ },
+ "rubro:silla_gamer": {
+  "tipo": "rubro",
+  "nombre": "silla gamer",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "silla gamer"
+   ]
+  ],
+  "filas": 13
+ },
+ "rubro:ssd": {
+  "tipo": "rubro",
+  "nombre": "ssd",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "ssd"
+   ]
+  ],
+  "filas": 60
+ },
+ "rubro:tablet": {
+  "tipo": "rubro",
+  "nombre": "tablet",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "tablet"
+   ]
+  ],
+  "filas": 9
+ },
+ "rubro:teclado": {
+  "tipo": "rubro",
+  "nombre": "teclado",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "teclado"
+   ]
+  ],
+  "filas": 24
+ },
+ "rubro:webcam": {
+  "tipo": "rubro",
+  "nombre": "webcam",
+  "cond": [
+   [
+    "rubro",
+    "igual",
+    "webcam"
+   ]
+  ],
+  "filas": 10
+ },
+ "plataforma:ps5": {
+  "tipo": "plataforma",
+  "nombre": "PlayStation 5",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "ps5"
+    ]
+   ]
+  ],
+  "filas": 114
+ },
+ "plataforma:ps4": {
+  "tipo": "plataforma",
+  "nombre": "PlayStation 4",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "ps4"
+    ]
+   ]
+  ],
+  "filas": 87
+ },
+ "plataforma:xbox": {
+  "tipo": "plataforma",
+  "nombre": "Xbox",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "xbox"
+    ]
+   ]
+  ],
+  "filas": 80
+ },
+ "plataforma:nintendo_switch": {
+  "tipo": "plataforma",
+  "nombre": "Nintendo Switch",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "nintendo_switch"
+    ]
+   ]
+  ],
+  "filas": 48
+ },
+ "plataforma:macos": {
+  "tipo": "plataforma",
+  "nombre": "Mac",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "macos"
+    ]
+   ]
+  ],
+  "filas": 189
+ },
+ "plataforma:ios": {
+  "tipo": "plataforma",
+  "nombre": "iPhone o iPad",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "ios"
+    ]
+   ]
+  ],
+  "filas": 55
+ },
+ "plataforma:android": {
+  "tipo": "plataforma",
+  "nombre": "Android",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "android"
+    ]
+   ]
+  ],
+  "filas": 67
+ },
+ "plataforma:smart_tv": {
+  "tipo": "plataforma",
+  "nombre": "Smart TV",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "smart_tv"
+    ]
+   ]
+  ],
+  "filas": 56
+ },
+ "plataforma:pc_escritorio": {
+  "tipo": "plataforma",
+  "nombre": "PC de escritorio",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "pc_escritorio"
+    ]
+   ]
+  ],
+  "filas": 393
+ },
+ "plataforma:notebook": {
+  "tipo": "plataforma",
+  "nombre": "notebook",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "notebook"
+    ]
+   ]
+  ],
+  "filas": 259
+ },
+ "plataforma:windows": {
+  "tipo": "plataforma",
+  "nombre": "Windows",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "windows"
+    ]
+   ]
+  ],
+  "filas": 246
+ },
+ "plataforma:linux": {
+  "tipo": "plataforma",
+  "nombre": "Linux",
+  "cond": [
+   [
+    "plataformas",
+    "alguno",
+    [
+     "linux"
+    ]
+   ]
+  ],
+  "filas": 189
+ },
+ "color:azul": {
+  "tipo": "color",
+  "nombre": "azul",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "azul"
+    ]
+   ]
+  ],
+  "filas": 34
+ },
+ "color:blanco": {
+  "tipo": "color",
+  "nombre": "blanco",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "blanco"
+    ]
+   ]
+  ],
+  "filas": 180
+ },
+ "color:gris": {
+  "tipo": "color",
+  "nombre": "gris",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "gris"
+    ]
+   ]
+  ],
+  "filas": 66
+ },
+ "color:negro": {
+  "tipo": "color",
+  "nombre": "negro",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "negro"
+    ]
+   ]
+  ],
+  "filas": 454
+ },
+ "color:negro_y_azul": {
+  "tipo": "color",
+  "nombre": "negro y azul",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "negro y azul"
+    ]
+   ]
+  ],
+  "filas": 13
+ },
+ "color:negro_y_rojo": {
+  "tipo": "color",
+  "nombre": "negro y rojo",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "negro y rojo"
+    ]
+   ]
+  ],
+  "filas": 13
+ },
+ "color:plata": {
+  "tipo": "color",
+  "nombre": "plata",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "plata"
+    ]
+   ]
+  ],
+  "filas": 102
+ },
+ "color:rojo": {
+  "tipo": "color",
+  "nombre": "rojo",
+  "cond": [
+   [
+    "color",
+    "tiene",
+    [
+     "rojo"
+    ]
+   ]
+  ],
+  "filas": 25
+ },
+ "atributo:inalambrico": {
+  "tipo": "atributo",
+  "nombre": "inalambrico",
+  "cond": [
+   [
+    "conecta_por",
+    "alguno",
+    [
+     "bluetooth",
+     "receptor_usb"
+    ]
+   ]
+  ],
+  "filas": 96
+ },
+ "atributo:con_cable": {
+  "tipo": "atributo",
+  "nombre": "con cable",
+  "cond": [
+   [
+    "conecta_por",
+    "ninguno",
+    [
+     "bluetooth",
+     "receptor_usb"
+    ]
+   ]
+  ],
+  "filas": 386
+ },
+ "atributo:bluetooth": {
+  "tipo": "atributo",
+  "nombre": "bluetooth",
+  "cond": [
+   [
+    "conecta_por",
+    "alguno",
+    [
+     "bluetooth"
+    ]
+   ]
+  ],
+  "filas": 87
+ },
+ "atributo:wifi": {
+  "tipo": "atributo",
+  "nombre": "wifi",
+  "cond": [
+   [
+    "conecta_por",
+    "alguno",
+    [
+     "wifi"
+    ]
+   ]
+  ],
+  "filas": 87
+ },
+ "atributo:usb_c": {
+  "tipo": "atributo",
+  "nombre": "usb c",
+  "cond": [
+   [
+    "conecta_por",
+    "alguno",
+    [
+     "puerto_usb_c"
+    ]
+   ]
+  ],
+  "filas": 35
+ },
+ "atributo:mecanico": {
+  "tipo": "atributo",
+  "nombre": "mecanico",
+  "cond": [
+   [
+    "switch_teclado",
+    "tiene",
+    [
+     "mecanico"
+    ]
+   ]
+  ],
+  "filas": 15
+ },
+ "atributo:membrana": {
+  "tipo": "atributo",
+  "nombre": "membrana",
+  "cond": [
+   [
+    "switch_teclado",
+    "tiene",
+    [
+     "membrana"
+    ]
+   ]
+  ],
+  "filas": 7
+ },
+ "atributo:con_luces": {
+  "tipo": "atributo",
+  "nombre": "con luces",
+  "cond": [
+   [
+    "retroiluminacion",
+    "empieza",
+    [
+     "si"
+    ]
+   ]
+  ],
+  "filas": 92
+ },
+ "atributo:sin_luces": {
+  "tipo": "atributo",
+  "nombre": "sin luces",
+  "cond": [
+   [
+    "retroiluminacion",
+    "empieza",
+    [
+     "no"
+    ]
+   ]
+  ],
+  "filas": 42
+ },
+ "atributo:resistente_agua": {
+  "tipo": "atributo",
+  "nombre": "resistente agua",
+  "cond": [
+   [
+    "resistencia_agua",
+    "empieza",
+    [
+     "si"
+    ]
+   ]
+  ],
+  "filas": 11
+ },
+ "atributo:panel_ips": {
+  "tipo": "atributo",
+  "nombre": "panel ips",
+  "cond": [
+   [
+    "panel",
+    "tiene",
+    [
+     "ips"
+    ]
+   ]
+  ],
+  "filas": 79
+ },
+ "atributo:panel_oled": {
+  "tipo": "atributo",
+  "nombre": "panel oled",
+  "cond": [
+   [
+    "panel",
+    "tiene",
+    [
+     "oled"
+    ]
+   ]
+  ],
+  "filas": 3
+ },
+ "atributo:panel_va": {
+  "tipo": "atributo",
+  "nombre": "panel va",
+  "cond": [
+   [
+    "panel",
+    "tiene",
+    [
+     "va"
+    ]
+   ]
+  ],
+  "filas": 5
+ },
+ "atributo:full_hd": {
+  "tipo": "atributo",
+  "nombre": "full hd",
+  "cond": [
+   [
+    "resolucion",
+    "tiene",
+    [
+     "full hd"
+    ]
+   ]
+  ],
+  "filas": 66
+ },
+ "atributo:qhd": {
+  "tipo": "atributo",
+  "nombre": "qhd",
+  "cond": [
+   [
+    "resolucion",
+    "tiene",
+    [
+     "qhd"
+    ]
+   ]
+  ],
+  "filas": 8
+ },
+ "atributo:ultrawide": {
+  "tipo": "atributo",
+  "nombre": "ultrawide",
+  "cond": [
+   [
+    "resolucion",
+    "tiene",
+    [
+     "ultrawide",
+     "uwqhd"
+    ]
+   ]
+  ],
+  "filas": 2
+ },
+ "atributo:con_bateria": {
+  "tipo": "atributo",
+  "nombre": "con bateria",
+  "cond": [
+   [
+    "bateria",
+    "empieza",
+    [
+     "si",
+     "funciona con"
+    ]
+   ]
+  ],
+  "filas": 18
+ },
+ "preferencia:uso_gamer": {
+  "tipo": "preferencia",
+  "nombre": "uso gamer",
+  "cond": [
+   [
+    "uso",
+    "empieza",
+    [
+     "gaming"
+    ]
+   ]
+  ],
+  "filas": 195
+ },
+ "preferencia:uso_oficina": {
+  "tipo": "preferencia",
+  "nombre": "uso oficina",
+  "cond": [
+   [
+    "uso",
+    "tiene",
+    [
+     "trabajo",
+     "oficina",
+     "productividad"
+    ]
+   ]
+  ],
+  "filas": 148
+ },
+ "preferencia:uso_streaming": {
+  "tipo": "preferencia",
+  "nombre": "uso streaming",
+  "cond": [
+   [
+    "uso",
+    "tiene",
+    [
+     "streaming",
+     "videoconferencias"
+    ]
+   ]
+  ],
+  "filas": 22
+ },
+ "origen:fabricado_china": {
+  "tipo": "origen",
+  "nombre": "fabricado china",
+  "cond": [
+   [
+    "origen",
+    "tiene",
+    [
+     "fabricado en china."
+    ]
+   ]
+  ],
+  "filas": 379
+ },
+ "orden:mas_barato": {
+  "tipo": "orden",
+  "nombre": "mas barato",
+  "cond": [
+   [
+    "precio",
+    "orden",
+    "asc"
+   ]
+  ],
+  "filas": 482
+ },
+ "orden:mas_caro": {
+  "tipo": "orden",
+  "nombre": "mas caro",
+  "cond": [
+   [
+    "precio",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 482
+ },
+ "orden:mas_liviano": {
+  "tipo": "orden",
+  "nombre": "mas liviano",
+  "cond": [
+   [
+    "peso",
+    "orden",
+    "asc"
+   ]
+  ],
+  "filas": 482
+ },
+ "orden:mas_pesado": {
+  "tipo": "orden",
+  "nombre": "mas pesado",
+  "cond": [
+   [
+    "peso",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 482
+ },
+ "orden:mas_capacidad": {
+  "tipo": "orden",
+  "nombre": "mas capacidad",
+  "cond": [
+   [
+    "capacidad_gb",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 171
+ },
+ "orden:mas_potente_w": {
+  "tipo": "orden",
+  "nombre": "mas potente w",
+  "cond": [
+   [
+    "potencia_w",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 51
+ },
+ "orden:mas_hz": {
+  "tipo": "orden",
+  "nombre": "mas hz",
+  "cond": [
+   [
+    "hz",
+    "orden",
+    "desc"
+   ]
+  ],
+  "filas": 90
+ }
+}
