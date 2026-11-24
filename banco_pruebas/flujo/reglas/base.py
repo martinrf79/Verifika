@@ -120,6 +120,10 @@ BASE = [
     ("liviano", [("peso", "orden", "asc")], ["liviano", "el mas liviano", "que pese poco", "livianito", "ligero", "poco peso"]),
 ]
 
+# Uso y destino son preferencia: filtran solo si queda algo. Si la fuente dice Gaming en todos los teclados, "para la
+# empresa" no deja la tienda sin teclados.
+PREFERENCIA = {"gamer", "oficina", "streaming"}
+
 # Las condiciones de negacion: "que no sea chino" niega la de chino. Las palabras que niegan, antes del concepto.
 NIEGA = ("no", "sin", "nada de", "que no sea", "que no sean", "evitar", "menos")
 

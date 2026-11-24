@@ -52,6 +52,8 @@ MEMO = {}
 
 # ── marcas y modelos, por codigo ────────────────────────────────────────────────────────────────────────────
 MARCAS = {B.nrm(k[1]): k[1] for k in K.MOD}
+NOVENDE = {B.nrm(w) for w in json.load(open(os.path.join(AQUI, "../../../data/clientes/verifika_prod/no_vendidas.json"),
+                                            encoding="utf-8"))["no_vendidas"]}
 MODELOS = {}  # token o nombre normalizado -> claves
 for k in K.MOD:
     n = B.nrm(k[2])
@@ -86,6 +88,16 @@ def resolver(fr, alto, bajo, topes=None):
     ts = tokens(fr)
     usado = [False] * len(ts)
     marcas, modelos, desconocido = set(), set(), []
+    # lo que la tienda no vende, por palabra exacta de no_vendidas.json; no cuenta si es para que sirve, "para la play 5"
+    novende = []
+    for n in range(3, 0, -1):
+        for i in range(len(ts) - n + 1):
+            w = " ".join(ts[i:i + n])
+            if w in NOVENDE and not any(usado[i:i + n]):
+                antes = " ".join(ts[max(0, i - 3):i])
+                if not re.search(r"\b(para|con|de la|del|compatible|anda|sirve|va)( la| el| mi)?$", antes):
+                    novende.append(w)
+                    usado[i:i + n] = [True] * n
     # marcas y modelos por codigo, nombres largos primero
     for n in range(4, 0, -1):
         for i in range(len(ts) - n + 1):
@@ -105,6 +117,14 @@ def resolver(fr, alto, bajo, topes=None):
                 modelos |= MODELOS[parecido[0]]; usado[i] = True
             else:
                 desconocido.append(t)
+    # las pulgadas las lee el codigo: "24 pulgadas", "de 27"; el tamano esta en el nombre del modelo
+    pulgadas = None
+    m = re.search(r"\b(\d{2})\s*(pulgadas|pulg|pulgada|\")", fr.lower()) or re.search(r"\b(monitor|pantalla|tele|moni)\s+de\s+(\d{2})\b", B.nrm(fr))
+    if m:
+        pulgadas = m.group(1) if m.group(1).isdigit() else m.group(2)
+        for i, t in enumerate(ts):
+            if t in (pulgadas, "pulgadas", "pulgada", "pulg"):
+                usado[i] = True
     # la plata la lee el codigo: los numeros, sus unidades y "hasta" no van a los embeddings
     if topes:
         for i, t in enumerate(ts):
@@ -141,8 +161,8 @@ def resolver(fr, alto, bajo, topes=None):
     rubros = {c for t, c, n, _, _ in sel if t == "rubro" and not n}
     conds = [(c, n) for t, c, n, _, _ in sel if t == "cond"]
     info = {"rubros": sorted(rubros), "marcas": sorted(marcas), "modelos": sorted(m[2] for m in modelos), "conds": conds,
-            "amarillos": amarillos, "desconocido": desconocido}
-    if desconocido:
+            "amarillos": amarillos, "desconocido": desconocido, "novende": novende, "pulgadas": pulgadas}
+    if desconocido or novende:
         return "no_hay", [], info
     if not (rubros or marcas or modelos):
         return ("repregunta" if (conds or amarillos) else "no_hay"), [], info
@@ -157,7 +177,12 @@ def resolver(fr, alto, bajo, topes=None):
             if cond[1] == "orden":
                 orden = (cond[0], cond[2] == "desc")
                 continue
-            ks = [k for k in ks if B.cumple(VISTA[k], cond) != neg]
+            quedan = [k for k in ks if B.cumple(VISTA[k], cond) != neg]
+            if c in B.PREFERENCIA and not quedan:
+                continue
+            ks = quedan
+    if pulgadas:
+        ks = [k for k in ks if pulgadas in k[2]]
     for d, n in (topes or []):
         ks = [k for k in ks if (VISTA[k]["precio"] <= n if d == "max" else VISTA[k]["precio"] >= n)]
     if not ks:
@@ -166,7 +191,8 @@ def resolver(fr, alto, bajo, topes=None):
         return "repregunta", [], info
     campo, desc = orden or ("precio", False)
     ks.sort(key=lambda k: VISTA[k][campo], reverse=desc)
-    return "ofrece", ks[:3], info
+    uno = bool(re.search(r"\b(el|la|lo|los|las)\b[a-z ]{0,25}\bmas\b", B.nrm(fr)))
+    return "ofrece", ks[:1 if uno and orden else 3], info
 
 
 def corregir(dec, of, ac, top=None):
@@ -182,7 +208,7 @@ def corregir(dec, of, ac, top=None):
 
 def topes(fr):
     out = []
-    for m in re.finditer(r"\d[\d.,]*\s*[a-z]*", DV.norm(fr)):
+    for m in re.finditer(r"\d[\d.,]*(\s*[a-z]+)?(?![a-z0-9])", DV.norm(fr)):
         t = DV.tope(m.group(0), fr)
         if t:
             out.append(t)
@@ -242,11 +268,41 @@ def probar():
     print(f"tiempo por frase: mediana {statistics.median(seg) * 1000:.0f} ms, p90 {seg[int(len(seg) * .9) - 1] * 1000:.0f} ms")
 
 
+def probar2():
+    """La muestra nueva, muestra2.py, congelada en hash2.txt, con los mismos cortes."""
+    import acept as A, hashlib
+    from muestra2 import M2
+    assert hashlib.sha256(open(os.path.join(AQUI, "muestra2.py"), "rb").read()).hexdigest() in open(os.path.join(AQUI, "hash2.txt")).read()
+    c = json.load(open(CORTES))
+    out, seg = [], []
+    for f, fr, r, dud, _ in M2:
+        r2 = dict(r); caro = r2.pop("caro", False); ac = A.acept(r2)
+        if caro:
+            mx = max(VISTA[k]["precio"] for k in ac); ac = {k for k in ac if VISTA[k]["precio"] == mx}
+        t = time.time()
+        dec, of, info = resolver(fr, c["alto"], c["bajo"], topes(fr))
+        seg.append(time.time() - t)
+        out.append({"id": f, "dudosa": dud, "frase": fr, "dec": dec, "of": [k[2] for k in of], "c": corregir(dec, of, sorted(ac)), **info})
+    with open(os.path.join(AQUI, "prueba2.jsonl"), "w") as fh:
+        for o in out:
+            fh.write(json.dumps(o, ensure_ascii=False) + "\n")
+    print("todas", len(out), cuenta([o["c"] for o in out]))
+    print("sin dudosas", sum(not o["dudosa"] for o in out), cuenta([o["c"] for o in out if not o["dudosa"]]))
+    seg.sort()
+    print(f"tiempo por frase: mediana {statistics.median(seg) * 1000:.0f} ms, p90 {seg[int(len(seg) * .9) - 1] * 1000:.0f} ms")
+    for o in out:
+        if o["c"] == "erra":
+            print("ERRA", o["id"], o["dudosa"], o["frase"][:70], "|", o["dec"], o["of"], o["rubros"], o["marcas"], o["modelos"][:2], o["conds"], o["novende"])
+
+
 if __name__ == "__main__":
     q = sys.argv[1]
     if q == "validar":
         validar()
     elif q == "probar":
         probar()
+    elif q == "probar2":
+        probar2()
     else:
-        print(resolver(q, 0.9, 0.86, topes(q)))
+        c = json.load(open(CORTES))
+        print(resolver(q, c["alto"], c["bajo"], topes(q)))
