@@ -63,6 +63,7 @@ for k in K.MOD:
     if re.search(r"\d", t0) or len(t0) >= 5:
         MODELOS.setdefault(t0, set()).add(k)
 CONOCIDAS = {w for _, _, e in ENT for w in e.split()} | {w for x in NOVENDE for w in x.split()}
+CONOC_LISTA = sorted(CONOCIDAS)
 UNIDAD = re.compile(r"^\d+(gb|tb|hz|mm|w|mah|k|p|lucas?|mil)?$")
 VACIAS = set(B.nrm("""hola buenas buen dia che tenes tenez tienen tienes tendras hay quiero quisiera queria busco buscando
 necesito dame decime pasame poneme agrega agregame sumale sumame me te le lo la los las el un una unos unas de del para pa
@@ -156,7 +157,12 @@ def resolver(fr, alto, bajo, topes=None):
             if s < bajo or any(tomado[a:b]):
                 continue
             tipo, conc, ex = ENT[mejor[j]]
-            if s >= alto:
+            # una palabra que la base no conoce no se adivina por parecido: "rosario" no es rosado ni "rio" es rojo.
+            # Vale si esta en las expresiones de la base o es un error de tipeo de una, con la vara de los modelos;
+            # si no, va a lo dudoso, que es el verificador, y no a una condicion.
+            conocida = all(t in VACIAS or t in CONOCIDAS or difflib.get_close_matches(t, CONOC_LISTA, 1, 0.85)
+                           for t in w.split())
+            if s >= alto and conocida:
                 neg = False
                 antes = " ".join(ts[max(0, a - 3):a])
                 if ts[a] in ("no", "sin") and not ex.split()[0] in ("no", "sin"):
