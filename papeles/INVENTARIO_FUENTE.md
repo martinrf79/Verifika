@@ -1,6 +1,6 @@
 # Inventario de la fuente de verdad — verifika_prod
 
-Productos en el repo: **880** | categorias: **22** | specs preguntables: **25**
+Productos en el repo: **880** | categorias: **22** | specs preguntables: **30**
 
 ## 1. Campos del producto: lo que el codigo lee vs lo que la fuente da
 
@@ -19,7 +19,7 @@ Productos en el repo: **880** | categorias: **22** | specs preguntables: **25**
 | dimensiones | ficha: medidas | 880/880 | - |
 | contenido_caja | ficha: que trae | 880/880 | - |
 | uso_recomendado | ficha: uso | 880/880 | - |
-| caracteristicas_extra | ficha: specs | 852/880 | - |
+| caracteristicas_extra | ficha: specs | 880/880 | - |
 | marca | buscador | 880/880 | - |
 | modelo | certificador de modelo puntual | 880/880 | - |
 | color | buscador, variantes | 861/880 | - |
@@ -54,9 +54,14 @@ Cada celda = productos de esa categoria con el dato / productos donde la spec ap
 | conexion | - | 46/46 | - | - | - | - | 22/22 | - | 24/24 | - | - | 52/52 | - | 36/36 | - | - | - | - | - | - | 48/48 | 10/10 | 238/238 |
 | switch_teclado | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | 48/48 | - | 48/48 |
 | sensor | - | - | - | - | - | - | - | - | - | - | - | 52/52 | - | - | - | - | - | - | - | - | - | - | 52/52 |
-| potencia | - | - | 20/20 | 14/14 | 15/15 | - | - | - | - | - | - | - | - | 36/36 | - | - | - | - | - | - | - | - | 85/85 |
+| potencia | - | - | 20/20 | 14/14 | 15/15 | - | - | - | - | - | - | - | - | 36/36 | 18/18 | - | - | - | - | - | - | - | 103/103 |
 | memoria_video | - | - | - | - | - | - | - | - | - | - | - | - | - | - | 18/18 | - | - | - | - | - | - | - | 18/18 |
 | formato | - | - | - | - | 15/15 | 30/30 | - | - | - | - | 15/15 | - | - | - | - | - | - | - | - | - | - | - | 60/60 |
+| pulgadas | - | - | - | - | - | - | - | - | - | 23/24 | - | - | - | - | - | - | - | - | - | - | - | - | 23/24 |
+| microfono | - | 46/46 | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | 46/46 |
+| cancelacion_ruido | - | 46/46 | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | 46/46 |
+| fuente_recomendada | - | - | - | - | - | - | - | - | - | - | - | - | - | - | 18/18 | - | - | - | - | - | - | - | 18/18 |
+| nucleos | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - | 19/19 | - | - | - | - | - | - | 19/19 |
 
 ## 3. El resto de la fuente
 
@@ -65,8 +70,8 @@ Cada celda = productos de esa categoria con el dato / productos donde la spec ap
 - Movidas de venta escritas: **32**
 - Mensajes fijos al cliente: **56**
 - Identidad del vendedor en la fuente: **si**
-- Categorias no vendidas: **29**
-- Specs preguntables: **25**
+- Categorias no vendidas: **33**
+- Specs preguntables: **30**
 
 ## 3-bis. Cobertura: que fuente contesta cada cosa
 
@@ -91,5 +96,5 @@ Temas de FAQ sin categoria espejo: **23**. NO es un hueco: el modelo los pide po
 
 ## 4. Calidad del dato: spec fantasma depurada
 
-Fichas del CSV que traian una spec de OTRO producto pegada: **427/880**. La ingesta las depura dejando la spec avalada por el nombre del propio producto.
+Fichas del CSV que traian una spec de OTRO producto pegada: **399/880**. La ingesta las depura dejando la spec avalada por el nombre del propio producto.
 

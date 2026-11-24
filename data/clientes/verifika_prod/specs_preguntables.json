@@ -193,7 +193,7 @@
       "id": "potencia",
       "claves": ["potencia", "watts", "cuantos w", "vatios"],
       "etiqueta": "la potencia",
-      "aplica_a": ["fuente", "parlante", "cargador", "cooler"],
+      "aplica_a": ["fuente", "parlante", "cargador", "cooler", "placa de video"],
       "extraer": ["(\\d+\\s*w\\b)"],
       "excluyentes": [["aire", "liquida"]],
       "claves_ficha": ["w"]
@@ -213,6 +213,46 @@
       "aplica_a": ["gabinete", "motherboard", "fuente"],
       "extraer": ["\\b(micro atx|mini itx|matx|atx|itx)\\b", "\\b(ddr\\d)\\b"],
       "claves_ficha": ["atx", "itx", "ddr"]
+    },
+    {
+      "id": "pulgadas",
+      "claves": ["pulgadas", "pulgada", "tamano de pantalla", "de cuantas pulgadas", "cuanto mide la pantalla"],
+      "etiqueta": "el tamano de la pantalla",
+      "aplica_a": ["monitor"],
+      "extraer": ["(\\d+(?:[.,]\\d+)?\\s*pulgadas)"],
+      "claves_ficha": ["pulgadas"]
+    },
+    {
+      "id": "microfono",
+      "claves": ["microfono", "micro", "mic", "para hablar", "tiene micro"],
+      "etiqueta": "el microfono",
+      "aplica_a": ["auriculares"],
+      "extraer": ["((?:si|no),? [^.]*microfono[^.]*)"],
+      "claves_ficha": ["microfono"]
+    },
+    {
+      "id": "cancelacion_ruido",
+      "claves": ["cancelacion de ruido", "anc", "noise cancelling", "que no se escuche el ruido", "aislar el ruido"],
+      "etiqueta": "la cancelacion activa de ruido",
+      "aplica_a": ["auriculares"],
+      "extraer": ["((?:si|no),? [^.]*cancelacion[^.]*)"],
+      "claves_ficha": ["cancelacion"]
+    },
+    {
+      "id": "fuente_recomendada",
+      "claves": ["que fuente necesita", "fuente recomendada", "cuantos watts de fuente", "me alcanza la fuente"],
+      "etiqueta": "la fuente recomendada",
+      "aplica_a": ["placa de video"],
+      "extraer": ["(fuente de \\d+\\s*w[^.]*)"],
+      "claves_ficha": ["fuente de"]
+    },
+    {
+      "id": "nucleos",
+      "claves": ["nucleos", "nucleo", "cores", "hilos", "threads"],
+      "etiqueta": "los nucleos y los hilos",
+      "aplica_a": ["procesador"],
+      "extraer": ["(\\d+\\s*nucleos(?:,\\s*\\d+\\s*hilos)?)"],
+      "claves_ficha": ["nucleos"]
     }
   ]
 }
