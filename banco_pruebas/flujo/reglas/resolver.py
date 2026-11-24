@@ -207,8 +207,9 @@ def resolver(fr, alto, bajo, topes=None):
         ks = [k for k in ks if (VISTA[k]["precio"] <= n if d == "max" else VISTA[k]["precio"] >= n)]
     if not ks and nombrados and not any(c in COLORES for c, _ in conds):
         ks = nombrados
+    # "no hay" solo se afirma si se entendio la frase entera: con una parte dudosa, el vacio puede ser de la lectura
     if not ks:
-        return "no_hay", [], info
+        return ("repregunta" if amarillos else "no_hay"), [], info
     if [a for a in amarillos if a[0] == "cond"]:
         return "repregunta", [], info
     campo, desc = orden or ("precio", False)

@@ -1,0 +1,1110 @@
+{
+"examen": {
+"prod:0": [
+"repregunta",
+true
+],
+"prod:2": [
+"repregunta",
+true
+],
+"prod:5": [
+"acierta",
+false
+],
+"prod:18": [
+"acierta",
+false
+],
+"prod:24": [
+"erra",
+false
+],
+"prod:30": [
+"repregunta",
+false
+],
+"prod:38": [
+"acierta",
+false
+],
+"prod:85": [
+"repregunta",
+false
+],
+"prod:132": [
+"acierta",
+false
+],
+"prod:140": [
+"repregunta",
+false
+],
+"prod:148": [
+"repregunta",
+true
+],
+"prod:175": [
+"repregunta",
+false
+],
+"prod:181": [
+"repregunta",
+false
+],
+"prod:190": [
+"acierta",
+false
+],
+"prod:200": [
+"acierta",
+false
+],
+"prod:210": [
+"acierta",
+false
+],
+"prod:216": [
+"repregunta",
+true
+],
+"prod:219": [
+"repregunta",
+true
+],
+"prod:224": [
+"repregunta",
+false
+],
+"prod:227": [
+"repregunta",
+false
+],
+"prod:238": [
+"acierta",
+true
+],
+"prod:240": [
+"repregunta",
+false
+],
+"prod:245": [
+"acierta",
+true
+],
+"prod:251": [
+"repregunta",
+false
+],
+"prod:254": [
+"repregunta",
+false
+],
+"prod:262": [
+"acierta",
+false
+],
+"prod:274": [
+"repregunta",
+false
+],
+"prod:275": [
+"acierta",
+false
+],
+"prod:289": [
+"acierta",
+false
+],
+"prod:298": [
+"acierta",
+false
+],
+"prod:303": [
+"repregunta",
+false
+],
+"prod:306": [
+"repregunta",
+false
+],
+"prod:307": [
+"repregunta",
+true
+],
+"prod:308": [
+"repregunta",
+false
+],
+"prod:311": [
+"repregunta",
+false
+],
+"prod:312": [
+"erra",
+true
+],
+"prod:313": [
+"acierta",
+false
+],
+"prod:317": [
+"acierta",
+false
+],
+"prod:318": [
+"acierta",
+false
+],
+"prod:319": [
+"repregunta",
+true
+],
+"prod:321": [
+"acierta",
+false
+],
+"prod:322": [
+"acierta",
+false
+],
+"prod:323": [
+"acierta",
+false
+],
+"prod:327": [
+"erra",
+false
+],
+"prod:329": [
+"repregunta",
+false
+],
+"prod:339": [
+"acierta",
+false
+],
+"prod:350": [
+"acierta",
+false
+],
+"prod:351": [
+"repregunta",
+true
+],
+"prod:356": [
+"repregunta",
+false
+],
+"prod:358": [
+"repregunta",
+false
+],
+"prod:360": [
+"acierta",
+false
+],
+"prod:364": [
+"repregunta",
+false
+],
+"prod:365": [
+"repregunta",
+false
+],
+"prod:366": [
+"erra",
+false
+],
+"prod:367": [
+"erra",
+true
+],
+"prod:369": [
+"repregunta",
+true
+],
+"prod:372": [
+"repregunta",
+false
+],
+"prod:374": [
+"repregunta",
+false
+],
+"prod:376": [
+"repregunta",
+false
+],
+"prod:377": [
+"repregunta",
+false
+],
+"prod:381": [
+"repregunta",
+false
+],
+"prod:384": [
+"repregunta",
+false
+],
+"prod:389": [
+"erra",
+false
+],
+"prod:390": [
+"repregunta",
+false
+],
+"prod:391": [
+"repregunta",
+false
+],
+"prod:392": [
+"repregunta",
+false
+],
+"prod:393": [
+"repregunta",
+false
+],
+"prod:394": [
+"repregunta",
+false
+],
+"prod:397": [
+"repregunta",
+false
+],
+"prod:410": [
+"repregunta",
+false
+],
+"prod:411": [
+"acierta",
+false
+],
+"prod:412": [
+"repregunta",
+false
+],
+"prod:414": [
+"acierta",
+false
+],
+"prod:415": [
+"acierta",
+true
+],
+"prod:419": [
+"acierta",
+false
+],
+"prod:424": [
+"repregunta",
+false
+],
+"prod:434": [
+"erra",
+true
+],
+"prod:441": [
+"repregunta",
+false
+],
+"prod:444": [
+"erra",
+false
+],
+"prod:445": [
+"repregunta",
+false
+],
+"prod:447": [
+"repregunta",
+false
+],
+"prod:449": [
+"repregunta",
+false
+],
+"prod:460": [
+"acierta",
+false
+],
+"prod:473": [
+"repregunta",
+false
+],
+"prod:483": [
+"erra",
+true
+],
+"prod:485": [
+"repregunta",
+false
+],
+"prod:488": [
+"repregunta",
+false
+],
+"prod:490": [
+"acierta",
+false
+],
+"prod:526": [
+"repregunta",
+false
+],
+"prod:535": [
+"repregunta",
+true
+],
+"prod:654": [
+"repregunta",
+false
+],
+"prod:661": [
+"acierta",
+false
+],
+"prod:664": [
+"acierta",
+false
+],
+"prod:670": [
+"acierta",
+false
+],
+"prod:674": [
+"repregunta",
+true
+],
+"prod:676": [
+"repregunta",
+true
+],
+"prod:685": [
+"acierta",
+false
+],
+"prod:710": [
+"repregunta",
+true
+],
+"prod:711": [
+"repregunta",
+true
+],
+"prod:713": [
+"repregunta",
+true
+],
+"prod:722": [
+"repregunta",
+true
+],
+"prod:733": [
+"repregunta",
+true
+],
+"prod:743": [
+"repregunta",
+true
+],
+"prod:752": [
+"acierta",
+true
+],
+"prod:753": [
+"repregunta",
+false
+],
+"prod:756": [
+"acierta",
+false
+],
+"prod:759": [
+"repregunta",
+true
+],
+"prod:772": [
+"repregunta",
+true
+],
+"prod:777": [
+"repregunta",
+true
+],
+"cosecha:781": [
+"repregunta",
+true
+],
+"cosecha:785": [
+"repregunta",
+true
+],
+"cosecha:786": [
+"acierta",
+false
+],
+"cosecha:796": [
+"repregunta",
+true
+],
+"cosecha:815": [
+"erra",
+false
+],
+"cosecha:818": [
+"acierta",
+false
+],
+"cosecha:823": [
+"repregunta",
+false
+],
+"cosecha:828": [
+"acierta",
+false
+],
+"cosecha:829": [
+"erra",
+false
+],
+"cosecha:830": [
+"repregunta",
+false
+],
+"cosecha:831": [
+"acierta",
+false
+],
+"cosecha:832": [
+"erra",
+false
+],
+"cosecha:833": [
+"repregunta",
+true
+],
+"cosecha:835": [
+"erra",
+false
+],
+"cosecha:836": [
+"repregunta",
+true
+],
+"cosecha:837": [
+"repregunta",
+false
+],
+"cosecha:838": [
+"erra",
+false
+],
+"cosecha:839": [
+"erra",
+true
+],
+"cosecha:840": [
+"acierta",
+false
+],
+"cosecha:841": [
+"repregunta",
+true
+],
+"cosecha:845": [
+"acierta",
+true
+],
+"cosecha:847": [
+"acierta",
+false
+],
+"cosecha:850": [
+"erra",
+false
+],
+"cosecha:856": [
+"repregunta",
+true
+],
+"cosecha:857": [
+"acierta",
+false
+],
+"cosecha:862": [
+"repregunta",
+true
+],
+"cosecha:870": [
+"acierta",
+true
+],
+"cosecha:885": [
+"repregunta",
+true
+],
+"cosecha:886": [
+"repregunta",
+true
+]
+},
+"m48": {
+"V01": [
+"acierta",
+false
+],
+"V02": [
+"acierta",
+false
+],
+"V03": [
+"repregunta",
+false
+],
+"V04": [
+"repregunta",
+true
+],
+"V05": [
+"acierta",
+false
+],
+"V06": [
+"acierta",
+true
+],
+"V07": [
+"repregunta",
+true
+],
+"V08": [
+"repregunta",
+true
+],
+"V09": [
+"acierta",
+false
+],
+"V10": [
+"acierta",
+false
+],
+"V11": [
+"acierta",
+false
+],
+"V12": [
+"acierta",
+false
+],
+"V13": [
+"acierta",
+false
+],
+"V14": [
+"acierta",
+false
+],
+"V15": [
+"acierta",
+false
+],
+"V16": [
+"repregunta",
+false
+],
+"V17": [
+"erra",
+false
+],
+"V18": [
+"acierta",
+false
+],
+"V19": [
+"repregunta",
+false
+],
+"V20": [
+"acierta",
+false
+],
+"V21": [
+"acierta",
+false
+],
+"V22": [
+"repregunta",
+true
+],
+"V23": [
+"acierta",
+false
+],
+"V24": [
+"acierta",
+false
+],
+"V25": [
+"acierta",
+true
+],
+"V26": [
+"acierta",
+true
+],
+"V27": [
+"erra",
+false
+],
+"V28": [
+"acierta",
+false
+],
+"V29": [
+"acierta",
+false
+],
+"V30": [
+"acierta",
+true
+],
+"V31": [
+"acierta",
+false
+],
+"V32": [
+"acierta",
+false
+],
+"V33": [
+"repregunta",
+true
+],
+"V34": [
+"acierta",
+false
+],
+"V35": [
+"repregunta",
+false
+],
+"V36": [
+"acierta",
+false
+],
+"V37": [
+"repregunta",
+true
+],
+"V38": [
+"repregunta",
+true
+],
+"V39": [
+"repregunta",
+false
+],
+"V40": [
+"acierta",
+false
+],
+"V41": [
+"acierta",
+false
+],
+"V42": [
+"acierta",
+false
+],
+"V43": [
+"acierta",
+false
+],
+"V44": [
+"acierta",
+false
+],
+"V45": [
+"repregunta",
+true
+],
+"V46": [
+"acierta",
+true
+],
+"V47": [
+"acierta",
+false
+],
+"V48": [
+"repregunta",
+true
+]
+},
+"muestra2": {
+"525:C51": [
+"acierta",
+false
+],
+"examen:33dbb56c1b": [
+"repregunta",
+true
+],
+"reales:R12": [
+"acierta",
+true
+],
+"nuevas70:O01": [
+"repregunta",
+false
+],
+"examen:815c0c9b65": [
+"acierta",
+false
+],
+"525:C33": [
+"acierta",
+false
+],
+"prod:P129": [
+"acierta",
+false
+],
+"525:C46": [
+"acierta",
+false
+],
+"525:C02": [
+"acierta",
+false
+],
+"nuevas70:O06": [
+"repregunta",
+true
+],
+"prod:P020": [
+"repregunta",
+true
+],
+"525:C42": [
+"repregunta",
+false
+],
+"nuevas70b:B58": [
+"repregunta",
+true
+],
+"525:C44": [
+"repregunta",
+false
+],
+"nuevas70:R08": [
+"acierta",
+false
+],
+"525:C35": [
+"acierta",
+false
+],
+"525:C30": [
+"erra",
+false
+],
+"prod:P007": [
+"acierta",
+false
+],
+"525:C08": [
+"repregunta",
+true
+],
+"nuevas70:A07": [
+"repregunta",
+true
+],
+"525:C04": [
+"acierta",
+true
+],
+"prod:P099": [
+"acierta",
+false
+],
+"525:C03": [
+"acierta",
+false
+],
+"prod:P105": [
+"repregunta",
+true
+],
+"525:C56": [
+"acierta",
+false
+],
+"nuevas70b:B41": [
+"repregunta",
+true
+],
+"525:C06": [
+"acierta",
+false
+],
+"examen:e993ae644d": [
+"acierta",
+false
+],
+"examen:58b5a11775": [
+"acierta",
+false
+],
+"525:C43": [
+"acierta",
+false
+],
+"examen:8e13ecbb7c": [
+"acierta",
+true
+],
+"reales:R15": [
+"repregunta",
+true
+],
+"525:C18": [
+"acierta",
+false
+],
+"nuevas70:R12": [
+"repregunta",
+false
+],
+"525:C39": [
+"repregunta",
+false
+],
+"nuevas70:O02": [
+"repregunta",
+true
+],
+"prod:P092": [
+"erra",
+true
+],
+"nuevas70b:B31": [
+"repregunta",
+false
+],
+"nuevas70b:B42": [
+"acierta",
+true
+],
+"prod:P001": [
+"acierta",
+false
+],
+"525:C07": [
+"acierta",
+false
+],
+"525:C19": [
+"repregunta",
+false
+],
+"examen:353270d278": [
+"acierta",
+false
+],
+"525:C34": [
+"repregunta",
+false
+],
+"525:C58": [
+"repregunta",
+false
+]
+},
+"muestra3": {
+"525:C53": [
+"acierta",
+false
+],
+"prod:P108": [
+"acierta",
+false
+],
+"525:C49": [
+"acierta",
+false
+],
+"prod:P012": [
+"repregunta",
+true
+],
+"525:C54": [
+"repregunta",
+true
+],
+"reales:R05": [
+"acierta",
+false
+],
+"525:C45": [
+"acierta",
+false
+],
+"525:C09": [
+"repregunta",
+false
+],
+"examen:7355526504": [
+"repregunta",
+false
+],
+"nuevas70b:B38": [
+"repregunta",
+false
+],
+"prod:P060": [
+"repregunta",
+false
+],
+"525:C27": [
+"acierta",
+false
+],
+"prod:P143": [
+"repregunta",
+true
+],
+"nuevas70b:B34": [
+"repregunta",
+false
+],
+"525:C28": [
+"repregunta",
+true
+],
+"reales:R33": [
+"acierta",
+false
+],
+"525:C22": [
+"repregunta",
+false
+],
+"nuevas70:R07": [
+"repregunta",
+false
+],
+"525:C38": [
+"erra",
+false
+],
+"prod:P006": [
+"repregunta",
+false
+],
+"reales:R38": [
+"acierta",
+false
+],
+"525:C05": [
+"repregunta",
+false
+],
+"nuevas70:A02": [
+"repregunta",
+false
+],
+"nuevas70:A08": [
+"repregunta",
+false
+],
+"prod:P131": [
+"acierta",
+false
+],
+"prod:P129": [
+"repregunta",
+false
+],
+"525:C55": [
+"acierta",
+false
+],
+"prod:P017": [
+"acierta",
+true
+],
+"nuevas70:O09": [
+"repregunta",
+false
+],
+"nuevas70:A03": [
+"erra",
+true
+],
+"prod:P131b": [
+"acierta",
+false
+],
+"nuevas70:R05": [
+"acierta",
+false
+],
+"prod:P131c": [
+"repregunta",
+false
+],
+"nuevas70:A09": [
+"repregunta",
+false
+],
+"525:K10": [
+"repregunta",
+true
+],
+"525:C50": [
+"acierta",
+false
+],
+"prod:P064": [
+"repregunta",
+false
+],
+"nuevas70b:B45": [
+"repregunta",
+true
+],
+"examen:c499622280": [
+"acierta",
+false
+],
+"examen:badf4f114b": [
+"repregunta",
+false
+],
+"nuevas70b:B33": [
+"repregunta",
+false
+],
+"prod:P009": [
+"acierta",
+false
+],
+"nuevas70:R17": [
+"erra",
+false
+],
+"525:C47": [
+"repregunta",
+false
+]
+}
+}
