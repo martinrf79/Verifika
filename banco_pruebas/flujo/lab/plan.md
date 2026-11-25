@@ -49,3 +49,22 @@ Los vectores quedan en `lab/vectores.json.gz`, fuera de git por el peso: se vuel
   busqueda siempre trae algo. `no_vendidas.json` caza 2 de los 9 y marca 2 de mas. El otro error: "cueus" deja la Coeus
   segunda.
 - Ojo: el orden sale de las etiquetas; Luna lo traduce bien en 8 de 9. Es un examen de frases sueltas, no de charlas.
+
+## Plan 2, varios pedidos, escrito antes de correr
+
+Frases de varios pedidos que Luna ya separo en `luna_conceptos.jsonl`. Cada fila de producto de Luna es una consulta.
+Por pedido etiquetado con aceptables: si alguna fila de Luna trae un aceptable primero, entre los 3 o entre los 15. Por
+fila de Luna: si su primero no es aceptable para ningun pedido, es una oferta equivocada. Los pedidos con orden y los que
+esperan no hay van aparte. Correccion de la medicion de un pedido: el orden se habia aplicado sobre los aceptables del
+examen, que es la respuesta; se informa aparte sin eso.
+
+## Resultado 2, 25-nov
+
+- Correccion de un pedido, sin usar la respuesta para el orden: de las 69 frases sin orden, ofrecer el primero de la
+  busqueda acierta 59 y yerra 10, los 9 de algo que la tienda no tiene y la Coeus. Las 9 con orden quedan sin medir bien:
+  hace falta ordenar sobre lo que cumple, y eso pide el filtro real, no las etiquetas.
+- Varios pedidos, 18 frases, 51 filas de producto de Luna. De 31 pedidos sin orden, un aceptable queda primero en 24,
+  entre los 3 en 25 y entre los 15 en 28. Los 3 sin candidato son de una frase, "proce, ram, gpu": jerga en una fila.
+- 5 filas de Luna traen primero algo que no sirve a ningun pedido: 2 son preguntas que Luna marca como producto, "a
+  cuanto me queda", "o explota la bateria"; 1 pide memoria DDR3 que la tienda no tiene; 1 "una compu para jugar"; 1 junta
+  varios articulos en una fila.
