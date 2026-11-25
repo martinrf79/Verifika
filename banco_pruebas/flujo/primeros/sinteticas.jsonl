@@ -1,0 +1,300 @@
+{"id": "S001", "persona": "gamer", "tipo": "producto", "texto": "buenas, tenes mouse gamer inalambrico? algo liviano tipo superlight"}
+{"id": "S002", "persona": "gamer", "tipo": "producto", "texto": "che la g502 hero cuanto sale"}
+{"id": "S003", "persona": "gamer", "tipo": "producto", "texto": "auris para jugar q suenen joya y no sean carisimos"}
+{"id": "S004", "persona": "gamer", "tipo": "producto", "texto": "teclado mecanico negro con luces, hasta 80 lucas"}
+{"id": "S005", "persona": "gamer", "tipo": "producto", "texto": "tenes la rtx 4070 super? q marcas"}
+{"id": "S006", "persona": "gamer", "tipo": "producto", "texto": "ssd nvme de 1 tera para el pc gamer, el mas rapido que tengas"}
+{"id": "S007", "persona": "gamer", "tipo": "producto", "texto": "monitor 144hz 24 pulgadas barato"}
+{"id": "S008", "persona": "gamer", "tipo": "producto", "texto": "ryzen 7 7800x3d hay stock?"}
+{"id": "S009", "persona": "gamer", "tipo": "producto", "texto": "silla gamer negra y roja"}
+{"id": "S010", "persona": "gamer", "tipo": "producto", "texto": "gabinete con mucho flujo de aire y vidrio blanco"}
+{"id": "S011", "persona": "gamer", "tipo": "producto", "texto": "ram ddr5 6000 32gb"}
+{"id": "S012", "persona": "gamer", "tipo": "producto", "texto": "mic para streamear, el quadcast o algo asi"}
+{"id": "S013", "persona": "gamer", "tipo": "producto", "texto": "cooler para el i5 14600kf q no se caliente"}
+{"id": "S014", "persona": "gamer", "tipo": "producto", "texto": "webcam para twitch buena calidad"}
+{"id": "S015", "persona": "gamer", "tipo": "producto", "texto": "razer viper v3 pro cuanto"}
+{"id": "S016", "persona": "gamer", "tipo": "producto", "texto": "fuente 750w gold para una 4070"}
+{"id": "S017", "persona": "gamer", "tipo": "producto", "texto": "placa madre b650 con wifi para el 7600"}
+{"id": "S018", "persona": "gamer", "tipo": "producto", "texto": "tenes notebook gamer con ryzen 7? la legion 5 o la nitro"}
+{"id": "S019", "persona": "gamer", "tipo": "producto", "texto": "parlantes con buen bajo para la pieza"}
+{"id": "S020", "persona": "gamer", "tipo": "producto", "texto": "hyperx cloud 3 blancos tenes?"}
+{"id": "S021", "persona": "gamer", "tipo": "no_vende", "texto": "tenes ps5? o xbox series"}
+{"id": "S022", "persona": "gamer", "tipo": "no_vende", "texto": "vendes nintendo switch oled?"}
+{"id": "S023", "persona": "gamer", "tipo": "no_vende", "texto": "una rtx 5090 tenes? o la 4090"}
+{"id": "S024", "persona": "gamer", "tipo": "varios", "texto": "necesito mouse y teclado gamer, y unos auris, todo negro"}
+{"id": "S025", "persona": "gamer", "tipo": "varios", "texto": "ssd 1tb y ram 16gb ddr4"}
+{"id": "S026", "persona": "gamer", "tipo": "varios", "texto": "tenes webcam y microfono para stream? los dos juntos"}
+{"id": "S027", "persona": "gamer", "tipo": "varios", "texto": "fuente y gabinete para armar pc, 650w"}
+{"id": "S028", "persona": "gamer", "tipo": "mixto", "texto": "g pro x superlight, hacen envio a rosario? cuanto tarda"}
+{"id": "S029", "persona": "gamer", "tipo": "mixto", "texto": "la rtx 4060 en cuotas sin interes tenes?"}
+{"id": "S030", "persona": "gamer", "tipo": "mixto", "texto": "teclado keychron k2 hacen factura a?"}
+{"id": "S031", "persona": "abuelo", "tipo": "producto", "texto": "buenas tardes queria una computadora portatil sencilla para mi nieta"}
+{"id": "S032", "persona": "abuelo", "tipo": "producto", "texto": "hola, ustedes venden impresoras? una que sea facil de usar"}
+{"id": "S033", "persona": "abuelo", "tipo": "producto", "texto": "necesito un mouse para la computadora que no sea muy chico"}
+{"id": "S034", "persona": "abuelo", "tipo": "producto", "texto": "buen dia tienen teclados con letras grandes"}
+{"id": "S035", "persona": "abuelo", "tipo": "producto", "texto": "quiero un parlantecito para escuchar tango del celular"}
+{"id": "S036", "persona": "abuelo", "tipo": "producto", "texto": "me hace falta algo para guardar las fotos de la familia que se me llena la compu"}
+{"id": "S037", "persona": "abuelo", "tipo": "producto", "texto": "una tablet para ver videos, la mas sencilla"}
+{"id": "S038", "persona": "abuelo", "tipo": "producto", "texto": "auriculares para escuchar la radio en la compu"}
+{"id": "S039", "persona": "abuelo", "tipo": "producto", "texto": "mi router anda mal quiero uno nuevo q alcance toda la casa"}
+{"id": "S040", "persona": "abuelo", "tipo": "producto", "texto": "hola quisiera una camarita para hablar con mi hijo que vive en españa"}
+{"id": "S041", "persona": "abuelo", "tipo": "producto", "texto": "el cargador de la computadora se me rompio, tienen uno"}
+{"id": "S042", "persona": "abuelo", "tipo": "producto", "texto": "necesito un microfono para hablar por la computadora"}
+{"id": "S043", "persona": "abuelo", "tipo": "producto", "texto": "una notebook lenovo para escribir cartas, nada complicado"}
+{"id": "S044", "persona": "abuelo", "tipo": "producto", "texto": "disco externo para hacer copia de las fotos de 1 tera"}
+{"id": "S045", "persona": "abuelo", "tipo": "producto", "texto": "tiene una impresora que imprima a color y sea economica en tinta"}
+{"id": "S046", "persona": "abuelo", "tipo": "producto", "texto": "quiero un monitor mas grande, veo muy chiquito"}
+{"id": "S047", "persona": "abuelo", "tipo": "producto", "texto": "una tablet samsung buena para mi, hasta 300 mil"}
+{"id": "S048", "persona": "abuelo", "tipo": "producto", "texto": "parlantes para la compu, que se escuchen fuerte que ando medio sordo"}
+{"id": "S049", "persona": "abuelo", "tipo": "producto", "texto": "hola, un pendrive grande para pasar fotos"}
+{"id": "S050", "persona": "abuelo", "tipo": "producto", "texto": "notebook no muy cara, para mirar el home banking y el mail"}
+{"id": "S051", "persona": "abuelo", "tipo": "no_vende", "texto": "tienen televisores? uno de 32 pulgadas"}
+{"id": "S052", "persona": "abuelo", "tipo": "no_vende", "texto": "venden celulares? un telefono con teclas grandes"}
+{"id": "S053", "persona": "abuelo", "tipo": "no_vende", "texto": "una heladera tienen?"}
+{"id": "S054", "persona": "abuelo", "tipo": "varios", "texto": "queria una impresora y un mouse tambien"}
+{"id": "S055", "persona": "abuelo", "tipo": "varios", "texto": "necesito un teclado y un mouse para la compu nueva"}
+{"id": "S056", "persona": "abuelo", "tipo": "varios", "texto": "tablet y un cargador por favor"}
+{"id": "S057", "persona": "abuelo", "tipo": "varios", "texto": "quiero una camarita y unos auriculares para hablar con mis nietos"}
+{"id": "S058", "persona": "abuelo", "tipo": "mixto", "texto": "una notebook, aceptan tarjeta en cuotas?"}
+{"id": "S059", "persona": "abuelo", "tipo": "mixto", "texto": "la impresora epson, la envian a mi casa en Mar del Plata?"}
+{"id": "S060", "persona": "abuelo", "tipo": "mixto", "texto": "quiero un router, tiene garantia y factura?"}
+{"id": "S061", "persona": "apurado", "tipo": "producto", "texto": "mouse ineal logi baratp"}
+{"id": "S062", "persona": "apurado", "tipo": "producto", "texto": "auris bluethoot jbl"}
+{"id": "S063", "persona": "apurado", "tipo": "producto", "texto": "ssd 500 kingstn"}
+{"id": "S064", "persona": "apurado", "tipo": "producto", "texto": "teclao mecanico ya"}
+{"id": "S065", "persona": "apurado", "tipo": "producto", "texto": "cuanto sale la g305"}
+{"id": "S066", "persona": "apurado", "tipo": "producto", "texto": "ram 16 ddr4 patriot"}
+{"id": "S067", "persona": "apurado", "tipo": "producto", "texto": "placa de vido 4060"}
+{"id": "S068", "persona": "apurado", "tipo": "producto", "texto": "monitor aoc 24 ,144hz"}
+{"id": "S069", "persona": "apurado", "tipo": "producto", "texto": "rauter tplink ax55"}
+{"id": "S070", "persona": "apurado", "tipo": "producto", "texto": "fuenet corsair 650"}
+{"id": "S071", "persona": "apurado", "tipo": "producto", "texto": "cargador xiaomi 67w"}
+{"id": "S072", "persona": "apurado", "tipo": "producto", "texto": "gabinete nzxt blanco"}
+{"id": "S073", "persona": "apurado", "tipo": "producto", "texto": "procesador 5600x"}
+{"id": "S074", "persona": "apurado", "tipo": "producto", "texto": "tablet samsug a9"}
+{"id": "S075", "persona": "apurado", "tipo": "producto", "texto": "webcam c920 hay?"}
+{"id": "S076", "persona": "apurado", "tipo": "producto", "texto": "cooler deepcool ak620"}
+{"id": "S077", "persona": "apurado", "tipo": "producto", "texto": "mother b550 msi"}
+{"id": "S078", "persona": "apurado", "tipo": "producto", "texto": "parlante jbl flip 6 rojo"}
+{"id": "S079", "persona": "apurado", "tipo": "producto", "texto": "notbook i5 16gb"}
+{"id": "S080", "persona": "apurado", "tipo": "producto", "texto": "imprsora epson l3250"}
+{"id": "S081", "persona": "apurado", "tipo": "no_vende", "texto": "ps5 tenes?"}
+{"id": "S082", "persona": "apurado", "tipo": "no_vende", "texto": "iphone 15 hay??"}
+{"id": "S083", "persona": "apurado", "tipo": "no_vende", "texto": "drone dji"}
+{"id": "S084", "persona": "apurado", "tipo": "varios", "texto": "mouse y teclado logi urgente"}
+{"id": "S085", "persona": "apurado", "tipo": "varios", "texto": "ssd 1tb + ram 8gb ddr5"}
+{"id": "S086", "persona": "apurado", "tipo": "varios", "texto": "auris y mic hyperx"}
+{"id": "S087", "persona": "apurado", "tipo": "varios", "texto": "cargador 65w y parlante jbl clip"}
+{"id": "S088", "persona": "apurado", "tipo": "mixto", "texto": "g502 x envian hoy? soy de caba"}
+{"id": "S089", "persona": "apurado", "tipo": "mixto", "texto": "la tuf b650 con factura a"}
+{"id": "S090", "persona": "apurado", "tipo": "mixto", "texto": "ssd 2tb crucial en 3 cuotas?"}
+{"id": "S091", "persona": "mama", "tipo": "producto", "texto": "hola! mi hijo tiene 12 años y necesita una notebook para el colegio, que me recomendas"}
+{"id": "S092", "persona": "mama", "tipo": "producto", "texto": "busco auriculares para mi hijo que juega al fortnite, nada muy caro"}
+{"id": "S093", "persona": "mama", "tipo": "producto", "texto": "un mouse gamer para mi nene de 10 años, que no sea carisimo"}
+{"id": "S094", "persona": "mama", "tipo": "producto", "texto": "necesito una tablet para mi hija que la use para estudiar y ver videos"}
+{"id": "S095", "persona": "mama", "tipo": "producto", "texto": "mi hijo quiere armar una pc, que gabinete me recomiendan lindo"}
+{"id": "S096", "persona": "mama", "tipo": "producto", "texto": "una impresora para las tareas del cole, que sea de tinta continua"}
+{"id": "S097", "persona": "mama", "tipo": "producto", "texto": "unos parlantes para el cuarto de mi hija, bluetooth y que sean lindos"}
+{"id": "S098", "persona": "mama", "tipo": "producto", "texto": "el cargador de la tablet de mi hijo se perdio, tienen uno"}
+{"id": "S099", "persona": "mama", "tipo": "producto", "texto": "una silla para mi hijo que pasa horas en la compu, que sea comoda"}
+{"id": "S100", "persona": "mama", "tipo": "producto", "texto": "webcam para las clases virtuales de mi hija"}
+{"id": "S101", "persona": "mama", "tipo": "producto", "texto": "disco externo para los trabajos de mi hijo de la facu, 1 tera"}
+{"id": "S102", "persona": "mama", "tipo": "producto", "texto": "notebook para mi hijo que va a estudiar ingenieria, hasta 1 millon"}
+{"id": "S103", "persona": "mama", "tipo": "producto", "texto": "auriculares con microfono para clases online"}
+{"id": "S104", "persona": "mama", "tipo": "producto", "texto": "monitor para mi hijo, 24 pulgadas, para jugar y estudiar"}
+{"id": "S105", "persona": "mama", "tipo": "producto", "texto": "un ssd para que la compu de mi hijo ande mas rapido, esta lentisima"}
+{"id": "S106", "persona": "mama", "tipo": "producto", "texto": "mi nene quiere un microfono para grabar videos de youtube, algo facil"}
+{"id": "S107", "persona": "mama", "tipo": "producto", "texto": "memoria ram para la pc de mi hijo, no se cual comprar, tiene ddr4"}
+{"id": "S108", "persona": "mama", "tipo": "producto", "texto": "router mejor para que mis hijos no se corten con el wifi"}
+{"id": "S109", "persona": "mama", "tipo": "producto", "texto": "un teclado para mi hija que sea de colores"}
+{"id": "S110", "persona": "mama", "tipo": "producto", "texto": "una compu para mi hijo, tienen notebooks con ryzen?"}
+{"id": "S111", "persona": "mama", "tipo": "no_vende", "texto": "tienen playstation 5 para mi hijo?"}
+{"id": "S112", "persona": "mama", "tipo": "no_vende", "texto": "venden celulares? un samsung para mi hija"}
+{"id": "S113", "persona": "mama", "tipo": "no_vende", "texto": "tenes nintendo switch?"}
+{"id": "S114", "persona": "mama", "tipo": "varios", "texto": "busco mouse, teclado y auriculares para mi hijo"}
+{"id": "S115", "persona": "mama", "tipo": "varios", "texto": "una tablet y un parlante para mi hija"}
+{"id": "S116", "persona": "mama", "tipo": "varios", "texto": "webcam y auriculares para las clases"}
+{"id": "S117", "persona": "mama", "tipo": "varios", "texto": "monitor y teclado para mi hijo"}
+{"id": "S118", "persona": "mama", "tipo": "mixto", "texto": "notebook para mi hijo, tienen cuotas? y hacen envio a cordoba"}
+{"id": "S119", "persona": "mama", "tipo": "mixto", "texto": "tablet samsung a9 cuanto sale y tiene garantia"}
+{"id": "S120", "persona": "mama", "tipo": "mixto", "texto": "la impresora hp smart tank, entregan a domicilio en zona norte?"}
+{"id": "S121", "persona": "revendedor", "tipo": "producto", "texto": "buenas, precio por mayor de mouse logitech m170, 30 unidades"}
+{"id": "S122", "persona": "revendedor", "tipo": "producto", "texto": "necesito 20 teclados genius kb-110x, precio por cantidad"}
+{"id": "S123", "persona": "revendedor", "tipo": "producto", "texto": "hacen descuento por 10 notebooks lenovo ideapad 3?"}
+{"id": "S124", "persona": "revendedor", "tipo": "producto", "texto": "50 cargadores anker nano ii 65w, precio de lista?"}
+{"id": "S125", "persona": "revendedor", "tipo": "producto", "texto": "tengo local, quiero revender auriculares jbl tune 510bt, minimo?"}
+{"id": "S126", "persona": "revendedor", "tipo": "producto", "texto": "x mayor ssd kingston a400 500gb, 40 unidades"}
+{"id": "S127", "persona": "revendedor", "tipo": "producto", "texto": "15 monitores aoc 24g2 precio final"}
+{"id": "S128", "persona": "revendedor", "tipo": "producto", "texto": "consulta por cantidad de memorias ram ddr4 8gb kingston fury, 100 unidades"}
+{"id": "S129", "persona": "revendedor", "tipo": "producto", "texto": "precio mayorista webcam logitech c270"}
+{"id": "S130", "persona": "revendedor", "tipo": "producto", "texto": "10 routers tplink archer c6, cuanto cada uno"}
+{"id": "S131", "persona": "revendedor", "tipo": "producto", "texto": "parlantes jbl go 3, 24 unidades cuanto me salen"}
+{"id": "S132", "persona": "revendedor", "tipo": "producto", "texto": "sillas gamer redragon coeus, 6 unidades, hacen precio?"}
+{"id": "S133", "persona": "revendedor", "tipo": "producto", "texto": "fuentes corsair cv550 x 12"}
+{"id": "S134", "persona": "revendedor", "tipo": "producto", "texto": "tablet samsung a9 x 8 unidades"}
+{"id": "S135", "persona": "revendedor", "tipo": "producto", "texto": "discos externos seagate expansion 2tb, 20 piezas"}
+{"id": "S136", "persona": "revendedor", "tipo": "producto", "texto": "gabinetes gamemax black hole x 10 precio"}
+{"id": "S137", "persona": "revendedor", "tipo": "producto", "texto": "mouse redragon cobra m711 por 50, lista mayorista"}
+{"id": "S138", "persona": "revendedor", "tipo": "producto", "texto": "micros ryzen 5 5600 x 10 unidades precio"}
+{"id": "S139", "persona": "revendedor", "tipo": "producto", "texto": "mothers asus prime b550m-a, 6 unidades"}
+{"id": "S140", "persona": "revendedor", "tipo": "producto", "texto": "cooler deepcool ag400 x 25"}
+{"id": "S141", "persona": "revendedor", "tipo": "no_vende", "texto": "tienen iphones al por mayor?"}
+{"id": "S142", "persona": "revendedor", "tipo": "no_vende", "texto": "vendo celulares tambien, tenes smartwatches por mayor?"}
+{"id": "S143", "persona": "revendedor", "tipo": "no_vende", "texto": "consolas ps5 por mayor, cuantas tenes"}
+{"id": "S144", "persona": "revendedor", "tipo": "varios", "texto": "necesito 10 mouse m170 y 10 teclados k120 de logitech"}
+{"id": "S145", "persona": "revendedor", "tipo": "varios", "texto": "20 auris jbl tune 510bt y 20 parlantes go 3"}
+{"id": "S146", "persona": "revendedor", "tipo": "varios", "texto": "5 monitores aoc 24g2 y 5 sillas redragon"}
+{"id": "S147", "persona": "revendedor", "tipo": "varios", "texto": "lote de ssd 1tb y rams 16gb ddr4, 30 de cada una"}
+{"id": "S148", "persona": "revendedor", "tipo": "mixto", "texto": "pasame lista de precios de mouses logitech, hacen factura a? soy monotributista"}
+{"id": "S149", "persona": "revendedor", "tipo": "mixto", "texto": "10 notebooks hp 245 g9, envian a mendoza? se paga por transferencia?"}
+{"id": "S150", "persona": "revendedor", "tipo": "mixto", "texto": "x mayor teclados redragon, tienen garantia con ustedes?"}
+{"id": "S151", "persona": "oficinista", "tipo": "producto", "texto": "hola necesito un mouse ergonomico para trabajar todo el dia, el mx master 3s lo tienen?"}
+{"id": "S152", "persona": "oficinista", "tipo": "producto", "texto": "teclado silencioso para oficina, bluetooth"}
+{"id": "S153", "persona": "oficinista", "tipo": "producto", "texto": "busco una notebook para trabajo, excel y reuniones de zoom, i5 con 16gb"}
+{"id": "S154", "persona": "oficinista", "tipo": "producto", "texto": "webcam full hd para videollamadas"}
+{"id": "S155", "persona": "oficinista", "tipo": "producto", "texto": "auriculares con cancelacion de ruido para la oficina"}
+{"id": "S156", "persona": "oficinista", "tipo": "producto", "texto": "impresora multifuncion con wifi para la oficina, tinta continua"}
+{"id": "S157", "persona": "oficinista", "tipo": "producto", "texto": "monitor de 27 para planillas, que no canse la vista"}
+{"id": "S158", "persona": "oficinista", "tipo": "producto", "texto": "microfono usb para reuniones"}
+{"id": "S159", "persona": "oficinista", "tipo": "producto", "texto": "router wifi 6 para la oficina, estable"}
+{"id": "S160", "persona": "oficinista", "tipo": "producto", "texto": "disco externo 2tb para backup del trabajo"}
+{"id": "S161", "persona": "oficinista", "tipo": "producto", "texto": "cargador de 65w para la notebook"}
+{"id": "S162", "persona": "oficinista", "tipo": "producto", "texto": "una tablet para presentaciones y firmar pdf"}
+{"id": "S163", "persona": "oficinista", "tipo": "producto", "texto": "un ssd para la compu de la oficina que esta lentisima, sata de 500"}
+{"id": "S164", "persona": "oficinista", "tipo": "producto", "texto": "necesito una notebook liviana tipo zenbook o swift"}
+{"id": "S165", "persona": "oficinista", "tipo": "producto", "texto": "mouse inalambrico simple para la oficina, que sea barato"}
+{"id": "S166", "persona": "oficinista", "tipo": "producto", "texto": "parlante bluetooth para la sala de reuniones"}
+{"id": "S167", "persona": "oficinista", "tipo": "producto", "texto": "memoria ram 16gb para pc de escritorio de la oficina, ddr4"}
+{"id": "S168", "persona": "oficinista", "tipo": "producto", "texto": "una thinkpad e14 tienen?"}
+{"id": "S169", "persona": "oficinista", "tipo": "producto", "texto": "procesador i5 para actualizar pc de oficina, hasta 150 mil"}
+{"id": "S170", "persona": "oficinista", "tipo": "producto", "texto": "silla ergonomica para trabajar 8 horas"}
+{"id": "S171", "persona": "oficinista", "tipo": "no_vende", "texto": "tienen escritorios? uno para home office"}
+{"id": "S172", "persona": "oficinista", "tipo": "no_vende", "texto": "venden smart tv para la sala de reuniones?"}
+{"id": "S173", "persona": "oficinista", "tipo": "no_vende", "texto": "proyector tienen?"}
+{"id": "S174", "persona": "oficinista", "tipo": "varios", "texto": "notebook lenovo y un monitor extra para trabajar"}
+{"id": "S175", "persona": "oficinista", "tipo": "varios", "texto": "mouse y teclado inalambricos para oficina"}
+{"id": "S176", "persona": "oficinista", "tipo": "varios", "texto": "webcam y auriculares con mic para home office"}
+{"id": "S177", "persona": "oficinista", "tipo": "varios", "texto": "impresora y un disco externo"}
+{"id": "S178", "persona": "oficinista", "tipo": "mixto", "texto": "notebook dell latitude, hacen factura a a nombre de empresa?"}
+{"id": "S179", "persona": "oficinista", "tipo": "mixto", "texto": "monitor 27 en cuotas? y envio a palermo"}
+{"id": "S180", "persona": "oficinista", "tipo": "mixto", "texto": "impresora epson l3560, garantia y service oficial?"}
+{"id": "S181", "persona": "estudiante", "tipo": "producto", "texto": "la notebook mas barata que tengas"}
+{"id": "S182", "persona": "estudiante", "tipo": "producto", "texto": "mouse barato, lo mas economico"}
+{"id": "S183", "persona": "estudiante", "tipo": "producto", "texto": "auriculares baratos con mic para clases"}
+{"id": "S184", "persona": "estudiante", "tipo": "producto", "texto": "teclado economico para la compu"}
+{"id": "S185", "persona": "estudiante", "tipo": "producto", "texto": "tenes algo para guardar archivos de la facu barato, un pendrive de 1 tb"}
+{"id": "S186", "persona": "estudiante", "tipo": "producto", "texto": "ssd barato 500gb para revivir mi notebook vieja"}
+{"id": "S187", "persona": "estudiante", "tipo": "producto", "texto": "ram 8gb ddr4 barata"}
+{"id": "S188", "persona": "estudiante", "tipo": "producto", "texto": "tablet barata para leer pdfs de la facu"}
+{"id": "S189", "persona": "estudiante", "tipo": "producto", "texto": "parlante bluetooth chiquito barato"}
+{"id": "S190", "persona": "estudiante", "tipo": "producto", "texto": "cargador rapido barato"}
+{"id": "S191", "persona": "estudiante", "tipo": "producto", "texto": "webcam economica para cursar"}
+{"id": "S192", "persona": "estudiante", "tipo": "producto", "texto": "router barato"}
+{"id": "S193", "persona": "estudiante", "tipo": "producto", "texto": "monitor barato 24"}
+{"id": "S194", "persona": "estudiante", "tipo": "producto", "texto": "micro barato para armar pc, i3 o ryzen 5 5500"}
+{"id": "S195", "persona": "estudiante", "tipo": "producto", "texto": "mic barato para grabar audios"}
+{"id": "S196", "persona": "estudiante", "tipo": "producto", "texto": "fuente barata 500w"}
+{"id": "S197", "persona": "estudiante", "tipo": "producto", "texto": "gabinete barato"}
+{"id": "S198", "persona": "estudiante", "tipo": "producto", "texto": "placa de video barata, hasta 600 mil"}
+{"id": "S199", "persona": "estudiante", "tipo": "producto", "texto": "notebook hasta 800 mil para ingenieria"}
+{"id": "S200", "persona": "estudiante", "tipo": "producto", "texto": "mother barata am4"}
+{"id": "S201", "persona": "estudiante", "tipo": "no_vende", "texto": "tenes celulares usados baratos?"}
+{"id": "S202", "persona": "estudiante", "tipo": "no_vende", "texto": "vendes consolas usadas?"}
+{"id": "S203", "persona": "estudiante", "tipo": "no_vende", "texto": "un smartwatch economico"}
+{"id": "S204", "persona": "estudiante", "tipo": "varios", "texto": "mouse y teclado lo mas barato"}
+{"id": "S205", "persona": "estudiante", "tipo": "varios", "texto": "ssd y ram baratos para mi notebook"}
+{"id": "S206", "persona": "estudiante", "tipo": "varios", "texto": "auris y mic baratos"}
+{"id": "S207", "persona": "estudiante", "tipo": "varios", "texto": "tablet y cargador baratos"}
+{"id": "S208", "persona": "estudiante", "tipo": "mixto", "texto": "mouse genius dx-110, cuanto sale y se puede pagar en cuotas?"}
+{"id": "S209", "persona": "estudiante", "tipo": "mixto", "texto": "tienen descuento para estudiantes? busco una notebook"}
+{"id": "S210", "persona": "estudiante", "tipo": "mixto", "texto": "ssd kingston a400, mandan a la plata? cuanto sale el envio"}
+{"id": "S211", "persona": "tecnico", "tipo": "producto", "texto": "i7-14700kf stock y precio"}
+{"id": "S212", "persona": "tecnico", "tipo": "producto", "texto": "b760m ds3h gigabyte, tenes?"}
+{"id": "S213", "persona": "tecnico", "tipo": "producto", "texto": "ddr5 6000 cl30 2x16 hay? corsair vengeance o gskill"}
+{"id": "S214", "persona": "tecnico", "tipo": "producto", "texto": "980 pro 1tb o 990 pro 1tb, cuales tenes"}
+{"id": "S215", "persona": "tecnico", "tipo": "producto", "texto": "rx 7800 xt hellhound o nitro+, precio"}
+{"id": "S216", "persona": "tecnico", "tipo": "producto", "texto": "psu 850w gold atx 3.0 rog strix"}
+{"id": "S217", "persona": "tecnico", "tipo": "producto", "texto": "noctua nh-d15 negro"}
+{"id": "S218", "persona": "tecnico", "tipo": "producto", "texto": "arctic liquid freezer iii 360"}
+{"id": "S219", "persona": "tecnico", "tipo": "producto", "texto": "monitor 27 qhd ips 165hz, tenes el gp850"}
+{"id": "S220", "persona": "tecnico", "tipo": "producto", "texto": "tenes el 5800x3d aun"}
+{"id": "S221", "persona": "tecnico", "tipo": "producto", "texto": "lancool 216 negro"}
+{"id": "S222", "persona": "tecnico", "tipo": "producto", "texto": "wh-1000xm5 negro"}
+{"id": "S223", "persona": "tecnico", "tipo": "producto", "texto": "rode nt-usb+ o shure mv7"}
+{"id": "S224", "persona": "tecnico", "tipo": "producto", "texto": "router wifi 6 con mesh, deco x50"}
+{"id": "S225", "persona": "tecnico", "tipo": "producto", "texto": "c922 pro o brio 100"}
+{"id": "S226", "persona": "tecnico", "tipo": "producto", "texto": "notebook ryzen 7 16gb 1tb, legion 5"}
+{"id": "S227", "persona": "tecnico", "tipo": "producto", "texto": "mx keys s"}
+{"id": "S228", "persona": "tecnico", "tipo": "producto", "texto": "sn850x 2tb"}
+{"id": "S229", "persona": "tecnico", "tipo": "producto", "texto": "samsung t7 2tb"}
+{"id": "S230", "persona": "tecnico", "tipo": "producto", "texto": "tab s9 fe"}
+{"id": "S231", "persona": "tecnico", "tipo": "no_vende", "texto": "rtx 5080 tenes"}
+{"id": "S232", "persona": "tecnico", "tipo": "no_vende", "texto": "ryzen 9 9950x"}
+{"id": "S233", "persona": "tecnico", "tipo": "no_vende", "texto": "g pro x superlight 2 hay?"}
+{"id": "S234", "persona": "tecnico", "tipo": "varios", "texto": "7800x3d + b650 tomahawk + ddr5 6000 32gb"}
+{"id": "S235", "persona": "tecnico", "tipo": "varios", "texto": "980 pro 2tb y 990 pro 1tb"}
+{"id": "S236", "persona": "tecnico", "tipo": "varios", "texto": "fuente rm850e y gabinete 4000d"}
+{"id": "S237", "persona": "tecnico", "tipo": "varios", "texto": "ak620 y 5600x"}
+{"id": "S238", "persona": "tecnico", "tipo": "mixto", "texto": "4070 super asus dual, garantia oficial? factura a"}
+{"id": "S239", "persona": "tecnico", "tipo": "mixto", "texto": "b650 tomahawk wifi, envio a cordoba y cuotas?"}
+{"id": "S240", "persona": "tecnico", "tipo": "mixto", "texto": "ryzen 7 7700x, es oem o box? y garantia"}
+{"id": "S241", "persona": "desconfiado", "tipo": "producto", "texto": "los productos son originales? quiero un mouse logitech g502"}
+{"id": "S242", "persona": "desconfiado", "tipo": "producto", "texto": "auriculares sony wh-1000xm5 son originales?"}
+{"id": "S243", "persona": "desconfiado", "tipo": "producto", "texto": "busco ssd samsung 980 pro, es el original no uno falsificado?"}
+{"id": "S244", "persona": "desconfiado", "tipo": "producto", "texto": "el cargador anker 65w es original?"}
+{"id": "S245", "persona": "desconfiado", "tipo": "producto", "texto": "las notebooks lenovo ideapad 3 son nuevas o reacondicionadas?"}
+{"id": "S246", "persona": "desconfiado", "tipo": "producto", "texto": "es nuevo y sellado el ryzen 5 7600?"}
+{"id": "S247", "persona": "desconfiado", "tipo": "producto", "texto": "teclado logitech mx keys s original?"}
+{"id": "S248", "persona": "desconfiado", "tipo": "producto", "texto": "placa de video asus nueva? cual tenes"}
+{"id": "S249", "persona": "desconfiado", "tipo": "producto", "texto": "jbl flip 6 es original o trucha?"}
+{"id": "S250", "persona": "desconfiado", "tipo": "producto", "texto": "tablet samsung galaxy a9, nueva con caja?"}
+{"id": "S251", "persona": "desconfiado", "tipo": "producto", "texto": "memoria kingston fury, vienen selladas?"}
+{"id": "S252", "persona": "desconfiado", "tipo": "producto", "texto": "impresora epson ecotank original con tintas?"}
+{"id": "S253", "persona": "desconfiado", "tipo": "producto", "texto": "monitor lg 27gp850 es nuevo en caja?"}
+{"id": "S254", "persona": "desconfiado", "tipo": "producto", "texto": "router tp-link archer ax55 original?"}
+{"id": "S255", "persona": "desconfiado", "tipo": "producto", "texto": "webcam logitech c920 originales o copias"}
+{"id": "S256", "persona": "desconfiado", "tipo": "producto", "texto": "fuente corsair rm750e es original sellada?"}
+{"id": "S257", "persona": "desconfiado", "tipo": "producto", "texto": "mic blue yeti es original?"}
+{"id": "S258", "persona": "desconfiado", "tipo": "producto", "texto": "disco wd my passport 2tb nuevo sellado?"}
+{"id": "S259", "persona": "desconfiado", "tipo": "producto", "texto": "cooler noctua original?"}
+{"id": "S260", "persona": "desconfiado", "tipo": "producto", "texto": "silla redragon coeus es la original o imitacion?"}
+{"id": "S261", "persona": "desconfiado", "tipo": "no_vende", "texto": "venden iphone originales?"}
+{"id": "S262", "persona": "desconfiado", "tipo": "no_vende", "texto": "tienen ps5 nueva sellada?"}
+{"id": "S263", "persona": "desconfiado", "tipo": "no_vende", "texto": "airpods originales tenes?"}
+{"id": "S264", "persona": "desconfiado", "tipo": "varios", "texto": "g502 y teclado k380 originales ambos?"}
+{"id": "S265", "persona": "desconfiado", "tipo": "varios", "texto": "ssd samsung 980 y ram corsair, originales los dos?"}
+{"id": "S266", "persona": "desconfiado", "tipo": "varios", "texto": "auris sony y cargador anker originales?"}
+{"id": "S267", "persona": "desconfiado", "tipo": "varios", "texto": "router y webcam originales?"}
+{"id": "S268", "persona": "desconfiado", "tipo": "mixto", "texto": "notebook hp 245 g9, tiene garantia oficial? de confianza?"}
+{"id": "S269", "persona": "desconfiado", "tipo": "mixto", "texto": "mouse logitech g305, dan factura? como llega a mi casa"}
+{"id": "S270", "persona": "desconfiado", "tipo": "mixto", "texto": "auriculares jbl tune 770nc, garantia cuantos meses y se pagan en efectivo?"}
+{"id": "S271", "persona": "describe", "tipo": "producto", "texto": "quiero esa cosa para que se vea mas grande la pantalla de la compu"}
+{"id": "S272", "persona": "describe", "tipo": "producto", "texto": "una cosita para pasar las fotos del celu a la compu y guardarlas"}
+{"id": "S273", "persona": "describe", "tipo": "producto", "texto": "lo que se usa para que haya internet en toda la casa sin cables"}
+{"id": "S274", "persona": "describe", "tipo": "producto", "texto": "la placa que hace que los juegos se vean mejor"}
+{"id": "S275", "persona": "describe", "tipo": "producto", "texto": "el cerebro de la compu, para cambiarlo, uno bueno"}
+{"id": "S276", "persona": "describe", "tipo": "producto", "texto": "esa caja donde va toda la compu por dentro"}
+{"id": "S277", "persona": "describe", "tipo": "producto", "texto": "lo que va abajo en la pc y le da energia a todo"}
+{"id": "S278", "persona": "describe", "tipo": "producto", "texto": "el aparatito para que se vea mi cara en videollamadas"}
+{"id": "S279", "persona": "describe", "tipo": "producto", "texto": "la cosa del ventilador grande que va encima del procesador"}
+{"id": "S280", "persona": "describe", "tipo": "producto", "texto": "una pantalla tactil portatil para leer y ver series"}
+{"id": "S281", "persona": "describe", "tipo": "producto", "texto": "un aparato para imprimir fotos y documentos que no gaste mucha tinta"}
+{"id": "S282", "persona": "describe", "tipo": "producto", "texto": "algo para escuchar musica sin cables que sea resistente al agua"}
+{"id": "S283", "persona": "describe", "tipo": "producto", "texto": "algo que enchufe en la pared y cargue rapido el celular"}
+{"id": "S284", "persona": "describe", "tipo": "producto", "texto": "la tablita donde se enchufan todas las partes de la compu"}
+{"id": "S285", "persona": "describe", "tipo": "producto", "texto": "memoria para que la compu no se trabe cuando abro muchas cosas"}
+{"id": "S286", "persona": "describe", "tipo": "producto", "texto": "el disco que no tiene partes moviles, para que la compu prenda rapido"}
+{"id": "S287", "persona": "describe", "tipo": "producto", "texto": "una silla comoda para estar sentado muchas horas con respaldo reclinable"}
+{"id": "S288", "persona": "describe", "tipo": "producto", "texto": "un microfono de mesa para grabar mi voz, un podcast"}
+{"id": "S289", "persona": "describe", "tipo": "producto", "texto": "un teclado sin cable que sea chiquito para llevar"}
+{"id": "S290", "persona": "describe", "tipo": "producto", "texto": "una computadora que se pueda llevar a todos lados, liviana, para diseño"}
+{"id": "S291", "persona": "describe", "tipo": "no_vende", "texto": "esa cosa para jugar que se enchufa a la tele"}
+{"id": "S292", "persona": "describe", "tipo": "no_vende", "texto": "algo para enfriar la pieza en verano, un aire"}
+{"id": "S293", "persona": "describe", "tipo": "no_vende", "texto": "el telefono inteligente ese con camara"}
+{"id": "S294", "persona": "describe", "tipo": "varios", "texto": "una pantalla grande y un mouse que se mueve sin cable"}
+{"id": "S295", "persona": "describe", "tipo": "varios", "texto": "unos auriculares con microfono para hablar y escuchar"}
+{"id": "S296", "persona": "describe", "tipo": "varios", "texto": "el disco rapido y la memoria para la compu"}
+{"id": "S297", "persona": "describe", "tipo": "varios", "texto": "una pantalla y el teclado sin cables"}
+{"id": "S298", "persona": "describe", "tipo": "mixto", "texto": "una compu que se lleva a todos lados, la mandan a salta? y como se paga"}
+{"id": "S299", "persona": "describe", "tipo": "mixto", "texto": "el aparato para tener internet en toda la casa, tiene garantia?"}
+{"id": "S300", "persona": "describe", "tipo": "mixto", "texto": "lo que imprime, hacen factura?"}
