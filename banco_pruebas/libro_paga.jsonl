@@ -30714,3 +30714,6 @@
 {"dia": "2026-11-20", "hora": "17:58:22", "modelo": "gemini-embedding-001", "entrada": 714, "salida": 0, "dolares": 0.000107, "proceso": 3214}
 {"dia": "2026-11-23", "hora": "17:00:51", "modelo": "gemini-3.1-flash-lite", "entrada": 287057, "salida": 57902, "dolares": 0.158618, "proceso": "traductor, valida y podado, 48 frases"}
 {"dia": "2026-11-22", "hora": "17:00:56", "modelo": "gemini-embedding-001", "entrada": 0, "salida": 0, "dolares": 0.00105, "proceso": "embeddings del agente con Luna, 113 turnos y 150 preguntas, sesion del 22-nov"}
+{"dia": "2026-11-25", "hora": "16:56:15", "modelo": "gemini-embedding-001", "entrada": 759, "salida": 0, "dolares": 0.00019, "proceso": 978}
+{"dia": "2026-11-25", "hora": "16:56:26", "modelo": "gemini-embedding-001", "entrada": 710, "salida": 0, "dolares": 0.00018, "proceso": 978}
+{"dia": "2026-11-25", "hora": "16:56:37", "modelo": "gemini-embedding-001", "entrada": 416, "salida": 0, "dolares": 0.0001, "proceso": 978}
