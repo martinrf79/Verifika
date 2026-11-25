@@ -35,3 +35,21 @@ Metrica: `examen.corregir` sobre las 102 frases de un pedido, sin dudosas aparte
 a punta, embeddings mas Luna, mediana y p90; costo. Tres casos primero; resultados grabados al momento en
 `llamada_unica.jsonl`; tope de gasto de la corrida, 15 centavos; diez revisados a mano.
 Base para comparar: el resolvedor por reglas, 65 aciertos y 17 errores en las 96 limpias, y lo de la FICHA 105.
+
+---
+
+PLAN: LA TRADUCCION DE LUNA SOLA, CONTRA LO ETIQUETADO (25-nov-2026, orden de Martin)
+
+Que se mide: solo el primer proceso, traducir lo que quiere el cliente. El enlace a la tienda no entra: ya se midio con la
+traduccion perfecta, 77 de 78, en `chico/reparto.py`.
+
+Entrada: lo que Luna ya devolvio en `luna_conceptos.jsonl`, sin gasto. Ojo: esa corrida traducia a la lista de conceptos,
+que son categorias de intencion, rubro, atributo, orden; la marca y el modelo van con las palabras del cliente.
+
+Guion: `examen/traduccion.py`. Frases de un pedido sin dudosas; la primera fila de producto de Luna contra el pedido.
+Por casillero etiquetado: rubro, atributo, color, plataforma, preferencia, marca, modelo, numero, orden, no vende, sin
+dato, pregunta. Cada uno sale bien, falta, o mal; y aparte lo que Luna agrega que no esta etiquetado. La marca y el
+modelo valen bien si coinciden con las palabras del cliente o con el valor etiquetado, sin importar mayusculas ni
+espacios. La cantidad, la compatibilidad y lo ignorable no se cuentan.
+
+Cuenta principal: frases con la traduccion entera bien, sin faltas, sin errores y sin agregados que filtran.
