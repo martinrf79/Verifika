@@ -145,3 +145,30 @@ que nada cumple, teclado azul y silla de menos de 200 mil, se cuentan aparte: so
   la capa 0, separar.
 - Dos fallas del guion, corregidas antes de contar: la unidad suelta, "2 TB", leida como nombre, y una cifra distinta
   tomada como error de tipeo, 5070 por 4070.
+
+## Plan 5, Luna copia aparte lo pedido, escrito antes de correr
+
+Orden de Martin, 25-nov. Capa 0. Guion: `examen/luna_producto.py`. Prompt: el v14f1b de hoy, igual, mas un parrafo: en
+cada fila, `lo_pedido` copia tal cual, sin corregir ni agregar, las palabras con que el cliente nombra lo que pide, con
+sus caracteristicas; sin destino, pago, nombres de personas ni preguntas de envio; vacio si la fila no pide un producto.
+Misma corrida "luna" de siempre, las mismas 97 frases. Tope, 10 centavos.
+
+Se mide:
+1. Que `lo_pedido` sea literal en el mensaje: si no, Luna corrigio o agrego, y es una falla de copia.
+2. La capa existe con `lo_pedido` aislado, contra lo medido con la fila entera: 4 bien, 5 perdidos, 0 falsas alarmas.
+3. La capa producto con `lo_pedido` como consulta: el primero sirve.
+4. La latencia de Luna, contra 4,1 segundos de mediana.
+
+## Resultado 5, 25-nov
+
+Luna con el v14f1b y el parrafo de `lo_pedido`, las 97 frases, 2,8 centavos. Los embeddings de las consultas, con la paga
+autorizada en la sesion, porque la gratis del dia estaba agotada.
+
+- Copia: de 125 filas con producto, 122 literales. Las otras 3 juntan dos partes sin coma, "dos teclados los mas
+  economicos no importa el color": lo pedido esta bien, solo cambia la union.
+- Capa existe con `lo_pedido`: 5 no hay bien y 3 perdidos; 116 hay bien y 1 falsa alarma, que no lo es: es la memoria
+  DDR3 de una frase de tres pedidos, y esa linea espera no hay. Queda igual que con el tramo perfecto: de los perdidos,
+  solo "un cable de 5 metros" es de esta capa; el teclado azul es condicion y alquilar notebooks es dato 2.
+- Capa producto con `lo_pedido` como consulta: el primero sirve en 56 de 58 frases de un pedido sin orden. Las 2 que no
+  son mensajes de prueba de estres, donde Luna tomo como pedido "una pc" y "esos routers calentadores".
+- Latencia de Luna: mediana 3,7 segundos, p90 5,6; no suma tiempo contra los 4,1 de hoy.
