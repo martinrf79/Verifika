@@ -59,3 +59,30 @@ Metricas: por veredicto verdadero, cuantos acierta; los cumple falsos aparte; ti
 
 Que diria que anda: cumple falsos por debajo del 2 por ciento y sin dato bien detectado en la mayoria. Si no, el modelo
 chico tal como viene no sirve como verificador y se dice.
+
+---
+
+PLAN DE LA TERCERA PRUEBA, escrito antes de correr (25-nov-2026, orden de Martin): EL REPARTO, TECHO CON TRADUCCION
+PERFECTA
+
+Hipotesis: si la condicion llega traducida a la lista cerrada de conceptos, el codigo la verifica exacto, y lo que no esta
+en la lista lo revisa el modelo chico solo para decir "no tengo ese dato", el bot ofrece bien y casi no yerra.
+
+Guion: `chico/reparto.py`. Gratis: no llama a ningun modelo pago.
+
+Entrada: las frases del examen que la llamada unica ya corrio, con sus candidatos de embeddings grabados. La traduccion
+sale de las etiquetas del examen, como si Luna tradujera perfecto: por eso es un techo, no el numero real. El numero real
+pide una corrida de Luna traduciendo a la lista cerrada.
+
+Decision, por codigo:
+- si el pedido es de algo que la tienda no vende, no hay;
+- rubro, marca, modelo, atributo, color, plataforma, numero y compatibilidad se verifican exacto contra la ficha, sobre los
+  candidatos; si se pidio un orden, sobre todo el rubro de los candidatos que quedan;
+- lo que no esta en la lista, sin_dato y dato, va al modelo chico con el umbral de la segunda prueba, 0,87: si ningun
+  producto del rubro se parece, se ofrece lo demas avisando que de eso no hay dato; si algo se parece, se repregunta;
+- lo preferido y la cantidad no filtran;
+- se ofrecen hasta tres, el primero el del orden pedido.
+
+Correccion: `examen.corregir`, la misma de la llamada unica. Se informa igual que ella: frases de un pedido sin dudosas,
+con dudosas, y varios pedidos por linea. Base: la llamada unica, 55 aciertan, 17 repreguntan y 6 yerran en las 78
+limpias.
