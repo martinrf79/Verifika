@@ -36,13 +36,13 @@ los 15 parecia el problema y la busqueda ya ponia primero un aceptable en 69 de 
 
 | Capa | La pregunta | Entrada perfecta | Donde vive hoy | Lo medido | Falta |
 | --- | --- | --- | --- | --- | --- |
-| 0. Separar | Una fila por pedido, sin juntar ni partir de mas, y cada palabra en su pedido | el mensaje | llamada 0, Luna | 39 de 51 lineas de varios pedidos, 25-nov | etiquetar los tramos, seccion 5 |
-| 1. Producto | Con la fila correcta, el producto correcto primero o entre los 15 | el tramo del pedido | embeddings, nexo de rubro y producto | primero aceptable en 59 de 69 limpias sin orden; varios pedidos, 24 de 31 primero, 28 entre 15 | medir con el tramo etiquetado |
-| 2. Existe | Si lo pedido esta en la tienda, no esta o es ambiguo | marca, modelo y rubro etiquetados | nexo de nombrado, `no_vendidas.json` | 9 de los 10 errores de la capa 1 son algo que la tienda no tiene; la lista caza 2 | la regla de identidad: exists, ambiguous, not_found |
+| 0. Separar | Una fila por pedido, sin juntar ni partir de mas, y lo pedido copiado aparte | el mensaje | llamada 0, Luna; en el banco, `examen/luna_producto.py` | copia literal de lo pedido en 122 de 125 filas, 3,7 s de mediana, 25-nov | medir los tramos contra `examen/tramos.py` |
+| 1. Producto | Con lo pedido, el producto correcto primero | el tramo del pedido | embeddings, nexo de rubro y producto | con el tramo etiquetado, 135 de 138 sin orden; con lo que copia Luna, 56 de 58 | nada: anda |
+| 2. Existe | Si lo pedido esta en la tienda | el tramo del pedido | en el banco, `lab/existe.py` | con lo que copia Luna, 0 falsas alarmas; de los no hay, solo "un cable" se le escapa | lo que no nombra nada de la tienda, que hoy queda dudoso |
 | 3. Condicion y orden | Filtra y ordena bien sobre los candidatos | los candidatos y las condiciones etiquetadas | nexo de condicion, `conceptos.json` | con la traduccion perfecta, 77 de 78, `chico/reparto.py` | el orden sobre lo que cumple, sin usar la respuesta |
 | 4. Tema | Pregunta de envio, pago, garantia o politica, al tema correcto de la FAQ | el tramo del pedido | nexo de tema | FICHAS 96 a 99 | etiqueta de tema por pedido |
 | 5. Destino | La zona y el costo de envio correctos | el tramo con el lugar | nexo de destino | FICHAS 96 a 99 | etiqueta de destino por pedido |
-| 6. Dato 2 | Que campo o que accion pide, y si la ficha tiene el dato | el producto o el tema correcto y el tramo | sin capa propia | sin medir | etiqueta de dato 2 por pedido |
+| 6. Dato 2 | Que campo o que accion pide, y si la ficha tiene el dato | el tramo y lo global de dato 2 | en el banco, `lab/capas.py` | opcion exacta en 130 de 185; agrupado en lo base contra lo especifico, 173 de 190 | la decision de agrupar, seccion 8 |
 | 7. Redactar | El texto dice lo que dice la ficha y contesta el dato 2 | dato 1 y dato 2 correctos | segunda llamada, ejecutor, verificador | el verificador caza el 99,3% de las alucinaciones inyectadas | medirlo con datos perfectos |
 | 8. Memoria | Lo anterior, por charla, sin perder lo dicho | la charla | `memoria_agente` | 80 de 113 turnos bien en 42 charlas reales, 3-nov | se mide al final, por charla |
 
@@ -92,9 +92,11 @@ Las frases: las del examen fijo, y las charlas reales de WhatsApp para la capa d
 
 ## 6. El orden de trabajo
 
-1. Etiquetar con el proceso de la seccion 5.
-2. El comando de la tabla por capas, con lo ya grabado, sin gasto.
-3. Una capa por sesion, empezando por la de mas errores en la tabla.
+1. Hecho el 25-nov: el etiquetado por tramos, `banco_pruebas/flujo/examen/tramos.py`, y las capas 0, 1, 2 y 6 medidas.
+2. Sigue: la capa de condicion y orden, lo que nada cumple, el teclado azul o "menos de 200 mil", y "el mas barato" sobre
+   lo que cumple, con lo que copia Luna.
+3. Despues: el comando de la tabla por capas, que junte las medidas de `lab/` en una sola salida.
+4. Despues: la cadena entera, por charla, y recien ahi la propuesta de llevar el circuito al bot.
 
 ## 7. Lo que ya no se repite
 
@@ -103,3 +105,38 @@ Las frases: las del examen fijo, y las charlas reales de WhatsApp para la capa d
   7,6% de cumple falsos, `chico/condicion.py`. Sirve para decir "no tengo ese dato".
 - Luna eligiendo entre los 15: la busqueda ya pone primero lo correcto; pedirle que elija agrega errores y repreguntas.
 - Lo que el 25-nov dejo en el banco: `chico/reparto.py`, `examen/luna_conceptos.py`, `examen/traduccion.py`, `lab/`.
+
+## 8. Lo medido el 25-nov: el circuito del dato 1
+
+**El criterio de Martin para cada paso:** la mitad es que venda y la mitad es que no alucine. Cada numero se lee contando
+aparte lo que pierde una venta y lo que le dice al cliente algo falso.
+
+**El circuito que quedo medido**, todo en el banco, nada en `app/`:
+1. Luna separa como hoy, el v14f1b, y en cada fila copia aparte, tal cual, las palabras con que el cliente nombra lo que
+   pide: `lo_pedido`. Copiar, no traducir. Es lo unico que se le sumo, y no agrega tiempo. `examen/luna_producto.py`.
+2. Con `lo_pedido`, una busqueda de embeddings trae el producto: el primero sirve en 56 de 58 frases de un pedido.
+3. Una funcion de codigo dice si existe, `lab/existe.py`: lo que sigue a "para" es el uso; lo de `no_vendidas.json` sin
+   un rubro de la tienda, no hay; un codigo de modelo que el catalogo no trae, con las cifras exactas, no hay; un nombre
+   propio que la tienda no trae, no hay. Con lo que copia Luna no dijo nunca que no hay algo que hay.
+
+**Lo que se aprendio, y no se repite:**
+- La busqueda nunca fue el problema: con el pedido bien separado, el primero sirve casi siempre. Pedirle a Luna que elija
+  entre los 15 agregaba errores.
+- La regla de los nombres propios solo sirve con lo pedido aislado: con la fila entera de Luna toma "Concordia" o
+  "Esteban" como marcas, 27 falsas alarmas.
+- El documento de cada producto en el indice lleva los alias del rubro, que afirman lo que muchos productos no tienen,
+  "teclado inalambrico" en uno con cable. Un documento fiel a la ficha, `lab/busqueda.py`, ordena un poco mejor pero no
+  cambia el primero: llevarlo al bot no es urgente.
+- El puntaje de la busqueda no separa lo que hay de lo que no hay.
+- Un numero que use la respuesta del examen no vale: el 68 de 78 del laboratorio estaba inflado por ordenar sobre los
+  aceptables.
+
+**La decision pendiente de Martin, dato 2:** agruparlo en lo base, que se contesta mostrando el producto con precio y
+stock, contra lo especifico, un campo de la ficha, compatibilidad, comparar o caracteristicas. Asi no hace falta
+distinguir "quiero" de "cuanto sale", que es donde falla.
+
+**Los guiones del 25-nov**, todos en `banco_pruebas/flujo/`: `examen/tramos.py`, las etiquetas; `lab/busqueda.py`, los
+documentos del indice; `lab/capas.py`, producto, existe y dato 2 con la entrada perfecta; `lab/existe.py`, la funcion;
+`examen/luna_producto.py`, Luna con `lo_pedido`. Los planes y los resultados, en orden, en `lab/plan.md`. Los vectores
+quedan fuera de git, en `lab/vectores.json.gz`: se vuelven a pedir con la clave gratis, o con la paga y la marca de
+Martin si la gratis se agota.
