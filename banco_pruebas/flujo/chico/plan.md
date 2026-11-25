@@ -86,3 +86,17 @@ Decision, por codigo:
 Correccion: `examen.corregir`, la misma de la llamada unica. Se informa igual que ella: frases de un pedido sin dudosas,
 con dudosas, y varios pedidos por linea. Base: la llamada unica, 55 aciertan, 17 repreguntan y 6 yerran en las 78
 limpias.
+
+---
+
+PLAN DE LA CUARTA PRUEBA, escrito antes de correr (25-nov-2026, orden de Martin): LUNA TRADUCE A LA LISTA CERRADA, EL
+CODIGO ELIGE
+
+Guion: `examen/luna_conceptos.py`. Luna, la misma corrida "luna" de la llamada unica, separa como la v14f1b y por cada
+fila devuelve ids de `conceptos.json`, marca, modelo, numeros, orden, lo abierto y si es algo que no se vende. No ve
+filas de producto. El codigo lo pasa a casilleros y decide con `chico/reparto.resolver`, igual que la tercera prueba.
+Candidatos: los grabados por la llamada unica. Lo unico que cambia contra la tercera prueba es quien traduce: Luna en vez
+de las etiquetas.
+
+Mismas 97 frases, misma correccion y mismo informe. Base: la llamada unica, 55 / 17 / 6 en las 78 limpias; techo con
+traduccion perfecta, 77 / 0 / 1. Tambien: segundos de Luna, tokens y gasto. Tope de la corrida, 10 centavos.
