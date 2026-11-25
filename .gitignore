@@ -51,3 +51,4 @@ clave-*.json
 *.pem
 *.p12
 agente-bot-backup-*.yaml
+banco_pruebas/flujo/lab/vectores.json.gz
