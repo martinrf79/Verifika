@@ -1,0 +1,11010 @@
+[
+{
+"id": "S001",
+"texto": "buenas, tenes mouse gamer inalambrico? algo liviano tipo superlight",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "gamer",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "inalambrico",
+"valor": "atributo:inalambrico",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "liviano",
+"valor": "orden:mas_liviano",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "superlight",
+"valor": [
+"G Pro X Superlight"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S002",
+"texto": "che la g502 hero cuanto sale",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "g502 hero",
+"valor": [
+"G502 Hero"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S003",
+"texto": "auris para jugar q suenen joya y no sean carisimos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auris",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "para jugar",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "no sean carisimos",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "suenen joya",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S004",
+"texto": "teclado mecanico negro con luces, hasta 80 lucas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "mecanico",
+"valor": "atributo:mecanico",
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negro",
+"valor": "color:negro",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "con luces",
+"valor": "atributo:con_luces",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "80 lucas",
+"valor": [
+"precio",
+"max",
+80000
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S005",
+"texto": "tenes la rtx 4070 super? q marcas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "rtx 4070 super",
+"valor": "rubro:placa_de_video",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "rtx 4070 super",
+"valor": [
+"Ventus 2X RTX 4070 Super",
+"Dual RTX 4070 Super"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S006",
+"texto": "ssd nvme de 1 tera para el pc gamer, el mas rapido que tengas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1 tera",
+"valor": [
+"capacidad_gb",
+"igual",
+1000
+],
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "pc gamer",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "nvme",
+"valor": "sin_dato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "el mas rapido",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "nvme y velocidad no estan como campo"
+},
+{
+"id": "S007",
+"texto": "monitor 144hz 24 pulgadas barato",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "144hz",
+"valor": [
+"hz",
+"igual",
+144
+],
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "24 pulgadas",
+"valor": [
+"pulgadas",
+"igual",
+24
+],
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S008",
+"texto": "ryzen 7 7800x3d hay stock?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "7800x3d",
+"valor": [
+"Ryzen 7 7800X3D"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S009",
+"texto": "silla gamer negra y roja",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "silla gamer",
+"valor": "rubro:silla_gamer",
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negra y roja",
+"valor": "color:negro_y_rojo",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S010",
+"texto": "gabinete con mucho flujo de aire y vidrio blanco",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "gabinete",
+"valor": "rubro:gabinete",
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "blanco",
+"valor": "color:blanco",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "mucho flujo de aire",
+"valor": "sin_dato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "vidrio",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "flujo de aire y vidrio no son campo"
+},
+{
+"id": "S011",
+"texto": "ram ddr5 6000 32gb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "32gb",
+"valor": [
+"capacidad_gb",
+"igual",
+32
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr5 6000",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "ddr5 6000 esta en el nombre del modelo, no es campo"
+},
+{
+"id": "S012",
+"texto": "mic para streamear, el quadcast o algo asi",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mic",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "streamear",
+"valor": "preferencia:uso_streaming",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "quadcast",
+"valor": [
+"QuadCast S"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S013",
+"texto": "cooler para el i5 14600kf q no se caliente",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cooler",
+"valor": "rubro:cooler",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "i5 14600kf",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "no se caliente",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "compatibilidad con el procesador no esta como campo"
+},
+{
+"id": "S014",
+"texto": "webcam para twitch buena calidad",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "twitch",
+"valor": "preferencia:uso_streaming",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "buena calidad",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S015",
+"texto": "razer viper v3 pro cuanto",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "viper v3 pro",
+"valor": [
+"Viper V3 Pro"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S016",
+"texto": "fuente 750w gold para una 4070",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "fuente",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "750w",
+"valor": [
+"potencia_w",
+"igual",
+750
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "gold",
+"valor": "sin_dato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "4070",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "gold esta en el nombre, no es campo"
+},
+{
+"id": "S017",
+"texto": "placa madre b650 con wifi para el 7600",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "placa madre",
+"valor": "rubro:motherboard",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "b650",
+"valor": [
+"B650 Gaming X AX",
+"TUF B650-Plus WiFi",
+"Prime B650-Plus",
+"MAG B650 Tomahawk WiFi",
+"B650M-HDV/M.2"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "wifi",
+"valor": "sin_dato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "7600",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "wifi no filtra en las placas"
+},
+{
+"id": "S018",
+"texto": "tenes notebook gamer con ryzen 7? la legion 5 o la nitro",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "gamer",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "la legion 5 o la nitro",
+"valor": [
+"Legion 5 Ryzen 7 16GB 512GB SSD",
+"Nitro 5 Ryzen 7 16GB 512GB SSD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S019",
+"texto": "parlantes con buen bajo para la pieza",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlantes",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "buen bajo",
+"valor": "sin_dato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "la pieza",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S020",
+"texto": "hyperx cloud 3 blancos tenes?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "hyperx",
+"valor": "HyperX",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "cloud 3",
+"valor": [
+"Cloud III"
+],
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "blancos",
+"valor": "color:blanco",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S021",
+"texto": "tenes ps5? o xbox series",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "ps5",
+"valor": "no_vende",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "xbox series",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S022",
+"texto": "vendes nintendo switch oled?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "nintendo switch oled",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S023",
+"texto": "una rtx 5090 tenes? o la 4090",
+"pedidos": [
+{
+"esperados": [
+"no_hay",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "rtx 5090",
+"valor": "rubro:placa_de_video",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "rtx 5090 tenes o la 4090",
+"valor": [],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S024",
+"texto": "necesito mouse y teclado gamer, y unos auris, todo negro",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "gamer",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negro",
+"valor": "color:negro",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "gamer",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negro",
+"valor": "color:negro",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auris",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negro",
+"valor": "color:negro",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S025",
+"texto": "ssd 1tb y ram 16gb ddr4",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1tb",
+"valor": [
+"capacidad_gb",
+"igual",
+1000
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "16gb",
+"valor": [
+"capacidad_gb",
+"igual",
+16
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr4",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S026",
+"texto": "tenes webcam y microfono para stream? los dos juntos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "stream",
+"valor": "preferencia:uso_streaming",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "microfono",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "stream",
+"valor": "preferencia:uso_streaming",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "los dos juntos",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S027",
+"texto": "fuente y gabinete para armar pc, 650w",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "fuente",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "650w",
+"valor": [
+"potencia_w",
+"igual",
+650
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "gabinete",
+"valor": "rubro:gabinete",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S028",
+"texto": "g pro x superlight, hacen envio a rosario? cuanto tarda",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "g pro x superlight",
+"valor": [
+"G Pro X Superlight"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "envio a rosario",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S029",
+"texto": "la rtx 4060 en cuotas sin interes tenes?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "rtx 4060",
+"valor": "rubro:placa_de_video",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "rtx 4060",
+"valor": [
+"Dual RTX 4060",
+"Eagle RTX 4060"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "cuotas sin interes",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S030",
+"texto": "teclado keychron k2 hacen factura a?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "keychron",
+"valor": "Keychron",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "k2",
+"valor": [
+"K2"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "factura",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S031",
+"texto": "buenas tardes queria una computadora portatil sencilla para mi nieta",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "computadora portatil",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "sencilla",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S032",
+"texto": "hola, ustedes venden impresoras? una que sea facil de usar",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresoras",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "facil de usar",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S033",
+"texto": "necesito un mouse para la computadora que no sea muy chico",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "que no sea muy chico",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S034",
+"texto": "buen dia tienen teclados con letras grandes",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclados",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "letras grandes",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S035",
+"texto": "quiero un parlantecito para escuchar tango del celular",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlantecito",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "escuchar tango del celular",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S036",
+"texto": "me hace falta algo para guardar las fotos de la familia que se me llena la compu",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "algo para guardar las fotos",
+"valor": [
+"rubro:almacenamiento_externo",
+"rubro:ssd"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "no dice si externo o interno"
+},
+{
+"id": "S037",
+"texto": "una tablet para ver videos, la mas sencilla",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ver videos",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "la mas sencilla",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S038",
+"texto": "auriculares para escuchar la radio en la compu",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "escuchar la radio",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S039",
+"texto": "mi router anda mal quiero uno nuevo q alcance toda la casa",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "alcance toda la casa",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "podria valer un mesh, pero no es campo"
+},
+{
+"id": "S040",
+"texto": "hola quisiera una camarita para hablar con mi hijo que vive en españa",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "camarita",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "hablar con mi hijo",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S041",
+"texto": "el cargador de la computadora se me rompio, tienen uno",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S042",
+"texto": "necesito un microfono para hablar por la computadora",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "microfono",
+"valor": "rubro:microfono",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S043",
+"texto": "una notebook lenovo para escribir cartas, nada complicado",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "lenovo",
+"valor": "Lenovo",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "escribir cartas",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S044",
+"texto": "disco externo para hacer copia de las fotos de 1 tera",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "disco externo",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1 tera",
+"valor": [
+"capacidad_gb",
+"igual",
+1000
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S045",
+"texto": "tiene una impresora que imprima a color y sea economica en tinta",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "a color",
+"valor": "sin_dato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "economica en tinta",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S046",
+"texto": "quiero un monitor mas grande, veo muy chiquito",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "mas grande",
+"valor": "orden:mas_pulgadas",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S047",
+"texto": "una tablet samsung buena para mi, hasta 300 mil",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "samsung",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "hasta 300 mil",
+"valor": [
+"precio",
+"max",
+300000
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S048",
+"texto": "parlantes para la compu, que se escuchen fuerte que ando medio sordo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlantes",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "que se escuchen fuerte",
+"valor": "orden:mas_potente_w",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S049",
+"texto": "hola, un pendrive grande para pasar fotos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "pendrive",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "grande",
+"valor": "orden:mas_capacidad",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S050",
+"texto": "notebook no muy cara, para mirar el home banking y el mail",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "no muy cara",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "home banking",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S051",
+"texto": "tienen televisores? uno de 32 pulgadas",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "televisores",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S052",
+"texto": "venden celulares? un telefono con teclas grandes",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "celulares",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S053",
+"texto": "una heladera tienen?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "heladera",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S054",
+"texto": "queria una impresora y un mouse tambien",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S055",
+"texto": "necesito un teclado y un mouse para la compu nueva",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S056",
+"texto": "tablet y un cargador por favor",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S057",
+"texto": "quiero una camarita y unos auriculares para hablar con mis nietos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "camarita",
+"valor": "rubro:webcam",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S058",
+"texto": "una notebook, aceptan tarjeta en cuotas?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "cuotas",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S059",
+"texto": "la impresora epson, la envian a mi casa en Mar del Plata?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "epson",
+"valor": "Epson",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "la envian a mi casa",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S060",
+"texto": "quiero un router, tiene garantia y factura?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia y factura",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S061",
+"texto": "mouse ineal logi baratp",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "ineal",
+"valor": "atributo:inalambrico",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logi",
+"valor": "Logitech",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratp",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S062",
+"texto": "auris bluethoot jbl",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auris",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "bluethoot",
+"valor": "atributo:bluetooth",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S063",
+"texto": "ssd 500 kingstn",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "500",
+"valor": [
+"capacidad_gb",
+"igual",
+500
+],
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "kingstn",
+"valor": "Kingston",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S064",
+"texto": "teclao mecanico ya",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclao",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "mecanico",
+"valor": "atributo:mecanico",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S065",
+"texto": "cuanto sale la g305",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "g305",
+"valor": [
+"G305 Lightspeed"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S066",
+"texto": "ram 16 ddr4 patriot",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "16",
+"valor": [
+"capacidad_gb",
+"igual",
+16
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr4",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "patriot",
+"valor": "Patriot",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S067",
+"texto": "placa de vido 4060",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "placa de vido",
+"valor": "rubro:placa_de_video",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "4060",
+"valor": [
+"Dual RTX 4060",
+"Eagle RTX 4060"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S068",
+"texto": "monitor aoc 24 ,144hz",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "aoc",
+"valor": "AOC",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "24",
+"valor": [
+"pulgadas",
+"igual",
+24
+],
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "144hz",
+"valor": [
+"hz",
+"igual",
+144
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S069",
+"texto": "rauter tplink ax55",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "rauter",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "tplink",
+"valor": "TP-Link",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ax55",
+"valor": [
+"Archer AX55"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S070",
+"texto": "fuenet corsair 650",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "fuenet",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "corsair",
+"valor": "Corsair",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "650",
+"valor": [
+"potencia_w",
+"igual",
+650
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S071",
+"texto": "cargador xiaomi 67w",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "xiaomi",
+"valor": "Xiaomi",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "67w",
+"valor": [
+"potencia_w",
+"igual",
+67
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S072",
+"texto": "gabinete nzxt blanco",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "gabinete",
+"valor": "rubro:gabinete",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "nzxt",
+"valor": "NZXT",
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "blanco",
+"valor": "color:blanco",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S073",
+"texto": "procesador 5600x",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "procesador",
+"valor": "rubro:procesador",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "5600x",
+"valor": [
+"Ryzen 5 5600X"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S074",
+"texto": "tablet samsug a9",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "samsug",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "a9",
+"valor": [
+"Galaxy Tab A9"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S075",
+"texto": "webcam c920 hay?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "c920",
+"valor": [
+"C920 HD Pro"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S076",
+"texto": "cooler deepcool ak620",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cooler",
+"valor": "rubro:cooler",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "deepcool",
+"valor": "DeepCool",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ak620",
+"valor": [
+"AK620"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S077",
+"texto": "mother b550 msi",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mother",
+"valor": "rubro:motherboard",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "msi",
+"valor": "MSI",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "b550",
+"valor": [
+"B550 Tomahawk",
+"PRO B550M-VC"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S078",
+"texto": "parlante jbl flip 6 rojo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlante",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "flip 6",
+"valor": [
+"Flip 6"
+],
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "rojo",
+"valor": "color:rojo",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S079",
+"texto": "notbook i5 16gb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notbook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "i5",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "16gb",
+"valor": [
+"ram_gb",
+"igual",
+16
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "i5 esta en el nombre del modelo, no es campo"
+},
+{
+"id": "S080",
+"texto": "imprsora epson l3250",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "imprsora",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "epson",
+"valor": "Epson",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "l3250",
+"valor": [
+"EcoTank L3250"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S081",
+"texto": "ps5 tenes?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "ps5",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S082",
+"texto": "iphone 15 hay??",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "iphone 15",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S083",
+"texto": "drone dji",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "drone dji",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S084",
+"texto": "mouse y teclado logi urgente",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logi",
+"valor": "Logitech",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logi",
+"valor": "Logitech",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S085",
+"texto": "ssd 1tb + ram 8gb ddr5",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1tb",
+"valor": [
+"capacidad_gb",
+"igual",
+1000
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "8gb",
+"valor": [
+"capacidad_gb",
+"igual",
+8
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr5",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S086",
+"texto": "auris y mic hyperx",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auris",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "hyperx",
+"valor": "HyperX",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mic",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "hyperx",
+"valor": "HyperX",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S087",
+"texto": "cargador 65w y parlante jbl clip",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "65w",
+"valor": [
+"potencia_w",
+"igual",
+65
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlante",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "clip",
+"valor": [
+"Clip 4"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S088",
+"texto": "g502 x envian hoy? soy de caba",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "g502 x",
+"valor": [
+"G502 X"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "envian hoy",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S089",
+"texto": "la tuf b650 con factura a",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "tuf b650",
+"valor": [
+"TUF B650-Plus WiFi"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "factura",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S090",
+"texto": "ssd 2tb crucial en 3 cuotas?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "2tb",
+"valor": [
+"capacidad_gb",
+"igual",
+2000
+],
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "crucial",
+"valor": "Crucial",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "3 cuotas",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S091",
+"texto": "hola! mi hijo tiene 12 años y necesita una notebook para el colegio, que me recomendas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "el colegio",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S092",
+"texto": "busco auriculares para mi hijo que juega al fortnite, nada muy caro",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "juega al fortnite",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "nada muy caro",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S093",
+"texto": "un mouse gamer para mi nene de 10 años, que no sea carisimo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "gamer",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "no sea carisimo",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S094",
+"texto": "necesito una tablet para mi hija que la use para estudiar y ver videos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "estudiar y ver videos",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S095",
+"texto": "mi hijo quiere armar una pc, que gabinete me recomiendan lindo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "gabinete",
+"valor": "rubro:gabinete",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "lindo",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S096",
+"texto": "una impresora para las tareas del cole, que sea de tinta continua",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "tinta continua",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "las EcoTank son de tinta continua pero no es campo"
+},
+{
+"id": "S097",
+"texto": "unos parlantes para el cuarto de mi hija, bluetooth y que sean lindos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlantes",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "bluetooth",
+"valor": "atributo:bluetooth",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "lindos",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S098",
+"texto": "el cargador de la tablet de mi hijo se perdio, tienen uno",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S099",
+"texto": "una silla para mi hijo que pasa horas en la compu, que sea comoda",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "silla",
+"valor": "rubro:silla_gamer",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "comoda",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "la tienda solo vende sillas gamer"
+},
+{
+"id": "S100",
+"texto": "webcam para las clases virtuales de mi hija",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "las clases virtuales",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S101",
+"texto": "disco externo para los trabajos de mi hijo de la facu, 1 tera",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "disco externo",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1 tera",
+"valor": [
+"capacidad_gb",
+"igual",
+1000
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S102",
+"texto": "notebook para mi hijo que va a estudiar ingenieria, hasta 1 millon",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "hasta 1 millon",
+"valor": [
+"precio",
+"max",
+1000000
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S103",
+"texto": "auriculares con microfono para clases online",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "con microfono",
+"valor": "atributo:con_microfono",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S104",
+"texto": "monitor para mi hijo, 24 pulgadas, para jugar y estudiar",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "24 pulgadas",
+"valor": [
+"pulgadas",
+"igual",
+24
+],
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "jugar",
+"valor": "preferencia:uso_gamer",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S105",
+"texto": "un ssd para que la compu de mi hijo ande mas rapido, esta lentisima",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S106",
+"texto": "mi nene quiere un microfono para grabar videos de youtube, algo facil",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "microfono",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "grabar videos de youtube",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S107",
+"texto": "memoria ram para la pc de mi hijo, no se cual comprar, tiene ddr4",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "memoria ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr4",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S108",
+"texto": "router mejor para que mis hijos no se corten con el wifi",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "no se corten con el wifi",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S109",
+"texto": "un teclado para mi hija que sea de colores",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "de colores",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "los teclados vienen en blanco y negro"
+},
+{
+"id": "S110",
+"texto": "una compu para mi hijo, tienen notebooks con ryzen?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebooks",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ryzen",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "ryzen esta en el nombre del modelo, no es campo"
+},
+{
+"id": "S111",
+"texto": "tienen playstation 5 para mi hijo?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "playstation 5",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S112",
+"texto": "venden celulares? un samsung para mi hija",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "celulares",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S113",
+"texto": "tenes nintendo switch?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "nintendo switch",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S114",
+"texto": "busco mouse, teclado y auriculares para mi hijo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S115",
+"texto": "una tablet y un parlante para mi hija",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlante",
+"valor": "rubro:parlante",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S116",
+"texto": "webcam y auriculares para las clases",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S117",
+"texto": "monitor y teclado para mi hijo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S118",
+"texto": "notebook para mi hijo, tienen cuotas? y hacen envio a cordoba",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "cuotas",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "envio a cordoba",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S119",
+"texto": "tablet samsung a9 cuanto sale y tiene garantia",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "samsung",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "a9",
+"valor": [
+"Galaxy Tab A9"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S120",
+"texto": "la impresora hp smart tank, entregan a domicilio en zona norte?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "hp",
+"valor": "HP",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "smart tank",
+"valor": [
+"Smart Tank 580",
+"Smart Tank 720"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "entregan a domicilio",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S121",
+"texto": "buenas, precio por mayor de mouse logitech m170, 30 unidades",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "m170",
+"valor": [
+"M170"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "30 unidades",
+"valor": 30,
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "precio por mayor",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S122",
+"texto": "necesito 20 teclados genius kb-110x, precio por cantidad",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "20",
+"valor": 20,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "teclados",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "genius",
+"valor": "Genius",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "kb 110x",
+"valor": [
+"KB-110X"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "precio por cantidad",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S123",
+"texto": "hacen descuento por 10 notebooks lenovo ideapad 3?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "10",
+"valor": 10,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "notebooks",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "lenovo",
+"valor": "Lenovo",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ideapad 3",
+"valor": [
+"IdeaPad 3 Core i5 16GB 512GB SSD",
+"IdeaPad 3 Ryzen 7 16GB 512GB SSD",
+"IdeaPad 3 Core i7 16GB 1TB SSD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "descuento",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S124",
+"texto": "50 cargadores anker nano ii 65w, precio de lista?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "50",
+"valor": 50,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "cargadores",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "anker",
+"valor": "Anker",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "nano ii 65w",
+"valor": [
+"Nano II 65W"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "precio de lista",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S125",
+"texto": "tengo local, quiero revender auriculares jbl tune 510bt, minimo?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "tune 510bt",
+"valor": [
+"Tune 510BT"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "revender",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "minimo",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S126",
+"texto": "x mayor ssd kingston a400 500gb, 40 unidades",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "kingston",
+"valor": "Kingston",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "a400",
+"valor": [
+"A400 SATA 500GB"
+],
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "500gb",
+"valor": [
+"capacidad_gb",
+"igual",
+500
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "40 unidades",
+"valor": 40,
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "x mayor",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S127",
+"texto": "15 monitores aoc 24g2 precio final",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "15",
+"valor": 15,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "monitores",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "aoc",
+"valor": "AOC",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "24g2",
+"valor": [
+"24G2"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "precio final",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S128",
+"texto": "consulta por cantidad de memorias ram ddr4 8gb kingston fury, 100 unidades",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "memorias ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr4",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "8gb",
+"valor": [
+"capacidad_gb",
+"igual",
+8
+],
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "kingston",
+"valor": "Kingston",
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "100 unidades",
+"valor": 100,
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "consulta por cantidad",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S129",
+"texto": "precio mayorista webcam logitech c270",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "c270",
+"valor": [
+"C270 HD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "precio mayorista",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S130",
+"texto": "10 routers tplink archer c6, cuanto cada uno",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "10",
+"valor": 10,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "routers",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "tplink",
+"valor": "TP-Link",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "archer c6",
+"valor": [
+"Archer C6"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S131",
+"texto": "parlantes jbl go 3, 24 unidades cuanto me salen",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlantes",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "go 3",
+"valor": [
+"Go 3"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "24 unidades",
+"valor": 24,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S132",
+"texto": "sillas gamer redragon coeus, 6 unidades, hacen precio?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "sillas gamer",
+"valor": "rubro:silla_gamer",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "redragon",
+"valor": "Redragon",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "coeus",
+"valor": [
+"Coeus"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "6 unidades",
+"valor": 6,
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "hacen precio",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S133",
+"texto": "fuentes corsair cv550 x 12",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "fuentes",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "corsair",
+"valor": "Corsair",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "cv550",
+"valor": [
+"CV550"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "x 12",
+"valor": 12,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S134",
+"texto": "tablet samsung a9 x 8 unidades",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "samsung",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "a9",
+"valor": [
+"Galaxy Tab A9"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "x 8",
+"valor": 8,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S135",
+"texto": "discos externos seagate expansion 2tb, 20 piezas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "discos externos",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "seagate",
+"valor": "Seagate",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "expansion 2tb",
+"valor": [
+"Expansion 2TB"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "20 piezas",
+"valor": 20,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S136",
+"texto": "gabinetes gamemax black hole x 10 precio",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "gabinetes",
+"valor": "rubro:gabinete",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "gamemax",
+"valor": "Gamemax",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "black hole",
+"valor": [
+"Black Hole"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "x 10",
+"valor": 10,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S137",
+"texto": "mouse redragon cobra m711 por 50, lista mayorista",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "redragon",
+"valor": "Redragon",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "cobra m711",
+"valor": [
+"Cobra M711"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "por 50",
+"valor": 50,
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "lista mayorista",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S138",
+"texto": "micros ryzen 5 5600 x 10 unidades precio",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "micros",
+"valor": "rubro:procesador",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ryzen 5 5600",
+"valor": [
+"Ryzen 5 5600"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "x 10",
+"valor": 10,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S139",
+"texto": "mothers asus prime b550m-a, 6 unidades",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mothers",
+"valor": "rubro:motherboard",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "asus",
+"valor": "Asus",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "prime b550m a",
+"valor": [
+"Prime B550M-A"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "6 unidades",
+"valor": 6,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S140",
+"texto": "cooler deepcool ag400 x 25",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cooler",
+"valor": "rubro:cooler",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "deepcool",
+"valor": "DeepCool",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ag400",
+"valor": [
+"AG400"
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "x 25",
+"valor": 25,
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S141",
+"texto": "tienen iphones al por mayor?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "iphones",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S142",
+"texto": "vendo celulares tambien, tenes smartwatches por mayor?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "smartwatches",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S143",
+"texto": "consolas ps5 por mayor, cuantas tenes",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "consolas ps5",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S144",
+"texto": "necesito 10 mouse m170 y 10 teclados k120 de logitech",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "10",
+"valor": 10,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "m170",
+"valor": [
+"M170"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "10",
+"valor": 10,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "teclados",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "k120",
+"valor": [
+"K120"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S145",
+"texto": "20 auris jbl tune 510bt y 20 parlantes go 3",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "20",
+"valor": 20,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "auris",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "tune 510bt",
+"valor": [
+"Tune 510BT"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "20",
+"valor": 20,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "parlantes",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "go 3",
+"valor": [
+"Go 3"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S146",
+"texto": "5 monitores aoc 24g2 y 5 sillas redragon",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "5",
+"valor": 5,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "monitores",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "aoc",
+"valor": "AOC",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "24g2",
+"valor": [
+"24G2"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "5",
+"valor": 5,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "sillas",
+"valor": "rubro:silla_gamer",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "redragon",
+"valor": "Redragon",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S147",
+"texto": "lote de ssd 1tb y rams 16gb ddr4, 30 de cada una",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1tb",
+"valor": [
+"capacidad_gb",
+"igual",
+1000
+],
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "30 de cada una",
+"valor": 30,
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "rams",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "16gb",
+"valor": [
+"capacidad_gb",
+"igual",
+16
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr4",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "cantidad",
+"palabras": "30 de cada una",
+"valor": 30,
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "lote",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S148",
+"texto": "pasame lista de precios de mouses logitech, hacen factura a? soy monotributista",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouses",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "lista de precios",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "factura a",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S149",
+"texto": "10 notebooks hp 245 g9, envian a mendoza? se paga por transferencia?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "cantidad",
+"palabras": "10",
+"valor": 10,
+"modo": ""
+},
+{
+"tipo": "rubro",
+"palabras": "notebooks",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "hp",
+"valor": "HP",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "245 g9",
+"valor": [
+"245 G9 Core i5 16GB 512GB SSD",
+"245 G9 Ryzen 7 16GB 512GB SSD",
+"245 G9 Core i7 16GB 1TB SSD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "envian a mendoza",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "transferencia",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S150",
+"texto": "x mayor teclados redragon, tienen garantia con ustedes?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclados",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "redragon",
+"valor": "Redragon",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "x mayor",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "garantia",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S151",
+"texto": "hola necesito un mouse ergonomico para trabajar todo el dia, el mx master 3s lo tienen?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "mx master 3s",
+"valor": [
+"MX Master 3S"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ergonomico",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "para trabajar",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S152",
+"texto": "teclado silencioso para oficina, bluetooth",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "silencioso",
+"valor": "atributo:silencioso",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "bluetooth",
+"valor": "atributo:bluetooth",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S153",
+"texto": "busco una notebook para trabajo, excel y reuniones de zoom, i5 con 16gb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "trabajo",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "16gb",
+"valor": [
+"ram_gb",
+"igual",
+16
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "i5",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "excel y reuniones de zoom",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": true,
+"motivo": "i5 no es campo de la vista"
+},
+{
+"id": "S154",
+"texto": "webcam full hd para videollamadas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "full hd",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "videollamadas",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "ninguna webcam trae full_hd como atributo"
+},
+{
+"id": "S155",
+"texto": "auriculares con cancelacion de ruido para la oficina",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "cancelacion de ruido",
+"valor": "atributo:cancelacion_ruido",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S156",
+"texto": "impresora multifuncion con wifi para la oficina, tinta continua",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "wifi",
+"valor": "atributo:wifi",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "tinta continua",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "multifuncion",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "multifuncion y tinta continua no son campo"
+},
+{
+"id": "S157",
+"texto": "monitor de 27 para planillas, que no canse la vista",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "27",
+"valor": [
+"pulgadas",
+"igual",
+27
+],
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "planillas",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "que no canse la vista",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S158",
+"texto": "microfono usb para reuniones",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "microfono",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "usb",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "reuniones",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S159",
+"texto": "router wifi 6 para la oficina, estable",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "wifi 6",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "estable",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "wifi 6 es version, el atributo wifi es generico"
+},
+{
+"id": "S160",
+"texto": "disco externo 2tb para backup del trabajo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "disco externo",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "2tb",
+"valor": [
+"capacidad_gb",
+"igual",
+2000
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "backup del trabajo",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S161",
+"texto": "cargador de 65w para la notebook",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "65w",
+"valor": [
+"potencia_w",
+"igual",
+65
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "la notebook",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S162",
+"texto": "una tablet para presentaciones y firmar pdf",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "presentaciones y firmar pdf",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S163",
+"texto": "un ssd para la compu de la oficina que esta lentisima, sata de 500",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "500",
+"valor": [
+"capacidad_gb",
+"igual",
+500
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "sata",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "sata no es campo"
+},
+{
+"id": "S164",
+"texto": "necesito una notebook liviana tipo zenbook o swift",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "liviana",
+"valor": "orden:mas_liviano",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "zenbook o swift",
+"valor": [
+"Zenbook 14 OLED Core i5 16GB 512GB SSD",
+"Zenbook 14 OLED Core i7 16GB 1TB SSD",
+"Zenbook 14 OLED Ryzen 7 16GB 512GB SSD",
+"Swift Go 14 Core i5 16GB 512GB SSD",
+"Swift Go 14 Core i7 16GB 1TB SSD",
+"Swift Go 14 Ryzen 7 16GB 512GB SSD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S165",
+"texto": "mouse inalambrico simple para la oficina, que sea barato",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "inalambrico",
+"valor": "atributo:inalambrico",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "simple",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S166",
+"texto": "parlante bluetooth para la sala de reuniones",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlante",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "bluetooth",
+"valor": "atributo:bluetooth",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "sala de reuniones",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S167",
+"texto": "memoria ram 16gb para pc de escritorio de la oficina, ddr4",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "memoria ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "16gb",
+"valor": [
+"capacidad_gb",
+"igual",
+16
+],
+"modo": ""
+},
+{
+"tipo": "plataforma",
+"palabras": "pc de escritorio",
+"valor": "plataforma:pc_escritorio",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr4",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "ddr4 no es campo"
+},
+{
+"id": "S168",
+"texto": "una thinkpad e14 tienen?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "thinkpad e14",
+"valor": [
+"ThinkPad E14 Core i5 16GB 512GB SSD",
+"ThinkPad E14 Core i7 16GB 1TB SSD",
+"ThinkPad E14 Ryzen 7 16GB 512GB SSD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S169",
+"texto": "procesador i5 para actualizar pc de oficina, hasta 150 mil",
+"pedidos": [
+{
+"esperados": [
+"no_hay",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "procesador",
+"valor": "rubro:procesador",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "i5",
+"valor": [
+"Core i5-12400F",
+"Core i5-13400F",
+"Core i5-14600KF",
+"Core i5-13600KF"
+],
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "hasta 150 mil",
+"valor": [
+"precio",
+"max",
+150000
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "actualizar pc de oficina",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "el i5 mas barato cuesta mas de 150 mil"
+},
+{
+"id": "S170",
+"texto": "silla ergonomica para trabajar 8 horas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "silla",
+"valor": "rubro:silla_gamer",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ergonomica",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "trabajar 8 horas",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "la tienda solo vende silla gamer"
+},
+{
+"id": "S171",
+"texto": "tienen escritorios? uno para home office",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "escritorios",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "home office",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S172",
+"texto": "venden smart tv para la sala de reuniones?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "smart tv",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "sala de reuniones",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S173",
+"texto": "proyector tienen?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "proyector",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "proyector no esta en la lista pero no esta en el catalogo"
+},
+{
+"id": "S174",
+"texto": "notebook lenovo y un monitor extra para trabajar",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "lenovo",
+"valor": "Lenovo",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "extra",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "preferencia",
+"palabras": "trabajar",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S175",
+"texto": "mouse y teclado inalambricos para oficina",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "inalambricos",
+"valor": "atributo:inalambrico",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "inalambricos",
+"valor": "atributo:inalambrico",
+"modo": ""
+},
+{
+"tipo": "preferencia",
+"palabras": "oficina",
+"valor": "preferencia:uso_oficina",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S176",
+"texto": "webcam y auriculares con mic para home office",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "con mic",
+"valor": "atributo:con_microfono",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "home office",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S177",
+"texto": "impresora y un disco externo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "disco externo",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S178",
+"texto": "notebook dell latitude, hacen factura a a nombre de empresa?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "dell",
+"valor": "Dell",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "latitude",
+"valor": [
+"Latitude 3540 Core i5 16GB 512GB SSD",
+"Latitude 3540 Core i7 16GB 1TB SSD",
+"Latitude 3540 Ryzen 7 16GB 512GB SSD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "factura a a nombre de empresa",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S179",
+"texto": "monitor 27 en cuotas? y envio a palermo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "27",
+"valor": [
+"pulgadas",
+"igual",
+27
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "en cuotas",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "envio a palermo",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S180",
+"texto": "impresora epson l3560, garantia y service oficial?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "epson",
+"valor": "Epson",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "l3560",
+"valor": [
+"EcoTank L3560"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia y service oficial",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S181",
+"texto": "la notebook mas barata que tengas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "mas barata",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S182",
+"texto": "mouse barato, lo mas economico",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "lo mas economico",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S183",
+"texto": "auriculares baratos con mic para clases",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratos",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "con mic",
+"valor": "atributo:con_microfono",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "clases",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S184",
+"texto": "teclado economico para la compu",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "economico",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S185",
+"texto": "tenes algo para guardar archivos de la facu barato, un pendrive de 1 tb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "pendrive",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1 tb",
+"valor": [
+"capacidad_gb",
+"igual",
+1000
+],
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "guardar archivos de la facu",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S186",
+"texto": "ssd barato 500gb para revivir mi notebook vieja",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "500gb",
+"valor": [
+"capacidad_gb",
+"igual",
+500
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S187",
+"texto": "ram 8gb ddr4 barata",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "8gb",
+"valor": [
+"capacidad_gb",
+"igual",
+8
+],
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barata",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ddr4",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "ddr4 no es campo"
+},
+{
+"id": "S188",
+"texto": "tablet barata para leer pdfs de la facu",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barata",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "leer pdfs de la facu",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S189",
+"texto": "parlante bluetooth chiquito barato",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "parlante",
+"valor": "rubro:parlante",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "bluetooth",
+"valor": "atributo:bluetooth",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "chiquito",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S190",
+"texto": "cargador rapido barato",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "rapido",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S191",
+"texto": "webcam economica para cursar",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "economica",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "cursar",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S192",
+"texto": "router barato",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S193",
+"texto": "monitor barato 24",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "24",
+"valor": [
+"pulgadas",
+"igual",
+24
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S194",
+"texto": "micro barato para armar pc, i3 o ryzen 5 5500",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "micro",
+"valor": "rubro:procesador",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "i3 o ryzen 5 5500",
+"valor": [
+"Core i3-12100F",
+"Core i3-14100F",
+"Ryzen 5 5500"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "armar pc",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S195",
+"texto": "mic barato para grabar audios",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mic",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "grabar audios",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S196",
+"texto": "fuente barata 500w",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "fuente",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barata",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "500w",
+"valor": [
+"potencia_w",
+"igual",
+500
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S197",
+"texto": "gabinete barato",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "gabinete",
+"valor": "rubro:gabinete",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barato",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S198",
+"texto": "placa de video barata, hasta 600 mil",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "placa de video",
+"valor": "rubro:placa_de_video",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barata",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "hasta 600 mil",
+"valor": [
+"precio",
+"max",
+600000
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S199",
+"texto": "notebook hasta 800 mil para ingenieria",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "hasta 800 mil",
+"valor": [
+"precio",
+"max",
+800000
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ingenieria",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S200",
+"texto": "mother barata am4",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mother",
+"valor": "rubro:motherboard",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "barata",
+"valor": "orden:mas_barato",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "am4",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "el socket no esta como campo"
+},
+{
+"id": "S201",
+"texto": "tenes celulares usados baratos?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "celulares",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "usados baratos",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S202",
+"texto": "vendes consolas usadas?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "consolas",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "usadas",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S203",
+"texto": "un smartwatch economico",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "smartwatch",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "economico",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S204",
+"texto": "mouse y teclado lo mas barato",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "lo mas barato",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "lo mas barato",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S205",
+"texto": "ssd y ram baratos para mi notebook",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratos",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratos",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "mi notebook",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S206",
+"texto": "auris y mic baratos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auris",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratos",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mic",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratos",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S207",
+"texto": "tablet y cargador baratos",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratos",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "baratos",
+"valor": "orden:mas_barato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S208",
+"texto": "mouse genius dx-110, cuanto sale y se puede pagar en cuotas?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "genius",
+"valor": "Genius",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "dx 110",
+"valor": [
+"DX-110"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "en cuotas",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S209",
+"texto": "tienen descuento para estudiantes? busco una notebook",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"rechazar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "descuento para estudiantes",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": "el descuento no existe"
+},
+{
+"id": "S210",
+"texto": "ssd kingston a400, mandan a la plata? cuanto sale el envio",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "kingston",
+"valor": "Kingston",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "a400",
+"valor": [
+"A400 SATA 1TB",
+"A400 SATA 2TB",
+"A400 SATA 500GB"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "mandan a la plata",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "cuanto sale el envio",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S211",
+"texto": "i7-14700kf stock y precio",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "i7 14700kf",
+"valor": [
+"Core i7-14700KF"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S212",
+"texto": "b760m ds3h gigabyte, tenes?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "b760m ds3h",
+"valor": [
+"B760M DS3H"
+],
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "gigabyte",
+"valor": "Gigabyte",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S213",
+"texto": "ddr5 6000 cl30 2x16 hay? corsair vengeance o gskill",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ddr5 6000",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "corsair vengeance o gskill",
+"valor": [
+"Vengeance DDR5 6000 16GB",
+"Vengeance DDR5 6000 32GB",
+"Trident Z5 DDR5 6000 16GB",
+"Trident Z5 DDR5 6000 32GB"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "cl30",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "2x16 y cl30 no son campo"
+},
+{
+"id": "S214",
+"texto": "980 pro 1tb o 990 pro 1tb, cuales tenes",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "980 pro 1tb o 990 pro 1tb",
+"valor": [
+"980 PRO 1TB",
+"990 PRO 1TB"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S215",
+"texto": "rx 7800 xt hellhound o nitro+, precio",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "rx 7800 xt hellhound o nitro",
+"valor": [
+"Hellhound RX 7800 XT",
+"Nitro+ RX 7800 XT"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S216",
+"texto": "psu 850w gold atx 3.0 rog strix",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "psu",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "850w",
+"valor": [
+"potencia_w",
+"igual",
+850
+],
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "rog strix",
+"valor": [
+"ROG Strix 850W Gold"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "gold atx 3 0",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "atx 3.0 no es campo"
+},
+{
+"id": "S217",
+"texto": "noctua nh-d15 negro",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "noctua",
+"valor": "Noctua",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "nh d15",
+"valor": [
+"NH-D15"
+],
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negro",
+"valor": "color:negro",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S218",
+"texto": "arctic liquid freezer iii 360",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "arctic",
+"valor": "Arctic",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "liquid freezer iii 360",
+"valor": [
+"Liquid Freezer III 360"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S219",
+"texto": "monitor 27 qhd ips 165hz, tenes el gp850",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "27",
+"valor": [
+"pulgadas",
+"igual",
+27
+],
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "qhd",
+"valor": "atributo:qhd",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "ips",
+"valor": "atributo:panel_ips",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "165hz",
+"valor": [
+"hz",
+"igual",
+165
+],
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "gp850",
+"valor": [
+"27GP850 UltraGear"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S220",
+"texto": "tenes el 5800x3d aun",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "5800x3d",
+"valor": [
+"Ryzen 7 5800X3D"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S221",
+"texto": "lancool 216 negro",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "lancool 216",
+"valor": [
+"Lancool 216"
+],
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negro",
+"valor": "color:negro",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S222",
+"texto": "wh-1000xm5 negro",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "wh 1000xm5",
+"valor": [
+"WH-1000XM5"
+],
+"modo": ""
+},
+{
+"tipo": "color",
+"palabras": "negro",
+"valor": "color:negro",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S223",
+"texto": "rode nt-usb+ o shure mv7",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "rode nt usb o shure mv7",
+"valor": [
+"NT-USB+",
+"MV7"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S224",
+"texto": "router wifi 6 con mesh, deco x50",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "wifi 6",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "con mesh",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "deco x50",
+"valor": [
+"Deco X50 Mesh"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S225",
+"texto": "c922 pro o brio 100",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "c922 pro o brio 100",
+"valor": [
+"C922 Pro",
+"Brio 100"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S226",
+"texto": "notebook ryzen 7 16gb 1tb, legion 5",
+"pedidos": [
+{
+"esperados": [
+"no_hay",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "legion 5",
+"valor": [
+"Legion 5 Core i5 16GB 512GB SSD",
+"Legion 5 Core i7 16GB 1TB SSD",
+"Legion 5 Ryzen 7 16GB 512GB SSD"
+],
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "16gb",
+"valor": [
+"ram_gb",
+"igual",
+16
+],
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "1tb",
+"valor": [
+"disco_gb",
+"igual",
+1000
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "ryzen 7",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "Legion 5 Ryzen 7 es de 512GB, el de 1TB es Core i7"
+},
+{
+"id": "S227",
+"texto": "mx keys s",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "mx keys s",
+"valor": [
+"MX Keys S"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S228",
+"texto": "sn850x 2tb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "sn850x 2tb",
+"valor": [
+"Black SN850X 2TB"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S229",
+"texto": "samsung t7 2tb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "samsung",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "t7 2tb",
+"valor": [
+"T7 SSD 2TB"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S230",
+"texto": "tab s9 fe",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "tab s9 fe",
+"valor": [
+"Galaxy Tab S9 FE"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S231",
+"texto": "rtx 5080 tenes",
+"pedidos": [
+{
+"esperados": [
+"no_hay",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "rtx 5080",
+"valor": "rubro:placa_de_video",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "rtx 5080",
+"valor": [],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S232",
+"texto": "ryzen 9 9950x",
+"pedidos": [
+{
+"esperados": [
+"no_hay",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ryzen 9 9950x",
+"valor": "rubro:procesador",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ryzen 9 9950x",
+"valor": [],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S233",
+"texto": "g pro x superlight 2 hay?",
+"pedidos": [
+{
+"esperados": [
+"no_hay",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "g pro x superlight 2",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "g pro x superlight 2",
+"valor": [],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "el catalogo trae el Superlight sin el 2"
+},
+{
+"id": "S234",
+"texto": "7800x3d + b650 tomahawk + ddr5 6000 32gb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "7800x3d",
+"valor": [
+"Ryzen 7 7800X3D"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "b650 tomahawk",
+"valor": [
+"MAG B650 Tomahawk WiFi"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ddr5 6000 32gb",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "32gb",
+"valor": [
+"capacidad_gb",
+"igual",
+32
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S235",
+"texto": "980 pro 2tb y 990 pro 1tb",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "980 pro 2tb",
+"valor": [
+"980 PRO 2TB"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "990 pro 1tb",
+"valor": [
+"990 PRO 1TB"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S236",
+"texto": "fuente rm850e y gabinete 4000d",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "fuente",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "rm850e",
+"valor": [
+"RM850e"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "gabinete",
+"valor": "rubro:gabinete",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "4000d",
+"valor": [
+"4000D Airflow"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S237",
+"texto": "ak620 y 5600x",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "ak620",
+"valor": [
+"AK620"
+],
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "5600x",
+"valor": [
+"Ryzen 5 5600X"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S238",
+"texto": "4070 super asus dual, garantia oficial? factura a",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "asus",
+"valor": "Asus",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "4070 super asus dual",
+"valor": [
+"Dual RTX 4070 Super"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia oficial",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "factura a",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S239",
+"texto": "b650 tomahawk wifi, envio a cordoba y cuotas?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "b650 tomahawk wifi",
+"valor": [
+"MAG B650 Tomahawk WiFi"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "envio a cordoba",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "cuotas",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S240",
+"texto": "ryzen 7 7700x, es oem o box? y garantia",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "ryzen 7 7700x",
+"valor": [
+"Ryzen 7 7700X"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "oem o box",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S241",
+"texto": "los productos son originales? quiero un mouse logitech g502",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "g502",
+"valor": [
+"G502 Hero",
+"G502 X"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S242",
+"texto": "auriculares sony wh-1000xm5 son originales?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "sony",
+"valor": "Sony",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "wh 1000xm5",
+"valor": [
+"WH-1000XM5"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S243",
+"texto": "busco ssd samsung 980 pro, es el original no uno falsificado?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "samsung",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "980 pro",
+"valor": [
+"980 PRO 500GB",
+"980 PRO 1TB",
+"980 PRO 2TB"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S244",
+"texto": "el cargador anker 65w es original?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "anker",
+"valor": "Anker",
+"modo": ""
+},
+{
+"tipo": "numero",
+"palabras": "65w",
+"valor": [
+"potencia_w",
+"igual",
+65
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S245",
+"texto": "las notebooks lenovo ideapad 3 son nuevas o reacondicionadas?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebooks",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "lenovo",
+"valor": "Lenovo",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ideapad 3",
+"valor": [
+"IdeaPad 3 Core i5 16GB 512GB SSD",
+"IdeaPad 3 Core i7 16GB 1TB SSD",
+"IdeaPad 3 Ryzen 7 16GB 512GB SSD"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "nuevas o reacondicionadas",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S246",
+"texto": "es nuevo y sellado el ryzen 5 7600?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "ryzen 5 7600",
+"valor": [
+"Ryzen 5 7600"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "nuevo y sellado",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S247",
+"texto": "teclado logitech mx keys s original?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "mx keys s",
+"valor": [
+"MX Keys S"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S248",
+"texto": "placa de video asus nueva? cual tenes",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "placa de video",
+"valor": "rubro:placa_de_video",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "asus",
+"valor": "Asus",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "nueva",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S249",
+"texto": "jbl flip 6 es original o trucha?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "flip 6",
+"valor": [
+"Flip 6"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original o trucha",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S250",
+"texto": "tablet samsung galaxy a9, nueva con caja?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "tablet",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "samsung",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "galaxy a9",
+"valor": [
+"Galaxy Tab A9"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "nueva con caja",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S251",
+"texto": "memoria kingston fury, vienen selladas?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "memoria",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "kingston",
+"valor": "Kingston",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "selladas",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S252",
+"texto": "impresora epson ecotank original con tintas?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "impresora",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "epson",
+"valor": "Epson",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "ecotank",
+"valor": [
+"EcoTank L3250",
+"EcoTank L3560",
+"EcoTank L4260",
+"EcoTank L5590"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original con tintas",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S253",
+"texto": "monitor lg 27gp850 es nuevo en caja?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "monitor",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "27gp850",
+"valor": [
+"27GP850 UltraGear"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "nuevo en caja",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S254",
+"texto": "router tp-link archer ax55 original?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "tp link",
+"valor": "TP-Link",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "archer ax55",
+"valor": [
+"Archer AX55"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S255",
+"texto": "webcam logitech c920 originales o copias",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "c920",
+"valor": [
+"C920 HD Pro"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales o copias",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S256",
+"texto": "fuente corsair rm750e es original sellada?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "fuente",
+"valor": "rubro:fuente",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "corsair",
+"valor": "Corsair",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "rm750e",
+"valor": [
+"RM750e"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original sellada",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S257",
+"texto": "mic blue yeti es original?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mic",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "blue",
+"valor": "Blue",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "yeti",
+"valor": [
+"Yeti"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S258",
+"texto": "disco wd my passport 2tb nuevo sellado?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "disco",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "wd",
+"valor": "Western Digital",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "my passport 2tb",
+"valor": [
+"My Passport 2TB"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "nuevo sellado",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S259",
+"texto": "cooler noctua original?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cooler",
+"valor": "rubro:cooler",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "noctua",
+"valor": "Noctua",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S260",
+"texto": "silla redragon coeus es la original o imitacion?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "silla",
+"valor": "rubro:silla_gamer",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "redragon",
+"valor": "Redragon",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "coeus",
+"valor": [
+"Coeus"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "original o imitacion",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S261",
+"texto": "venden iphone originales?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "iphone",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S262",
+"texto": "tienen ps5 nueva sellada?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "ps5",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "nueva sellada",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S263",
+"texto": "airpods originales tenes?",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "airpods",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": true,
+"motivo": "airpods no esta en la lista pero no se vende"
+},
+{
+"id": "S264",
+"texto": "g502 y teclado k380 originales ambos?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "modelo",
+"palabras": "g502",
+"valor": [
+"G502 Hero",
+"G502 X"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "k380",
+"valor": [
+"K380"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S265",
+"texto": "ssd samsung 980 y ram corsair, originales los dos?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ssd",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "samsung",
+"valor": "Samsung",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "980",
+"valor": [
+"980 500GB",
+"980 1TB",
+"980 2TB"
+],
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales los dos",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "ram",
+"valor": "rubro:memoria_ram",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "corsair",
+"valor": "Corsair",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales los dos",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S266",
+"texto": "auris sony y cargador anker originales?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auris",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "sony",
+"valor": "Sony",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "cargador",
+"valor": "rubro:cargador",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "anker",
+"valor": "Anker",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S267",
+"texto": "router y webcam originales?",
+"pedidos": [
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "router",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"sin_dato",
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "webcam",
+"valor": "rubro:webcam",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "originales",
+"valor": "sin_dato",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S268",
+"texto": "notebook hp 245 g9, tiene garantia oficial? de confianza?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "notebook",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "hp",
+"valor": "HP",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "245 g9",
+"valor": [
+"245 G9 Core i5 16GB 512GB SSD",
+"245 G9 Core i7 16GB 1TB SSD",
+"245 G9 Ryzen 7 16GB 512GB SSD"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia oficial",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "de confianza",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S269",
+"texto": "mouse logitech g305, dan factura? como llega a mi casa",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "marca",
+"palabras": "logitech",
+"valor": "Logitech",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "g305",
+"valor": [
+"G305 Lightspeed"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "dan factura",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "como llega a mi casa",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S270",
+"texto": "auriculares jbl tune 770nc, garantia cuantos meses y se pagan en efectivo?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "marca",
+"palabras": "jbl",
+"valor": "JBL",
+"modo": ""
+},
+{
+"tipo": "modelo",
+"palabras": "tune 770nc",
+"valor": [
+"Tune 770NC"
+],
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia cuantos meses",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "se pagan en efectivo",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S271",
+"texto": "quiero esa cosa para que se vea mas grande la pantalla de la compu",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "la pantalla de la compu",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "se vea mas grande",
+"valor": "orden:mas_pulgadas",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "descripcion sin nombre, puede ser monitor"
+},
+{
+"id": "S272",
+"texto": "una cosita para pasar las fotos del celu a la compu y guardarlas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "pasar las fotos del celu a la compu y guardarlas",
+"valor": "rubro:almacenamiento_externo",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "puede ser pendrive o disco externo"
+},
+{
+"id": "S273",
+"texto": "lo que se usa para que haya internet en toda la casa sin cables",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "internet en toda la casa",
+"valor": "rubro:router",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "sin cables",
+"valor": "atributo:wifi",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S274",
+"texto": "la placa que hace que los juegos se vean mejor",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "la placa que hace que los juegos se vean mejor",
+"valor": "rubro:placa_de_video",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S275",
+"texto": "el cerebro de la compu, para cambiarlo, uno bueno",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "el cerebro de la compu",
+"valor": "rubro:procesador",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "uno bueno",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S276",
+"texto": "esa caja donde va toda la compu por dentro",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "esa caja donde va toda la compu por dentro",
+"valor": "rubro:gabinete",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S277",
+"texto": "lo que va abajo en la pc y le da energia a todo",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "lo que va abajo en la pc y le da energia a todo",
+"valor": "rubro:fuente",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S278",
+"texto": "el aparatito para que se vea mi cara en videollamadas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "el aparatito para que se vea mi cara en videollamadas",
+"valor": "rubro:webcam",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S279",
+"texto": "la cosa del ventilador grande que va encima del procesador",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "la cosa del ventilador grande que va encima del procesador",
+"valor": "rubro:cooler",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S280",
+"texto": "una pantalla tactil portatil para leer y ver series",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "pantalla tactil portatil",
+"valor": "rubro:tablet",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "leer y ver series",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S281",
+"texto": "un aparato para imprimir fotos y documentos que no gaste mucha tinta",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "un aparato para imprimir fotos y documentos",
+"valor": "rubro:impresora",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "no gaste mucha tinta",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S282",
+"texto": "algo para escuchar musica sin cables que sea resistente al agua",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "algo para escuchar musica",
+"valor": [
+"rubro:auriculares",
+"rubro:parlante"
+],
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "sin cables",
+"valor": "atributo:inalambrico",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "resistente al agua",
+"valor": "atributo:resistente_agua",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "auriculares o parlante"
+},
+{
+"id": "S283",
+"texto": "algo que enchufe en la pared y cargue rapido el celular",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "algo que enchufe en la pared y cargue rapido el celular",
+"valor": "rubro:cargador",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S284",
+"texto": "la tablita donde se enchufan todas las partes de la compu",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "la tablita donde se enchufan todas las partes de la compu",
+"valor": "rubro:motherboard",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S285",
+"texto": "memoria para que la compu no se trabe cuando abro muchas cosas",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "memoria para que la compu no se trabe cuando abro muchas cosas",
+"valor": "rubro:memoria_ram",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S286",
+"texto": "el disco que no tiene partes moviles, para que la compu prenda rapido",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "el disco que no tiene partes moviles",
+"valor": "rubro:ssd",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "que la compu prenda rapido",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S287",
+"texto": "una silla comoda para estar sentado muchas horas con respaldo reclinable",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "silla",
+"valor": "rubro:silla_gamer",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "comoda",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "con respaldo reclinable",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "la tienda solo vende silla gamer"
+},
+{
+"id": "S288",
+"texto": "un microfono de mesa para grabar mi voz, un podcast",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "un microfono de mesa",
+"valor": "rubro:microfono",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "podcast",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S289",
+"texto": "un teclado sin cable que sea chiquito para llevar",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "sin cable",
+"valor": "atributo:inalambrico",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "chiquito para llevar",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S290",
+"texto": "una computadora que se pueda llevar a todos lados, liviana, para diseño",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "una computadora que se pueda llevar a todos lados",
+"valor": "rubro:notebook",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "liviana",
+"valor": "orden:mas_liviano",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "diseno",
+"valor": "ignorar",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": true,
+"motivo": "diseno no es campo"
+},
+{
+"id": "S291",
+"texto": "esa cosa para jugar que se enchufa a la tele",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "esa cosa para jugar que se enchufa a la tele",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S292",
+"texto": "algo para enfriar la pieza en verano, un aire",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "un aire",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S293",
+"texto": "el telefono inteligente ese con camara",
+"pedidos": [
+{
+"esperados": [
+"no_hay"
+],
+"cas": [
+{
+"tipo": "fuera",
+"palabras": "el telefono inteligente ese con camara",
+"valor": "no_vende",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S294",
+"texto": "una pantalla grande y un mouse que se mueve sin cable",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "una pantalla grande",
+"valor": "rubro:monitor",
+"modo": ""
+},
+{
+"tipo": "orden",
+"palabras": "grande",
+"valor": "orden:mas_pulgadas",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "mouse",
+"valor": "rubro:mouse",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "sin cable",
+"valor": "atributo:inalambrico",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S295",
+"texto": "unos auriculares con microfono para hablar y escuchar",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "auriculares",
+"valor": "rubro:auriculares",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "con microfono",
+"valor": "atributo:con_microfono",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S296",
+"texto": "el disco rapido y la memoria para la compu",
+"pedidos": [
+{
+"esperados": [
+"ofrecer",
+"repreguntar"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "el disco rapido",
+"valor": "rubro:ssd",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "la memoria",
+"valor": "rubro:memoria_ram",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S297",
+"texto": "una pantalla y el teclado sin cables",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "una pantalla",
+"valor": "rubro:monitor",
+"modo": ""
+}
+]
+},
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "teclado",
+"valor": "rubro:teclado",
+"modo": ""
+},
+{
+"tipo": "atributo",
+"palabras": "sin cables",
+"valor": "atributo:inalambrico",
+"modo": ""
+}
+]
+}
+],
+"global": [],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S298",
+"texto": "una compu que se lleva a todos lados, la mandan a salta? y como se paga",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "una compu que se lleva a todos lados",
+"valor": "rubro:notebook",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "la mandan a salta",
+"valor": "ignorar",
+"modo": ""
+},
+{
+"tipo": "fuera",
+"palabras": "como se paga",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S299",
+"texto": "el aparato para tener internet en toda la casa, tiene garantia?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "el aparato para tener internet en toda la casa",
+"valor": "rubro:router",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "garantia",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+},
+{
+"id": "S300",
+"texto": "lo que imprime, hacen factura?",
+"pedidos": [
+{
+"esperados": [
+"ofrecer"
+],
+"cas": [
+{
+"tipo": "rubro",
+"palabras": "lo que imprime",
+"valor": "rubro:impresora",
+"modo": ""
+}
+]
+}
+],
+"global": [
+{
+"tipo": "fuera",
+"palabras": "hacen factura",
+"valor": "ignorar",
+"modo": ""
+}
+],
+"dudosa": false,
+"motivo": ""
+}
+]
