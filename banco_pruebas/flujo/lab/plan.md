@@ -68,3 +68,44 @@ examen, que es la respuesta; se informa aparte sin eso.
 - 5 filas de Luna traen primero algo que no sirve a ningun pedido: 2 son preguntas que Luna marca como producto, "a
   cuanto me queda", "o explota la bateria"; 1 pide memoria DDR3 que la tienda no tiene; 1 "una compu para jugar"; 1 junta
   varios articulos en una fila.
+
+## Plan 3, las capas con la entrada perfecta, escrito antes de correr
+
+Entrada perfecta de cada pedido: sus tramos de `examen/tramos.py` mas lo global de tipo condicion que se le aplica.
+Sin modelo; embeddings con la clave gratis. Criterio de Martin para leer cada numero: la mitad es vender, la mitad es no
+alucinar. Por eso cada medida cuenta aparte lo que pierde una venta y lo que le dice al cliente algo falso.
+
+Medida 1, capa producto. Por pedido con aceptables y sin orden: el primero de la busqueda es aceptable, y aceptables en
+los 5 primeros. Documento A y documento B. Los pedidos con orden, aparte.
+
+Medida 2, capa existe. Tres formas, todas por codigo:
+- E1, el indice de rubros, que ya tiene los documentos de lo que no se vende: si el primero es uno de esos, no hay.
+- E2, los codigos de modelo: una palabra con letras y numeros, o un numero de tres o mas cifras que no es plata ni lleva
+  unidad, que no aparece en ningun nombre, modelo, tag ni alias de la tienda: no hay.
+- E3, E1 o E2.
+Se cuenta: no hay bien detectado; no hay perdido, que es ofrecer algo que no es, alucinar; y falsa alarma, decir que no
+hay algo que hay, perder la venta.
+
+Medida 3, capa dato 2. Cada opcion de la lista cerrada tiene un documento: los genericos, ofrecer, precio, stock, comprar,
+caracteristicas, comparar y compat, con una frase escrita hoy antes de medir y que no se toca despues; cada campo, con su
+etiqueta y sus claves de `specs_preguntables.json`, que es la fuente. La consulta: los tramos de dato 2 que se aplican al
+pedido, o su tramo si no tiene. Se cuenta si la primera opcion esta entre las etiquetadas, y aparte los campos de la ficha,
+que son los que llevan a un dato que puede faltar.
+
+## Resultado 3, 25-nov
+
+Etiquetado: `examen/tramos.py`, 138 frases y 193 pedidos con tramos, dato 2 y lo global; el control por codigo da 0
+problemas. Los embeddings que faltaban se terminaron con la paga, con el ok de Martin en la sesion: menos de un centavo.
+
+- Medida 1, producto: con el tramo bien separado, el primero sirve en 135 de 138 pedidos sin orden y en 42 de 43 con
+  orden. Documento A y B dan lo mismo. Con buena separacion, esta capa anda.
+- Medida 2, existe, de 12 pedidos que esperan no hay y 181 que hay:
+  E1, indice de rubros: 4 bien, 8 perdidos, 7 falsas alarmas. E2, codigos ajenos: 3 bien, 9 perdidos, 0 falsas alarmas.
+  E3, una u otra: 7 bien, 5 perdidos, 7 falsas alarmas. El puntaje del primero no separa: los no hay van de 0,63 a 0,76
+  y los que hay arrancan en 0,60. De los 12, dos son condiciones que nada cumple, teclado azul y silla de menos de 200
+  mil: son de la capa de condicion, no de esta.
+- Medida 3, dato 2: la opcion exacta sale primera en 130 de 185 genericos y en 5 de 5 campos. Casi todas las fallas
+  confunden ofrecer, comprar, precio y stock, con un verbo solo, "quiero", "necesito". Agrupado en lo base, que se
+  contesta mostrando el producto con precio y stock, contra lo especifico, un campo, compatibilidad, comparar o
+  caracteristicas: 173 de 190 bien agrupados; 15 base tomados como especificos y 2 al reves; de 15 especificos, 10 con la
+  opcion exacta.

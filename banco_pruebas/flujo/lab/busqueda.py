@@ -59,7 +59,13 @@ def vectores(pedido):
     """{(texto, tarea): vector}. Pide a la clave gratis lo que no esta guardado, de a 100."""
     c = _cache()
     falta = [p for p in dict.fromkeys(pedido) if f"{p[1]}|{p[0]}" not in c]
-    clave = os.environ["GEMINI_API_KEY"].split()[0]
+    # La paga solo con la orden de Martin en la sesion: BANCO_CLAVE_PAGA=true y MARTIN_AUTORIZO_LA_PAGA=<fecha> en el
+    # comando, que el candado `scripts/guard_clave.sh` controla; el gasto se anota en `libro_paga`, con su tope diario.
+    paga = os.environ.get("BANCO_CLAVE_PAGA") == "true" and bool(os.environ.get("MARTIN_AUTORIZO_LA_PAGA"))
+    clave = os.environ["GEMINI_API_KEY_PROD" if paga else "GEMINI_API_KEY"].split()[0]
+    if paga and falta:
+        from banco_pruebas import libro_paga
+        libro_paga.puede()
     for i in range(0, len(falta), 100):
         lote = falta[i:i + 100]
         body = json.dumps({"requests": [{"model": "models/gemini-embedding-001", "content": {"parts": [{"text": t}]},
@@ -78,6 +84,8 @@ def vectores(pedido):
             n = math.sqrt(sum(v * v for v in x["values"])) or 1
             c[f"{k}|{t}"] = [round(v / n, 6) for v in x["values"]]
         json.dump(c, gzip.open(CACHE, "wt"))
+        if paga:
+            libro_paga.anotar("gemini-embedding-001", sum(len(t) // 4 + 1 for t, _ in lote), 0)
         print(f"  embeddings pedidos: {i + len(lote)} de {len(falta)}", flush=True)
     return {p: c[f"{p[1]}|{p[0]}"] for p in pedido}
 
