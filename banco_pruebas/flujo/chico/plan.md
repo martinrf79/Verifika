@@ -25,3 +25,37 @@ Metricas: acierta, repregunta, erra, con y sin las dudosas; tiempo por frase en 
 memoria del modelo cargado. Costo: lo que gasta Luna en redactar las frases, tope de 15 centavos.
 
 Base: el podado, 39 / 5 / 4 en las 48, y 32 / 2 / 0 sin las dudosas.
+
+---
+
+PLAN DE LA SEGUNDA PRUEBA, escrito antes de correr (25-nov-2026, orden de Martin): EL MODELO CHICO COMO VERIFICADOR DE
+CONDICION, NO COMO TRADUCTOR
+
+Hipotesis: el modelo chico no entiende la frase del cliente, pero puede decir si una condicion corta, como "mecanico" o
+"con luces", esta escrita en la ficha de un producto. Tres veredictos: cumple, no cumple, sin dato.
+
+Guion: `chico/condicion.py`. Modelo: multilingual-e5-small, tal como viene, en ONNX cuantizado, sin ajustar. Corre fuera
+del repo, en la carpeta de la sesion, sin tocar `requirements.txt`.
+
+La ficha de cada producto, en frases: los campos de texto de `fuente.VISTA` como "campo: valor", lo extra partido por
+coma, cada color, cada forma de conexion y cada plataforma.
+
+La regla, por codigo: el puntaje de una condicion contra un producto es el parecido mas alto con alguna de sus frases.
+Cumple si pasa el umbral. Si no pasa y algun producto del rubro lo pasa, no cumple. Si ningun producto del rubro lo pasa,
+sin dato.
+
+La verdad, por codigo, de `conceptos.json`: cumple si el producto esta en las filas del concepto; sin dato si el campo del
+concepto esta vacio en ese producto; si no, no cumple. Las condiciones etiquetadas sin_dato del examen son sin dato en
+todo el rubro.
+
+Calibracion: el umbral se fija con los conceptos de atributo, color y plataforma que el examen NO usa, contra todos los
+productos de los rubros donde el concepto tiene alguna fila, maximizando aciertos menos tres veces los "cumple" falsos,
+que son la alucinacion. No se toca despues.
+
+Prueba: las condiciones de atributo, color y plataforma del examen fijo, y las de sin_dato, contra todos los productos
+de su rubro. Dos entradas: las palabras del cliente tal cual, y el nombre del concepto, que es lo que escribiria Luna.
+
+Metricas: por veredicto verdadero, cuantos acierta; los cumple falsos aparte; tiempo por par.
+
+Que diria que anda: cumple falsos por debajo del 2 por ciento y sin dato bien detectado en la mayoria. Si no, el modelo
+chico tal como viene no sirve como verificador y se dice.
