@@ -109,3 +109,39 @@ problemas. Los embeddings que faltaban se terminaron con la paga, con el ok de M
   contesta mostrando el producto con precio y stock, contra lo especifico, un campo, compatibilidad, comparar o
   caracteristicas: 173 de 190 bien agrupados; 15 base tomados como especificos y 2 al reves; de 15 especificos, 10 con la
   opcion exacta.
+
+## Plan 4, la funcion que dice que hay y que no hay, escrito antes de correr
+
+Orden de Martin, 25-nov: una funcion de codigo que verifique lo que hay de lo que no hay. `lab/existe.py`.
+
+Entrada: el tramo del producto, el de `examen/tramos.py`. Salida: hay, no hay, o dudoso. Dudoso sigue como hay: la busqueda
+ofrece y el resto de las capas controla; no se le dice al cliente que no hay sin una razon de la fuente.
+
+Reglas, todas armadas desde la fuente, ninguna por caso:
+1. Lo que sigue a "para" o "pa" describe el uso, no lo que se pide, y no cuenta: "un cable para el monitor" pide un cable.
+2. El vocabulario de la tienda: rubros, alias, marcas, modelos, nombres, tags y valores de la ficha.
+3. Si el tramo nombra algo de `no_vendidas.json` y ningun rubro de la tienda, no hay.
+4. Un codigo de modelo, letras con numeros o un numero de tres o cuatro cifras sin unidad, que no esta en el vocabulario ni
+   se le parece, no hay: es un modelo que la tienda no trae.
+5. Un nombre propio, una palabra con mayuscula que no abre la frase, que no esta en el vocabulario ni se le parece, no hay:
+   es una marca o un modelo que la tienda no trae.
+"Se parece" es una diferencia de una o dos letras, la de un error de tipeo, no un umbral para un caso.
+
+Se mide igual que E1 a E3: no hay bien, no hay perdido, que alucina, y falsa alarma, que pierde la venta. Las condiciones
+que nada cumple, teclado azul y silla de menos de 200 mil, se cuentan aparte: son de la capa de condicion.
+
+## Resultado 4, 25-nov
+
+`lab/existe.py`, sin modelo y sin embeddings, en medio segundo para todos los pedidos.
+
+- Con el tramo del producto aislado, el de las etiquetas: de 10 pedidos que esperan no hay, 7 bien y 3 perdidos; de 181
+  que hay, 0 falsas alarmas. Los 3 perdidos: "un cable de 5 metros", que no nombra nada de la tienda y queda dudoso;
+  "teclado azul", que es una condicion que nada cumple, capa de condicion; "alquilan notebooks", que es un servicio, dato 2.
+- Con las filas enteras de Luna, que traen tambien destinos, nombres de personas y otras frases: la regla de los nombres
+  propios da 27 falsas alarmas en 131 filas, "Concordia", "Esteban", "Envio". Sin esa regla: 4 bien, 5 perdidos y 0
+  falsas alarmas; la unica que el conteo marca, DDR3, esta bien, porque esa linea de la frase espera no hay.
+- Dudoso, sin rubro, marca ni modelo de la tienda: 57 veces cuando hay y 2 cuando no hay. Sigue como hay.
+- Lo que se aprende: la funcion verifica sin perder ventas; cuanto caza depende de recibir aislado lo que se pide. Eso es
+  la capa 0, separar.
+- Dos fallas del guion, corregidas antes de contar: la unidad suelta, "2 TB", leida como nombre, y una cifra distinta
+  tomada como error de tipeo, 5070 por 4070.
