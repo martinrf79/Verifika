@@ -93,10 +93,12 @@ Las frases: las del examen fijo, y las charlas reales de WhatsApp para la capa d
 ## 6. El orden de trabajo
 
 1. Hecho el 25-nov: el etiquetado por tramos, `banco_pruebas/flujo/examen/tramos.py`, y las capas 0, 1, 2 y 6 medidas.
-2. Sigue: la capa de condicion y orden, lo que nada cumple, el teclado azul o "menos de 200 mil", y "el mas barato" sobre
-   lo que cumple, con lo que copia Luna.
-3. Despues: el comando de la tabla por capas, que junte las medidas de `lab/` en una sola salida.
-4. Despues: la cadena entera, por charla, y recien ahi la propuesta de llevar el circuito al bot.
+2. Hecho el 26-nov: la rueda desde la fila de Luna, seccion 9, medida en 300 primeros mensajes nuevos.
+3. Sigue: la capa de condicion y orden sobre la rueda de la seccion 9, con las caracteristicas con valor que ya separa
+   `dato2()`: lo que nada cumple, el teclado azul o "hasta 80 lucas", y "el mas barato" sobre lo que cumple.
+4. Despues: las respuestas de lo especifico, la ficha, la compatibilidad y los temas, seccion 9.3.
+5. Despues: el comando de la tabla por capas, la cadena entera por charla, y recien ahi llevarla al bot, que hoy falla
+   mucho en produccion: Martin, 26-nov, no hay que cuidar la configuracion actual.
 
 ## 7. Lo que ya no se repite
 
@@ -140,3 +142,68 @@ documentos del indice; `lab/capas.py`, producto, existe y dato 2 con la entrada 
 `examen/luna_producto.py`, Luna con `lo_pedido`. Los planes y los resultados, en orden, en `lab/plan.md`. Los vectores
 quedan fuera de git, en `lab/vectores.json.gz`: se vuelven a pedir con la clave gratis, o con la paga y la marca de
 Martin si la gratis se agota.
+
+## 9. La rueda desde la fila de Luna, 26-nov
+
+**Lo que se vio:** la separacion de Luna nunca se perdio. El v14f1b, el de los 4,1 segundos de la FICHA 104, y el v14f1p
+del 25-nov, que le suma copiar lo pedido, dan lo mismo en 300 primeros mensajes nuevos: el rubro pedido entre corchetes
+en 272 de 276, lo no vendido metido en un rubro 1 de 27. La latencia baja por mensajes mas cortos, no por un cambio. Lo
+que fallaba era usar la copia de lo pedido en vez de lo que Luna ya traduce entre corchetes. Lo pedido no se repite.
+
+**La rueda**, en el banco, `banco_pruebas/flujo/primeros/cadena.py`, sin pedirle a Luna nada mas que el v14f1b:
+1. **Luna separa y traduce**, una fila por pedido, "{palabras}[nombre]" con el vocabulario de la ficha f1: unos 420
+   tokens para esta tienda; con 200 rubros y 300 temas, unos 2.000; arriba de eso, la ficha por mensaje, v14f3.
+2. **El codigo lee cada corchete por su seccion:** PRODUCTOS es el rubro; CARACTERISTICAS con un valor, "inalambrico",
+   es una condicion; preguntada, "es inalambrico?", es un campo de la ficha; PREGUNTAS es el dato 2: stock, o un tema de
+   la FAQ; compatibilidad y especificaciones preguntadas son dato del producto. El precio preguntado es dato 2; "que no
+   sea carisimo" es condicion. Si la fila pregunta stock o precio, lo demas es como tiene que ser el producto.
+3. **Los embeddings ordenan solo dentro del rubro del corchete**, con la fila entera como consulta.
+4. **Existe corre en todas las filas:** un modelo que la tienda no trae, "rtx 5090", no se ofrece aunque tenga rubro.
+5. **Lo que nombra algo sin rubro, marca ni modelo no se ofrece:** se resuelve abajo. Ofrecerlo buscando en toda la
+   tienda da 41 ofertas equivocadas en 352: no va.
+
+### 9.1 Lo medido, contra la etiqueta a ciegas de las 300, `primeros/examen.json` y `primeros/dato2.py`
+
+| | con lo pedido, 25-nov | la rueda, 26-nov |
+| --- | --- | --- |
+| venta: el primero sirve, sin orden | 256 de 269 | 254 de 269 |
+| no hay dicho | 16 de 27 | 21 de 27 |
+| ofertas equivocadas | 21 de 322 | 17 de 323 |
+| dato 2 del pedido, base o dato de la ficha | sin medir | 341 de 343 |
+| temas de la FAQ que pregunta | sin medir | 70 de 97, 11 de mas |
+| dato de la ficha preguntado, en el examen | 130 de 185 por embeddings | 7 de 7, 2 de mas |
+
+Las 300 las escribio Sonnet anclado al catalogo, `primeros/sinteticas.jsonl`: casi no preguntan datos de la ficha, por
+eso esa fila sale del examen del 25-nov. La regla que lee si una caracteristica se pregunta usa una lista de palabras que
+preguntan, en el banco: antes de llevarla al bot se consulta con Martin, regla de CLAUDE.md.
+
+### 9.2 Lo que falta en la rueda, por capa
+
+- **Condicion**, 9 pedidos: el tope de plata, la capacidad, "sin cable", "ergonomico". Seccion 9.3.
+- **No hay**, 7: lo que cae en un rubro que la tienda tiene, airpods o el superlight 2, y lo que no deja ninguna fila con
+  producto, "iphones al por mayor". Va al codigo de abajo: la fila con corchete de PREGUNTAS y palabras sin vocabulario es
+  un producto que la tienda no tiene; se dice que no hay y se ofrece el rubro parecido solo si el cliente lo acepta.
+- **Descripciones sin nombre**, 4: "esa cosa para que se vea mas grande la pantalla". Repreguntar con los dos o tres
+  rubros mas cercanos por embeddings, sin ofrecer un producto.
+- **Separar**, 2: la notebook y su procesador en dos filas. Se mide si vuelve a pasar antes de tocar el prompt.
+- **Temas**: "por cantidad" no sale como mayorista, 17; "nuevo, sellado, en caja" no sale como originales, 7. Lo primero
+  es del codigo: la cantidad la trae la fila; lo segundo, de los alias de la tienda.
+
+### 9.3 Lo que queda previsto para la condicion, la ficha y las descripciones
+
+- **Condicion:** cada caracteristica con valor se ata a un concepto de `conceptos.json` o a un numero de
+  `conceptos/numeros.py`, y filtra la vista de la fuente por codigo, como `examen.aceptables`. Si nada cumple, no hay,
+  con lo mas cercano. El orden, "el mas barato", corre sobre lo que cumple, nunca sobre los candidatos de los embeddings.
+  Lo que no se ata a la fuente queda dicho: "no tengo ese dato".
+- **Dato de la ficha:** el campo preguntado se lee de `specs_por_modelo.csv` para el producto elegido; vacio es "la
+  ficha no lo trae", nunca un valor inventado. Compatibilidad, con `conceptos/compat.py`. Caracteristicas, la
+  descripcion de la ficha recortada.
+- **Temas de la FAQ:** la respuesta curada de `faq.json`, por id, sin modelo.
+- **La redaccion**, capa 7: recibe dato 1 y dato 2 ya resueltos por codigo, con el id de cada producto, y el verificador
+  controla el texto.
+
+### 9.4 Los comandos
+
+    python3 banco_pruebas/flujo/primeros/cadena.py [--ver]           # dato 1: venta, no hay y ofertas equivocadas
+    python3 banco_pruebas/flujo/primeros/cadena.py --dato2 [--ver]   # dato 2: pedido y temas
+    python3 banco_pruebas/flujo/primeros/comparar.py                 # Luna, v14f1b contra v14f1p

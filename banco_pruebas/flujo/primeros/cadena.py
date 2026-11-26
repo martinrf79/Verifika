@@ -12,6 +12,7 @@ para lo sin rubro: no ofrecer nada, o buscar en toda la tienda y que decida `exi
 Se cuenta igual que `medir.py`, contra la misma etiqueta congelada, para comparar con lo de ayer, el circuito con lo pedido.
 
     python3 primeros/cadena.py [--ver]
+    python3 primeros/cadena.py --dato2 [--ver]   # el dato 2 desde los corchetes, contra dato2.py
 """
 import collections, json, os, re, sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -50,6 +51,64 @@ def partes(texto):
         if despues:
             out[-1] = (out[-1][0], nrm(despues))
     return [(re.sub(r"[¿?¡!,.]", " ", p).strip(), n) for p, n in out]
+
+
+INTERROGA = re.compile(r"\b(decime|contame|explicame|detallame|traduci|traducime|cual|cuales|cuanto|cuanta|cuantos|como|tiene|tienen|trae|traen|viene|vienen|es|son|anda|"
+                       r"andan|sirve|sirven|incluye|soporta|aguanta|cuantas)\b")
+CAMPOS = {"garantia meses": "garantia", "garantia detalle": "garantia", "memoria video": "memoria_video",
+          "ram ampliable": "ram_ampliable", "lector huella": "lector_huella", "lector tarjetas": "lector_tarjetas",
+          "resistencia agua": "resistencia_agua", "switch teclado": "switch_teclado", "conexion": "conexion"}
+
+
+PRODUCTO_D2 = {"compatibilidad": "compat", "especificaciones": "caracteristicas", "descripcion": "caracteristicas",
+               "caracteristicas extra": "caracteristicas"}
+
+
+def nrm_corchetes(texto):
+    return re.sub(r"\[([^\]]*)\]", lambda m: "[" + nrm(m.group(1)) + "]", texto)
+
+
+def dato2(texto):
+    """El dato 2 de una fila, desde los corchetes de Luna, por codigo:
+      PREGUNTAS  stock disponibilidad -> stock; cualquier otra -> tema:<id> de la FAQ.
+      CARACTERISTICAS  precio ars -> precio; preguntada, con "?" o una palabra que pregunta, -> campo:<id>; con un valor,
+                 "inalambrico", es una condicion del dato 1 y no entra aca.
+      nada de eso -> ofrecer.
+    Devuelve (dato 2, condiciones): las condiciones son las caracteristicas con valor, para la capa 3."""
+    d2, cond = [], []
+    # La fila pregunta si trae "?" o una palabra que pregunta. Si lo que pregunta es stock o precio, lo demas es como
+    # tiene que ser el producto; si no, lo que pregunta es la caracteristica: "{tiene} {luces}[retroiluminacion]".
+    fila_pregunta = "?" in texto or bool(INTERROGA.search(nrm(re.sub(r"\[[^\]]*\]", " ", texto))))
+    pide_base = bool(re.search(r"\[\s*(stock disponibilidad|precio ars)\s*\]", nrm_corchetes(texto)))
+    for m in re.finditer(r"\{([^}]*)\}\s*\[([^\]]*)\]\s*(\?)?", texto):
+        palabras, nombre, signo = m.group(1), nrm(m.group(2)), m.group(3)
+        sec = SECCION.get(nombre)
+        if nombre in PRODUCTO_D2:  # temas de la FAQ que son un dato del producto: si lo pregunta; si no, describe
+            preguntado = INTERROGA.search(nrm(palabras)) or (not pide_base and ("?" in palabras or signo or fila_pregunta))
+            (d2.append(PRODUCTO_D2[nombre]) if preguntado else cond.append((palabras.strip(), nombre)))
+        elif sec == "PREGUNTAS":
+            d2.append("stock" if nombre == "stock disponibilidad" else "tema:" + nombre.replace(" ", "_"))
+        elif sec == "CARACTERISTICAS":
+            if nombre == "precio ars":
+                # "que no sea carisimo"[precio ars] es una condicion; "cuanto sale"[precio ars], el dato 2.
+                pregunta = INTERROGA.search(nrm(palabras)) or "?" in palabras or signo or re.search(
+                    r"\b(sale|salen|precio|precios|vale|valen|cuesta|cuestan)\b", nrm(palabras))
+                (d2.append("precio") if pregunta else cond.append((palabras.strip(), nombre)))
+            elif nombre in ("marca", "modelo"):
+                continue
+            elif INTERROGA.search(nrm(palabras)) or (not pide_base and ("?" in palabras or signo or fila_pregunta)):
+                d2.append("campo:" + CAMPOS.get(nombre, nombre.replace(" ", "_")))
+            else:
+                cond.append((palabras.strip(), nombre))
+    return (sorted(set(d2)) or ["ofrecer"]), cond
+
+
+BASE = {"ofrecer", "precio", "stock", "comprar"}
+
+
+def grupo(ds):
+    """Lo base se contesta mostrando el producto con precio y stock; lo especifico pide un dato o una accion aparte."""
+    return "base" if set(ds) <= BASE else "especifico"
 
 
 def _uno(ps):
@@ -128,5 +187,54 @@ def main(ver):
                 print("   ", x)
 
 
+def medir_dato2(ver):
+    """El dato 2 contra `dato2.py`, por pedido: las filas de Luna del mismo rubro, o todas si ninguna lo trae.
+    Exacto: alguna opcion de Luna esta entre las etiquetadas. Grupo: base contra especifico. Y los temas de la FAQ que
+    la frase pregunta aparte: cuantos trae Luna."""
+    from dato2 import D
+    ex, _ = M.cargar()
+    luna = {json.loads(l)["id"]: json.loads(l) for l in open(os.path.join(AQUI, "luna_b.jsonl"))}
+    n, fallas = collections.Counter(), []
+    for e in ex:
+        ts = (luna[e["id"]]["salida"] or {}).get("textos") or []
+        filas = [(f["rubro"], dato2(t)[0]) for t in ts for f in leer(t)[:1]]
+        todo = sorted({x for _, d in filas for x in d})
+        por_pedido, temas = D[e["id"]]
+        # Los temas de la FAQ se contestan por la tienda, no por producto: van a la frase, vengan en la fila que vengan.
+        # La garantia de un producto se cuenta como el tema garantia: la contesta la ficha o la FAQ, lo decide el codigo.
+        prod = lambda ds: sorted(x for x in ds if not x.startswith("tema:") and x not in BASE)
+        tema = lambda ds: {("garantia" if x == "campo:garantia" else x.split(":", 1)[1]) for x in ds
+                           if x.startswith("tema:") or x == "campo:garantia"}
+        for p, et in zip(e["pedidos"], por_pedido):
+            rs = {X.CONC[i]["nombre"] for c in p["cas"] if c["tipo"] == "rubro" for i in X._ids(c)}
+            mias = [d for r, d in filas if r and r in {nrm(x) for x in rs}]
+            luna_d = sorted({x for d in mias for x in d}) if mias else todo
+            et_p = [x for x in prod(et) if x != "campo:garantia"]
+            lu_p = [x for x in prod(luna_d) if x != "campo:garantia"]
+            n["pedidos"] += 1
+            k = ("base" if not et_p else "dato de la ficha") + " -> " + ("base" if not lu_p else "dato de la ficha")
+            n["pedido " + k] += 1
+            if bool(et_p) != bool(lu_p):
+                fallas.append(f"{e['id']} pedido {k}: etiqueta {et} luna {luna_d} {e['texto'][:60]!r}")
+        et_t = tema([x for d in por_pedido for x in d]) | set(temas)
+        lu_t = tema(todo)
+        n["temas etiquetados"] += len(et_t)
+        n["temas que trae Luna"] += len(et_t & lu_t)
+        n["temas de mas"] += len(lu_t - et_t)
+        if et_t != lu_t:
+            fallas.append(f"{e['id']} temas: falta {sorted(et_t - lu_t)} de mas {sorted(lu_t - et_t)} {e['texto'][:60]!r}")
+    print(f"\ndato 2: pedidos {n['pedidos']}")
+    for k in sorted(k for k in n if k.startswith("pedido ")):
+        print(f"  {k:40} {n[k]}")
+    print(f"  temas de la FAQ: etiquetados {n['temas etiquetados']}, los trae Luna {n['temas que trae Luna']},"
+          f" de mas {n['temas de mas']}")
+    if ver:
+        for f in fallas:
+            print("   ", f)
+
+
 if __name__ == "__main__":
-    main("--ver" in sys.argv)
+    if "--dato2" in sys.argv:
+        medir_dato2("--ver" in sys.argv)
+    else:
+        main("--ver" in sys.argv)
