@@ -42,7 +42,8 @@ def _filas(res):
 def contar(e, res, n, fallas):
     """res: por fila con producto, (consulta, veredicto, top5). Suma al contador n y anota las fallas."""
     i = e["id"]
-    acs = [set(X.aceptables(p)) for p in e["pedidos"]]
+    # Las muestras de las fichas 105 y 106 traen los aceptables ya resueltos de su regla, en `_acept`.
+    acs = [{tuple(k) for k in p["_acept"]} if "_acept" in p else set(X.aceptables(p)) for p in e["pedidos"]]
     for p, ac in zip(e["pedidos"], acs):
         grupo = "con orden" if any(c["tipo"] == "orden" for c in p["cas"]) else "sin orden"
         if "ofrecer" in p["esperados"] and ac:

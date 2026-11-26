@@ -1,0 +1,82 @@
+"""Etiquetas de mensajes reales del pozo. Formato y atajos de examen/etiquetas.py y et_a.py."""
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "examen"))
+from etiquetas import *  # noqa: E402,F401,F403
+
+tope = lambda p, n: C("numero", p, ("precio", "max", n))
+ram = lambda p, n: C("numero", p, ("capacidad_gb", "igual", n))
+INAL = lambda p: C("atributo", p, AT("inalambrico"))
+ign = lambda p: fuera(p, "ignorar")
+sd = lambda p: fuera(p, "sin_dato")
+nov = lambda p: P(NO, fuera(p, "no_vende"))
+MAS_BARATOS = lambda n, rubro, rid, p: E(P(OF, cant(n[0], n[1]), rub(rubro, rid), barato(p)))
+
+L = {
+    "P004": E(P(OF, cant("2", 2), rub("teclados", "teclado"), barato("mas baratos"))),
+    "P013": E(P(OF, rub("mouse", "mouse"), gamer("para jugar"))),
+    "P016": E(P(OF, rub("teclados", "teclado"), MEC("mecanicos"))),
+    "P024": E(P(OF, rub("monitor", "monitor"), gamer("pa jugar"))),
+    "P070": E(P(OF, rub("auriculares", "auriculares"), mar("hyperx", "HyperX"))),
+    "P082": E(P([OF, RE], rub("tecaldo", "teclado"), mar("redragon", "Redragon"))),
+    "P099": E(P(OF, rub("teclado", "teclado"), mar("corsair", "Corsair"), mod("k70", "K70 RGB Pro"))),
+    "P107": E(P(OF, rub("mouse", "mouse"), mar("logitech", "Logitech"), barato("mas barato"))),
+    "P116": E(P(OF, rub("auriculares", "auriculares"), C("plataforma", "para la pc", PL("pc_escritorio")),
+                barato("baratos"))),
+    "P125": E(P(OF, rub("mouse", "mouse"), barato("barato")), glob=[ign("90 off")],
+              motivo="el descuento lo inventa el sistema falso del mensaje"),
+    "P130": E(P(NO, rub("teclado", "teclado"), mar("razer", "Razer"), mod("hyperflux x9000 quantum"))),
+    "P142": E(P(OF, rub("teclado", "teclado"), gamer("gamer")), P(OF, rub("mouse", "mouse"), gamer("gamer")),
+              glob=[ign("combo")], motivo="la tienda no arma combos"),
+    "P184": E(P(OF, rub("mouse", "mouse"), barato("barato")), nov("pad")),
+    "P228": E(P(OF, rub("teclado", "teclado"), MEC("mecanico"), barato("mas barato"))),
+    "P231": E(P(OF, rub("auriculares", "auriculares"), INAL("inalambricos"), barato("no sean muy caros"))),
+    "P240": E(P(NO, rub("auriculares", "auriculares"), mar("hyperx", "HyperX"), INAL("inalambricos"))),
+    "P273": E(P([OF, RE], gamer("gamer"), barato("mas barato"), ign("combo")),
+              dudosa=True, motivo="combo gamer sin rubro: la tienda no arma combos"),
+    "P288": E(P(OF, rub("teclado", "teclado"), MEC("mecanico"), barato("barato"))),
+    "P300": E(P(OF, rub("mouse", "mouse"), gamer("para jugar"))),
+    "P337": E(P(OF, rub("teclado", "teclado"), mod("k380", "K380"), col("negro", "negro"))),
+    "P344": E(P(OF, rub("procesador", "procesador"), mar("intel", "Intel"), mod("i9 14900k", "Core i9-14900K"))),
+    "P367": E(P(SD, mar("razer", "Razer"), mod("huntsman mini", "Huntsman Mini"),
+                sd("luces que titilan al ritmo de la musica"))),
+    "P372": E(P(OF, cant("15", 15), rub("silla gamer", "silla_gamer"), mar("noblechairs", "Noblechairs"),
+                mod("epic", "Epic"), col("negro y rojo", "negro_y_rojo")),
+              dudosa=True, motivo="pide precio mayorista y envio a Uruguay, que no son campo"),
+    "P418": E(P(OF, rub("impresora", "impresora"), mar("epson", "Epson"), mod("ecotank l3250", "EcoTank L3250"))),
+    "P446": E(P(OF, cant("2", 2), rub("mouses", "mouse")), P(OF, cant("2", 2), rub("tablets", "tablet"))),
+    "P448": E(P(OF, rub("memoria ram", "memoria_ram"))),
+    "P455": E(P(OF, cant("2", 2), rub("monitors", "monitor"), barato("mas baratos"))),
+    "P472": E(P(OF, cant("dos", 2), rub("notebooks", "notebook"), barato("mas baratos"))),
+    "P477": E(P(OF, cant("dos", 2), rub("silla gamers", "silla_gamer"), barato("mas baratos"))),
+    "P482": E(nov("iphone 15 pro max")),
+    "P483": E(nov("freidora de aire")),
+    "P485": E(nov("smart tv samsung 55")),
+    "P486": E(nov("bicicleta rodado 29")),
+    "P489": E(nov("termo stanley")),
+    "P490": E(nov("drone dji")),
+    "P492": E(P(OF, rub("memoria rams", "memoria_ram")), P(OF, rub("teclados", "teclado"))),
+    "P498": E(P(OF, rub("almacenamiento externos", "almacenamiento_externo"))),
+    "P512": E(P(OF, rub("placa de videos", "placa_de_video"))),
+    "P513": E(P(OF, rub("procesadors", "procesador"))),
+    "P517": E(P(OF, rub("tablets", "tablet"))),
+    "P530": E(P(OF, rub("motherboard", "motherboard"), barato("no sea caro"))),
+    "P531": E(P(OF, rub("mouse", "mouse"), barato("no sea caro"))),
+    "P551": E(P(OF, rub("monitor", "monitor"), barato("barato"))),
+    "P568": E(P(OF, rub("teclados", "teclado"), gamer("gamer"))),
+    "P617": E(P(OF, cant("tres", 3), rub("mouse", "mouse")), P(OF, cant("dos", 2), rub("teclados", "teclado")),
+              P(OF, cant("un par", 2), rub("auriculares", "auriculares")), P(OF, rub("webcam", "webcam")),
+              glob=[tope("600 mil", 600000)],
+              dudosa=True, motivo="el reparto por ciudad y el pago mitad y mitad no son campo"),
+    "P642": E(P(OF, rub("mouse", "mouse"), mar("logitech", "Logitech"), mod("g305", "G305 Lightspeed"),
+                col("negro", "negro")),
+              P(OF, mod("g203", "G203 Lightsync"), col("negro", "negro")),
+              dudosa=True, motivo="el negro vale para los dos o solo para el G203"),
+    "P666": E(P(OF, mod("g203", "G203 Lightsync"), col("negro", "negro"))),
+    "P671": E(P([OF, RE], orden("mas caro", "mas_caro")), dudosa=True, motivo="sin rubro: lo mas caro de toda la tienda"),
+    "P685": E(P([OF, RE], rub("aparato rectangular con teclas", "teclado")),
+              dudosa=True, motivo="describe un teclado sin nombrarlo"),
+    "P687": E(P(OF, rub("teclado", "teclado"), mod("k120", "K120"))),
+    "P705": E(P([OF, RE], ram("16gb", 16), barato("mas economica")),
+              dudosa=True, motivo="sin rubro: 16gb vale para memoria, notebook o tablet"),
+    "P712": E(nov("iphone 15 pro")),
+}

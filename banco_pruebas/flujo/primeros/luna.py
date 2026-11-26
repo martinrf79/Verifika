@@ -22,6 +22,11 @@ L = LP.L
 
 FRASES = os.path.join(AQUI, "sinteticas.jsonl")
 # --examen: las 138 frases reales del examen fijo, `examen/examen.json`, con el v14f1b, en `examen/luna_b.jsonl`.
+# --reales y --muestras: las 52 reales del pozo, `reales.json`, y las 137 de las muestras de las fichas 105 y 106,
+# `muestras.json`, con el v14f1b, en `luna_reales.jsonl` y `luna_muestras.jsonl`.
+CONJ = next((c for c in ("reales", "muestras") if "--" + c in sys.argv), None)
+if CONJ:
+    sys.argv.remove("--" + CONJ)
 EXAMEN = "--examen" in sys.argv
 if EXAMEN:
     sys.argv.remove("--examen")
@@ -31,13 +36,17 @@ if B:
     sys.argv.remove("--b")
 PROMPT = "v14f1b" if B else LP.PROMPT
 SALIDA = os.path.join(FL, "examen", "luna_b.jsonl") if EXAMEN else os.path.join(AQUI, "luna_b.jsonl" if B else "luna.jsonl")
-if EXAMEN:
+if EXAMEN or CONJ:
     PROMPT = "v14f1b"
+if CONJ:
+    SALIDA = os.path.join(AQUI, f"luna_{CONJ}.jsonl")
 TOPE = 0.12  # el 25-nov, 97 frases costaron 2,8 centavos: 300 son unos 9
 _lock = threading.Lock()
 
 
 def frases():
+    if CONJ:
+        return [{"id": e["id"], "texto": e["texto"], "persona": ""} for e in json.load(open(os.path.join(AQUI, f"{CONJ}.json")))]
     if EXAMEN:
         return [{"id": e["id"], "texto": e["texto"], "persona": ""} for e in json.load(open(os.path.join(FL, "examen", "examen.json")))]
     return [json.loads(x) for x in open(FRASES, encoding="utf-8")]

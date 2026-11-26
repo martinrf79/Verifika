@@ -112,8 +112,35 @@ def grupo(ds):
     return "base" if set(ds) <= BASE else "especifico"
 
 
+def _codigo(w):
+    """La misma regla del nexo de nombrado del bot, `app/core/flujo/nuevo/nombrado._codigo`: letras y cifras juntas."""
+    return any(c.isdigit() for c in w) and any(c.isalpha() for c in w)
+
+
+def _codigos():
+    """Cada codigo de modelo del catalogo, "g305", "k120", "m170", con los rubros donde aparece."""
+    import csv
+    out = collections.defaultdict(set)
+    ruta = os.path.join(FL, "..", "..", "data", "clientes", "verifika_prod", "productos.csv")
+    for r in csv.DictReader(open(ruta, encoding="utf-8")):
+        for w in nrm(r["modelo"]).replace("-", " ").split():
+            if _codigo(w):
+                out[w].add(nrm(r["categoria"]))
+    return out
+
+
+CODIGOS = _codigos()
+
+
 def _uno(ps):
     rubros = [n for _, n in ps if n and SECCION.get(n) == "PRODUCTOS"]
+    if not rubros:
+        # Un codigo suelto del catalogo que Luna no puso en un rubro, "Quiero un Logitech M170": el rubro lo da el
+        # catalogo, si el codigo esta en un solo rubro. Como el nexo de nombrado del bot.
+        rs = set().union(*[CODIGOS.get(w, set()) for p, _ in ps for w in nrm(p).replace("-", " ").split()] or [set()])
+        if len(rs) == 1:
+            rubros = [rs.pop()]
+            ps = ps + [("", "modelo")]
     preguntas = [n for _, n in ps if n and SECCION.get(n) == "PREGUNTAS"]
     caracts = [(p, n) for p, n in ps if n and SECCION.get(n) == "CARACTERISTICAS"]
     # La consulta es la fila entera de Luna: ya trae solo lo de ese pedido. Sacar lo marcado como pregunta perdia
@@ -150,11 +177,15 @@ def leer(texto):
 
 
 EXAMEN = "--examen" in sys.argv  # las 138 reales del examen fijo, con su etiqueta y el dato 2 de `examen/tramos.py`
+CONJ = next((c for c in ("reales", "muestras") if "--" + c in sys.argv), None)  # las 52 del pozo, las 137 muestras
 
 
 def cargar():
     """La etiqueta y lo que separo Luna con el v14f1b: las 300 primeras, o con --examen las 138 reales."""
-    if EXAMEN:
+    if CONJ:
+        ex = json.load(open(os.path.join(AQUI, f"{CONJ}.json"), encoding="utf-8"))
+        ruta = os.path.join(AQUI, f"luna_{CONJ}.jsonl")
+    elif EXAMEN:
         ex = json.load(open(os.path.join(FL, "examen", "examen.json"), encoding="utf-8"))
         ruta = os.path.join(FL, "examen", "luna_b.jsonl")
     else:

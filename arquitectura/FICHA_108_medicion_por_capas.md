@@ -207,3 +207,27 @@ preguntan, en el banco: antes de llevarla al bot se consulta con Martin, regla d
     python3 banco_pruebas/flujo/primeros/cadena.py [--ver]           # dato 1: venta, no hay y ofertas equivocadas
     python3 banco_pruebas/flujo/primeros/cadena.py --dato2 [--ver]   # dato 2: pedido y temas
     python3 banco_pruebas/flujo/primeros/comparar.py                 # Luna, v14f1b contra v14f1p
+
+### 9.5 Mas mediciones, 26-nov, antes de llamarla robusta
+
+Todo con el mismo v14f1b y la misma rueda, contra etiquetas escritas sin ver la busqueda. Dos arreglos de clase en el
+camino: `existe` lee lo que Luna marca como rubro, marca o modelo, no la fila entera, que en las reales daba 29 falsas
+alarmas por nombres y destinos; y un codigo suelto del catalogo, "M170", da el rubro si esta en uno solo, como el nexo de
+nombrado del bot.
+
+| conjunto | rubro o venta | ofertas equivocadas | no hay dicho |
+| --- | --- | --- | --- |
+| 300 dificiles de la FICHA 104, grabadas | todos los rubros en 157 de 161 mensajes | lo no vendido en un rubro, 3 de 60 | |
+| 300 sinteticas | el primero sirve en 255 de 269 | 18 de 326 | 21 de 27 |
+| 138 reales del examen | 116 de 126 sin orden, 35 de 43 con orden | 17 de 194 | 7 de 12 |
+| 52 reales del pozo, `primeros/reales.json` | 30 de 32 sin orden, 14 de 17 con orden | 7 de 56 | 5 de 10 |
+| 137 muestras de las FICHAS 105 y 106, con condicion | 105 de 122 sin orden | 16 de 135 | 5 de 8 |
+
+**La condicion llega desde Luna al codigo**, `primeros/condicion_llega.py`, con las palabras etiquetadas: en el examen,
+206 de 220 en la fila de su pedido, 147 marcadas con el vocabulario; 10 en otra fila, casi todas "el mas barato" suelto;
+4 se pierden, nombres de modelo largos. En las reales del pozo, 47 de 51 en su fila, 2 en otra, 2 se pierden.
+
+**Lo que falla ya no es la traduccion:** la venta perdida y las ofertas equivocadas de las muestras son la capa de
+condicion, que todavia no filtra: "que no sea Genius", "con cable", "hasta 50 mil", "el mas liviano", "en rojo". En el
+examen, la mitad es memoria de la charla. Queda de la rueda: pegar al pedido la condicion que Luna deja en otra fila, y lo
+que se pide a toda la tienda, "el producto mas caro que tienen".
