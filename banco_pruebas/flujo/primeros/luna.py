@@ -7,6 +7,7 @@ esto muestra como separa y que trae, para mirarlo antes de etiquetar.
 
     python3 primeros/luna.py 3        # tres, para ver que la entrada llega bien
     python3 primeros/luna.py          # las 300, retoma lo grabado
+    python3 primeros/luna.py --b       # las 300 con el v14f1b de antes, en luna_b.jsonl
     python3 primeros/luna.py --ver [S001 ...]   # sin gasto: filas, veredicto de existe y los cinco primeros
 """
 import concurrent.futures, json, os, sys, threading
@@ -19,7 +20,12 @@ sys.argv = _argv
 L = LP.L
 
 FRASES = os.path.join(AQUI, "sinteticas.jsonl")
-SALIDA = os.path.join(AQUI, "luna.jsonl")
+# --b: el v14f1b tal como se midio antes del 25-nov, sin lo pedido y con la salida en lista de textos, para comparar.
+B = "--b" in sys.argv
+if B:
+    sys.argv.remove("--b")
+PROMPT = "v14f1b" if B else LP.PROMPT
+SALIDA = os.path.join(AQUI, "luna_b.jsonl" if B else "luna.jsonl")
 TOPE = 0.12  # el 25-nov, 97 frases costaron 2,8 centavos: 300 son unos 9
 _lock = threading.Lock()
 
@@ -33,7 +39,7 @@ def grabado():
 
 
 def uno(f):
-    salida, ent, sal, seg, dol, crudo = L.pedir("luna", LP.PROMPT, f["texto"])
+    salida, ent, sal, seg, dol, crudo = L.pedir("luna", PROMPT, f["texto"])
     with _lock, open(SALIDA, "a") as o:
         o.write(json.dumps({"id": f["id"], "salida": salida, "crudo": None if salida else crudo, "entrada": ent,
                             "salida_tokens": sal, "seg_luna": seg, "dolares": dol}, ensure_ascii=False) + "\n")
