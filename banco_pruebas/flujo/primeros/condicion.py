@@ -259,7 +259,8 @@ def atar(f, fila):
         if any(d["texto"] and (d["texto"] in pn or N.nrm(pal).find(d["texto"]) >= 0) for d in todas):
             continue
         if nombre == "precio ars":
-            if not any(d["tipo"] == "orden" for d in at):
+            # "Que no sea carisimo" ordena del mas barato; una cifra que el cliente cita, "en la web dice 237.000", no.
+            if not any(d["tipo"] == "orden" for d in at) and not re.search(r"\d", pn):
                 at.append({"tipo": "orden", "orden": ("precio", "asc"), "modo": "", "texto": pn, "pos": 0})
             continue
         if nombre == "color" and DUDA.search(pn):
@@ -312,6 +313,10 @@ def resolver(at, pool):
             orden = d["orden"]
         elif d["tipo"] == "pref":
             prefs.append(d)
+        elif d["tipo"] == "modelo":
+            # El modelo nombrado lo elige la capa producto: "c922 pro o brio 100", "i3 o ryzen 5 5500" nombran dos, y
+            # filtrar por el codigo de uno sacaba al otro. Aca solo sirve para no cambiar el nombrado por otro.
+            continue
         else:
             duras.append(d)
     # Las afirmadas del mismo tipo, color o marca, valen cualquiera: "negro o blanco". Las otras, todas.
@@ -357,7 +362,7 @@ def pedidos(textos):
             elif at:
                 sueltas.append((len(out), f))
     # La fila sin rubro que solo trae condiciones, "dime lo mas barato", es suelta si hay pedidos con producto.
-    if out:
+    if any(f["rubro"] or f["identifica"] for f in out):
         for f in [f for f in out if not f["rubro"] and not f["identifica"] and f["atadas"]]:
             sueltas.append((out.index(f), f))
             out.remove(f)
@@ -483,6 +488,9 @@ def medir_atar(ver):
 # ---------------------------------------------------------------- de punta a punta
 
 NO_OFRECE = ("no_hay", "sin rubro", "nada cumple")
+# Lo que se pide a toda la tienda, "los dos articulos mas baratos": sin rubro, con orden y una palabra que no nombra
+# ningun producto. "La memoria mas cara" sin rubro marcado no es toda la tienda: queda sin rubro, FICHA 108, seccion 9.
+TODA = re.compile(r"\b(productos?|articulos?|cosas?|items?|algo|de la tienda|que tengan|que tengas)\b")
 
 
 def contar(e, res, n, fallas):
@@ -545,7 +553,7 @@ def main(ver):
         for e in ex:
             res, vistos = [], set()
             for f in ps[e["id"]]:
-                clave = (f["rubro"], nrm(f["consulta"]))
+                clave = (f["rubro"], nrm(f["consulta"]), tuple(sorted(str(d.get("orden")) for d in f["atadas"])))
                 if clave in vistos:
                     continue
                 vistos.add(clave)
@@ -553,7 +561,7 @@ def main(ver):
                 orden = any(d["tipo"] == "orden" for d in f["atadas"])
                 if f["rubro"]:
                     pool = [k for k in ia if nrm(k[0]) == f["rubro"]] or list(ia)
-                elif f["identifica"] or (capa == "con la capa" and orden):
+                elif f["identifica"] or (capa == "con la capa" and orden and TODA.search(nrm(f["consulta"]))):
                     pool = list(ia)
                 else:
                     res.append((f["consulta"], "sin rubro", []))
@@ -562,16 +570,21 @@ def main(ver):
                 vr = "no_hay" if vr == "no_hay" else "hay"
                 pool = sorted(pool, key=lambda k: -dot(q, ia[k]))
                 if capa == "con la capa" and vr != "no_hay":
+                    primero = pool[0]
                     vr2, pool, _ = resolver(f["atadas"], pool)
                     vr = "nada cumple" if vr2 == "nada cumple" else vr
+                    # El modelo que el cliente nombra y no cumple no se cambia por otro: se dice que no cumple.
+                    nombrado = any(n == "modelo" for _, n in f["partes"]) or any(d["tipo"] == "modelo" for d in f["atadas"])
+                    if nombrado and vr2 == "ofrece" and primero not in pool:
+                        vr, pool = "nada cumple", [primero] + pool
                 res.append((f["consulta"], vr, pool[:5]))
             contar(e, res, n, fallas)
         print(f"\n{capa}:")
         for (a, g, k), c in sorted(n.items()):
             print(f"  {a:8} {g:10} {k:24} {c}")
-        if ver and capa == "con la capa":
+        if ver:
             for x in sorted(fallas):
-                print("   ", x)
+                print("   " if capa == "con la capa" else "   sin:", x)
 
 
 CASOS = [  # (fila de Luna, rubro esperado, lo que se tiene que atar como (tipo, texto, modo), sin dato)

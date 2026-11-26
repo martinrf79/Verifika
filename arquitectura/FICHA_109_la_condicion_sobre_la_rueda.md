@@ -127,3 +127,18 @@ con la clave gratis, o con la paga y la marca de Martin si la gratis se agota.
 
 Luna, unos 25 centavos entre todas las corridas; embeddings, menos de un centavo con la paga autorizada por Martin;
 Sonnet, para escribir y etiquetar, cinco tandas de unos 100 mil tokens cada una, con lectura cerrada y sin informe.
+
+## 8. Lo hecho y medido, 26-nov
+
+La capa vive en `banco_pruebas/flujo/primeros/condicion.py`, todo por codigo; las reglas de clase, en su encabezado.
+Los numeros y las fallas clasificadas, en el Resultado 6 de `banco_pruebas/flujo/lab/plan.md`. Lo central: con la capa,
+el primero con el orden aplicado sirve en 33 de 42 sinteticas, 34 de 43 del examen y 16 de 17 reales, contra 9, 4 y 4
+sin ella; las ofertas equivocadas de las muestras bajan de 16 a 4; sin orden, las ventas quedan igual o suben, salvo dos
+del examen que son de la rueda y de un regateo.
+
+La lista `INTERROGA`: Martin, 26-nov, la decide la sesion porque no cambia vender ni alucinar. Quedo asi: una
+caracteristica se pregunta si sus propias palabras preguntan; el "?" de la fila ya no la vuelve pregunta.
+
+Sigue: las respuestas de lo especifico, la ficha, la compatibilidad y los temas, FICHA 108, seccion 9.3; y tres arreglos
+chicos de la rueda: un rubro que tambien es caracteristica, "ryzen 7"[procesador], dentro de otro pedido; la fila que
+junta dos productos; el rubro dicho sin marcar.

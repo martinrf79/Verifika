@@ -212,3 +212,43 @@ ordenados, y el veredicto: ofrecer, no hay con lo mas cercano, repreguntar o sin
    sin perder ventas contra la linea de base de la FICHA 109, seccion 4.
 6. Cada falla clasificada: capa, etiqueta o prueba. Si atar un caso pide sumar una palabra a una lista de conceptos,
    se anota y se consulta con Martin antes de sumarla.
+
+## Resultado 6, 26-nov
+
+Guion: `primeros/condicion.py`. Sin modelo; los embeddings de las consultas, con la gratis hasta su tope diario de mil
+y el resto con la paga autorizada por Martin en la sesion, un centavo.
+
+La capa sola, `--atar`: lo que deja el filtro contra lo que deja la etiqueta, en el rubro del pedido.
+
+| conjunto | igual | saca de mas | deja de mas |
+| --- | --- | --- | --- |
+| examen | 119 de 126 | 4 | 3 |
+| reales | 32 de 32 | 0 | 0 |
+| muestras | 51 de 66 | 7 | 6 |
+| sinteticas | 195 de 201 | 1 | 5 |
+
+De punta a punta, `cadena` sin la capa contra con la capa, el primero con el orden aplicado:
+
+| conjunto | sin orden | con orden | ofertas equivocadas | no hay dicho |
+| --- | --- | --- | --- | --- |
+| sinteticas | 255 a 260 de 269 | 9 a 33 de 42 | 18 a 16 | 21 a 21 de 27 |
+| examen | 116 a 114 de 126 | 4 a 34 de 43 | 17 a 14 | 7 a 9 de 12 |
+| reales | 30 a 30 de 32 | 4 a 16 de 17 | 7 a 5 | 5 a 6 de 10 |
+| muestras | 105 a 108 de 122 | | 16 a 4 | 5 a 6 de 8 |
+
+Las fallas, clasificadas contra lo grabado:
+- De la etiqueta: las muestras no marcan el orden ni la condicion de su regla; la capa tiene razon en el ssd de 480 GB,
+  que la tienda no trae, y en dos auriculares sin microfono.
+- De la capa producto: el modelo nombrado con palabras, "Cloud II", "Fury Beast".
+- De la rueda: "ryzen 7"[procesador] abre otro pedido en la notebook; Luna junta la tablet y el pendrive en una fila;
+  "la memoria mas cara" sin rubro marcado.
+- Frases de prueba: regateos y pedidos absurdos; el modelo nombrado que no cumple ya no se cambia por otro.
+- De la capa, sin atar y dicho como sin dato: "mas bestia", "que se escuche fuerte", "monitor grande", "se banque el agua".
+- Dos ventas sin orden del examen se pierden con la capa: la tablet con el pendrive, de la rueda, y el regateo de la silla.
+
+Arreglos de clase hechos en el camino, todos antes de este conteo: una cifra sin unidad es plata solo con una palabra de
+plata antes; "plata" sola no es color; genero, plural y superlativo; los atributos de conceptos.json que la base no traia;
+una caracteristica se pregunta solo si sus palabras preguntan, no por el "?" de la fila; el numero solo se ata al campo
+del rubro que tiene ese valor; la marca aproximada solo donde Luna marco una marca; la preferencia no exige; la
+correccion vale lo ultimo; el tope copiado en todos los pedidos es del total; dos ordenes son dos pedidos; toda la
+tienda solo con una palabra que no nombra producto.
