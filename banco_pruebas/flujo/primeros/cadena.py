@@ -150,7 +150,7 @@ def _uno(ps):
     suelto = any(n is None and len(re.sub(r"[^a-z0-9]", "", nrm(p))) > 2 for p, n in ps)
     identifica = any(n in ("marca", "modelo") for _, n in caracts)
     return {"rubro": rubros[0] if rubros else None, "consulta": consulta, "dato2": preguntas, "caracts": caracts,
-            "identifica": identifica, "nombra": bool(rubros) or identifica or suelto,
+            "identifica": identifica, "nombra": bool(rubros) or identifica or suelto, "partes": ps,
             # Lo que nombra el producto, aislado con las marcas de Luna, para `existe`: lo marcado como rubro, marca o
             # modelo; si no hay nada marcado asi, lo que quedo sin marcar. La fila entera trae nombres, destinos y
             # comandos, "Esteban", "Concordia", "System": medido el 26-nov, 29 falsas alarmas en las 138 reales.
