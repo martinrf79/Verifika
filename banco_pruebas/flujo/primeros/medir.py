@@ -32,6 +32,50 @@ def cargar():
     return ex, luna
 
 
+NO_OFRECE = ("no_hay", "sin rubro")  # sin rubro: la cadena no reconocio un producto de la tienda y no ofrece
+
+
+def _filas(res):
+    return [(lp[:35], vr, t[0][2] if t else "") for lp, vr, t in res]
+
+
+def contar(e, res, n, fallas):
+    """res: por fila con producto, (consulta, veredicto, top5). Suma al contador n y anota las fallas."""
+    i = e["id"]
+    acs = [set(X.aceptables(p)) for p in e["pedidos"]]
+    for p, ac in zip(e["pedidos"], acs):
+        grupo = "con orden" if any(c["tipo"] == "orden" for c in p["cas"]) else "sin orden"
+        if "ofrecer" in p["esperados"] and ac:
+            pos = [next((j for j, k in enumerate(top) if k in ac), None) for _, _, top in res]
+            hay = [(q, vr) for q, (_, vr, _) in zip(pos, res) if q is not None]
+            if any(q == 0 and vr not in NO_OFRECE for q, vr in hay):
+                k = "primero sirve"
+            elif any(q == 0 for q, vr in hay):
+                k = "falsa alarma de existe"
+            elif any(q is not None and q < 3 for q, _ in hay):
+                k = "entre los 3"
+            elif hay:
+                k = "entre los 5"
+            else:
+                k = "no lo trae"
+            n[("ofrecer", grupo, k)] += 1
+            if k != "primero sirve":
+                fallas.append(f"{i} pierde [{k}] {e['texto'][:70]!r} filas={_filas(res)}")
+        elif set(p["esperados"]) == {"no_hay"}:
+            k = "no hay dicho" if any(vr in NO_OFRECE for _, vr, _ in res) else "no hay perdido"
+            n[("no hay", "", k)] += 1
+            if k != "no hay dicho":
+                fallas.append(f"{i} alucina [{k}] {e['texto'][:70]!r} filas={_filas(res)}")
+    todos = set().union(*acs) if acs else set()
+    for lp, vr, top in res:
+        if vr in NO_OFRECE:
+            continue
+        n[("fila", "", "ofrece")] += 1
+        if top[0] not in todos:
+            n[("fila", "", "oferta equivocada")] += 1
+            fallas.append(f"{i} alucina [oferta equivocada] {lp[:45]!r} -> {top[0][0]}: {top[0][2]}")
+
+
 def main(ver):
     ex, luna = cargar()
     filas = {e["id"]: [f["lo_pedido"].strip() for f in (luna[e["id"]]["salida"] or {}).get("filas") or []
@@ -47,39 +91,7 @@ def main(ver):
             ver_, raz = EX.existe(lp, aislado=True)
             top = sorted(ia, key=lambda k: -dot(v[(lp, "RETRIEVAL_QUERY")], ia[k]))[:5]
             res.append((lp, ver_, top))
-        acs = [set(X.aceptables(p)) for p in e["pedidos"]]
-        for p, ac in zip(e["pedidos"], acs):
-            con_orden = any(c["tipo"] == "orden" for c in p["cas"])
-            grupo = "con orden" if con_orden else "sin orden"
-            if "ofrecer" in p["esperados"] and ac:
-                pos = [next((j for j, k in enumerate(top) if k in ac), None) for _, _, top in res]
-                hay = [(q, vr) for q, (_, vr, _) in zip(pos, res) if q is not None]
-                if any(q == 0 and vr != "no_hay" for q, vr in hay):
-                    k = "primero sirve"
-                elif any(q == 0 for q, vr in hay):
-                    k = "falsa alarma de existe"
-                elif any(q is not None and q < 3 for q, _ in hay):
-                    k = "entre los 3"
-                elif hay:
-                    k = "entre los 5"
-                else:
-                    k = "no lo trae"
-                n[("ofrecer", grupo, k)] += 1
-                if k != "primero sirve":
-                    fallas.append(f"{i} pierde [{k}] {e['texto'][:70]!r} filas={[(lp[:35], vr, t[0][2]) for lp, vr, t in res]}")
-            elif set(p["esperados"]) == {"no_hay"}:
-                k = "no hay dicho" if any(vr == "no_hay" for _, vr, _ in res) else "no hay perdido"
-                n[("no hay", "", k)] += 1
-                if k != "no hay dicho":
-                    fallas.append(f"{i} alucina [{k}] {e['texto'][:70]!r} filas={[(lp[:35], vr, t[0][2]) for lp, vr, t in res]}")
-        todos = set().union(*acs) if acs else set()
-        for lp, vr, top in res:
-            if vr == "no_hay":
-                continue
-            n[("fila", "", "ofrece")] += 1
-            if top[0] not in todos:
-                n[("fila", "", "oferta equivocada")] += 1
-                fallas.append(f"{i} alucina [oferta equivocada] {lp[:45]!r} -> {top[0][0]}: {top[0][2]}")
+        contar(e, res, n, fallas)
     print(f"frases {len(ex)}, dudosas {sum(e['dudosa'] for e in ex)}, filas de Luna con producto "
           f"{sum(len(f) for f in filas.values())}")
     for (a, g, k), c in sorted(n.items()):
