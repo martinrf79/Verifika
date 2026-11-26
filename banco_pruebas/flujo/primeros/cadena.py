@@ -12,7 +12,8 @@ para lo sin rubro: no ofrecer nada, o buscar en toda la tienda y que decida `exi
 Se cuenta igual que `medir.py`, contra la misma etiqueta congelada, para comparar con lo de ayer, el circuito con lo pedido.
 
     python3 primeros/cadena.py [--ver]
-    python3 primeros/cadena.py --dato2 [--ver]   # el dato 2 desde los corchetes, contra dato2.py
+    python3 primeros/cadena.py --dato2 [--ver]
+    python3 primeros/cadena.py [--dato2] --examen [--ver]   # lo mismo sobre las 138 reales del examen fijo   # el dato 2 desde los corchetes, contra dato2.py
 """
 import collections, json, os, re, sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -122,7 +123,12 @@ def _uno(ps):
     suelto = any(n is None and len(re.sub(r"[^a-z0-9]", "", nrm(p))) > 2 for p, n in ps)
     identifica = any(n in ("marca", "modelo") for _, n in caracts)
     return {"rubro": rubros[0] if rubros else None, "consulta": consulta, "dato2": preguntas, "caracts": caracts,
-            "identifica": identifica, "nombra": bool(rubros) or identifica or suelto}
+            "identifica": identifica, "nombra": bool(rubros) or identifica or suelto,
+            # Lo que nombra el producto, aislado con las marcas de Luna, para `existe`: lo marcado como rubro, marca o
+            # modelo; si no hay nada marcado asi, lo que quedo sin marcar. La fila entera trae nombres, destinos y
+            # comandos, "Esteban", "Concordia", "System": medido el 26-nov, 29 falsas alarmas en las 138 reales.
+            "nombre": " ".join(p for p, n in ps if n and (SECCION.get(n) == "PRODUCTOS" or n in ("marca", "modelo")))
+                      or " ".join(p for p, n in ps if n is None)}
 
 
 def leer(texto):
@@ -143,9 +149,32 @@ def leer(texto):
     return [_uno(g + [x for x in pregs if x not in g]) for g in grupos]
 
 
+EXAMEN = "--examen" in sys.argv  # las 138 reales del examen fijo, con su etiqueta y el dato 2 de `examen/tramos.py`
+
+
+def cargar():
+    """La etiqueta y lo que separo Luna con el v14f1b: las 300 primeras, o con --examen las 138 reales."""
+    if EXAMEN:
+        ex = json.load(open(os.path.join(FL, "examen", "examen.json"), encoding="utf-8"))
+        ruta = os.path.join(FL, "examen", "luna_b.jsonl")
+    else:
+        ex, _ = M.cargar()
+        ruta = os.path.join(AQUI, "luna_b.jsonl")
+    return ex, {json.loads(l)["id"]: json.loads(l) for l in open(ruta)}
+
+
+def etiqueta_dato2(i):
+    """(dato 2 por pedido, temas aparte): de `dato2.py` para las 300; de `examen/tramos.py` para el examen."""
+    if EXAMEN:
+        from tramos import T
+        t = T[i]
+        return [list(d) for _, d in t["p"]], [x for _, x in t.get("t", []) if x != "fuera"]
+    from dato2 import D
+    return D[i]
+
+
 def main(ver):
-    ex, _ = M.cargar()
-    luna = {json.loads(l)["id"]: json.loads(l) for l in open(os.path.join(AQUI, "luna_b.jsonl"))}
+    ex, luna = cargar()
     filas = {e["id"]: [f for t in (luna[e["id"]]["salida"] or {}).get("textos") or [] for f in leer(t)] for e in ex}
     v = B.vectores([(f["consulta"], "RETRIEVAL_QUERY") for fs in filas.values() for f in fs if f["nombra"] and f["consulta"]])
     ia = B.indice_a()
@@ -166,17 +195,17 @@ def main(ver):
                 if f["rubro"]:
                     # Existe tambien con rubro: "rtx 5090" trae placa de video y la tienda no tiene ese modelo.
                     pool = [k for k in ia if nrm(k[0]) == f["rubro"]] or list(ia)
-                    vr, _ = EX.existe(f["consulta"], aislado=True)
+                    vr, _ = EX.existe(f["nombre"] or f["consulta"], aislado=True)
                     vr = "no_hay" if vr == "no_hay" else "hay"
                 elif f["identifica"]:  # marca o modelo sin rubro, "b760m ds3h gigabyte": toda la tienda, y existe
                     pool = list(ia)
-                    vr, _ = EX.existe(f["consulta"], aislado=True)
+                    vr, _ = EX.existe(f["nombre"] or f["consulta"], aislado=True)
                 elif variante == "sin rubro no ofrece":
                     res.append((f["consulta"], "sin rubro", []))
                     continue
                 else:
                     pool = list(ia)
-                    vr, _ = EX.existe(f["consulta"], aislado=True)
+                    vr, _ = EX.existe(f["nombre"] or f["consulta"], aislado=True)
                 res.append((f["consulta"], vr, sorted(pool, key=lambda k: -dot(q, ia[k]))[:5]))
             M.contar(e, res, n, fallas)
         print(f"\n{variante}: filas que ofrecen {n[('fila', '', 'ofrece')]}")
@@ -191,15 +220,13 @@ def medir_dato2(ver):
     """El dato 2 contra `dato2.py`, por pedido: las filas de Luna del mismo rubro, o todas si ninguna lo trae.
     Exacto: alguna opcion de Luna esta entre las etiquetadas. Grupo: base contra especifico. Y los temas de la FAQ que
     la frase pregunta aparte: cuantos trae Luna."""
-    from dato2 import D
-    ex, _ = M.cargar()
-    luna = {json.loads(l)["id"]: json.loads(l) for l in open(os.path.join(AQUI, "luna_b.jsonl"))}
+    ex, luna = cargar()
     n, fallas = collections.Counter(), []
     for e in ex:
         ts = (luna[e["id"]]["salida"] or {}).get("textos") or []
         filas = [(f["rubro"], dato2(t)[0]) for t in ts for f in leer(t)[:1]]
         todo = sorted({x for _, d in filas for x in d})
-        por_pedido, temas = D[e["id"]]
+        por_pedido, temas = etiqueta_dato2(e["id"])
         # Los temas de la FAQ se contestan por la tienda, no por producto: van a la frase, vengan en la fila que vengan.
         # La garantia de un producto se cuenta como el tema garantia: la contesta la ficha o la FAQ, lo decide el codigo.
         prod = lambda ds: sorted(x for x in ds if not x.startswith("tema:") and x not in BASE)

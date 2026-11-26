@@ -8,6 +8,7 @@ esto muestra como separa y que trae, para mirarlo antes de etiquetar.
     python3 primeros/luna.py 3        # tres, para ver que la entrada llega bien
     python3 primeros/luna.py          # las 300, retoma lo grabado
     python3 primeros/luna.py --b       # las 300 con el v14f1b de antes, en luna_b.jsonl
+    python3 primeros/luna.py --examen  # las 138 reales del examen con el v14f1b, en examen/luna_b.jsonl
     python3 primeros/luna.py --ver [S001 ...]   # sin gasto: filas, veredicto de existe y los cinco primeros
 """
 import concurrent.futures, json, os, sys, threading
@@ -20,17 +21,25 @@ sys.argv = _argv
 L = LP.L
 
 FRASES = os.path.join(AQUI, "sinteticas.jsonl")
+# --examen: las 138 frases reales del examen fijo, `examen/examen.json`, con el v14f1b, en `examen/luna_b.jsonl`.
+EXAMEN = "--examen" in sys.argv
+if EXAMEN:
+    sys.argv.remove("--examen")
 # --b: el v14f1b tal como se midio antes del 25-nov, sin lo pedido y con la salida en lista de textos, para comparar.
 B = "--b" in sys.argv
 if B:
     sys.argv.remove("--b")
 PROMPT = "v14f1b" if B else LP.PROMPT
-SALIDA = os.path.join(AQUI, "luna_b.jsonl" if B else "luna.jsonl")
+SALIDA = os.path.join(FL, "examen", "luna_b.jsonl") if EXAMEN else os.path.join(AQUI, "luna_b.jsonl" if B else "luna.jsonl")
+if EXAMEN:
+    PROMPT = "v14f1b"
 TOPE = 0.12  # el 25-nov, 97 frases costaron 2,8 centavos: 300 son unos 9
 _lock = threading.Lock()
 
 
 def frases():
+    if EXAMEN:
+        return [{"id": e["id"], "texto": e["texto"], "persona": ""} for e in json.load(open(os.path.join(FL, "examen", "examen.json")))]
     return [json.loads(x) for x in open(FRASES, encoding="utf-8")]
 
 
