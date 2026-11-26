@@ -172,3 +172,43 @@ autorizada en la sesion, porque la gratis del dia estaba agotada.
 - Capa producto con `lo_pedido` como consulta: el primero sirve en 56 de 58 frases de un pedido sin orden. Las 2 que no
   son mensajes de prueba de estres, donde Luna tomo como pedido "una pc" y "esos routers calentadores".
 - Latencia de Luna: mediana 3,7 segundos, p90 5,6; no suma tiempo contra los 4,1 de hoy.
+
+## Plan 6, la condicion sobre la rueda, escrito antes de correr
+
+FICHA 109, 26-nov. Capa 3, condicion y orden. Todo en el banco, sin modelo, sin tocar el prompt de Luna. Guion nuevo:
+`primeros/condicion.py`, que usa `conceptos.py`, `numeros.py`, `fuente.py` y `compat.py` tal cual.
+
+**Decision de Martin, 26-nov:** la lista `INTERROGA` de `cadena.py` la decide la sesion, porque no cambia vender ni
+alucinar por si sola: si una caracteristica se lee como pregunta en vez de condicion, el producto se ofrece igual y el
+dato se contesta de la ficha. Se mide su efecto en los numeros; si un cambio a la lista mueve ventas u ofertas
+equivocadas, se anota.
+
+### La capa, por pedido
+
+Entrada: el rubro y las condiciones `(palabras, caracteristica)` de `cadena.dato2()`. Salida: los productos que cumplen,
+ordenados, y el veredicto: ofrecer, no hay con lo mas cercano, repreguntar o sin dato.
+
+1. Atar cada condicion por codigo. La caracteristica dice el campo y las palabras el valor:
+   - con nombre, a un concepto de `conceptos.json` del tipo atributo, color, plataforma u origen;
+   - con numero, `numeros.leer`: tope de plata, capacidad, ram, pulgadas, hz, potencia;
+   - marca y modelo, contra el catalogo;
+   - la negacion, "que no sea", "sin", "nada de", saca en vez de exigir;
+   - el orden, a un concepto de tipo orden.
+2. Filtrar la vista de la fuente con lo atado, con la misma regla que `examen.aceptables`.
+3. Si nada cumple: no hay, y lo mas cercano, el que cumple todo menos una condicion, dicho como alternativa.
+4. El orden corre sobre todo lo que cumple en el rubro; los embeddings solo desempatan cuando no hay orden.
+5. Lo que no se ata no filtra y queda como sin dato de esa condicion.
+6. De la rueda: la fila sin producto que solo trae condicion u orden se pega al pedido anterior, o a todos si es global;
+   sin rubro y con orden, el orden corre sobre toda la tienda; ante una correccion del cliente vale lo ultimo.
+
+### Como se mide, en este orden
+
+1. Guion revisado a mano con diez casos contra lo grabado antes de contar.
+2. Techo, con entrada perfecta: los `cas` de la etiqueta contra la capa, en el examen y las muestras.
+3. Con la entrada de la rueda: las condiciones de `dato2()`. La distancia al techo es lo que se pierde al atar.
+4. De punta a punta: `cadena.py` con la capa puesta, el primero con el orden aplicado, `examen._orden_ok`.
+5. En los cuatro conjuntos, contado aparte: venta perdida, oferta equivocada, no hay cuando nada cumple, sin dato.
+   Lo que importa primero es que las ofertas equivocadas bajen de 16 en 135 en las muestras y de 17 en 194 en el examen,
+   sin perder ventas contra la linea de base de la FICHA 109, seccion 4.
+6. Cada falla clasificada: capa, etiqueta o prueba. Si atar un caso pide sumar una palabra a una lista de conceptos,
+   se anota y se consulta con Martin antes de sumarla.
