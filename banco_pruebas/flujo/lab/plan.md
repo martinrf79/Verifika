@@ -352,3 +352,12 @@ Lo que sigue perdido no es del recipiente: es de quien lo tiene que usar.
 - Dato 2 en otra fila, 6. Toca a Luna, paso 2, el papel de pregunta.
 - Visto en el control a mano: el destino sin marcar, "a Cordoba", entra como nombre de un pedido sin producto. Es papel de
   destino, paso 2.
+
+### Control de la ficha, 27-nov: ninguna palabra afuera
+
+Control nuevo: cada palabra que escribio Luna tiene que estar en algun tramo. Antes del arreglo quedaban 7 de 2.809 en
+el examen: lo que Luna escribe fuera de las llaves, ", la S9 FE creo...[modelo]", que `partes` no lee. La ficha ahora lo
+toma como tramo, con el corchete que lo sigue. Quedan 4, todas "y" sueltas entre llaves. Con eso, el examen: llegan
+425 de 472, 10 dichos sin dato, 0 fuera de todo pedido, 37 guardados en la ficha que la funcion que les toca no
+resuelve. Esos 37 no son perdida de transporte: estan en la ficha, con su uso anotado, y los tiene que resolver existe,
+la condicion o el papel de Luna.

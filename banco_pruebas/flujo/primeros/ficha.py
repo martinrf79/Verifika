@@ -66,6 +66,18 @@ def armar(textos):
     for fi, t in enumerate(textos):
         for p, n in C.partes(t):
             tramos.append({"fila": fi, "texto": p, "luna": n, "papel": _papel(n), "pedido": None, "usos": []})
+        # Lo que Luna escribio fuera de las llaves, ", la S9 FE creo...[modelo]": `partes` no lo lee y se perdia. Es un
+        # tramo mas, con el corchete que lo sigue si lo hay.
+        ms = list(re.finditer(r"\{[^}]*\}\s*(?:\[[^\]]*\])?|\[([^\]]*)\]", t))
+        fin = 0
+        for k, m in enumerate(ms + [None]):
+            ini = m.start() if m else len(t)
+            hueco = re.sub(r"[¿?¡!,.;:]", " ", t[fin:ini]).strip()
+            if _contenido(hueco):
+                n = nrm(m.group(1)) if m is not None and m.group(1) is not None else None
+                tramos.append({"fila": fi, "texto": hueco, "luna": n, "papel": _papel(n), "pedido": None, "usos": []})
+            if m:
+                fin = m.end()
     peds = K.pedidos(textos)
     for g in peds:
         g.setdefault("no_reconocido", [])
