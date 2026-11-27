@@ -252,3 +252,74 @@ una caracteristica se pregunta solo si sus palabras preguntan, no por el "?" de 
 del rubro que tiene ese valor; la marca aproximada solo donde Luna marco una marca; la preferencia no exige; la
 correccion vale lo ultimo; el tope copiado en todos los pedidos es del total; dos ordenes son dos pedidos; toda la
 tienda solo con una palabra que no nombra producto.
+
+## Plan 7, donde se pierde cada dato del mensaje, escrito antes de correr
+
+27-nov, pedido de Martin. Sin modelo y sin gasto: sobre lo que Luna ya separo, grabado. Guion nuevo:
+`primeros/perdidas.py`. No cambia nada de la cadena: solo cuenta.
+
+**La pregunta.** Si Luna separa bien, cuanto de lo que dijo el cliente llega al final de la cadena del banco, y en que
+funcion se pierde lo que no llega.
+
+**La unidad.** Cada casillero de la etiqueta de `examen/examen.json` y de `primeros/reales.json`, con sus palabras
+literales; y en el examen, ademas, el dato 2 y lo global de `examen/tramos.py`: destino, pago, tope.
+
+**Las etapas.** Para cada unidad, la primera etapa donde ya no esta:
+1. Luna: las palabras no estan en lo que Luna escribio. Es perdida de la traduccion, no del codigo.
+2. Pedido: Luna lo tiene, pero no queda en ningun pedido de `condicion.pedidos`: ni en sus partes, ni en lo atado, ni en
+   lo dicho sin dato.
+3. Uso: esta en un pedido pero ninguna funcion lo usa. El rubro, si el pedido no lleva ese rubro; marca y modelo, si no
+   estan en el nombre que va a existe; la condicion, si no quedo atada ni dicha sin dato; el dato 2, si `cadena.dato2` no
+   da el mismo.
+4. Llega: lo usa alguna funcion.
+Aparte, sin consumidor: lo que ninguna funcion de esta cadena lee por diseno, la cantidad y lo global. Se cuenta, porque
+tambien se pierde.
+
+**Lo que se mide con entrada perfecta.** Las etapas 2 y 3 contadas solo sobre lo que Luna si tenia: es lo que pierde el
+codigo aunque Luna no se equivoque.
+
+**Antes de creer el numero.** Diez casos revisados a mano contra lo grabado. La coincidencia de palabras es por palabras
+de contenido normalizadas, sin espacios para "1 TB" y "1tb"; si el control a mano muestra que la regla de coincidencia
+marca perdidas que no son, se corrige la regla antes de contar y se anota.
+
+### Lo que viene despues: como se logra la entrada perfecta sin etiquetas
+
+La medicion de arriba usa la etiqueta como verdad. En el bot, la entrada la arma el sistema. El plan para lograrla, en
+este orden, cada paso medido contra las mismas etiquetas:
+1. La ficha del pedido sin borrado: cada tramo literal del mensaje tiene un lugar, las funciones solo agregan, y al final
+   se controla que cada tramo quedo contestado, dicho sin dato o repreguntado. Se mide con la etiqueta como entrada y
+   tiene que dar cero tramos perdidos en el codigo.
+2. Luna dice el papel de cada tramo, de una lista cerrada, con las palabras literales primero: producto, exige, excluye,
+   prefiere, orden, pregunta, tema, destino, pago, cantidad, se refiere a lo anterior. El codigo deja de adivinar con
+   `INTERROGA` y el signo de pregunta. Se mide contra el etiquetado por tramos de la FICHA 108, seccion 5.
+3. El codigo controla a Luna donde puede: cada tramo tiene que ser texto literal del mensaje; todo el mensaje tiene que
+   quedar en algun tramo o en relleno; un producto que no esta en los alias ni en el catalogo es "no lo vendemos" o se
+   repregunta, nunca el rubro mas parecido.
+4. Lo que el control marca, y solo eso, va a una segunda pasada de Luna con el mensaje y lo que fallo. Se mide cuanto
+   arregla y cuanto cuesta.
+La meta se fija con el resultado del Plan 7: no se promete un numero antes de medir.
+
+## Resultado 7, 27-nov
+
+Guion: `primeros/perdidas.py`. Sin modelo, sin gasto. Control a mano de los casos marcados contra lo grabado: la regla de
+coincidencia no dio perdidas falsas; lo marcado se pierde de verdad.
+
+| conjunto | casilleros | Luna los tiene | llegan | el codigo los pierde | Luna los pierde | sin consumidor |
+| --- | --- | --- | --- | --- | --- | --- |
+| examen, 138 | 653 | 472 | 381 | 91: 81 sin usar, 10 fuera de todo pedido | 28 | 153 |
+| reales, 52 | 124 | 109 | 91 | 18: 16 sin usar, 2 fuera de todo pedido | 5 | 10 |
+
+Con entrada perfecta, el codigo pierde 19 de cada 100 datos en el examen y 17 en las reales. Luna pierde 6 y 5. La
+perdida grande es del codigo, no de la traduccion.
+
+Por clase, en el examen:
+- Marca y modelo que Luna escribio sin marcar, 36: `cadena._uno` arma el nombre para existe solo con lo marcado si hay
+  algo marcado, y deja afuera "K380", "Cloud II", "i9-14900K", "NV2 2TB".
+- Lo que la tienda no vende o no tiene dato, 20: "impresora 3d", "celulares", "playstation 5", "alquilan", "titilan al
+  ritmo de la musica". Ninguna funcion lo dice: desaparece, y por eso se ofrece el rubro mas parecido.
+- Condiciones sin atar y sin decir, 20: "para pc", "para la ofi", "para escribir mucho", "la mayor ram posible", y la fila
+  que solo trae condicion, "y cual la mas cara", "y algo que no pase los 200 mil".
+- Rubro, 8: "compu", "memoria" sin marcar, "aparato cuadrado con teclas".
+- Dato 2, 6: stock y precio dichos en otra fila, el campo dpi.
+- Sin consumidor, 153: la cantidad, 45; comprar, 64; destino, pago y tope, 34; comparar, compatibilidad y
+  caracteristicas, 10. Esta cadena del banco no los lee.
