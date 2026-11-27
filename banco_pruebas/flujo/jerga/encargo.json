@@ -1,0 +1,3001 @@
+{
+ "conceptos": {
+  "rubro:almacenamiento_externo": {
+   "clase": "rubro",
+   "nombre": "almacenamiento externo",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "almacenamiento externo"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Almacenamiento externo Toshiba Canvio Basics 4TB Plata",
+    "Almacenamiento externo Western Digital Elements 2TB Negro",
+    "Almacenamiento externo SanDisk Ultra Flair 2TB Negro",
+    "Almacenamiento externo Toshiba Canvio Basics 2TB Plata",
+    "Almacenamiento externo Kingston DataTraveler Max 2TB Plata"
+   ],
+   "alias_existentes": [
+    "disco de 1tb",
+    "disco duro",
+    "disco externo",
+    "disco portatil",
+    "disco rigido",
+    "disco usb",
+    "el aparatito para guardar fotos",
+    "el coso para hacer backup"
+   ]
+  },
+  "rubro:auriculares": {
+   "clase": "rubro",
+   "nombre": "auriculares",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "auriculares"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Auriculares Logitech G535 Negro",
+    "Auriculares Razer BlackShark V2 Negro",
+    "Auriculares JBL Tune 520BT Blanco",
+    "Auriculares HyperX Cloud Alpha Negro",
+    "Auriculares JBL Tune 510BT Blanco"
+   ],
+   "alias_existentes": [
+    "auriculares bluetooth",
+    "auriculares con microfono",
+    "auris",
+    "auris gamer",
+    "auris inalambricos",
+    "auris para el bondi",
+    "los cascos",
+    "los que se enchufan al celu",
+    "los que van en la oreja"
+   ]
+  },
+  "rubro:cargador": {
+   "clase": "rubro",
+   "nombre": "cargador",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "cargador"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Cargador Anker PowerPort III 20W Blanco",
+    "Cargador Samsung 25W Super Fast Blanco",
+    "Cargador Anker Nano II 65W Negro",
+    "Cargador Baseus GaN5 Pro 100W Negro",
+    "Cargador Baseus GaN5 Pro 100W Blanco"
+   ],
+   "alias_existentes": [
+    "cargador de celu",
+    "cargador de pared",
+    "cargador rapido",
+    "cargador tipo c",
+    "el cable para cargar",
+    "el cablecito",
+    "el enchufe del telefono",
+    "el transformador"
+   ]
+  },
+  "rubro:cooler": {
+   "clase": "rubro",
+   "nombre": "cooler",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "cooler"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Cooler Cooler Master Hyper 212 Halo",
+    "Cooler Thermalright Frozen Notte 360",
+    "Cooler DeepCool AK620",
+    "Cooler DeepCool LE500",
+    "Cooler Noctua NH-U12S Redux"
+   ],
+   "alias_existentes": [
+    "cooler fan",
+    "cooler para el cpu",
+    "cooler rgb",
+    "el coso que tira aire",
+    "el ventilador de la pc",
+    "ventilador",
+    "ventilador para el gabinete"
+   ]
+  },
+  "rubro:fuente": {
+   "clase": "rubro",
+   "nombre": "fuente",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "fuente"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Fuente Thermaltake Toughpower GF1 750W",
+    "Fuente Gigabyte UD750GM",
+    "Fuente Cooler Master MWE 650 Bronze",
+    "Fuente EVGA 500 W1",
+    "Fuente Corsair RM750e"
+   ],
+   "alias_existentes": [
+    "el transformador de la pc",
+    "fuente de alimentacion",
+    "fuente de poder",
+    "la cajita de energia",
+    "la fuente de 600w",
+    "la fuente de la pc"
+   ]
+  },
+  "rubro:gabinete": {
+   "clase": "rubro",
+   "nombre": "gabinete",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "gabinete"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Gabinete Antec NX410 Negro",
+    "Gabinete Asus Prime AP201 Negro",
+    "Gabinete Cooler Master MasterBox Q300L Negro",
+    "Gabinete Corsair 5000D Airflow Negro",
+    "Gabinete NZXT H7 Flow Blanco"
+   ],
+   "alias_existentes": [
+    "el cpu",
+    "el gabinete",
+    "el gabinete con vidrio",
+    "el gabinete gamer",
+    "la caja de la pc",
+    "la carcasa",
+    "la torre"
+   ]
+  },
+  "rubro:impresora": {
+   "clase": "rubro",
+   "nombre": "impresora",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "impresora"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Impresora Epson EcoTank L3250 Negro",
+    "Impresora Epson EcoTank L5590 Negro",
+    "Impresora Canon Pixma G2160 Blanco",
+    "Impresora Brother DCP-T520W Negro",
+    "Impresora Epson EcoTank L5590 Blanco"
+   ],
+   "alias_existentes": [
+    "impresora",
+    "impresora a chorro de tinta",
+    "impresora laser",
+    "la impresora para imprimir",
+    "la impresora wifi",
+    "la maquina de imprimir",
+    "la multifuncion"
+   ]
+  },
+  "rubro:memoria_ram": {
+   "clase": "rubro",
+   "nombre": "memoria ram",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "memoria ram"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Memoria ram Patriot Viper Steel DDR4 3600 16GB Negro",
+    "Memoria ram Kingston Fury Beast DDR4 3200 16GB Blanco",
+    "Memoria ram G.Skill Flare X5 DDR5 6000 8GB Blanco",
+    "Memoria ram G.Skill Ripjaws V DDR4 3200 32GB Negro",
+    "Memoria ram Corsair Vengeance RGB DDR5 6000 16GB Negro"
+   ],
+   "alias_existentes": [
+    "la ram para que no se trabe",
+    "memoria",
+    "memoria de 8gb",
+    "memoria de la pc",
+    "modulos de memoria",
+    "ram",
+    "stick de ram"
+   ]
+  },
+  "rubro:microfono": {
+   "clase": "rubro",
+   "nombre": "microfono",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "microfono"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Microfono Blue Yeti Nano Blanco",
+    "Microfono Razer Seiren V3 Mini Blanco",
+    "Microfono FIFINE AmpliGame A6T Blanco",
+    "Microfono Rode NT-USB Mini Blanco",
+    "Microfono Rode NT-USB+ Blanco"
+   ],
+   "alias_existentes": [
+    "el coso para grabar voz",
+    "el microfono para hablar",
+    "mic",
+    "mic condensador",
+    "micro",
+    "microfono de escritorio",
+    "microfono para stream"
+   ]
+  },
+  "rubro:monitor": {
+   "clase": "rubro",
+   "nombre": "monitor",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "monitor"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Monitor AOC 24G2",
+    "Monitor Samsung Odyssey G9 49",
+    "Monitor Philips 242V8A",
+    "Monitor LG 24MK430H",
+    "Monitor LG 34WP65C Curvo"
+   ],
+   "alias_existentes": [
+    "el display",
+    "el monitor de la pc",
+    "la pantalla de la compu",
+    "la tele para la pc",
+    "monitor",
+    "monitor de 24 pulgadas",
+    "monitor gamer",
+    "pantalla"
+   ]
+  },
+  "rubro:motherboard": {
+   "clase": "rubro",
+   "nombre": "motherboard",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "motherboard"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Motherboard MSI PRO B550M-VC",
+    "Motherboard Asus ROG Strix B550-F",
+    "Motherboard Gigabyte B550M DS3H",
+    "Motherboard Gigabyte B650 Gaming X AX",
+    "Motherboard MSI B550 Tomahawk"
+   ],
+   "alias_existentes": [
+    "el mother",
+    "la placa base",
+    "la placa donde va todo conectado",
+    "la placa principal",
+    "mother",
+    "placa madre"
+   ]
+  },
+  "rubro:mouse": {
+   "clase": "rubro",
+   "nombre": "mouse",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "mouse"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Mouse Razer Orochi V2 Negro",
+    "Mouse HyperX Pulsefire Core Negro",
+    "Mouse Redragon King Cobra Negro",
+    "Mouse Logitech MX Master 3S Blanco",
+    "Mouse HyperX Pulsefire Core Blanco"
+   ],
+   "alias_existentes": [
+    "el coso para mover el cursor",
+    "el mouse de la compu",
+    "mouse",
+    "mouse con luces",
+    "mouse gamer",
+    "mouse inalambrico",
+    "mouse pad (aunque es el pad)",
+    "raton"
+   ]
+  },
+  "rubro:notebook": {
+   "clase": "rubro",
+   "nombre": "notebook",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "notebook"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Notebook Lenovo IdeaPad Slim 5 Ryzen 7 16GB 512GB SSD Negro",
+    "Notebook Dell Latitude 3540 Core i5 16GB 512GB SSD Plata",
+    "Notebook HP Pavilion 15 Core i5 16GB 512GB SSD Gris",
+    "Notebook Dell Latitude 3540 Ryzen 7 16GB 512GB SSD Gris",
+    "Notebook Asus Vivobook 15 Ryzen 7 16GB 512GB SSD Gris"
+   ],
+   "alias_existentes": [
+    "la compu de escritorio pero movil",
+    "la compu para llevar a la facu",
+    "la compu portatil",
+    "la netbook",
+    "la notebook",
+    "la portatil",
+    "laptop"
+   ]
+  },
+  "rubro:parlante": {
+   "clase": "rubro",
+   "nombre": "parlante",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "parlante"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Parlante Logitech Z625 THX Azul",
+    "Parlante Logitech Z625 THX Negro",
+    "Parlante JBL Clip 4 Azul",
+    "Parlante JBL Clip 4 Rojo",
+    "Parlante Edifier R1700BT Azul"
+   ],
+   "alias_existentes": [
+    "altavoces",
+    "el parlante para escuchar musica",
+    "el parlante portatil",
+    "los parlantes con sonido",
+    "parlante bluetooth",
+    "parlantes",
+    "parlantes para la pc"
+   ]
+  },
+  "rubro:placa_de_video": {
+   "clase": "rubro",
+   "nombre": "placa de video",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "placa de video"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Placa de video Gigabyte Gaming OC RTX 4060 Ti",
+    "Placa de video XFX Speedster RX 7700 XT",
+    "Placa de video Sapphire Pulse RX 7700 XT",
+    "Placa de video Gigabyte Eagle RTX 4060",
+    "Placa de video MSI Gaming X RTX 4070 Ti Super"
+   ],
+   "alias_existentes": [
+    "la gpu",
+    "la placa de 8gb",
+    "la placa de graficos",
+    "la placa de video dedicada",
+    "la placa para jugar",
+    "la placa para que los juegos vuelen",
+    "placa de video"
+   ]
+  },
+  "rubro:procesador": {
+   "clase": "rubro",
+   "nombre": "procesador",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "procesador"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Procesador Intel Core i7-14700KF",
+    "Procesador Intel Core i9-14900K",
+    "Procesador AMD Ryzen 5 7600",
+    "Procesador Intel Core i5-13600KF",
+    "Procesador AMD Ryzen 5 5500"
+   ],
+   "alias_existentes": [
+    "el cerebro de la pc",
+    "el chip de la pc",
+    "el cpu",
+    "micro",
+    "procesador",
+    "procesador amd",
+    "procesador intel"
+   ]
+  },
+  "rubro:router": {
+   "clase": "rubro",
+   "nombre": "router",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "router"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Router Tenda Nova MW6 Mesh Blanco",
+    "Router TP-Link Archer AX55 Blanco",
+    "Router TP-Link Archer AX23 Negro",
+    "Router TP-Link Deco X50 Mesh Negro",
+    "Router Mercusys MR70X Negro"
+   ],
+   "alias_existentes": [
+    "el aparato del wifi",
+    "el aparato que tira señal",
+    "el coso de internet",
+    "el modem",
+    "el router de fibra",
+    "router",
+    "router wifi"
+   ]
+  },
+  "rubro:silla_gamer": {
+   "clase": "rubro",
+   "nombre": "silla gamer",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "silla gamer"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Silla gamer Cougar Armor S Negro y rojo",
+    "Silla gamer Gamemax GCR07 Negro",
+    "Silla gamer Corsair TC100 Relaxed Negro y rojo",
+    "Silla gamer Cougar Fusion Negro",
+    "Silla gamer Redragon Gaia Negro y azul"
+   ],
+   "alias_existentes": [
+    "butaca gamer",
+    "la silla con rueditas",
+    "la silla de escritorio",
+    "la silla para estar sentado horas",
+    "la silla para jugar",
+    "silla ergonomica",
+    "silla gamer"
+   ]
+  },
+  "rubro:ssd": {
+   "clase": "rubro",
+   "nombre": "ssd",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "ssd"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Ssd ADATA Legend 800 1TB",
+    "Ssd Western Digital Green SATA 1TB",
+    "Ssd Samsung 980 1TB",
+    "Ssd ADATA Legend 800 500GB",
+    "Ssd Samsung 980 2TB"
+   ],
+   "alias_existentes": [
+    "disco de estado solido",
+    "disco m2",
+    "disco solido",
+    "disco ssd",
+    "el disco rapido",
+    "el solido para que prenda rapido",
+    "ssd"
+   ]
+  },
+  "rubro:tablet": {
+   "clase": "rubro",
+   "nombre": "tablet",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "tablet"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Tablet Xiaomi Redmi Pad SE Gris",
+    "Tablet Lenovo Tab P11 Plata",
+    "Tablet Lenovo Tab M10 Plata",
+    "Tablet Lenovo Tab M10 Gris",
+    "Tablet Samsung Galaxy Tab A8 Gris"
+   ],
+   "alias_existentes": [
+    "la ipad (generico)",
+    "la pantalla portatil",
+    "la pantalla tactil",
+    "la tablet",
+    "la tablet para los chicos",
+    "la tablet para ver pelis",
+    "tablet"
+   ]
+  },
+  "rubro:teclado": {
+   "clase": "rubro",
+   "nombre": "teclado",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "teclado"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Teclado Corsair K55 RGB Pro Blanco",
+    "Teclado HyperX Alloy Origins Core Negro",
+    "Teclado Razer Huntsman V3 Pro Negro",
+    "Teclado Redragon Kumara K552 Negro",
+    "Teclado Logitech G915 TKL Negro"
+   ],
+   "alias_existentes": [
+    "el coso para escribir",
+    "el teclado de la pc",
+    "teclado",
+    "teclado con luces",
+    "teclado gamer",
+    "teclado inalambrico",
+    "teclado mecanico",
+    "keyboard",
+    "keyboard gamer"
+   ]
+  },
+  "rubro:webcam": {
+   "clase": "rubro",
+   "nombre": "webcam",
+   "condicion": [
+    [
+     "rubro",
+     "igual",
+     "webcam"
+    ]
+   ],
+   "ejemplos_catalogo": [
+    "Webcam Genius FaceCam 2000X",
+    "Webcam Genius QCam 6000",
+    "Webcam AverMedia PW313",
+    "Webcam Razer Kiyo Pro",
+    "Webcam Razer Kiyo X"
+   ],
+   "alias_existentes": [
+    "camara",
+    "camara web",
+    "la camara para la pc",
+    "la camara para las reuniones",
+    "la camara para stremear",
+    "la camara para zoom",
+    "webcam"
+   ]
+  },
+  "plataforma:ps5": {
+   "clase": "plataforma",
+   "nombre": "PlayStation 5",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "ps5"
+     ]
+    ]
+   ]
+  },
+  "plataforma:ps4": {
+   "clase": "plataforma",
+   "nombre": "PlayStation 4",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "ps4"
+     ]
+    ]
+   ]
+  },
+  "plataforma:xbox": {
+   "clase": "plataforma",
+   "nombre": "Xbox",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "xbox"
+     ]
+    ]
+   ]
+  },
+  "plataforma:nintendo_switch": {
+   "clase": "plataforma",
+   "nombre": "Nintendo Switch",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "nintendo_switch"
+     ]
+    ]
+   ]
+  },
+  "plataforma:macos": {
+   "clase": "plataforma",
+   "nombre": "Mac",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "macos"
+     ]
+    ]
+   ]
+  },
+  "plataforma:ios": {
+   "clase": "plataforma",
+   "nombre": "iPhone o iPad",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "ios"
+     ]
+    ]
+   ]
+  },
+  "plataforma:android": {
+   "clase": "plataforma",
+   "nombre": "Android",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "android"
+     ]
+    ]
+   ]
+  },
+  "plataforma:smart_tv": {
+   "clase": "plataforma",
+   "nombre": "Smart TV",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "smart_tv"
+     ]
+    ]
+   ]
+  },
+  "plataforma:pc_escritorio": {
+   "clase": "plataforma",
+   "nombre": "PC de escritorio",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "pc_escritorio"
+     ]
+    ]
+   ]
+  },
+  "plataforma:notebook": {
+   "clase": "plataforma",
+   "nombre": "notebook",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "notebook"
+     ]
+    ]
+   ]
+  },
+  "plataforma:windows": {
+   "clase": "plataforma",
+   "nombre": "Windows",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "windows"
+     ]
+    ]
+   ]
+  },
+  "plataforma:linux": {
+   "clase": "plataforma",
+   "nombre": "Linux",
+   "condicion": [
+    [
+     "plataformas",
+     "alguno",
+     [
+      "linux"
+     ]
+    ]
+   ]
+  },
+  "color:azul": {
+   "clase": "color",
+   "nombre": "azul",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "azul"
+     ]
+    ]
+   ]
+  },
+  "color:blanco": {
+   "clase": "color",
+   "nombre": "blanco",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "blanco"
+     ]
+    ]
+   ]
+  },
+  "color:gris": {
+   "clase": "color",
+   "nombre": "gris",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "gris"
+     ]
+    ]
+   ]
+  },
+  "color:negro": {
+   "clase": "color",
+   "nombre": "negro",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "negro"
+     ]
+    ]
+   ]
+  },
+  "color:negro_y_azul": {
+   "clase": "color",
+   "nombre": "negro y azul",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "negro y azul"
+     ]
+    ]
+   ]
+  },
+  "color:negro_y_rojo": {
+   "clase": "color",
+   "nombre": "negro y rojo",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "negro y rojo"
+     ]
+    ]
+   ]
+  },
+  "color:plata": {
+   "clase": "color",
+   "nombre": "plata",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "plata"
+     ]
+    ]
+   ]
+  },
+  "color:rojo": {
+   "clase": "color",
+   "nombre": "rojo",
+   "condicion": [
+    [
+     "color",
+     "tiene",
+     [
+      "rojo"
+     ]
+    ]
+   ]
+  },
+  "atributo:inalambrico": {
+   "clase": "atributo",
+   "nombre": "inalambrico",
+   "condicion": [
+    [
+     "conecta_por",
+     "alguno",
+     [
+      "bluetooth",
+      "receptor_usb"
+     ]
+    ]
+   ]
+  },
+  "atributo:con_cable": {
+   "clase": "atributo",
+   "nombre": "con cable",
+   "condicion": [
+    [
+     "conecta_por",
+     "ninguno",
+     [
+      "bluetooth",
+      "receptor_usb"
+     ]
+    ]
+   ]
+  },
+  "atributo:bluetooth": {
+   "clase": "atributo",
+   "nombre": "bluetooth",
+   "condicion": [
+    [
+     "conecta_por",
+     "alguno",
+     [
+      "bluetooth"
+     ]
+    ]
+   ]
+  },
+  "atributo:wifi": {
+   "clase": "atributo",
+   "nombre": "wifi",
+   "condicion": [
+    [
+     "conecta_por",
+     "alguno",
+     [
+      "wifi"
+     ]
+    ]
+   ]
+  },
+  "atributo:usb_c": {
+   "clase": "atributo",
+   "nombre": "usb c",
+   "condicion": [
+    [
+     "conecta_por",
+     "alguno",
+     [
+      "puerto_usb_c"
+     ]
+    ]
+   ]
+  },
+  "atributo:mecanico": {
+   "clase": "atributo",
+   "nombre": "mecanico",
+   "condicion": [
+    [
+     "switch_teclado",
+     "tiene",
+     [
+      "mecanico"
+     ]
+    ]
+   ]
+  },
+  "atributo:membrana": {
+   "clase": "atributo",
+   "nombre": "membrana",
+   "condicion": [
+    [
+     "switch_teclado",
+     "tiene",
+     [
+      "membrana"
+     ]
+    ]
+   ]
+  },
+  "atributo:silencioso": {
+   "clase": "atributo",
+   "nombre": "silencioso",
+   "condicion": [
+    [
+     "switch_teclado",
+     "tiene",
+     [
+      "membrana",
+      "tijera"
+     ]
+    ]
+   ]
+  },
+  "atributo:con_microfono": {
+   "clase": "atributo",
+   "nombre": "con microfono",
+   "condicion": [
+    [
+     "microfono",
+     "empieza",
+     [
+      "si"
+     ]
+    ]
+   ]
+  },
+  "atributo:cancelacion_ruido": {
+   "clase": "atributo",
+   "nombre": "cancelacion ruido",
+   "condicion": [
+    [
+     "cancelacion_ruido",
+     "empieza",
+     [
+      "si"
+     ]
+    ]
+   ]
+  },
+  "atributo:con_luces": {
+   "clase": "atributo",
+   "nombre": "con luces",
+   "condicion": [
+    [
+     "retroiluminacion",
+     "empieza",
+     [
+      "si"
+     ]
+    ]
+   ]
+  },
+  "atributo:sin_luces": {
+   "clase": "atributo",
+   "nombre": "sin luces",
+   "condicion": [
+    [
+     "retroiluminacion",
+     "empieza",
+     [
+      "no"
+     ]
+    ]
+   ]
+  },
+  "atributo:resistente_agua": {
+   "clase": "atributo",
+   "nombre": "resistente agua",
+   "condicion": [
+    [
+     "resistencia_agua",
+     "empieza",
+     [
+      "si"
+     ]
+    ]
+   ]
+  },
+  "atributo:panel_ips": {
+   "clase": "atributo",
+   "nombre": "panel ips",
+   "condicion": [
+    [
+     "panel",
+     "tiene",
+     [
+      "ips"
+     ]
+    ]
+   ]
+  },
+  "atributo:panel_oled": {
+   "clase": "atributo",
+   "nombre": "panel oled",
+   "condicion": [
+    [
+     "panel",
+     "tiene",
+     [
+      "oled"
+     ]
+    ]
+   ]
+  },
+  "atributo:panel_va": {
+   "clase": "atributo",
+   "nombre": "panel va",
+   "condicion": [
+    [
+     "panel",
+     "tiene",
+     [
+      "va"
+     ]
+    ]
+   ]
+  },
+  "atributo:full_hd": {
+   "clase": "atributo",
+   "nombre": "full hd",
+   "condicion": [
+    [
+     "resolucion",
+     "tiene",
+     [
+      "full hd"
+     ]
+    ]
+   ]
+  },
+  "atributo:qhd": {
+   "clase": "atributo",
+   "nombre": "qhd",
+   "condicion": [
+    [
+     "resolucion",
+     "tiene",
+     [
+      "qhd"
+     ]
+    ]
+   ]
+  },
+  "atributo:ultrawide": {
+   "clase": "atributo",
+   "nombre": "ultrawide",
+   "condicion": [
+    [
+     "resolucion",
+     "tiene",
+     [
+      "ultrawide",
+      "uwqhd"
+     ]
+    ]
+   ]
+  },
+  "atributo:con_bateria": {
+   "clase": "atributo",
+   "nombre": "con bateria",
+   "condicion": [
+    [
+     "bateria",
+     "empieza",
+     [
+      "si",
+      "funciona con"
+     ]
+    ]
+   ]
+  },
+  "preferencia:uso_gamer": {
+   "clase": "preferencia",
+   "nombre": "uso gamer",
+   "condicion": [
+    [
+     "uso",
+     "empieza",
+     [
+      "gaming"
+     ]
+    ]
+   ]
+  },
+  "preferencia:uso_oficina": {
+   "clase": "preferencia",
+   "nombre": "uso oficina",
+   "condicion": [
+    [
+     "uso",
+     "tiene",
+     [
+      "trabajo",
+      "oficina",
+      "productividad"
+     ]
+    ]
+   ]
+  },
+  "preferencia:uso_streaming": {
+   "clase": "preferencia",
+   "nombre": "uso streaming",
+   "condicion": [
+    [
+     "uso",
+     "tiene",
+     [
+      "streaming",
+      "videoconferencias"
+     ]
+    ]
+   ]
+  },
+  "origen:fabricado_china": {
+   "clase": "origen",
+   "nombre": "fabricado china",
+   "condicion": [
+    [
+     "origen",
+     "tiene",
+     [
+      "fabricado en china."
+     ]
+    ]
+   ]
+  },
+  "orden:mas_barato": {
+   "clase": "orden",
+   "nombre": "mas barato",
+   "condicion": [
+    [
+     "precio",
+     "orden",
+     "asc"
+    ]
+   ]
+  },
+  "orden:mas_caro": {
+   "clase": "orden",
+   "nombre": "mas caro",
+   "condicion": [
+    [
+     "precio",
+     "orden",
+     "desc"
+    ]
+   ]
+  },
+  "orden:mas_liviano": {
+   "clase": "orden",
+   "nombre": "mas liviano",
+   "condicion": [
+    [
+     "peso",
+     "orden",
+     "asc"
+    ]
+   ]
+  },
+  "orden:mas_pesado": {
+   "clase": "orden",
+   "nombre": "mas pesado",
+   "condicion": [
+    [
+     "peso",
+     "orden",
+     "desc"
+    ]
+   ]
+  },
+  "orden:mas_capacidad": {
+   "clase": "orden",
+   "nombre": "mas capacidad",
+   "condicion": [
+    [
+     "capacidad_gb",
+     "orden",
+     "desc"
+    ]
+   ]
+  },
+  "orden:mas_potente_w": {
+   "clase": "orden",
+   "nombre": "mas potente w",
+   "condicion": [
+    [
+     "potencia_w",
+     "orden",
+     "desc"
+    ]
+   ]
+  },
+  "orden:mas_hz": {
+   "clase": "orden",
+   "nombre": "mas hz",
+   "condicion": [
+    [
+     "hz",
+     "orden",
+     "desc"
+    ]
+   ]
+  },
+  "orden:mas_ram": {
+   "clase": "orden",
+   "nombre": "mas ram",
+   "condicion": [
+    [
+     "ram_gb",
+     "orden",
+     "desc"
+    ]
+   ]
+  },
+  "orden:mas_pulgadas": {
+   "clase": "orden",
+   "nombre": "mas pulgadas",
+   "condicion": [
+    [
+     "pulgadas",
+     "orden",
+     "desc"
+    ]
+   ]
+  },
+  "orden:mas_nucleos": {
+   "clase": "orden",
+   "nombre": "mas nucleos",
+   "condicion": [
+    [
+     "nucleos",
+     "orden",
+     "desc"
+    ]
+   ]
+  }
+ },
+ "campos": {
+  "campo:almacenamiento": {
+   "columna_ficha": null,
+   "alias_existentes": [
+    "almacenaje",
+    "capacidad",
+    "cuanto espacio tiene",
+    "cuanto le entra",
+    "cuantos archivos puedo guardar",
+    "disco",
+    "espacio",
+    "gb",
+    "gigas",
+    "memoria interna"
+   ]
+  },
+  "campo:bateria": {
+   "columna_ficha": "specs.bateria",
+   "alias_existentes": [
+    "autonomia",
+    "cuantas horas de uso",
+    "cuanto aguanta prendido",
+    "cuanto dura la carga",
+    "cuanto le dura la bateria",
+    "cuanto tiempo tira",
+    "la carga",
+    "la pila",
+    "se agota rapido",
+    "se banca todo el dia"
+   ]
+  },
+  "campo:bluetooth": {
+   "columna_ficha": "specs.bluetooth",
+   "alias_existentes": [
+    "bluetoo",
+    "blut",
+    "conecta con auriculares",
+    "el blutu",
+    "el blutuz",
+    "se conecta al celu",
+    "se conecta sin cables",
+    "se empareja",
+    "tiene para el parlante",
+    "tiene para vincular inalambrico"
+   ]
+  },
+  "campo:camara": {
+   "columna_ficha": "specs.camara",
+   "alias_existentes": [
+    "cuantos megapixeles tiene",
+    "la calidad de imagen",
+    "la cam",
+    "la definicion de la foto",
+    "la foto",
+    "la lente",
+    "para sacar selfies",
+    "para subir a insta",
+    "que tal la camarita",
+    "saca buenas fotos"
+   ]
+  },
+  "campo:caracteristicas_extra": {
+   "columna_ficha": "productos.caracteristicas_extra",
+   "alias_existentes": [
+    "alguna funcion extra",
+    "funciones especiales",
+    "que chiches tiene",
+    "que funciones tiene",
+    "que mas hace",
+    "que mas le puedo sumar",
+    "que mas trae",
+    "que onda el equipo",
+    "que trae de especial",
+    "trae algo mas"
+   ]
+  },
+  "campo:color": {
+   "columna_ficha": "productos.color",
+   "alias_existentes": [
+    "de que color viene",
+    "el colorcito",
+    "el tono",
+    "en que colores lo tenes",
+    "es negro o gris",
+    "que colores tenes disponibles",
+    "que onda el color",
+    "que tonos hay",
+    "tenes en otro color",
+    "viene en blanco"
+   ]
+  },
+  "campo:conexion": {
+   "columna_ficha": "specs.conexion",
+   "alias_existentes": [
+    "como lo conecto a la pc",
+    "como lo enchufo",
+    "como se conecta",
+    "como se vincula",
+    "la entrada",
+    "la entrada de cable",
+    "que tipo de ficha usa",
+    "se conecta a internet",
+    "se conecta por cable",
+    "tiene para enchufar"
+   ]
+  },
+  "campo:contenido_caja": {
+   "columna_ficha": "productos.contenido_caja",
+   "alias_existentes": [
+    "que hay en la caja",
+    "que incluye el paquete",
+    "que me mandan",
+    "que trae en la caja",
+    "que viene adentro",
+    "trae accesorios",
+    "trae los cables",
+    "viene con auriculares",
+    "viene con cargador",
+    "viene con funda"
+   ]
+  },
+  "campo:descripcion": {
+   "columna_ficha": "productos.descripcion",
+   "alias_existentes": [
+    "como funciona",
+    "contame un poco",
+    "de que se trata",
+    "explicame que es",
+    "para que sirve",
+    "pasame info",
+    "que es este producto",
+    "que es esto",
+    "que hace",
+    "que onda el aparato"
+   ]
+  },
+  "campo:dimensiones": {
+   "columna_ficha": "productos.dimensiones",
+   "alias_existentes": [
+    "cuanto mide",
+    "el tamaño",
+    "entra en la mochila",
+    "es chiquito",
+    "es compacto",
+    "es muy aparatoso",
+    "es muy grande",
+    "medidas",
+    "que dimensiones tiene",
+    "que tamaño tiene"
+   ]
+  },
+  "campo:formato": {
+   "columna_ficha": "specs.formato",
+   "alias_existentes": [
+    "el formato",
+    "es alargado",
+    "es chato",
+    "es cuadrado",
+    "es de escritorio",
+    "es tipo notebook",
+    "es tipo torre",
+    "la estructura",
+    "la forma",
+    "que diseño tiene"
+   ]
+  },
+  "campo:garantia_detalle": {
+   "columna_ficha": "productos.garantia_detalle",
+   "alias_existentes": [
+    "como es el tema del service",
+    "la garantia cubre caidas",
+    "la garantia es oficial",
+    "que cubre",
+    "que cubre la garantia",
+    "que incluye la garantia",
+    "que pasa si falla",
+    "si no anda me lo cambian",
+    "si se rompe que hago",
+    "tengo cambio directo"
+   ]
+  },
+  "campo:garantia_meses": {
+   "columna_ficha": "productos.garantia_meses",
+   "alias_existentes": [
+    "cuanto dura la garantia",
+    "cuanto tiempo de garantia",
+    "cuanto tiempo me cubre",
+    "cuanto tiempo me das",
+    "cuantos meses me das",
+    "cuantos meses tiene",
+    "es garantia larga",
+    "es por un año",
+    "hasta cuando tengo garantia",
+    "tiene un año"
+   ]
+  },
+  "campo:hz": {
+   "columna_ficha": "specs.hz",
+   "alias_existentes": [
+    "cuantos hercios",
+    "cuantos hz tiene",
+    "es de 144",
+    "es de 60 o 120",
+    "hercios",
+    "la fluidez",
+    "la frecuencia",
+    "la tasa de refresco",
+    "la velocidad de pantalla",
+    "se ve fluido"
+   ]
+  },
+  "campo:lector_huella": {
+   "columna_ficha": "specs.lector_huella",
+   "alias_existentes": [
+    "desbloqueo dactilar",
+    "huellero",
+    "lector de dedo",
+    "puedo poner la huella",
+    "se abre con la huella",
+    "se desbloquea asi",
+    "se desbloquea con el dedo",
+    "tiene para poner el dedo",
+    "tiene sensor",
+    "tiene sensor de huella"
+   ]
+  },
+  "campo:lector_tarjetas": {
+   "columna_ficha": "specs.lector_tarjetas",
+   "alias_existentes": [
+    "donde pongo la tarjeta",
+    "le puedo poner memoria",
+    "le puedo sumar memoria con tarjeta",
+    "lee sd",
+    "lee tarjetas de memoria",
+    "puedo meterle una tarjeta",
+    "ranura para memoria",
+    "tiene lector",
+    "tiene para la micro sd",
+    "tiene ranura sd"
+   ]
+  },
+  "campo:marca": {
+   "columna_ficha": "specs.marca",
+   "alias_existentes": [
+    "de que marca es",
+    "es de buena marca",
+    "es de marca",
+    "es generico",
+    "es marca conocida",
+    "es original",
+    "la marca",
+    "que marca es",
+    "que marca es el equipo",
+    "que marca me recomendas"
+   ]
+  },
+  "campo:material": {
+   "columna_ficha": "productos.material",
+   "alias_existentes": [
+    "de que esta hecho",
+    "es de aluminio",
+    "es de buen material",
+    "es de plastico",
+    "es de vidrio",
+    "es metalico",
+    "es plastico duro",
+    "que material es",
+    "se raya facil",
+    "se siente resistente"
+   ]
+  },
+  "campo:memoria_video": {
+   "columna_ficha": "specs.memoria_video",
+   "alias_existentes": [
+    "cuanta memoria tiene la placa",
+    "cuanta placa de video tiene",
+    "cuanta placa tiene",
+    "cuantos gb de video",
+    "es de 4gb o 8gb",
+    "es para juegos",
+    "la memoria de video",
+    "la memoria grafica",
+    "la vram",
+    "memoria para juegos"
+   ]
+  },
+  "campo:modelo": {
+   "columna_ficha": "specs.modelo",
+   "alias_existentes": [
+    "el modelo exacto",
+    "es el modelo pro",
+    "es el modelo viejo",
+    "es el nuevo",
+    "es el ultimo modelo",
+    "que linea es",
+    "que modelo es",
+    "que modelo me mandas",
+    "que version",
+    "que version es"
+   ]
+  },
+  "campo:nombre": {
+   "columna_ficha": "productos.nombre",
+   "alias_existentes": [
+    "como figura en la web",
+    "como le dicen",
+    "como lo busco",
+    "como se llama",
+    "como se llama el aparato",
+    "cual es el nombre",
+    "el nombre",
+    "el nombre del producto",
+    "el nombrecito",
+    "que producto es"
+   ]
+  },
+  "campo:pais_fabricacion": {
+   "columna_ficha": "productos.origen",
+   "alias_existentes": [
+    "donde esta hecho",
+    "donde lo armaron",
+    "donde lo hicieron",
+    "donde se fabrica",
+    "donde se fabrico",
+    "es chino",
+    "es de afuera",
+    "es importado",
+    "es industria argentina",
+    "es nacional"
+   ]
+  },
+  "campo:pais_marca": {
+   "columna_ficha": "productos.origen",
+   "alias_existentes": [
+    "de donde es la marca",
+    "de donde viene la marca",
+    "de que origen es la marca",
+    "de que pais es",
+    "es marca americana",
+    "es marca china",
+    "es marca de afuera",
+    "es marca japonesa",
+    "es marca nacional",
+    "es una marca de eeuu"
+   ]
+  },
+  "campo:panel": {
+   "columna_ficha": "specs.panel",
+   "alias_existentes": [
+    "es ips",
+    "es oled",
+    "es panel ips",
+    "es pantalla led",
+    "la pantalla es buena",
+    "que pantalla tiene",
+    "que tecnologia de pantalla usa",
+    "que tipo de display tiene",
+    "que tipo de panel es",
+    "se ve bien de costado"
+   ]
+  },
+  "campo:peso_gramos": {
+   "columna_ficha": "productos.peso_gramos",
+   "alias_existentes": [
+    "cuanto pesa",
+    "cuantos gramos pesa",
+    "el peso",
+    "es facil de transportar",
+    "es liviano",
+    "es muy liviano",
+    "es muy pesado",
+    "es pesadito",
+    "es pesado",
+    "se puede llevar en el bolso"
+   ]
+  },
+  "campo:potencia": {
+   "columna_ficha": "specs.potencia",
+   "alias_existentes": [
+    "cuanta potencia tiene",
+    "cuanta potencia tira",
+    "cuantos w",
+    "cuantos watts",
+    "es de muchos watts",
+    "es muy potente",
+    "es potente",
+    "es potente el motor",
+    "se banca mucho",
+    "tiene fuerza"
+   ]
+  },
+  "campo:precio_ars": {
+   "columna_ficha": "productos.precio_ars",
+   "alias_existentes": [
+    "a cuanto lo tenes",
+    "cuanto cuesta",
+    "cuanto me sale",
+    "cuanto sale",
+    "cuanto vale",
+    "esta en pesos",
+    "esta muy caro",
+    "pasame el precio",
+    "precio",
+    "que precio tiene"
+   ]
+  },
+  "campo:procesador": {
+   "columna_ficha": "specs.procesador",
+   "alias_existentes": [
+    "es i5 o i7",
+    "es rapido",
+    "es rapido para trabajar",
+    "es ryzen",
+    "es veloz",
+    "que chip tiene",
+    "que micro tiene",
+    "que onda el procesador",
+    "que procesador tiene",
+    "que procesador usa"
+   ]
+  },
+  "campo:puertos": {
+   "columna_ficha": "specs.puertos",
+   "alias_existentes": [
+    "cuantos puertos trae",
+    "donde conecto el mouse",
+    "donde enchufo el cable",
+    "que conectores tiene",
+    "que entradas tiene",
+    "tiene entrada para auriculares",
+    "tiene hdmi",
+    "tiene muchas entradas",
+    "tiene usb",
+    "tiene usb c"
+   ]
+  },
+  "campo:ram": {
+   "columna_ficha": "specs.ram",
+   "alias_existentes": [
+    "cuanta memoria ram",
+    "cuanta memoria tiene",
+    "cuanta ram tiene",
+    "cuanta ram trae",
+    "cuantos gb de ram",
+    "es buena la ram",
+    "es de 16gb",
+    "es de 8gb",
+    "es rapida",
+    "se traba si abro muchas cosas"
+   ]
+  },
+  "campo:ram_ampliable": {
+   "columna_ficha": "specs.ram_ampliable",
+   "alias_existentes": [
+    "es ampliable",
+    "le puedo poner mas ram despues",
+    "le puedo sumar mas",
+    "puedo ampliar la memoria",
+    "se le puede agregar mas ram",
+    "se puede agrandar la ram",
+    "se puede cambiar la ram",
+    "se puede expandir",
+    "se puede mejorar la ram",
+    "tiene slots libres"
+   ]
+  },
+  "campo:resistencia_agua": {
+   "columna_ficha": "specs.resistencia_agua",
+   "alias_existentes": [
+    "es a prueba de agua",
+    "es resistente al agua",
+    "es sumergible",
+    "es waterproof",
+    "se la banca si llueve",
+    "se puede mojar",
+    "se puede usar en la pileta",
+    "si se moja se rompe",
+    "tiene proteccion contra agua",
+    "tiene proteccion ip"
+   ]
+  },
+  "campo:resolucion": {
+   "columna_ficha": "specs.resolucion",
+   "alias_existentes": [
+    "es 1080p",
+    "es 4k",
+    "es full hd",
+    "la resolucion",
+    "que calidad de pantalla tiene",
+    "que definicion tiene",
+    "que resolucion tiene",
+    "se ve bien",
+    "se ve en hd",
+    "se ve pixelado"
+   ]
+  },
+  "campo:retroiluminacion": {
+   "columna_ficha": "specs.retroiluminacion",
+   "alias_existentes": [
+    "es iluminado",
+    "se ilumina el teclado",
+    "se le prenden luces",
+    "se prenden las teclas",
+    "se ve en la oscuridad",
+    "tiene luces",
+    "tiene luces rgb",
+    "tiene luz",
+    "tiene luz atras",
+    "tiene retroiluminacion"
+   ]
+  },
+  "campo:sensor": {
+   "columna_ficha": null,
+   "alias_existentes": [
+    "que sensores tiene",
+    "que sensores tiene el equipo",
+    "que sensores trae",
+    "que sensores usa",
+    "tiene giroscopio",
+    "tiene sensor de luz",
+    "tiene sensor de movimiento",
+    "tiene sensor de proximidad",
+    "tiene sensor de temperatura",
+    "trae sensores"
+   ]
+  },
+  "campo:switch_teclado": {
+   "columna_ficha": "specs.switch_teclado",
+   "alias_existentes": [
+    "es de membrana",
+    "es mecanico",
+    "es ruidoso al escribir",
+    "es silencioso",
+    "es switch azul o rojo",
+    "es teclado mecanico",
+    "que switch trae",
+    "que switch usa",
+    "que teclas tiene",
+    "que tipo de teclas tiene"
+   ]
+  },
+  "campo:tactil": {
+   "columna_ficha": "specs.tactil",
+   "alias_existentes": [
+    "es pantalla tactil",
+    "es tactil",
+    "es tactil la pantalla",
+    "es touch",
+    "puedo usar los dedos",
+    "se maneja con el dedo",
+    "se maneja tocando",
+    "se puede tocar la pantalla",
+    "se puede usar como tablet",
+    "tiene pantalla touch"
+   ]
+  },
+  "campo:thunderbolt": {
+   "columna_ficha": "specs.thunderbolt",
+   "alias_existentes": [
+    "es compatible con thunderbolt",
+    "es compatible con thunderbolt 4",
+    "es thunderbolt",
+    "tiene entrada tipo c rapida",
+    "tiene para conectar dock",
+    "tiene puerto de alta velocidad",
+    "tiene puerto especial",
+    "tiene puerto rayo",
+    "tiene puerto thunderbolt",
+    "tiene thunderbolt"
+   ]
+  },
+  "campo:wifi": {
+   "columna_ficha": "specs.wifi",
+   "alias_existentes": [
+    "agarra bien el wifi",
+    "se conecta a internet",
+    "se conecta a la red",
+    "se conecta al modem",
+    "se conecta sin cables a internet",
+    "tiene antena wifi",
+    "tiene para wifi",
+    "tiene placa de red",
+    "tiene wifi",
+    "tiene wifi 6"
+   ]
+  }
+ },
+ "temas": {
+  "tema:ubicacion": {
+   "keywords": [
+    "ubicacion",
+    "ubicados",
+    "donde estan",
+    "direccion",
+    "local",
+    "fisico",
+    "sucursal"
+   ],
+   "respuesta_inicio": "Somos solo online, no tenemos local fisico. Despachamos desde Buenos Aires a todo el pais.",
+   "alias_existentes": [
+    "donde estan",
+    "donde los encuentro",
+    "donde queda el local",
+    "donde queda el showroom",
+    "en que zona estan",
+    "pasame la direccion",
+    "por donde paso a buscarlo",
+    "tienen sucursal fisica"
+   ]
+  },
+  "tema:horarios": {
+   "keywords": [
+    "horarios",
+    "horario",
+    "atienden",
+    "atencion",
+    "horas"
+   ],
+   "respuesta_inicio": "Atendemos de lunes a viernes de 9 a 18 hs y sabados de 10 a 13 hs por WhatsApp y mail.",
+   "alias_existentes": [
+    "a que hora cierran",
+    "abren los sabados",
+    "cuando puedo pasar",
+    "estan abiertos ahora",
+    "hasta que hora estan",
+    "horario de atencion",
+    "que horario manejan"
+   ]
+  },
+  "tema:formas_pago": {
+   "keywords": [
+    "pago",
+    "pagos",
+    "formas de pago",
+    "medios de pago",
+    "cobran",
+    "como pago",
+    "como pagar",
+    "modalidades de pago",
+    "modalidades de pagos",
+    "modalidad de pago",
+    "tarjeta directo",
+    "tarjeta directa"
+   ],
+   "respuesta_inicio": "Transferencia bancaria, Mercado Pago y tarjetas Visa, Mastercard y American Express. Tarjeta de credito directa o via Mercado Pago. Transferencia con descuento.",
+   "alias_existentes": [
+    "aceptan transferencia",
+    "como les pago",
+    "como puedo pagar",
+    "que formas de pago tienen",
+    "que medios aceptan",
+    "reciben tarjeta",
+    "se puede pagar con debito",
+    "tienen mercado pago",
+    "tarjeta de debito"
+   ]
+  },
+  "tema:cuotas": {
+   "keywords": [
+    "cuotas",
+    "financiacion",
+    "sin interes",
+    "plan"
+   ],
+   "respuesta_inicio": "Tenemos hasta 6 cuotas sin interes con Visa y Mastercard. Hasta 12 cuotas con interes.",
+   "alias_existentes": [
+    "con que tarjeta hay cuotas",
+    "cuantas cuotas me dan",
+    "hacen cuotas sin interes",
+    "se puede financiar",
+    "se puede pagar en cuotas",
+    "tienen cuotas",
+    "tienen plan de pagos"
+   ]
+  },
+  "tema:envios": {
+   "keywords": [
+    "envio",
+    "envios",
+    "envian",
+    "mandan",
+    "llega",
+    "llegan",
+    "entregan",
+    "a todo el pais"
+   ],
+   "respuesta_inicio": "Hacemos envios a todo el pais por Andreani y OCA.",
+   "alias_existentes": [
+    "como mandan las cosas",
+    "como me llega",
+    "envian a domicilio",
+    "hacen envios",
+    "hacen envios al interior",
+    "por donde mandan el pedido",
+    "tienen moto"
+   ]
+  },
+  "tema:costo_envio": {
+   "keywords": [
+    "costo envio",
+    "cuanto sale el envio",
+    "precio envio",
+    "cuanto cuesta envio"
+   ],
+   "respuesta_inicio": "Envio a CABA y GBA 3000 pesos. Interior segun localidad entre 5000 y 12000 pesos. Envio gratis en compras superiores a 250000 pesos.",
+   "alias_existentes": [
+    "cuanto me cobran el envio",
+    "cuanto me sale que me lo traigan",
+    "cuanto sale el envio",
+    "cuanto sale el envio a capital",
+    "es gratis el envio",
+    "tienen envio sin cargo",
+    "envio gratis",
+    "envio es gratis"
+   ]
+  },
+  "tema:plazo_envio": {
+   "keywords": [
+    "cuanto tarda",
+    "plazo envio",
+    "demora",
+    "cuando llega",
+    "dias"
+   ],
+   "respuesta_inicio": "CABA y GBA 2 a 3 dias habiles desde el pago acreditado. Interior 4 a 7 dias habiles.",
+   "alias_existentes": [
+    "cuando lo despachan",
+    "cuando me llega",
+    "cuanto tarda en llegar",
+    "cuantos dias tarda el envio",
+    "en cuanto tiempo lo tengo",
+    "tarda mucho en llegar"
+   ]
+  },
+  "tema:garantia": {
+   "keywords": [
+    "garantia",
+    "garantizan",
+    "defectos",
+    "roto"
+   ],
+   "respuesta_inicio": "Todos los productos tienen garantia oficial del fabricante, minimo 6 meses. El detalle exacto figura en cada producto.",
+   "alias_existentes": [
+    "cuanto tiempo de garantia me dan",
+    "la garantia es oficial",
+    "que cubre la garantia",
+    "que garantia tiene",
+    "si falla me lo cambian",
+    "si se rompe que hago",
+    "tienen garantia"
+   ]
+  },
+  "tema:devoluciones": {
+   "keywords": [
+    "devolucion",
+    "devoluciones",
+    "arrepentimiento",
+    "devolver",
+    "cambiar",
+    "arrepentir",
+    "arrepentirme",
+    "me arrepenti",
+    "quiero arrepentirme"
+   ],
+   "respuesta_inicio": "Tenes 10 dias corridos desde la recepcion para arrepentirte. El producto debe estar sin uso y en su empaque original.",
+   "alias_existentes": [
+    "como hago para devolverlo",
+    "puedo devolverlo",
+    "que pasa si quiero cambiarlo",
+    "se puede devolver si me arrepiento",
+    "si no me gusta lo puedo cambiar",
+    "tienen cambio",
+    "tienen politica de devolucion"
+   ]
+  },
+  "tema:factura": {
+   "keywords": [
+    "factura",
+    "facturacion",
+    "factura a",
+    "factura b",
+    "iva"
+   ],
+   "respuesta_inicio": "Emitimos factura A y factura B segun corresponda. Todos los precios incluyen IVA.",
+   "alias_existentes": [
+    "facturan",
+    "hacen factura a",
+    "hacen factura con cuit",
+    "me dan factura",
+    "me mandan la factura por mail",
+    "necesito el comprobante",
+    "necesito factura"
+   ]
+  },
+  "tema:descuento_transferencia": {
+   "keywords": [
+    "descuento",
+    "transferencia",
+    "efectivo",
+    "rebaja"
+   ],
+   "respuesta_inicio": "Tenemos 10 por ciento de descuento pagando por transferencia bancaria.",
+   "alias_existentes": [
+    "cuanto me descuentan si pago por transferencia",
+    "hacen precio por transferencia",
+    "hay rebaja si transfiero",
+    "si pago en efectivo hay descuento",
+    "tienen descuento por transferencia",
+    "tienen promo por transferencia"
+   ]
+  },
+  "tema:redes": {
+   "keywords": [
+    "instagram",
+    "redes",
+    "web",
+    "pagina",
+    "sitio",
+    "facebook"
+   ],
+   "respuesta_inicio": "Estamos en Instagram como arroba verifikademo y nuestra web es verifikademo.com.ar",
+   "alias_existentes": [
+    "donde los sigo",
+    "donde puedo ver lo que venden",
+    "pasame su pagina",
+    "suben fotos a las redes",
+    "tienen facebook",
+    "tienen instagram"
+   ]
+  },
+  "tema:contacto_humano": {
+   "keywords": [
+    "hablar con humano",
+    "asesor",
+    "persona",
+    "encargado",
+    "dueno",
+    "urgente"
+   ],
+   "respuesta_inicio": "Para casos urgentes te podemos derivar al WhatsApp del encargado. Decime tu consulta y armamos el contacto.",
+   "alias_existentes": [
+    "hay un humano aca",
+    "me atiende una persona",
+    "no quiero hablar con el bot",
+    "pasame con un vendedor",
+    "quiero hablar con alguien",
+    "quiero hablar con un asesor"
+   ]
+  },
+  "tema:asesoramiento": {
+   "keywords": [
+    "asesoran",
+    "consultar",
+    "ayuda",
+    "recomendacion",
+    "antes de comprar"
+   ],
+   "respuesta_inicio": "Si, asesoramos antes de comprar por WhatsApp y chat. Contanos que necesitas y te ayudamos a elegir.",
+   "alias_existentes": [
+    "cual es mejor",
+    "me ayudas a decidir",
+    "me orientas un poco",
+    "necesito ayuda para elegir",
+    "no se cual elegir",
+    "que me conviene comprar",
+    "que me recomendas"
+   ]
+  },
+  "tema:reservas": {
+   "keywords": [
+    "sin stock",
+    "reservar",
+    "reserva",
+    "sena",
+    "encargar",
+    "esperar",
+    "guardas",
+    "guardar",
+    "guardamelo",
+    "apartar",
+    "apartame"
+   ],
+   "respuesta_inicio": "Si no tenemos stock podemos tomar reserva con sena del 20 por ciento. El plazo depende del producto y proveedor.",
+   "alias_existentes": [
+    "lo puedo señar",
+    "me guardas uno hasta mañana",
+    "me lo podes guardar",
+    "me reservas uno",
+    "se puede reservar",
+    "tienen stock para reservar"
+   ]
+  },
+  "tema:marcas_originales": {
+   "keywords": [
+    "originales",
+    "truchos",
+    "replica",
+    "oficial",
+    "marca"
+   ],
+   "respuesta_inicio": "Todas las marcas que vendemos son originales con garantia oficial del fabricante.",
+   "alias_existentes": [
+    "es copia o es original",
+    "es el original posta",
+    "es trucho",
+    "son los posta",
+    "son originales",
+    "tienen garantia de originalidad",
+    "venden cosas originales"
+   ]
+  },
+  "tema:usados": {
+   "keywords": [
+    "usados",
+    "reacondicionados",
+    "segunda mano",
+    "refurbished"
+   ],
+   "respuesta_inicio": "No vendemos usados ni reacondicionados. Solo productos nuevos en su empaque original.",
+   "alias_existentes": [
+    "es nuevo o usado",
+    "tienen cosas de segunda mano",
+    "tienen equipos usados",
+    "venden cosas de outlet",
+    "venden reacondicionados",
+    "venden usados"
+   ]
+  },
+  "tema:precios_iva": {
+   "keywords": [
+    "iva",
+    "precio final",
+    "precio incluye",
+    "impuestos"
+   ],
+   "respuesta_inicio": "Todos los precios publicados ya incluyen IVA, son precios finales para consumidor final.",
+   "alias_existentes": [
+    "el precio es con iva",
+    "el precio incluye iva",
+    "el precio tiene iva incluido",
+    "es mas iva",
+    "es precio final",
+    "facturan con iva"
+   ]
+  },
+  "tema:defectuoso": {
+   "keywords": [
+    "defectuoso",
+    "llego roto",
+    "no funciona",
+    "cambio defecto"
+   ],
+   "respuesta_inicio": "Si el producto llega defectuoso lo cambiamos sin costo dentro de los primeros 7 dias desde la recepcion.",
+   "alias_existentes": [
+    "el aparato no funciona",
+    "esta fallado",
+    "me vino con una falla",
+    "me vino roto",
+    "no anda",
+    "no me anda el equipo",
+    "no prende",
+    "tiene un problema",
+    "vino fallado"
+   ]
+  },
+  "tema:envio_urgente": {
+   "keywords": [
+    "urgente",
+    "express",
+    "mismo dia",
+    "rapido",
+    "24 horas"
+   ],
+   "respuesta_inicio": "Hacemos envios express en CABA y GBA con costo extra y entrega en 24 horas habiles.",
+   "alias_existentes": [
+    "hacen envios en el dia",
+    "llega hoy si compro ahora",
+    "lo necesito para hoy",
+    "lo puedo tener hoy mismo",
+    "necesito que me llegue ya",
+    "tienen envio express"
+   ]
+  },
+  "tema:mayoristas": {
+   "keywords": [
+    "mayorista",
+    "revendedor",
+    "reventa",
+    "por cantidad"
+   ],
+   "respuesta_inicio": "Para compras mayoristas o reventa tenemos precios especiales. Contanos cuanto pensas comprar y armamos cotizacion.",
+   "alias_existentes": [
+    "hacen descuento por cantidad",
+    "hacen precio por mayor",
+    "tienen lista mayorista",
+    "tienen precio mayorista",
+    "venden a revendedores",
+    "venden por mayor"
+   ]
+  },
+  "tema:formas_contacto": {
+   "keywords": [
+    "contacto",
+    "telefono",
+    "whatsapp",
+    "mail",
+    "email"
+   ],
+   "respuesta_inicio": "Nos podes contactar por WhatsApp o mail. Atencion humana de lunes a viernes de 9 a 18 hs.",
+   "alias_existentes": [
+    "como los contacto",
+    "como me comunico con ustedes",
+    "pasame un numero",
+    "tienen mail",
+    "tienen otro medio de contacto",
+    "tienen telefono"
+   ]
+  },
+  "tema:envoltorio_regalo": {
+   "keywords": [
+    "envoltorio",
+    "para regalo",
+    "envolver",
+    "papel de regalo",
+    "mono",
+    "regalo"
+   ],
+   "respuesta_inicio": "No tenemos servicio de envoltorio para regalo. De todos modos el producto viaja en su caja original sellada, prolijo para regalar. Si te sirve, puedo dejar una ",
+   "alias_existentes": [
+    "es para un regalo, lo envuelven",
+    "hacen envoltorio de regalo",
+    "le ponen papel de regalo",
+    "lo pueden envolver para regalo",
+    "me lo mandas para regalo",
+    "tienen bolsita de regalo"
+   ]
+  },
+  "tema:contenido_caja": {
+   "keywords": [
+    "que trae",
+    "que incluye",
+    "contenido",
+    "viene con",
+    "accesorios",
+    "en la caja",
+    "viene completo",
+    "partes"
+   ],
+   "respuesta_inicio": "Cada producto viene en su caja original sellada con lo que indica el fabricante para ese modelo: el equipo y sus accesorios estandar. El detalle de lo que inclu",
+   "alias_existentes": [
+    "que trae el paquete",
+    "que trae en la caja",
+    "que viene incluido",
+    "trae los accesorios",
+    "viene completo",
+    "viene con auriculares",
+    "viene con cargador"
+   ]
+  },
+  "tema:origen_procedencia": {
+   "keywords": [
+    "procedencia",
+    "origen",
+    "importado",
+    "nacional",
+    "de donde viene",
+    "de donde es"
+   ],
+   "respuesta_inicio": "Trabajamos con productos importados y nacionales segun la marca y el modelo. La procedencia de cada uno figura en la ficha del producto. Si no figura, te la con",
+   "alias_existentes": [
+    "de donde son",
+    "de donde viene el producto",
+    "donde lo fabrican",
+    "es importado",
+    "es industria argentina",
+    "es nacional"
+   ]
+  },
+  "tema:material_composicion": {
+   "keywords": [
+    "material",
+    "de que esta hecho",
+    "de que material",
+    "composicion",
+    "tela",
+    "plastico",
+    "metal",
+    "aluminio"
+   ],
+   "respuesta_inicio": "El material y la composicion dependen de cada modelo y figuran en las especificaciones de la ficha del producto. Si el dato puntual que buscas no esta ahi, te l",
+   "alias_existentes": [
+    "de que esta hecho",
+    "es de buen material",
+    "es metalico o es todo plastico",
+    "es plastico o metal",
+    "es resistente el material",
+    "que calidad tiene el plastico",
+    "se raya facil",
+    "se siente barato al tacto",
+    "se siente premium"
+   ]
+  },
+  "tema:fabricacion": {
+   "keywords": [
+    "donde se fabrica",
+    "fabricacion",
+    "made in",
+    "pais de fabricacion",
+    "donde lo hacen"
+   ],
+   "respuesta_inicio": "El pais de fabricacion varia segun la marca y figura en la ficha o en la caja cuando el fabricante lo informa. Si necesitas ese dato para un modelo puntual, dec",
+   "alias_existentes": [
+    "donde lo arman",
+    "donde se hace esto",
+    "es chino o original",
+    "es copia o es posta",
+    "es de buena procedencia",
+    "es nacional o importado",
+    "quien lo fabrica"
+   ]
+  },
+  "tema:especificaciones": {
+   "keywords": [
+    "especificaciones",
+    "ficha tecnica",
+    "caracteristicas",
+    "specs",
+    "detalles tecnicos",
+    "medidas",
+    "peso",
+    "dimensiones"
+   ],
+   "respuesta_inicio": "Las especificaciones tecnicas completas figuran en la ficha de cada producto. Decime que modelo te interesa y que dato necesitas y te paso lo que esta publicado",
+   "alias_existentes": [
+    "es bueno para jugar",
+    "es mejor que el modelo anterior",
+    "es potente",
+    "es rapido",
+    "pasame la ficha tecnica",
+    "que capacidad tiene",
+    "que caracteristicas tiene",
+    "que onda las specs",
+    "que procesador trae",
+    "que tiene adentro"
+   ]
+  },
+  "tema:compatibilidad": {
+   "keywords": [
+    "compatible",
+    "compatibilidad",
+    "sirve para",
+    "funciona con",
+    "anda con",
+    "es para"
+   ],
+   "respuesta_inicio": "Te ayudo a chequear la compatibilidad. Decime el producto que miras y con que lo queres usar y lo verifico contra lo que indica la ficha. Si la ficha no lo acla",
+   "alias_existentes": [
+    "anda con mi celu",
+    "es compatible con iphone",
+    "es para pc o consola",
+    "funciona con android",
+    "le va a mi compu",
+    "lo puedo usar en la mac",
+    "se conecta a cualquier cosa",
+    "sirve para el tele"
+   ]
+  },
+  "tema:garantia_como_usar": {
+   "keywords": [
+    "como hago la garantia",
+    "hacer efectiva la garantia",
+    "se rompio",
+    "falla",
+    "reclamo garantia",
+    "service"
+   ],
+   "respuesta_inicio": "Si un producto falla dentro del periodo de garantia, escribinos con tu numero de pedido y una descripcion de la falla. Coordinamos el service oficial del fabric",
+   "alias_existentes": [
+    "como activo la garantia",
+    "cuanto tiempo de garantia tiene",
+    "me cubre si se cae",
+    "me dan factura para la garantia",
+    "que pasa si deja de andar",
+    "si se rompe que hago",
+    "si viene fallado que hago",
+    "tengo que llevarlo al service",
+    "tiene garantia"
+   ]
+  },
+  "tema:stock_disponibilidad": {
+   "keywords": [
+    "hay stock",
+    "disponible",
+    "disponibilidad",
+    "tienen stock",
+    "queda",
+    "hay unidades"
+   ],
+   "respuesta_inicio": "La disponibilidad la confirmo en el momento contra el catalogo. Decime que producto buscas y te digo si esta disponible. Si esta sin stock, podemos tomar reserv",
+   "alias_existentes": [
+    "cuando entra mas",
+    "esta para entrega inmediata",
+    "hay disponible",
+    "hay en color negro",
+    "quedan unidades",
+    "te queda alguno",
+    "tenes todavia",
+    "tienen en stock"
+   ]
+  },
+  "tema:embalaje_envio": {
+   "keywords": [
+    "embalaje",
+    "como lo mandan",
+    "como viaja",
+    "se rompe en el envio",
+    "protegido",
+    "embalado"
+   ],
+   "respuesta_inicio": "Embalamos cada pedido reforzado para el transporte y va asegurado durante el envio. Si por el traslado llegara danado, lo cambiamos sin costo avisandonos dentro",
+   "alias_existentes": [
+    "como lo mandan",
+    "es discreto el paquete",
+    "lo envian bien embalado",
+    "lo mandan en caja cerrada",
+    "se rompe en el viaje",
+    "viene bien protegido",
+    "viene con burbujas"
+   ]
+  },
+  "tema:retiro_local": {
+   "keywords": [
+    "retiro",
+    "retirar",
+    "pasar a buscar",
+    "lo busco yo",
+    "puedo pasar a retirar",
+    "retiro en mano",
+    "retiran"
+   ],
+   "respuesta_inicio": "Somos una tienda online, no tenemos punto de retiro. Todos los pedidos salen por envio a la direccion que nos indiques, a todo el pais.",
+   "alias_existentes": [
+    "donde estan ubicados",
+    "en que zona estan",
+    "puedo caer hoy a buscarlo",
+    "puedo pasar a buscarlo",
+    "puedo retirar por el negocio",
+    "tienen local a la calle",
+    "tienen showroom para ver"
+   ]
+  },
+  "tema:reembolso": {
+   "keywords": [
+    "reembolso",
+    "reintegro",
+    "me devuelven la plata",
+    "me devuelven el dinero",
+    "recupero mi dinero",
+    "devolucion del dinero",
+    "cuando me reintegran"
+   ],
+   "respuesta_inicio": "Si te corresponde un reembolso por una devolucion aceptada, te lo reintegramos por el mismo medio de pago que usaste. El plazo depende del banco o la tarjeta; a",
+   "alias_existentes": [
+    "como es el tema de la devolucion",
+    "como recupero mi guita",
+    "hacen reintegro",
+    "me devolves la plata",
+    "me hacen nota de credito",
+    "si me arrepiento me devuelven la plata",
+    "si no me gusta me devuelven el efectivo"
+   ]
+  },
+  "tema:seguimiento_pedido": {
+   "keywords": [
+    "seguimiento",
+    "tracking",
+    "codigo de seguimiento",
+    "donde esta mi pedido",
+    "rastrear",
+    "numero de seguimiento",
+    "rastreo"
+   ],
+   "respuesta_inicio": "Cuando despachamos tu pedido te mandamos el numero de seguimiento del correo, Andreani u OCA, para que lo rastrees online. Si no te llego, escribinos con tu num",
+   "alias_existentes": [
+    "como rastreo el envio",
+    "cuando lo despachan",
+    "cuando me llega",
+    "donde esta mi paquete",
+    "pasame el numero de seguimiento",
+    "por donde viene mi compra",
+    "tienen tracking",
+    "todavia no me llego nada"
+   ]
+  },
+  "tema:cancelacion_pedido": {
+   "keywords": [
+    "cancelar",
+    "cancelacion",
+    "anular",
+    "anular pedido",
+    "cancelar la compra",
+    "dar de baja el pedido"
+   ],
+   "respuesta_inicio": "Podes cancelar el pedido sin costo mientras todavia no lo hayamos despachado. Escribinos cuanto antes con tu numero de pedido. Si ya salio, se gestiona como una",
+   "alias_existentes": [
+    "como anulo el pedido",
+    "me arrepenti de la compra",
+    "puedo dar de baja el pedido",
+    "quiero cancelar la compra",
+    "se puede frenar el envio",
+    "ya no lo quiero, cancelalo"
+   ]
+  },
+  "tema:envio_exterior": {
+   "keywords": [
+    "exterior",
+    "internacional",
+    "al extranjero",
+    "fuera del pais",
+    "envian afuera",
+    "a otro pais",
+    "envio internacional"
+   ],
+   "respuesta_inicio": "Por ahora hacemos envios solo dentro de Argentina. No despachamos al exterior.",
+   "alias_existentes": [
+    "hacen envios a otros paises",
+    "hacen envios internacionales",
+    "mandan al exterior",
+    "puedo comprar desde otro pais",
+    "venden para afuera"
+   ]
+  },
+  "tema:confianza_seguridad": {
+   "keywords": [
+    "son confiables",
+    "es seguro comprar",
+    "es seguro pagar",
+    "compra segura",
+    "estafa",
+    "confiable",
+    "mis datos estan seguros",
+    "datos de tarjeta",
+    "es seguro dejar mis datos",
+    "seguridad de pago",
+    "mis datos de tarjeta"
+   ],
+   "respuesta_inicio": "Es una compra segura. Procesamos los pagos por Mercado Pago y medios bancarios oficiales, no manejamos los datos de tu tarjeta directamente, y todas nuestras ma",
+   "alias_existentes": [
+    "es seguro comprar aca",
+    "es una pagina real",
+    "no me van a estafar",
+    "son de fiar",
+    "son estafadores",
+    "tienen local fisico para ir",
+    "tienen referencias"
+   ]
+  },
+  "tema:como_comprar": {
+   "keywords": [
+    "como compro",
+    "como hago el pedido",
+    "como hago la compra",
+    "como pido",
+    "proceso de compra",
+    "como funciona la compra",
+    "donde compro"
+   ],
+   "respuesta_inicio": "Es facil: decime que producto te interesa y te paso el precio y las formas de pago. Coordinamos el pago por transferencia o Mercado Pago, y apenas se acredita d",
+   "alias_existentes": [
+    "como agrego al carrito",
+    "como finalizo la compra",
+    "como hago para comprar",
+    "es por aca o por la web",
+    "me explicas como pedir",
+    "no entiendo la pagina",
+    "tengo que registrarme"
+   ]
+  },
+  "tema:pago_contra_entrega": {
+   "keywords": [
+    "pago contra entrega",
+    "pagar al recibir",
+    "pago al recibir",
+    "contrareembolso",
+    "efectivo al recibir",
+    "pago cuando llega"
+   ],
+   "respuesta_inicio": "No trabajamos con pago contra entrega. El pedido se abona antes del despacho, por transferencia o Mercado Pago, y una vez acreditado lo enviamos.",
+   "alias_existentes": [
+    "le doy la plata al del correo",
+    "pago en efectivo al recibir",
+    "puedo pagar cuando llega",
+    "se puede pagar en el momento",
+    "tienen pago contra entrega"
+   ]
+  },
+  "tema:monedas_aceptadas": {
+   "keywords": [
+    "dolares",
+    "dolar",
+    "cripto",
+    "criptomonedas",
+    "bitcoin",
+    "usdt",
+    "pagar en dolares",
+    "moneda extranjera",
+    "aceptan dolares",
+    "aceptan cripto",
+    "pagar con cripto",
+    "aceptan criptomonedas"
+   ],
+   "respuesta_inicio": "Operamos solo en pesos argentinos. No aceptamos dolares en efectivo ni criptomonedas. El pago es por transferencia o Mercado Pago en pesos.",
+   "alias_existentes": [
+    "aceptan dolares",
+    "aceptan transferencia",
+    "puedo pagar con tarjeta de afuera",
+    "puedo pagar en efectivo",
+    "toman billetes de cara chica",
+    "toman cripto"
+   ]
+  },
+  "tema:datos_fiscales": {
+   "keywords": [
+    "cuit",
+    "razon social",
+    "datos fiscales",
+    "condicion fiscal",
+    "datos de la empresa",
+    "factura a empresa",
+    "datos para facturar"
+   ],
+   "respuesta_inicio": "Emitimos factura A o B segun corresponda. Los datos fiscales para tu factura te los pasamos al momento de facturar, contra tu compra. Si necesitas factura A, av",
+   "alias_existentes": [
+    "hacen factura consumidor final",
+    "me haces factura a",
+    "necesito factura para deducir",
+    "necesito factura para la empresa",
+    "pasanos el cuit",
+    "tienen factura oficial"
+   ]
+  },
+  "tema:cambios": {
+   "keywords": [
+    "cambiar por otro",
+    "cambio de producto",
+    "cambiar de modelo",
+    "cambio por otro modelo",
+    "quiero cambiarlo",
+    "cambio de talle",
+    "cambio de color"
+   ],
+   "respuesta_inicio": "Si queres cambiar un producto sin uso y en su empaque original por otro modelo, tenes 10 dias corridos desde que lo recibis. Coordinamos el cambio y, si hay dif",
+   "alias_existentes": [
+    "me lo cambian si no anda",
+    "no me gusto el color, lo cambio",
+    "puedo cambiarlo por otro",
+    "se puede hacer cambio",
+    "tengo que llevarlo para cambiarlo",
+    "tienen politica de cambios"
+   ]
+  },
+  "tema:promociones": {
+   "keywords": [
+    "promociones",
+    "promo",
+    "ofertas",
+    "oferta",
+    "hay promo",
+    "oferta vigente",
+    "off"
+   ],
+   "respuesta_inicio": "Tenemos 10 por ciento de descuento pagando por transferencia y cuotas sin interes con tarjeta. Las promos puntuales por producto te las confirmo en el momento s",
+   "alias_existentes": [
+    "hacen precio por cantidad",
+    "hay cuotas sin interes",
+    "hay rebajas ahora",
+    "tienen 3 cuotas sin interes",
+    "tienen algun cupon",
+    "tienen algun descuento",
+    "tienen promo por pago efectivo",
+    "off"
+   ]
+  },
+  "tema:teclado_mecanico_membrana": {
+   "keywords": [
+    "mecanico",
+    "membrana",
+    "switch",
+    "switches",
+    "mecanicos",
+    "clicky"
+   ],
+   "respuesta_inicio": "Un teclado mecanico tiene un switch fisico independiente debajo de cada tecla: dura mas, responde mas preciso y suele ser mas ruidoso. El de membrana usa una la",
+   "alias_existentes": [
+    "es de los que hacen ruido",
+    "es de membrana o mecanico",
+    "es el aparatito con teclas",
+    "es silencioso",
+    "es teclado de oficina o gamer",
+    "es teclado gamer",
+    "se siente el click"
+   ]
+  },
+  "tema:mouse_dpi": {
+   "keywords": [
+    "dpi",
+    "sensibilidad del mouse",
+    "sensor optico",
+    "sensor laser"
+   ],
+   "respuesta_inicio": "El DPI es la sensibilidad del sensor del mouse: a mas DPI, mas rapido se mueve el puntero con el mismo movimiento de mano. Para oficina alcanza una sensibilidad",
+   "alias_existentes": [
+    "es mouse gamer con dpi",
+    "es muy lento el cursor",
+    "es preciso para jugar",
+    "es sensible el mouse",
+    "se puede cambiar la sensibilidad",
+    "tiene para regular la velocidad"
+   ]
+  },
+  "tema:cambio_direccion": {
+   "keywords": [
+    "cambiar la direccion",
+    "cambio de direccion",
+    "me equivoque en la direccion",
+    "direccion equivocada",
+    "modificar la direccion",
+    "puse mal la altura",
+    "corregir la direccion",
+    "cambiar el domicilio"
+   ],
+   "respuesta_inicio": "La direccion se puede corregir avisando antes de que el pedido se despache. Despachado, se gestiona con el correo y no siempre es posible.",
+   "alias_existentes": [
+    "me equivoque en el numero de casa",
+    "me mude, mandalo a otro lado",
+    "puedo cambiar la direccion de envio",
+    "puse mal la calle",
+    "se puede modificar el domicilio"
+   ]
+  },
+  "tema:reposicion_stock": {
+   "keywords": [
+    "cuando reponen",
+    "reposicion",
+    "vuelve a entrar",
+    "cuando llega de nuevo",
+    "van a tener de nuevo",
+    "reingresa",
+    "cuando vuelve el stock",
+    "avisame cuando haya"
+   ],
+   "respuesta_inicio": "Las fechas de reposicion no estan confirmadas de antemano. Se puede dejar el contacto para avisar cuando reingrese, o reservar con sena.",
+   "alias_existentes": [
+    "avisenme cuando tengan",
+    "cuando llega mas mercaderia",
+    "cuando reponen",
+    "cuando vuelven a entrar",
+    "se quedaron sin stock",
+    "tienen fecha de ingreso"
+   ]
+  },
+  "tema:soporte_configuracion": {
+   "keywords": [
+    "como se configura",
+    "configurar",
+    "instalacion",
+    "como lo instalo",
+    "puesta en marcha",
+    "no se como usarlo",
+    "primeros pasos",
+    "como se conecta",
+    "ayuda para configurarlo"
+   ],
+   "respuesta_inicio": "Los productos incluyen manual del fabricante. Para dudas de puesta en marcha se puede escribir por este medio y derivamos con el equipo o el soporte oficial de ",
+   "alias_existentes": [
+    "como lo sincronizo",
+    "como se configura esto",
+    "me ayudas a ponerlo en marcha",
+    "no me anda el aparato",
+    "no me reconoce el dispositivo",
+    "no se como instalarlo",
+    "se me desconecta solo"
+   ]
+  },
+  "tema:verificacion_pagos": {
+   "keywords": [
+    "comprobante",
+    "te mando el comprobante",
+    "ya transferi",
+    "ya te pague",
+    "captura de la transferencia",
+    "comprobante de pago",
+    "cuando se acredita",
+    "ya hice el pago"
+   ],
+   "respuesta_inicio": "Los pagos se verifican contra la acreditacion real en la cuenta. Un comprobante por chat no libera el envio: se despacha cuando el dinero impacta.",
+   "alias_existentes": [
+    "cuando me acreditan el pago",
+    "les llego la plata",
+    "les mande el comprobante",
+    "tienen mi pago",
+    "ya hice la transferencia",
+    "ya les pague, fijense"
+   ]
+  }
+ },
+ "no_vende": {
+  "no_vende:celular": {
+   "alternativa": "tablet"
+  },
+  "no_vende:celulares": {
+   "alternativa": "tablet"
+  },
+  "no_vende:smartphone": {
+   "alternativa": "tablet"
+  },
+  "no_vende:smartphones": {
+   "alternativa": "tablet"
+  },
+  "no_vende:iphone": {
+   "alternativa": "tablet"
+  },
+  "no_vende:iphones": {
+   "alternativa": "tablet"
+  },
+  "no_vende:televisor": {
+   "alternativa": "monitor"
+  },
+  "no_vende:televisores": {
+   "alternativa": "monitor"
+  },
+  "no_vende:smart tv": {
+   "alternativa": "monitor"
+  },
+  "no_vende:smartwatch": {
+   "alternativa": "tablet"
+  },
+  "no_vende:smartwatches": {
+   "alternativa": "tablet"
+  },
+  "no_vende:consola": {
+   "alternativa": null
+  },
+  "no_vende:consolas": {
+   "alternativa": null
+  },
+  "no_vende:playstation": {
+   "alternativa": null
+  },
+  "no_vende:play station": {
+   "alternativa": null
+  },
+  "no_vende:play 5": {
+   "alternativa": null
+  },
+  "no_vende:play 4": {
+   "alternativa": null
+  },
+  "no_vende:ps5": {
+   "alternativa": null
+  },
+  "no_vende:ps4": {
+   "alternativa": null
+  },
+  "no_vende:xbox": {
+   "alternativa": null
+  },
+  "no_vende:nintendo": {
+   "alternativa": null
+  },
+  "no_vende:nintendo switch": {
+   "alternativa": null
+  },
+  "no_vende:drone": {
+   "alternativa": null
+  },
+  "no_vende:drones": {
+   "alternativa": null
+  },
+  "no_vende:heladera": {
+   "alternativa": null
+  },
+  "no_vende:heladeras": {
+   "alternativa": null
+  },
+  "no_vende:lavarropas": {
+   "alternativa": null
+  },
+  "no_vende:microondas": {
+   "alternativa": null
+  },
+  "no_vende:aire acondicionado": {
+   "alternativa": null
+  },
+  "no_vende:escritorio": {
+   "alternativa": null
+  },
+  "no_vende:escritorios": {
+   "alternativa": null
+  },
+  "no_vende:camara de fotos": {
+   "alternativa": null
+  },
+  "no_vende:camaras de fotos": {
+   "alternativa": null
+  }
+ }
+}

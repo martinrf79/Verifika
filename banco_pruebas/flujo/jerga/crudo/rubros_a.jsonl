@@ -1,0 +1,677 @@
+{"expresion": "auris", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los auris", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auriculares", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "aurículares", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auriculars", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auricualres", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auriculres", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auricular", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "un auricular", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auriculares inalambricos", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris bluetooth", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris gamer", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris con cable", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris con mic", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris con microfono", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "aurículares gamer", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris para jugar", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris para el gym", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris para correr", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris para la pc", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris para el celu", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris de vincha", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris de diadema", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "diadema", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "vincha para escuchar", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los cascos", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "cascos gamer", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "cascos para la pc", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "headset", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "headset gamer", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "headphones", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "audifonos", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "audífonos", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los audifonos", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "manos libres", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "el manos libres", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "manos libres bluetooth", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "earbuds", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los earbuds", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "airpods", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "aripods", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los de la oreja", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los de cable", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los tapones para escuchar musica", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los cascos con mic", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los gamer para hablar", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris tipo airpods", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris in ear", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris cancelacion de ruido", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris que no se escuche afuera", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "los cosos para escuchar musica", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris para el bondi", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris baratos", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "aurcularez", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auriclares", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "ausriculares", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "auris tws", "concepto": "rubro:auriculares", "nota": ""}
+{"expresion": "cascos", "trampa": true, "puede_ser": ["rubro:auriculares", "fuera"], "nota": "casco de moto o seguridad"}
+{"expresion": "headset", "trampa": true, "puede_ser": ["rubro:auriculares", "rubro:microfono"], "nota": "puede buscar el mic del headset"}
+{"expresion": "manos libres", "trampa": true, "puede_ser": ["rubro:auriculares", "fuera"], "nota": "kit manos libres de auto"}
+{"expresion": "airpods", "trampa": true, "puede_ser": ["rubro:auriculares", "fuera"], "nota": "marca Apple que la tienda puede no vender"}
+{"expresion": "parlantes para la cabeza", "trampa": true, "puede_ser": ["rubro:auriculares", "rubro:parlante"], "nota": "descripcion vaga"}
+{"expresion": "el sonido para la pc", "trampa": true, "puede_ser": ["rubro:auriculares", "rubro:parlante"], "nota": "no aclara si es personal o de escritorio"}
+{"expresion": "mouse", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el mouse", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mause", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "maus", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouze", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouses", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "los mouse", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse gamer", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse inalambrico", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse con cable", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse optico", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse de pc", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse para la compu", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse para la note", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse bluetooth", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse ergonomico", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse vertical", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse con luces", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse rgb", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse para jugar", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse para trabajar", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse de oficina", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse barato", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse silencioso", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse chiquito", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse grande", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "raton", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el raton", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "raton gamer", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "raton inalambrico", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "ratoncito", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el ratón de la compu", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mousecito", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el mouse ese", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el coso para mover la flechita", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el coso del cursor", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el de la flechita", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "el clickeador", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse de 7 botones", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse con rueda", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse usb", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse para zurdo", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse wireless", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "wireless mouse", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "gaming mouse", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse de juegos", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse pa jugar", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mose", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse logitec", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouses gamers", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse con receptor", "concepto": "rubro:mouse", "nota": ""}
+{"expresion": "mouse pad", "trampa": true, "puede_ser": ["rubro:mouse", "fuera"], "nota": "alfombrilla, no es el mouse"}
+{"expresion": "raton", "trampa": true, "puede_ser": ["rubro:mouse", "fuera"], "nota": "animal o mouse"}
+{"expresion": "mouse de la note", "trampa": true, "puede_ser": ["rubro:mouse", "rubro:notebook"], "nota": "puede referirse al touchpad"}
+{"expresion": "el coso para la flechita", "trampa": true, "puede_ser": ["rubro:mouse", "rubro:teclado"], "nota": "vago"}
+{"expresion": "pad", "trampa": true, "puede_ser": ["rubro:mouse", "rubro:tablet", "fuera"], "nota": "pad de mouse o tablet"}
+{"expresion": "teclado", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "el teclado", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclados", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "tecaldo", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclao", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado gamer", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado mecanico", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado mecánico", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado inalambrico", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado con luces", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado rgb", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado con cable", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado usb", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado bluetooth", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado para la pc", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado para la note", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado para la tablet", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado chiquito", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado compacto", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado sin numerico", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado tkl", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado 60", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado 60%", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado en español", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado con ñ", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado ergonomico", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado barato", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado silencioso", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado de membrana", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado para jugar", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado de oficina", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado y mouse", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "combo teclado mouse", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "kit gamer teclado", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "keyboard", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "keyboards", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "gaming keyboard", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "mechanical keyboard", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "el coso para escribir", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "las teclas para la compu", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "lo que se usa para tipear", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "el de las letras", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclas mecanicas", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado retroiluminado", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado switch rojo", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado switch azul", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado qwerty", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "tecladito", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado numerico", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "numpad", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado gammer", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "tecldo mecanico", "concepto": "rubro:teclado", "nota": ""}
+{"expresion": "teclado y mouse", "trampa": true, "puede_ser": ["rubro:teclado", "rubro:mouse"], "nota": "combo, pide dos rubros"}
+{"expresion": "kit gamer", "trampa": true, "puede_ser": ["rubro:teclado", "rubro:mouse", "rubro:auriculares"], "nota": "combo de perifericos"}
+{"expresion": "teclado de piano", "trampa": true, "puede_ser": ["rubro:teclado", "fuera"], "nota": "instrumento musical"}
+{"expresion": "teclas", "trampa": true, "puede_ser": ["rubro:teclado", "fuera"], "nota": "puede ser repuesto o llaves"}
+{"expresion": "numpad", "trampa": true, "puede_ser": ["rubro:teclado", "fuera"], "nota": "accesorio numerico"}
+{"expresion": "parlante", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "el parlante", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantes", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "los parlantes", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantito", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantitos", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "paralante", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlnte", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "palante", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlanes", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante bluetooth", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante portatil", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante inalambrico", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante para la pc", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantes para la compu", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantes gamer", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantes con luces", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante con bateria", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante con radio", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante resistente al agua", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante a prueba de agua", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante grande", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante chico", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante potente", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante con bajos", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante para fiestas", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante de escritorio", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantes 2.1", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlantes 5.1", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante usb", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante jbl", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "jbl", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "speaker", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "speakers", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "bluetooth speaker", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "altavoz", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "altavoces", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "los altavoces", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "altoparlante", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "el coso para escuchar musica", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "el coso que suena", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "lo que suena fuerte", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "equipo de musica chico", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "la caja que suena", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "el cilindro de musica", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante para el cumple", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante para la pileta", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante que se carga", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "mini parlante", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "parlante portable", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "barra de sonido", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "soundbar", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "bafle", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "los bafles", "concepto": "rubro:parlante", "nota": ""}
+{"expresion": "barra de sonido", "trampa": true, "puede_ser": ["rubro:parlante", "fuera"], "nota": "soundbar, puede no estar en catalogo"}
+{"expresion": "bafle", "trampa": true, "puede_ser": ["rubro:parlante", "fuera"], "nota": "bafle de audio profesional"}
+{"expresion": "altavoz", "trampa": true, "puede_ser": ["rubro:parlante", "fuera"], "nota": "altavoz de auto o profesional"}
+{"expresion": "jbl", "trampa": true, "puede_ser": ["rubro:parlante", "rubro:auriculares"], "nota": "marca de ambos rubros"}
+{"expresion": "equipo de musica", "trampa": true, "puede_ser": ["rubro:parlante", "fuera"], "nota": "minicomponente que no se vende"}
+{"expresion": "sonido para la pc", "trampa": true, "puede_ser": ["rubro:parlante", "rubro:auriculares"], "nota": "no aclara"}
+{"expresion": "microfono", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "el microfono", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micrófono", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfonos", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micrófonos", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfonito", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfno", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micrófno", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micorfono", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono usb", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono gamer", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono de mesa", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono de escritorio", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono condensador", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para stream", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para streamear", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para twitch", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para youtube", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para podcast", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para grabar", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para grabar voz", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para la pc", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para el celu", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para zoom", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono de solapa", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono inalambrico", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono con tripode", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono con filtro", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono profesional", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono barato", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para cantar", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono para karaoke", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "mic", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "el mic", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "mics", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "mic gamer", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "mic usb", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "mic condensador", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micro", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micro usb para voz", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micro de mesa", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "el coso para hablar", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "el coso para grabar la voz", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "lo que se habla adelante", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "el que va en la boca", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microphone", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "usb mic", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "condenser mic", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "podcast mic", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "mic para discord", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "el microfonito de la compu", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micrófono con brazo", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "microfono con pie", "concepto": "rubro:microfono", "nota": ""}
+{"expresion": "micro", "trampa": true, "puede_ser": ["rubro:microfono", "fuera"], "nota": "micro puede ser colectivo, microondas o cable micro usb"}
+{"expresion": "mic", "trampa": true, "puede_ser": ["rubro:microfono", "rubro:auriculares"], "nota": "mic del headset"}
+{"expresion": "microfono inalambrico", "trampa": true, "puede_ser": ["rubro:microfono", "fuera"], "nota": "karaoke o sistema profesional"}
+{"expresion": "el coso para hablar", "trampa": true, "puede_ser": ["rubro:microfono", "rubro:auriculares"], "nota": "vago"}
+{"expresion": "microfono de solapa", "trampa": true, "puede_ser": ["rubro:microfono", "fuera"], "nota": "lavalier, puede no estar"}
+{"expresion": "karaoke", "trampa": true, "puede_ser": ["rubro:microfono", "rubro:parlante", "fuera"], "nota": "equipo de karaoke"}
+{"expresion": "webcam", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "la webcam", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "web cam", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcams", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webkam", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "wekam", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcan", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "uebcam", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam hd", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam full hd", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam 1080", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam 4k", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam 720", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam con microfono", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam con mic", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam usb", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam para la pc", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam para zoom", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam para stream", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam para streamear", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam para clases", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam para reuniones", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam para trabajar", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam barata", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam gamer", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam con tripode", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam con luz", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "webcam autofocus", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara web", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para la pc", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "la camara de la compu", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para zoom", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para las reuniones", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para stremear", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para clases virtuales", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara usb", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camarita para la pc", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camarita web", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camarita", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para videollamadas", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "la camarita para el meet", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "web camera", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camera pc", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "la camara para el home office", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "la camarita para entrevistas", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "el ojito de la compu", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para twitchear", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara para la note", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara hd para pc", "concepto": "rubro:webcam", "nota": ""}
+{"expresion": "camara", "trampa": true, "puede_ser": ["rubro:webcam", "fuera"], "nota": "camara de fotos o de seguridad"}
+{"expresion": "camara para la pc", "trampa": true, "puede_ser": ["rubro:webcam", "fuera"], "nota": "puede ser camara de seguridad"}
+{"expresion": "camarita", "trampa": true, "puede_ser": ["rubro:webcam", "fuera"], "nota": "camara de vigilancia o fotos"}
+{"expresion": "gopro", "trampa": true, "puede_ser": ["rubro:webcam", "fuera"], "nota": "camara de accion"}
+{"expresion": "camara web", "trampa": true, "puede_ser": ["rubro:webcam"], "nota": "inequivoca pero variante"}
+{"expresion": "camara de seguridad", "trampa": true, "puede_ser": ["fuera", "rubro:webcam"], "nota": "no se vende"}
+{"expresion": "silla gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "la silla gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "sillas gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gammer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamr", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gaming", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer ergonomica", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer reclinable", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer con apoyapies", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer con luces", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer rgb", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer barata", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer cómoda", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer para pc", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer de cuero", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer de tela", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer para chicos", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla gamer grande", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla de gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla de juegos", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla para jugar", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla para la pc", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla para compu", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla para el escritorio", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla de escritorio", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla de oficina", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla ergonomica", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla giratoria", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla con rueditas", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla de ruedas para la pc", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla para estar sentado horas", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla para trabajar", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla para home office", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla reclinable", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla que se reclina", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla con almohadon", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "butaca gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "la butaca", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "butaca de escritorio", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "butaca para jugar", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "sillon gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "el sillon gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "sillon para la pc", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "sillon de escritorio", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "sillon ergonomico", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "gaming chair", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "gamer chair", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "racing chair", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla estilo carrera", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla de auto de carrera", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "el asiento gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla de pc", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla pc gamer", "concepto": "rubro:silla_gamer", "nota": ""}
+{"expresion": "silla", "trampa": true, "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "silla comun de comedor u otra"}
+{"expresion": "sillon", "trampa": true, "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "sillon de living"}
+{"expresion": "butaca", "trampa": true, "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "butaca de cine o auto"}
+{"expresion": "silla de oficina", "trampa": true, "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "puede buscar silla comun de oficina"}
+{"expresion": "silla de ruedas", "trampa": true, "puede_ser": ["fuera", "rubro:silla_gamer"], "nota": "silla ortopedica"}
+{"expresion": "silla ergonomica", "trampa": true, "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "puede ser silla de oficina sin diseño gamer"}
+{"expresion": "monitor", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "el monitor", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitores", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitr", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monito", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "mónitor", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor gamer", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor curvo", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 24", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor de 24", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor de 27", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 27 pulgadas", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor de 32", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor de 24 pulgadas", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 144hz", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 144 hz", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 165hz", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 240hz", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 75hz", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor full hd", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 4k", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 2k", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor qhd", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor ultrawide", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor ips", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor led", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor para la pc", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor para jugar", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor para trabajar", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor para diseño", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor para oficina", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor barato", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor hdmi", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor chico", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor grande", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor con parlantes", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "la pantalla", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla de la pc", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "la pantalla de la compu", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla gamer", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla curva", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla de 27", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla para la compu", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "display", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "el display", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "la tele para la pc", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "tele para la compu", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "el televisor de la pc", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "segunda pantalla", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla extra para la note", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla ancha", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "screen", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "gaming monitor", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor 1ms", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor para consola", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor para ps5", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "moniter", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "monitor de pc", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla led para pc", "concepto": "rubro:monitor", "nota": ""}
+{"expresion": "pantalla", "trampa": true, "puede_ser": ["rubro:monitor", "rubro:tablet", "rubro:notebook", "fuera"], "nota": "pantalla de celu o repuesto"}
+{"expresion": "la tele", "trampa": true, "puede_ser": ["rubro:monitor", "fuera"], "nota": "televisor que no se vende"}
+{"expresion": "display", "trampa": true, "puede_ser": ["rubro:monitor", "fuera"], "nota": "display de celu o repuesto"}
+{"expresion": "pantalla de la note", "trampa": true, "puede_ser": ["rubro:notebook", "fuera", "rubro:monitor"], "nota": "repuesto de pantalla"}
+{"expresion": "monitor de bebe", "trampa": true, "puede_ser": ["fuera"], "nota": "no se vende"}
+{"expresion": "pantalla tactil", "trampa": true, "puede_ser": ["rubro:tablet", "rubro:monitor"], "nota": "puede ser tablet"}
+{"expresion": "pantalla portatil", "trampa": true, "puede_ser": ["rubro:monitor", "rubro:tablet"], "nota": "monitor portatil o tablet"}
+{"expresion": "cargador", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el cargador", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargadores", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargadro", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargaror", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargadr", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de celu", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de celular", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador para celu", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de pared", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador rapido", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador rápido", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "carga rapida", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador turbo", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador tipo c", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador usb c", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador usb-c", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador type c", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador usb", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador micro usb", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador lightning", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de iphone", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de samsung", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de notebook", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de note", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador para la note", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de tablet", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de 20w", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de 65w", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de 100w", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de 25w", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador gan", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador universal", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador para auto", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador con cable", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de varios puertos", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador multiple", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador inalambrico", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador original", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador generico", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador barato", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de viaje", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador power delivery", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador pd", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "fuente de celu", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "fuente de carga", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el enchufe del telefono", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el enchufe para cargar", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el transformador", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el cubito para cargar", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el cubito de carga", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el cablecito para cargar", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el cable para cargar", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "charger", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "fast charger", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "wall charger", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargdor", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "el cargador del celu", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cargador de 5v", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "adaptador de corriente", "concepto": "rubro:cargador", "nota": ""}
+{"expresion": "cable", "trampa": true, "puede_ser": ["rubro:cargador", "fuera"], "nota": "cable suelto, puede no ser cargador"}
+{"expresion": "cable para cargar", "trampa": true, "puede_ser": ["rubro:cargador", "fuera"], "nota": "puede buscar solo cable"}
+{"expresion": "power bank", "trampa": true, "puede_ser": ["rubro:cargador", "fuera"], "nota": "bateria externa, puede no estar"}
+{"expresion": "cargador portatil", "trampa": true, "puede_ser": ["rubro:cargador", "fuera"], "nota": "power bank"}
+{"expresion": "cargador de auto", "trampa": true, "puede_ser": ["rubro:cargador", "fuera"], "nota": "accesorio de auto"}
+{"expresion": "fuente", "trampa": true, "puede_ser": ["rubro:cargador", "fuera"], "nota": "fuente de pc u otra"}
+{"expresion": "adaptador", "trampa": true, "puede_ser": ["rubro:cargador", "fuera"], "nota": "adaptador de enchufe o hdmi"}
+{"expresion": "cargador de pilas", "trampa": true, "puede_ser": ["fuera", "rubro:cargador"], "nota": "no se vende"}
+{"expresion": "tablet", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "la tablet", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablets", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablt", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tableta", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "la tableta", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tabletas", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tabled", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablette", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet android", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet samsung", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet de 10 pulgadas", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet de 8 pulgadas", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet 10", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para los chicos", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para chicos", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para el colegio", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para la escuela", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para ver pelis", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para dibujar", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para leer", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para trabajar", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet barata", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet con chip", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet con sim", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet con lapiz", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet con teclado", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet gamer", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet wifi", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet 4g", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet de 128gb", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet de 64gb", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet resistente", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para netflix", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tableta grafica", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "el ipad", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "un ipad", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "ipad", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "ipads", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "la ipad", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "la pantalla tactil", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "el coso tactil", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "la pantallita tactil", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "el celular grande", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "celu grande", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "el celu gigante", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "celular gigante", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "para mirar series en la cama", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "lo que parece un celu gigante", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tab", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "galaxy tab", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "pad", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "android pad", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablita", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "la tablita para mi hija", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "tablet para la facu", "concepto": "rubro:tablet", "nota": ""}
+{"expresion": "ipad", "trampa": true, "puede_ser": ["rubro:tablet", "fuera"], "nota": "marca Apple, puede no vender"}
+{"expresion": "tableta grafica", "trampa": true, "puede_ser": ["rubro:tablet", "fuera"], "nota": "tableta digitalizadora de dibujo"}
+{"expresion": "pad", "trampa": true, "puede_ser": ["rubro:tablet", "rubro:mouse", "fuera"], "nota": "pad de mouse o tablet"}
+{"expresion": "celu grande", "trampa": true, "puede_ser": ["rubro:tablet", "fuera"], "nota": "puede ser celular grande"}
+{"expresion": "pantalla tactil", "trampa": true, "puede_ser": ["rubro:tablet", "rubro:monitor"], "nota": "vago"}
+{"expresion": "kindle", "trampa": true, "puede_ser": ["rubro:tablet", "fuera"], "nota": "ereader que no se vende"}
+{"expresion": "tab", "trampa": true, "puede_ser": ["rubro:tablet", "fuera"], "nota": "abreviatura de tab o tecla tab"}
+{"expresion": "notebook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la notebook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebooks", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebok", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notbook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "noutbuk", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebuk", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "netbook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la netbook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "netbooks", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "note", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la note", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "una note", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "laptop", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la laptop", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "laptops", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "lap", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "laptob", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "laptot", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu portatil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la compu portatil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "computadora portatil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la portatil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "portatil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "portátil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu para llevar", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la compu para llevar", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu para la facu", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu para el colegio", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu para la escuela", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu para trabajar", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu para estudiar", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu gamer portatil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook gamer", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "note gamer", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook para jugar", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook para la facu", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook para trabajar", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook para diseño", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook para programar", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook para oficina", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook barata", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook i5", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook i7", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook ryzen", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook ryzen 5", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook de 15", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook de 14", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook 16gb", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook 512gb", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook liviana", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "notebook 2 en 1", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "ultrabook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "macbook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la macbook", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la compu de escritorio pero movil", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la compu que se cierra", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "computadora que se dobla", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "el cuaderno electronico", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu chica", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "la lap", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "laptop gamer", "concepto": "rubro:notebook", "nota": ""}
+{"expresion": "compu", "trampa": true, "puede_ser": ["rubro:notebook", "fuera"], "nota": "puede ser pc de escritorio, no vendida"}
+{"expresion": "la compu", "trampa": true, "puede_ser": ["rubro:notebook", "fuera"], "nota": "pc de escritorio o armada"}
+{"expresion": "pc", "trampa": true, "puede_ser": ["rubro:notebook", "fuera"], "nota": "pc de escritorio"}
+{"expresion": "macbook", "trampa": true, "puede_ser": ["rubro:notebook", "fuera"], "nota": "marca Apple, puede no vender"}
+{"expresion": "note", "trampa": true, "puede_ser": ["rubro:notebook", "fuera"], "nota": "nota o celular Note"}
+{"expresion": "chromebook", "trampa": true, "puede_ser": ["rubro:notebook", "fuera"], "nota": "puede no estar"}
+{"expresion": "computadora", "trampa": true, "puede_ser": ["rubro:notebook", "fuera"], "nota": "escritorio o portatil"}
+{"expresion": "netbook", "trampa": true, "puede_ser": ["rubro:notebook"], "nota": "termino viejo, equivale a notebook"}

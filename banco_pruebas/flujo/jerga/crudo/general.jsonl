@@ -1,0 +1,1280 @@
+{"expresion": "me tirás un precio", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto sale", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto está", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "a cuánto lo tenés", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "qué precio tiene", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto me lo dejás", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "me pasás el valor", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto cuesta", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto me sale", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "precio?", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto es", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "a cuánto está el tuyo", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "qué valor tiene", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto piden por eso", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "decime cuánto sale", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto te cuesta", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "me decís el precio por favor", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto andan", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "en cuánto me lo dejás", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto lo vendés", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "precio final cuánto es", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto sería", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "me pasás lista de precios", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto está hoy", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto me cobrás", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "qué onda con el precio", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto vale", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "a qué precio está", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "cuánto cobran por eso", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "decime a cuánto", "clase": "intencion", "valor": "intencion:precio", "enlace": null, "nota": ""}
+{"expresion": "tenés stock", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "hay disponible", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "te queda alguno", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "tenés para entrega inmediata", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "queda alguno", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "lo tenés en stock", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "hay en existencia", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "les quedan", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "tienen en este momento", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "está disponible", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "tenés o hay que esperar", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "hay stock todavía", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "te quedó alguno", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "lo tenés ahí", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "aún lo tenés", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "hay unidades", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "tenés para llevar ya", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "les quedan unidades", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "sigue disponible", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "lo tienen", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "tenés en el local", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "cuántos te quedan", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "hay de todos los colores", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "tenés en color negro", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "hay talle o medida", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "lo tenés físicamente", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "tienen en este momento", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "se consigue", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "disponible todavía", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "te quedan por ahí", "clase": "intencion", "valor": "intencion:stock", "enlace": "tema:stock_disponibilidad", "nota": ""}
+{"expresion": "lo quiero", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "me lo llevo", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "quiero comprarlo", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "dale lo compro", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "cerramos", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "anotame uno", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "me interesa, lo compro", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "lo compro ahora", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "quiero uno", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "sumame uno al pedido", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "lo llevo", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "armame el pedido", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "voy a querer ese", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "quiero hacer el pedido", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "dónde te pago", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "cómo hago para comprarlo", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "mandame para pagar", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "pasame el link de pago", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "me quedo con ese", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "lo saco", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "hacelo", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "comprame uno", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "me llevo dos", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "ya lo quiero", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "cerrá el pedido", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "vamos con ese", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "quiero concretar", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "lo agarro", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "mandalo nomás", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "quiero avanzar con la compra", "clase": "intencion", "valor": "intencion:comprar", "enlace": "tema:como_comprar", "nota": ""}
+{"expresion": "me lo reservás", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "guardame uno", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "apartame uno", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "me lo guardás hasta mañana", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "podés guardármelo", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "me lo señás", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "reservame uno por favor", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "dejámelo apartado", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "me lo separás", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "lo puedo señar", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "guardámelo hasta el viernes", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "tenelo guardado", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "sin pagar todo me lo guardás", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "con una seña me lo guardás", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "me lo dejás de lado", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "retenémelo un día", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "apartámelo que paso a buscarlo", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "me lo bancás hasta el lunes", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "separámelo que cobro mañana", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "hasta que cobre me lo guardás", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "dejame uno marcado", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "me lo guardás un par de días", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "reservalo a mi nombre", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "lo puedo dejar señado", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "me lo ponés de lado", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "no lo vendas que lo quiero", "clase": "intencion", "valor": "intencion:reservar", "enlace": "tema:reservas", "nota": ""}
+{"expresion": "qué me recomendás", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué me aconsejás", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál me conviene", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué me sugerís", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál es el mejor", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál elegirías vos", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "no sé cuál agarrar, ayudame", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál es el más vendido", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "asesorame", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué es lo que más sale", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál me sirve para lo que necesito", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué usarías vos", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál es el más piola", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "guiame un poco", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué es lo más recomendable", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál sería bueno", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál tiene mejor relación precio calidad", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué es lo que mejor funciona", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "me orientás", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué llevan los demás", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál es el que más conforma", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "no entiendo nada, qué agarro", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál me das", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál va mejor para mi uso", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "tirame una opción", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál es el más elegido", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "dame una mano para elegir", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "qué opinás", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "cuál es mejor de los dos", "clase": "intencion", "valor": "intencion:recomendar", "enlace": "tema:asesoramiento", "nota": ""}
+{"expresion": "en qué se diferencian", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál es la diferencia entre los dos", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál es mejor, este o el otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "compará estos dos", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "este versus el otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "qué diferencia hay", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál rinde más de los dos", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál de los dos conviene", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "uno contra otro cómo andan", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "diferencias entre uno y otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál le gana al otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál tiene más", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "este es mejor que el otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál me conviene entre estos", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "pasame las diferencias", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "en qué es mejor el más caro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "qué le cambia uno al otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "vale la pena pagar más por el otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál es superior", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "se nota la diferencia entre ambos", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "qué tiene uno que no tenga el otro", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cómo se comparan", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "entre estos dos cuál", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "el de mas plata vale la pena", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "son lo mismo estos dos", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "cuál es el más completo", "clase": "intencion", "valor": "intencion:comparar", "enlace": null, "nota": ""}
+{"expresion": "qué características tiene", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "me pasás las especificaciones", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "cómo es", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué trae", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "de qué es", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué medidas tiene", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué incluye", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "tiene garantía", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "cuánto pesa", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué le puedo hacer", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "cómo funciona", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué potencia tiene", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "en qué viene", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "contame más", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "tenés más datos", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué trae en la caja", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "de qué material es", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "cuánto dura", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "es compatible con lo mío", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué más puede hacer", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "cómo viene", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué modelo es", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "tiene alguna ficha técnica", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "detalles por favor", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué le ponés", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "cuánto mide", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "me das más info", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "qué garantía trae", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "sirve para lo que busco", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "cómo anda", "clase": "intencion", "valor": "intencion:info_producto", "enlace": "tema:especificaciones", "nota": ""}
+{"expresion": "esto es un desastre", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "me tienen cansado", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "qué mala atención", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "nadie me contesta", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "vino mal", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "llegó roto", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "me estafaron", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "esto no funciona", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "estoy muy enojado", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "me vendieron cualquier cosa", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "qué falta de respeto", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "es una vergüenza", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "hace días que espero respuesta", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "nunca llegó y no me avisan", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "me mintieron", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "me tomaron el pelo", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "pésimo servicio", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "ya van tres veces que reclamo", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "qué desastre de atención", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "me cansé de esperar", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "quiero hablar con alguien ya", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "esto es una burla", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "llegó cualquier cosa", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "vine con un problema y nada", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "me dejaron colgado", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "no pienso volver a comprar acá", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "qué clase de atención es esta", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "estoy re caliente", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "nadie se hace cargo", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "reclamo formal", "clase": "intencion", "valor": "intencion:queja", "enlace": "tema:contacto_humano", "nota": ""}
+{"expresion": "cancelá el pedido", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "quiero cancelar", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "ya no lo quiero", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "me arrepentí", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "dame de baja el pedido", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "anulá la compra", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "borrá lo que pedí", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "no sigo con la compra", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "mejor dejalo", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "al final no, cancelalo", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "desistí", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "se cayó la compra", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "ya no lo necesito", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "no sigo, cancelá todo", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "sacame el pedido", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "no lo quiero más", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "frená el pedido", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "retirá lo que encargué", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "sin efecto el pedido", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "dejá sin efecto", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "no avances con eso", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "mejor no, anulalo", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "cambié de idea, cancelá", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "quiero anular", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "no lo mandes", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "pará, no lo envíes", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "descartá el pedido", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "me bajo de la compra", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "olvidate del pedido", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "cancelame eso", "clase": "intencion", "valor": "intencion:cancelar", "enlace": "tema:cancelacion_pedido", "nota": ""}
+{"expresion": "quiero cambiarlo", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "lo puedo devolver", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "me lo cambian", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "quiero devolverlo", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "cómo hago un cambio", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "no me sirvió, lo cambio", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "lo devuelvo y me reintegran", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "aceptan devoluciones", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "me queda chico, lo cambian", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "quiero otro en lugar de este", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "si no me gusta lo cambio", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "se puede cambiar", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "tengo que devolver esto", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "vino fallado, quiero cambio", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "devuelvo y me dan la plata", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "puedo cambiarlo por otro", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "dónde llevo para cambiar", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "hay plazo para cambiar", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "devolución cómo es", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "quiero que me lo cambien", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "no es lo que pedí, cambio", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "lo mando de vuelta", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "me lo cambian por otro modelo", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "quiero la devolución", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "cambio de producto", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "reintegro de la plata", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "se puede devolver si no anda", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "y si no me convence", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "puedo hacer el arrepentimiento", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "quiero que me cambien la unidad", "clase": "intencion", "valor": "intencion:cambio_devolucion", "enlace": "tema:cambios", "nota": ""}
+{"expresion": "dónde está mi pedido", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "cómo va lo mío", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "ya salió mi compra", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "tenés el código de seguimiento", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "cuándo me llega lo que compré", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "mi pedido cómo viene", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "por dónde anda el paquete", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "no me llegó todavía", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "me pasás el tracking", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "sigue sin llegar", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "estado de mi pedido", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "cómo está lo que encargué", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "ya lo despacharon", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "llegó a mi zona", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "qué pasó con mi envío", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "hace una semana que lo espero", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "sabés algo de mi pedido", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "me avisás cuando salga", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "número de seguimiento", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "cómo viene lo mío", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "ya lo mandaron", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "dónde quedó mi paquete", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "lo despacharon o no", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "en qué estado va", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "consulta por un pedido hecho", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "sale hoy lo mío", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "cuándo lo despachan", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "ya está en camino", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "me dijeron que salía ayer", "clase": "intencion", "valor": "intencion:seguimiento", "enlace": "tema:seguimiento_pedido", "nota": ""}
+{"expresion": "precio por mayor", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "vendés por cantidad", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "tenés lista mayorista", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "si llevo varios me hacés precio", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "precio de revendedor", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "quiero comprar para revender", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "hay descuento por cantidad", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "vendés por bulto", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "cuánto por 10 unidades", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "precio por volumen", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "manejan mayorista", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "soy revendedor", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "llevo una cantidad grande", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "tenés precio para comercio", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "si compro por mayor sale menos", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "me hacés precio si llevo más", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "compra por caja cerrada", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "lista de precios mayorista", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "para reventa cómo es", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "descuento comprando varios", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "precio de distribuidor", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "llevo por docena cuánto", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "mínimo para precio mayorista", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "vendo en mi local, qué precio me das", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "cantidad mínima por mayor", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "tengo un negocio y quiero comprar", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "lo vendo de nuevo, qué precio", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "con factura para revender", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "cuánto si llevo 20", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "precio por lote", "clase": "intencion", "valor": "intencion:mayorista", "enlace": "tema:mayoristas", "nota": ""}
+{"expresion": "sí", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "si dale", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "ok", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "dale", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "perfecto", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "de una", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "listo", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "sí, ese", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "exacto", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "correcto", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "así es", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "eso mismo", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "confirmo", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "está bien", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "de acuerdo", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "va", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "ya fue, sí", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "sí por favor", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "claro que sí", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "obvio", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "como vos digas", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "ahí está", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "sí señor", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "sí me sirve", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "buenísimo, avancemos", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "me parece bien", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "conforme", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "por supuesto", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "ok va", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "quedamos así", "clase": "intencion", "valor": "intencion:confirmar", "enlace": null, "nota": ""}
+{"expresion": "no gracias", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no me interesa", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "ese no", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no, otro", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no me convence", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no es lo que busco", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "paso", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no me cierra", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "eso no", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "descartado", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "mmm no", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no, pasame otra cosa", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no va", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no gracias, busco otra cosa", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "ese no me gusta", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no, gracias igual", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no lo quiero", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "ni lo pienso", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no me sirve", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no es lo que quería", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no, no es ese", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "mejor no", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "a ese no", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no, está lejos de lo que busco", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no me copa", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no me tira", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "no me va ese", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "negativo", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "me quedo sin eso", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "sacalo de la lista", "clase": "intencion", "valor": "intencion:rechazar", "enlace": null, "nota": ""}
+{"expresion": "después te digo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "lo pienso y te aviso", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "déjame ver", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "lo consulto y te escribo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "te confirmo más tarde", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "dame un rato", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "espero a cobrar", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "lo charlo y te hablo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "voy a pensarlo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "más tarde te escribo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "mañana te digo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "lo vemos después", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "esperame un cacho", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "dame unos minutos", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "le pregunto a mi señora y te aviso", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "primero lo hablo en casa", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "en unos días te confirmo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "cuando cobre te aviso", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "lo averiguo y vuelvo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "a fin de mes te digo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "vuelvo en un rato", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "dejame que lo evalúe", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "mirá, lo voy a pensar", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "después veo", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "te escribo cuando pueda", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "capaz más adelante", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "un momento que consulto", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "estoy viendo, ya te aviso", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "me tomo unos días", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "lo dejo para más adelante", "clase": "intencion", "valor": "intencion:esperar", "enlace": null, "nota": ""}
+{"expresion": "hola", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buen día", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas tardes", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas noches", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola qué tal", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "holaa", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola, cómo andás", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas, cómo va", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola buen día", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "qué tal", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola, todo bien", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buen dia gente", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola buenas tardes", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "holis", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola hola", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas buenas", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "epa", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola che", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "ey, hola", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buendia", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas tardes, cómo están", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola, buenas", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenaas", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola amigo", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola querido", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "holaaa", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola, qué tal todo", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buen día, cómo estás", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenos días", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola equipo", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola gente", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola, espero que estés bien", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "saludos", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas, buen día", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola cómo estás", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola, disculpá la hora", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas, perdón por escribir tan tarde", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "hola, qué hacés", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "buenas noches, perdón la hora", "clase": "relleno", "valor": "relleno:saludo", "enlace": null, "nota": ""}
+{"expresion": "chau", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "nos vemos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "hasta luego", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "un abrazo", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "saludos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "chau chau", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "nos hablamos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "hasta mañana", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "que andes bien", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "cuidate", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "abrazo grande", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "hasta pronto", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "chauu", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "nos escribimos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "hasta la próxima", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "nos estamos viendo", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "besos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "un saludo", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "que tengas buen fin de semana", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "buena semana", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "que descanses", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "chau, gracias", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "hablamos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "nos vemos pronto", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "éxitos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "buen día para vos", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "me despido", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "hasta más ver", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "que te vaya bien", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "buenas noches y gracias", "clase": "relleno", "valor": "relleno:despedida", "enlace": null, "nota": ""}
+{"expresion": "por favor", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "si sos tan amable", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "disculpá la molestia", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "perdón que moleste", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "cuando puedas", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "si no es molestia", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "sin apuro", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "tranqui, sin apuro", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "con calma", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "disculpame", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "me hacés el favor", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "te lo agradecería", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "sería tan amable", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "si podés", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "cuando tengas un ratito", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "perdón por la insistencia", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "desde ya muy amable", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "espero no molestar", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "con todo respeto", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "te pido disculpas", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "si tenés un minuto", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "cuando te quede cómodo", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "si es posible", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "te molesto con algo", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "con permiso", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "disculpame la demora", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "perdón la hora", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "qué amable", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "ojalá puedas ayudarme", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "perdón por tantas preguntas", "clase": "relleno", "valor": "relleno:cortesia", "enlace": null, "nota": ""}
+{"expresion": "che", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "bueno", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "mirá", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "ehh", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "este", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "o sea", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "digamos", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "a ver", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "viste", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "tipo", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "y bueno", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "ponele", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "la verdad", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "eh", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "mmm", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "bah", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "pero bueno", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "dicho esto", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "mirá vos", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "ahí va", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "entonces", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "dale que", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "igual", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "che escuchame", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "fijate", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "bueno nada", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "sabés qué", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "en fin", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "claro", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "loco", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "boludo", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "tipo que", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "la cosa es que", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "sí sí", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "y nada", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "ah mirá", "clase": "relleno", "valor": "relleno:muletilla", "enlace": null, "nota": ""}
+{"expresion": "gracias", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "muchas gracias", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "mil gracias", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por todo", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "te agradezco", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "genial, gracias", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por la info", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por tu tiempo", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias, muy amable", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias che", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "graciass", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "mil gracias por la ayuda", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias de antemano", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "te lo agradezco un montón", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "agradecido", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por responder", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "muchísimas gracias", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por la atención", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por la paciencia", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "muy agradecido", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias de nuevo", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por avisarme", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por todo igual", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias crack", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias capo", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias genio", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias, me re ayudaste", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias por contestarme tan rápido", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "copado, gracias", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "gracias, qué bien atendés", "clase": "relleno", "valor": "relleno:agradecimiento", "enlace": null, "nota": ""}
+{"expresion": "es para regalo de mi hermano", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para mi vieja", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "lo necesito para el laburo", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para mi hijo que empieza el cole", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es un regalo de cumpleaños", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para mi negocio", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "me lo pidió mi novia", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para un amigo", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "lo busco para mi casa nueva", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para mi viejo", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "estoy armando algo para mí", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es un regalo para mi jefe", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para mi sobrino", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "estoy por mudarme", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "lo quiero para el finde", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "mi señora me pidió que averigüe", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "soy estudiante", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "trabajo desde casa", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para el día del padre", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "el mío se rompió", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "tengo uno viejo que ya no anda", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "lo uso en el trabajo todos los días", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "me lo recomendó un amigo", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "te escribo desde Córdoba", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "estoy en Rosario", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "soy nuevo en esto", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "mi marido me pidió que consulte", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "es para regalarle a mi nena", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "vi la publicación en Instagram", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "me pasó el contacto una compañera", "clase": "relleno", "valor": "relleno:contexto_personal", "enlace": null, "nota": ""}
+{"expresion": "ni a palos", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "que no sea", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "nada de", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "sin", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "no quiero", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "ni loco", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "de ninguna manera", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "jamás", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "de ninguna forma", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "que no tenga", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "nada que ver con", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "menos", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "ni ahí", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "ni en pedo", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "ni por casualidad", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "nunca", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "evitame", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "que no venga con", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "sacame", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "no me muestres", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "excepto", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "salvo", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "menos eso", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "nada de eso", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "ni de casualidad", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "sin que sea", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "tampoco", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "no uno de", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "que de ninguna manera sea", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "no me ofrezcas", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "ni me hables de", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "lo que no quiero es", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "no, nada de", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "no me gusta que sea", "clase": "negacion", "valor": "negacion:no", "enlace": null, "nota": ""}
+{"expresion": "un", "clase": "cantidad", "valor": "cantidad:1", "enlace": null, "nota": ""}
+{"expresion": "uno", "clase": "cantidad", "valor": "cantidad:1", "enlace": null, "nota": ""}
+{"expresion": "una", "clase": "cantidad", "valor": "cantidad:1", "enlace": null, "nota": ""}
+{"expresion": "dos", "clase": "cantidad", "valor": "cantidad:2", "enlace": null, "nota": ""}
+{"expresion": "un par", "clase": "cantidad", "valor": "cantidad:2", "enlace": null, "nota": ""}
+{"expresion": "un par de", "clase": "cantidad", "valor": "cantidad:2", "enlace": null, "nota": ""}
+{"expresion": "par de", "clase": "cantidad", "valor": "cantidad:2", "enlace": null, "nota": ""}
+{"expresion": "tres", "clase": "cantidad", "valor": "cantidad:3", "enlace": null, "nota": ""}
+{"expresion": "unos tres", "clase": "cantidad", "valor": "cantidad:3", "enlace": null, "nota": ""}
+{"expresion": "cuatro", "clase": "cantidad", "valor": "cantidad:4", "enlace": null, "nota": ""}
+{"expresion": "cinco", "clase": "cantidad", "valor": "cantidad:5", "enlace": null, "nota": ""}
+{"expresion": "media docena", "clase": "cantidad", "valor": "cantidad:6", "enlace": null, "nota": ""}
+{"expresion": "seis", "clase": "cantidad", "valor": "cantidad:6", "enlace": null, "nota": ""}
+{"expresion": "siete", "clase": "cantidad", "valor": "cantidad:7", "enlace": null, "nota": ""}
+{"expresion": "ocho", "clase": "cantidad", "valor": "cantidad:8", "enlace": null, "nota": ""}
+{"expresion": "diez", "clase": "cantidad", "valor": "cantidad:10", "enlace": null, "nota": ""}
+{"expresion": "una docena", "clase": "cantidad", "valor": "cantidad:12", "enlace": null, "nota": ""}
+{"expresion": "docena", "clase": "cantidad", "valor": "cantidad:12", "enlace": null, "nota": ""}
+{"expresion": "doce", "clase": "cantidad", "valor": "cantidad:12", "enlace": null, "nota": ""}
+{"expresion": "quince", "clase": "cantidad", "valor": "cantidad:15", "enlace": null, "nota": ""}
+{"expresion": "veinte", "clase": "cantidad", "valor": "cantidad:20", "enlace": null, "nota": ""}
+{"expresion": "una veintena", "clase": "cantidad", "valor": "cantidad:20", "enlace": null, "nota": ""}
+{"expresion": "cincuenta", "clase": "cantidad", "valor": "cantidad:50", "enlace": null, "nota": ""}
+{"expresion": "un centenar", "clase": "cantidad", "valor": "cantidad:100", "enlace": null, "nota": ""}
+{"expresion": "cien", "clase": "cantidad", "valor": "cantidad:100", "enlace": null, "nota": ""}
+{"expresion": "dos docenas", "clase": "cantidad", "valor": "cantidad:24", "enlace": null, "nota": ""}
+{"expresion": "una decena", "clase": "cantidad", "valor": "cantidad:10", "enlace": null, "nota": ""}
+{"expresion": "decena", "clase": "cantidad", "valor": "cantidad:10", "enlace": null, "nota": ""}
+{"expresion": "sendos", "clase": "cantidad", "valor": "cantidad:2", "enlace": null, "nota": ""}
+{"expresion": "el doble", "clase": "cantidad", "valor": "cantidad:2", "enlace": null, "nota": ""}
+{"expresion": "varios", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "unos cuantos", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "un montón", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "bastantes", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "unas cuantas", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "algunos", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "varias unidades", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "una cantidad", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "unos pocos", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "muchos", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "un puñado", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "cualquier cantidad", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "la cantidad que haga falta", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "bastante cantidad", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "varios de esos", "clase": "cantidad", "valor": "cantidad:varios", "enlace": null, "nota": ""}
+{"expresion": "lucas", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "una luca", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "5 lucas", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "k", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "50k", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "10 mil", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "mil pesos", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "50 lucas", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "20 lukas", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "dos lucas", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "cuarenta lucas", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "una luca y media", "clase": "plata", "valor": "plata:unidad:1000", "enlace": null, "nota": ""}
+{"expresion": "palo", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "un palo", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "palos", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "dos palos", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "palo verde", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "un palo y medio", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "millón", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "1 millón", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "medio palo", "clase": "plata", "valor": "plata:unidad:1000000", "enlace": null, "nota": ""}
+{"expresion": "mangos", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "pe", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "pesos", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "pesitos", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "mangos nomás", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "gambas", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "guita", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "plata", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "morlacos", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "pe jotas", "clase": "plata", "valor": "plata:unidad:1", "enlace": null, "nota": ""}
+{"expresion": "gamba", "clase": "plata", "valor": "plata:unidad:100", "enlace": null, "nota": ""}
+{"expresion": "una gamba", "clase": "plata", "valor": "plata:unidad:100", "enlace": null, "nota": ""}
+{"expresion": "tres gambas", "clase": "plata", "valor": "plata:unidad:100", "enlace": null, "nota": ""}
+{"expresion": "cien pe", "clase": "plata", "valor": "plata:unidad:100", "enlace": null, "nota": ""}
+{"expresion": "hasta", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "no más de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "con un presupuesto de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "que no pase de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "tengo para gastar", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "como mucho", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "máximo", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "tope", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "no quiero gastar más de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "mi techo es", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "hasta un máximo de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "que no supere", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "sin pasarme de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "no me da para más de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "dispongo de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "puedo llegar hasta", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "presupuesto de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "no me pases de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "cuánto mucho", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "lo máximo que puedo es", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "como tope", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "que ronde los", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "no más allá de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "con lo que tengo, que no pase de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "a lo sumo", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "me alcanza hasta", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "límite de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "de ahí para abajo", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "menos de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "que salga menos de", "clase": "plata", "valor": "plata:tope", "enlace": null, "nota": ""}
+{"expresion": "que no salga un huevo", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "barato", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "lo más económico", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "el más barato", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "lo más accesible", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "algo económico", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "que sea barato", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "que no sea caro", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "lo más baratito", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "baratito", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "que no me arranquen la cabeza", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "de los más baratos", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "que salga poco", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "que no cueste mucho", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "barato barato", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "lo más bajo de precio", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "económico nomás", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "algo que no duela en el bolsillo", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "lo más light de precio", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "el más accesible", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "bien de precio", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "barato pero que ande", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "el más baratito", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "precio piso", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "que cueste poco", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "lo más chiquito de plata", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "low cost", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "el de menos plata", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "lo mínimo", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "que sea accesible", "clase": "precio", "valor": "precio:barato", "enlace": "orden:mas_barato", "nota": ""}
+{"expresion": "salado", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "caro", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "el más caro", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "carísimo", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "lo más top", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "de lo más caro", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "el premium", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "de gama alta", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "lo mejor sin mirar precio", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "carito", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "sale un ojo de la cara", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "pasado de precio", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "sale una fortuna", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "me parece caro", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "un precio abusivo", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "es muy caro", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "lo más pesado de precio", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "el de más plata", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "que no importe el precio", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "lo máximo", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "algo de alta gama", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "precio salado", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "lo mejor que tengas", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "de lo más costoso", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "el tope de gama", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "lo más fuerte", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "el más premium", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "sale un dineral", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "dolarizado", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "lo que cuesta más", "clase": "precio", "valor": "precio:caro", "enlace": "orden:mas_caro", "nota": ""}
+{"expresion": "de los buenos", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que ande bien", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "piola", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea bueno", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "de buena calidad", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que no sea una porquería", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea posta", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea de calidad", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "bien hecho", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que no sea berreta", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "de primera", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que funcione bien", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "de buen nivel", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea confiable", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea decente", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea bueno de verdad", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que no sea cualquier cosa", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "algo bueno", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "copado", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea lo mejor posible", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "de primera línea", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "bien terminado", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea serio", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que tenga buena terminación", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que sea de lo mejor", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que cumpla", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que no falle", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "sin fallas", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que rinda", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que no sea malo", "clase": "calidad", "valor": "calidad:buena", "enlace": null, "nota": ""}
+{"expresion": "que se la banque", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que dure", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que aguante", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que dure años", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "resistente", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que no se rompa", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que aguante el trote", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que sea fuerte", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que se la aguante", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que no se rompa al toque", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que sea duradero", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "de los que duran", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que no se arruine", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que dure mucho", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que sea a prueba de todo", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que aguante uso pesado", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "indestructible", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que tenga aguante", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que le dé para rato", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que dure toda la vida", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que no se muera al mes", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que se banque el uso diario", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "a prueba de golpes", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que resista", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que perdure", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que sea firme", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "reforzado", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que sea sólido", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que no se gaste rápido", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "que se banque todo", "clase": "calidad", "valor": "calidad:durable", "enlace": null, "nota": ""}
+{"expresion": "de marca", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "marca conocida", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "una marca de primera", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "que sea de una marca seria", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "de una marca reconocida", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "que tenga nombre", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "una buena marca", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "marca top", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "de marca posta", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "una marca que conozca", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "que sea de marca conocida", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "de las marcas grandes", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "marca reconocida", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "que sea de renombre", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "una marca de confianza", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "no una marca rara", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "que no sea marca china desconocida", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "de marca, no genérico", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "marca líder", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "una de las marcas conocidas", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "con nombre", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "que sea de las marcas que se ven", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "marca respaldada", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "una de renombre", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "que no sea una marca trucha", "clase": "calidad", "valor": "calidad:marca_conocida", "enlace": null, "nota": ""}
+{"expresion": "original", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "que sea original", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "trucho no", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "nada de truchos", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "que no sea trucho", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "posta original", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "100% original", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "original de fábrica", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "que no sea copia", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "no réplica", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "sin imitaciones", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "que no sea falso", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "sin truchadas", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "legítimo", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "genuino", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "auténtico", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "oficial", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "garantizado original", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "nada de copias", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "que sea el verdadero", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "no quiero apócrifo", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "original sellado", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "que no sea pirata", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "de fábrica", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "que no sea una réplica", "clase": "calidad", "valor": "calidad:original", "enlace": "tema:marcas_originales", "nota": ""}
+{"expresion": "lo necesito hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "para hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "urgente", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo antes posible ya", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "para hoy mismo", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "tiene que llegar hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo necesito ya", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "hoy sí o sí", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "me urge", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "ahora mismo", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "en el día", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "llega hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo necesito para esta tarde", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "es para ya", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "urgentísimo", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "hoy mismo si se puede", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "retiro hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo busco ahora", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "corre prisa", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "de inmediato", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "sale hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo preciso hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "en el día de hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "para ahora", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "que sea hoy", "clase": "urgencia", "valor": "urgencia:hoy", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo antes posible", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "cuanto antes", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "para esta semana", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "rápido", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "cuando antes mejor", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo necesito pronto", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "que llegue rápido", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "para mañana", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo más rápido que puedas", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "sin demora", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "en pocos días", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "para el finde", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "a la brevedad", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "me corre un poco de apuro", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "tengo apuro", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "que sea rapidito", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "no puedo esperar mucho", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "que llegue en un par de días", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo antes que se pueda", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "necesito que llegue ya", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "para el lunes", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "lo más ágil posible", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "express", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "de un día para otro", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "rapidísimo", "clase": "urgencia", "valor": "urgencia:pronto", "enlace": "tema:envio_urgente", "nota": ""}
+{"expresion": "por transferencia", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "te transfiero", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "con transfe", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "pago por transferencia", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "te hago una transferencia", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "transferencia bancaria", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "puedo transferir", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "te lo transfiero", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "por transferencia hay descuento", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "te paso un comprobante de transferencia", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "a transferencia cuánto queda", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "pasame el alias", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "transfiero y listo", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "por transfe me lo dejás", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "pago con transferencia", "clase": "pago", "valor": "pago:transferencia", "enlace": "tema:descuento_transferencia", "nota": ""}
+{"expresion": "en efectivo", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con efectivo", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "te pago en mano", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "cash", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "en billetes", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "efectivo hay descuento", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "pago en efectivo al retirar", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con plata en mano", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "en efectivo cuánto sale", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "te lo pago cash", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "al contado", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "contado efectivo", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "pago cuando lo retiro", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "en pesos en mano", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con billete", "clase": "pago", "valor": "pago:efectivo", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con tarjeta", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con la tarjeta", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "tarjeta de crédito", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "aceptan tarjeta", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con visa", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con mastercard", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con tarjeta de crédito", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "puedo pagar con tarjeta", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "pago con plástico", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con la tarjetita", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "tarjeta recargo", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con tarjeta cuánto queda", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con la de crédito", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "pasan tarjeta", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con tarjeta naranja", "clase": "pago", "valor": "pago:tarjeta", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "en cuotas", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "cuántas cuotas", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "en cuotas sin interés", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "tenés cuotas", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "cuotas fijas", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "ahora 12", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "ahora 6", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "hasta cuántas cuotas", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "cuotas con interés", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "financiado", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "en 3 cuotas", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "sin interés", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "en pagos", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "puedo pagarlo en cuotas", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "cuánto queda la cuota", "clase": "pago", "valor": "pago:cuotas", "enlace": "tema:cuotas", "nota": ""}
+{"expresion": "por mercado pago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con mp", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "mercadopago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "pago con mercado pago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "mandame el link de mp", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con dinero en cuenta de mp", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "te pago por mp", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "aceptan mercado pago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con qr de mercado pago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "puedo con mp", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con el link de pago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "por mp te pago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "link de mercado pago", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "pagar con mi cuenta de mp", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "mp acepta", "clase": "pago", "valor": "pago:mercadopago", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "tarjeta de débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con la de débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con débito hay descuento", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "pago con débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con mi tarjeta de débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "puedo con débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "débito aceptan", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con débito bajo", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con la del banco", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "débito inmediato", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "por débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con tarjeta de débito cuánto sale", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "aceptan débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "con mi débito", "clase": "pago", "valor": "pago:debito", "enlace": "tema:formas_pago", "nota": ""}
+{"expresion": "lo mandás a casa", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "hacés envíos", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "envían a domicilio", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "me lo traen", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "envío a domicilio", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "me lo mandan", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "me lo llevan a casa", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "hacen envíos", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "despachan", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "mandás por correo", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "me llega a casa", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "mandan por correo", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "lo enviás", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "llega a mi puerta", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "envío por moto", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "hay envío", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "puedo recibirlo en casa", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "mandalo a mi dirección", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "con envío", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "lo despachan a casa", "clase": "envio", "valor": "envio:a_domicilio", "enlace": "tema:envios", "nota": ""}
+{"expresion": "lo retiro yo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "paso a buscarlo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "puedo retirar", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "retiro por el local", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "lo busco yo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "retiro en persona", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "paso a retirarlo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "hay local", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "dónde lo retiro", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "puedo pasar a buscarlo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "retiro por sucursal", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "lo paso a buscar", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "voy a buscarlo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "retiro por ahí", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "punto de retiro", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "lo retiro mañana", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "retiro en el local", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "puedo ir a buscarlo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "a qué hora retiro", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "retiro sin costo", "clase": "envio", "valor": "envio:retiro", "enlace": "tema:retiro_local", "nota": ""}
+{"expresion": "cuánto sale el envío", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto cuesta mandarlo", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto es el flete", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "el envío es gratis", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "envío gratis", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto el envío", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto cobran de envío", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "el envío va aparte", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto me sale que me lo manden", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "tiene costo el envío", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "envío incluido", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto es el costo de envío", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "y el envío cuánto", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "sale algo el envío", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto me cobrás por mandarlo", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "flete cuánto", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "el despacho cuánto", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "sin costo de envío", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto de correo", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuánto de moto", "clase": "envio", "valor": "envio:costo", "enlace": "tema:costo_envio", "nota": ""}
+{"expresion": "cuándo llega", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "en cuánto tiempo llega", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuántos días tarda", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "demora mucho", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuánto tarda en llegar", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "llega rápido", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuándo me llega", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "en qué plazo", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuántos días hábiles", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "llega para el viernes", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuánto tarda el envío", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuándo lo recibo", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "llega antes del fin de semana", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuánto demora el despacho", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "cuántos días de demora", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "tiempo de entrega", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "en cuánto lo tengo", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "plazo de entrega", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "llega mañana", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "en cuánto lo recibo", "clase": "envio", "valor": "envio:plazo", "enlace": "tema:plazo_envio", "nota": ""}
+{"expresion": "llegan a Mendoza", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "envían al interior", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "mandan a Tucumán", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "hacen envíos a Córdoba", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "llegan hasta Salta", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "llegan al sur", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "a Bahía Blanca llega", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "mando a provincia", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "envían a todo el país", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "llegan a mi barrio", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "a Neuquén llegan", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "envíos al conurbano", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "a capital llega", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "a la Plata mandan", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "llegan a Misiones", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "entregan en zona norte", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "mandás al interior", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "llegan a Patagonia", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "a Rosario envían", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "a zona oeste llegan", "clase": "envio", "valor": "envio:destino", "enlace": "tema:envios", "nota": ""}
+{"expresion": "el que me pasaste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "ese", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el primero", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el otro", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el de antes", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "ese que dijiste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el último que me mostraste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el segundo", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el que me mandaste recién", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "aquel", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "ese mismo que viste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el de recién", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el que me recomendaste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el del medio", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el anterior", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el que vimos", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el tercero", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el de arriba", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el que mencionaste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "ese de hace un rato", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el que me dijiste primero", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el de la foto", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "ese que me pasaste antes", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el que tenías ahí", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el negro que me mostraste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "ese que hablamos", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el que tenías antes", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "el otro que dijiste", "clase": "referencia", "valor": "referencia:anterior", "enlace": null, "nota": ""}
+{"expresion": "otro igual", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "uno igual", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "otro de esos", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "lo mismo", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "el mismo pero otro", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "sumame otro igual", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "otro más de esos", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "uno más", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "el mismo de antes", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "repetime ese", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "igual a ese", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "quiero otro idéntico", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "uno parecido", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "un segundo", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "más de lo mismo", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "uno de los mismos", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "otro igualito", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "un gemelo", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "dos de esos", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "sumá otro", "clase": "referencia", "valor": "referencia:el_mismo", "enlace": null, "nota": ""}
+{"expresion": "un toque", "trampa": true, "puede_ser": ["relleno:muletilla", "cantidad:varios"], "nota": ""}
+{"expresion": "dale", "trampa": true, "puede_ser": ["intencion:confirmar", "relleno:muletilla", "intencion:comprar"], "nota": ""}
+{"expresion": "joya", "trampa": true, "puede_ser": ["intencion:confirmar", "relleno:cortesia"], "nota": ""}
+{"expresion": "después te digo", "trampa": true, "puede_ser": ["intencion:esperar", "relleno:despedida"], "nota": ""}
+{"expresion": "un par", "trampa": true, "puede_ser": ["cantidad:2", "cantidad:varios"], "nota": ""}
+{"expresion": "bárbaro", "trampa": true, "puede_ser": ["intencion:confirmar", "relleno:cortesia", "calidad:buena"], "nota": ""}
+{"expresion": "ok", "trampa": true, "puede_ser": ["intencion:confirmar", "relleno:cortesia"], "nota": ""}
+{"expresion": "listo", "trampa": true, "puede_ser": ["intencion:confirmar", "intencion:comprar"], "nota": ""}
+{"expresion": "perfecto", "trampa": true, "puede_ser": ["intencion:confirmar", "relleno:agradecimiento"], "nota": ""}
+{"expresion": "de una", "trampa": true, "puede_ser": ["intencion:confirmar", "urgencia:hoy"], "nota": ""}
+{"expresion": "barato", "trampa": true, "puede_ser": ["precio:barato", "calidad:mala"], "nota": ""}
+{"expresion": "piola", "trampa": true, "puede_ser": ["calidad:buena", "precio:barato"], "nota": ""}
+{"expresion": "mil", "trampa": true, "puede_ser": ["cantidad:1000", "plata:unidad:1000"], "nota": ""}
+{"expresion": "cien", "trampa": true, "puede_ser": ["cantidad:100", "plata:unidad:100"], "nota": ""}
+{"expresion": "un palo", "trampa": true, "puede_ser": ["plata:unidad:1000000", "cantidad:1"], "nota": ""}
+{"expresion": "ya fue", "trampa": true, "puede_ser": ["intencion:rechazar", "intencion:confirmar", "intencion:cancelar"], "nota": ""}
+{"expresion": "mirá", "trampa": true, "puede_ser": ["relleno:muletilla", "intencion:info_producto"], "nota": ""}
+{"expresion": "a ver", "trampa": true, "puede_ser": ["relleno:muletilla", "intencion:info_producto"], "nota": ""}
+{"expresion": "ese", "trampa": true, "puede_ser": ["referencia:anterior", "intencion:confirmar"], "nota": ""}
+{"expresion": "el otro", "trampa": true, "puede_ser": ["referencia:anterior", "intencion:comparar"], "nota": ""}
+{"expresion": "otro", "trampa": true, "puede_ser": ["referencia:el_mismo", "intencion:rechazar"], "nota": ""}
+{"expresion": "lo mismo", "trampa": true, "puede_ser": ["referencia:el_mismo", "referencia:anterior"], "nota": ""}
+{"expresion": "sin problema", "trampa": true, "puede_ser": ["relleno:cortesia", "intencion:confirmar"], "nota": ""}
+{"expresion": "no sé", "trampa": true, "puede_ser": ["intencion:esperar", "intencion:recomendar", "relleno:muletilla"], "nota": ""}
+{"expresion": "capaz", "trampa": true, "puede_ser": ["intencion:esperar", "relleno:muletilla"], "nota": ""}
+{"expresion": "más tarde", "trampa": true, "puede_ser": ["urgencia:pronto", "intencion:esperar"], "nota": ""}
+{"expresion": "hasta", "trampa": true, "puede_ser": ["plata:tope", "relleno:despedida"], "nota": ""}
+{"expresion": "menos", "trampa": true, "puede_ser": ["plata:tope", "negacion:no", "precio:barato"], "nota": ""}
+{"expresion": "sin", "trampa": true, "puede_ser": ["negacion:no", "pago:efectivo"], "nota": ""}
+{"expresion": "tranqui", "trampa": true, "puede_ser": ["relleno:cortesia", "intencion:esperar"], "nota": ""}
+{"expresion": "buenísimo", "trampa": true, "puede_ser": ["calidad:buena", "intencion:confirmar", "relleno:agradecimiento"], "nota": ""}
+{"expresion": "genial", "trampa": true, "puede_ser": ["intencion:confirmar", "relleno:agradecimiento"], "nota": ""}
+{"expresion": "gracias", "trampa": true, "puede_ser": ["relleno:agradecimiento", "intencion:rechazar", "relleno:despedida"], "nota": ""}
+{"expresion": "re", "trampa": true, "puede_ser": ["relleno:muletilla", "calidad:buena"], "nota": ""}
+{"expresion": "posta", "trampa": true, "puede_ser": ["calidad:original", "relleno:muletilla", "intencion:confirmar"], "nota": ""}
+{"expresion": "laburo", "trampa": true, "puede_ser": ["relleno:contexto_personal", "urgencia:pronto"], "nota": ""}
+{"expresion": "al toque", "trampa": true, "puede_ser": ["urgencia:hoy", "urgencia:pronto"], "nota": ""}
+{"expresion": "medio caro", "trampa": true, "puede_ser": ["precio:caro", "relleno:muletilla"], "nota": ""}
+{"expresion": "mejor no", "trampa": true, "puede_ser": ["intencion:rechazar", "intencion:cancelar"], "nota": ""}
+{"expresion": "nada", "trampa": true, "puede_ser": ["negacion:no", "relleno:muletilla", "intencion:rechazar"], "nota": ""}
+{"expresion": "como quieras", "trampa": true, "puede_ser": ["intencion:confirmar", "relleno:cortesia"], "nota": ""}
+{"expresion": "lo que tengas", "trampa": true, "puede_ser": ["cantidad:varios", "intencion:recomendar"], "nota": ""}

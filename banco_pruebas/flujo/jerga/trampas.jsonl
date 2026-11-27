@@ -1,0 +1,358 @@
+{"expresion": "2k", "puede_ser": ["atributo:qhd", "fuera"], "nota": "resolucion o precio en miles", "fuente": "agente:atributos", "nrm": "2k"}
+{"expresion": "4k", "puede_ser": ["fuera", "sin_dato"], "nota": "resolucion no es concepto de la lista", "fuente": "agente:atributos", "nrm": "4k"}
+{"expresion": "a ver", "puede_ser": ["relleno:muletilla", "intencion:info_producto"], "nota": "", "fuente": "agente:general", "nrm": "a ver"}
+{"expresion": "aceptan dolares", "puede_ser": ["tema:monedas_aceptadas", "tema:formas_pago"], "nota": "", "fuente": "agente:campos_temas", "nrm": "aceptan dolares"}
+{"expresion": "aceptan transferencia", "puede_ser": ["tema:formas_pago", "tema:monedas_aceptadas"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "aceptan transferencia"}
+{"expresion": "adaptador", "puede_ser": ["rubro:cargador", "fuera"], "nota": "adaptador de enchufe o hdmi", "fuente": "agente:rubros_a", "nrm": "adaptador"}
+{"expresion": "adaptador wifi usb", "puede_ser": ["fuera", "rubro:router"], "nota": "", "fuente": "agente:rubros_b", "nrm": "adaptador wifi usb"}
+{"expresion": "airpods", "puede_ser": ["rubro:auriculares", "fuera"], "nota": "marca Apple que la tienda puede no vender", "fuente": "agente:rubros_a", "nrm": "airpods"}
+{"expresion": "al toque", "puede_ser": ["urgencia:hoy", "urgencia:pronto"], "nota": "", "fuente": "agente:general", "nrm": "al toque"}
+{"expresion": "algo para internet", "puede_ser": ["rubro:router", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "algo para internet"}
+{"expresion": "altavoz", "puede_ser": ["rubro:parlante", "fuera"], "nota": "altavoz de auto o profesional", "fuente": "agente:rubros_a", "nrm": "altavoz"}
+{"expresion": "am4", "puede_ser": ["rubro:motherboard", "rubro:procesador"], "nota": "", "fuente": "agente:rubros_b", "nrm": "am4"}
+{"expresion": "am5", "puede_ser": ["rubro:motherboard", "rubro:procesador"], "nota": "", "fuente": "agente:rubros_b", "nrm": "am5"}
+{"expresion": "amd", "puede_ser": ["rubro:procesador", "rubro:placa_de_video"], "nota": "", "fuente": "agente:rubros_b", "nrm": "amd"}
+{"expresion": "antena", "puede_ser": ["rubro:router", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "antena"}
+{"expresion": "bafle", "puede_ser": ["rubro:parlante", "fuera"], "nota": "bafle de audio profesional", "fuente": "agente:rubros_a", "nrm": "bafle"}
+{"expresion": "barato", "puede_ser": ["orden:mas_barato", "sin_dato"], "nota": "orden o tope de precio", "fuente": "agente:atributos", "nrm": "barato"}
+{"expresion": "barato", "puede_ser": ["precio:barato", "calidad:mala"], "nota": "", "fuente": "agente:general", "nrm": "barato"}
+{"expresion": "bárbaro", "puede_ser": ["intencion:confirmar", "relleno:cortesia", "calidad:buena"], "nota": "", "fuente": "agente:general", "nrm": "barbaro"}
+{"expresion": "barra de sonido", "puede_ser": ["rubro:parlante", "fuera"], "nota": "soundbar, puede no estar en catalogo", "fuente": "agente:rubros_a", "nrm": "barra de sonido"}
+{"expresion": "bluetooth", "puede_ser": ["atributo:bluetooth", "atributo:inalambrico"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "bluetooth"}
+{"expresion": "blutu", "puede_ser": ["atributo:bluetooth", "atributo:inalambrico"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "blutu"}
+{"expresion": "buenísimo", "puede_ser": ["calidad:buena", "intencion:confirmar", "relleno:agradecimiento"], "nota": "", "fuente": "agente:general", "nrm": "buenisimo"}
+{"expresion": "butaca", "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "butaca de cine o auto", "fuente": "agente:rubros_a", "nrm": "butaca"}
+{"expresion": "cable", "puede_ser": ["rubro:cargador", "fuera"], "nota": "cable suelto, puede no ser cargador", "fuente": "agente:rubros_a", "nrm": "cable"}
+{"expresion": "cable para cargar", "puede_ser": ["rubro:cargador", "fuera"], "nota": "puede buscar solo cable", "fuente": "agente:rubros_a", "nrm": "cable para cargar"}
+{"expresion": "caddy para disco", "puede_ser": ["fuera", "rubro:ssd"], "nota": "", "fuente": "agente:rubros_b", "nrm": "caddy para disco"}
+{"expresion": "caja", "puede_ser": ["rubro:gabinete", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "caja"}
+{"expresion": "camara", "puede_ser": ["rubro:webcam", "fuera"], "nota": "camara de fotos o de seguridad", "fuente": "agente:rubros_a", "nrm": "camara"}
+{"expresion": "camara de seguridad", "puede_ser": ["fuera", "rubro:webcam"], "nota": "no se vende", "fuente": "agente:rubros_a", "nrm": "camara de seguridad"}
+{"expresion": "camara para la pc", "puede_ser": ["rubro:webcam", "fuera"], "nota": "puede ser camara de seguridad", "fuente": "agente:rubros_a", "nrm": "camara para la pc"}
+{"expresion": "camarita", "puede_ser": ["rubro:webcam", "fuera"], "nota": "camara de vigilancia o fotos", "fuente": "agente:rubros_a", "nrm": "camarita"}
+{"expresion": "cambiar la direccion", "puede_ser": ["tema:cambio_direccion", "tema:envios"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cambiar la direccion"}
+{"expresion": "cancelalo", "puede_ser": ["tema:cancelacion_pedido", "tema:devoluciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cancelalo"}
+{"expresion": "capaz", "puede_ser": ["intencion:esperar", "relleno:muletilla"], "nota": "", "fuente": "agente:general", "nrm": "capaz"}
+{"expresion": "carcasa", "puede_ser": ["rubro:gabinete", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "carcasa"}
+{"expresion": "cargador de auto", "puede_ser": ["rubro:cargador", "fuera"], "nota": "accesorio de auto", "fuente": "agente:rubros_a", "nrm": "cargador de auto"}
+{"expresion": "cargador de pc", "puede_ser": ["fuera", "rubro:fuente"], "nota": "", "fuente": "agente:rubros_b", "nrm": "cargador de pc"}
+{"expresion": "cargador de pilas", "puede_ser": ["fuera", "rubro:cargador"], "nota": "no se vende", "fuente": "agente:rubros_a", "nrm": "cargador de pilas"}
+{"expresion": "cargador portatil", "puede_ser": ["rubro:cargador", "fuera"], "nota": "power bank", "fuente": "agente:rubros_a", "nrm": "cargador portatil"}
+{"expresion": "cartuchos", "puede_ser": ["fuera", "rubro:impresora"], "nota": "", "fuente": "agente:rubros_b", "nrm": "cartuchos"}
+{"expresion": "cascos", "puede_ser": ["rubro:auriculares", "fuera"], "nota": "casco de moto o seguridad", "fuente": "agente:rubros_a", "nrm": "cascos"}
+{"expresion": "case", "puede_ser": ["rubro:gabinete", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "case"}
+{"expresion": "celu grande", "puede_ser": ["rubro:tablet", "fuera"], "nota": "puede ser celular grande", "fuente": "agente:rubros_a", "nrm": "celu grande"}
+{"expresion": "chico", "puede_ser": ["orden:mas_liviano", "sin_dato", "fuera"], "nota": "tamaño", "fuente": "agente:atributos", "nrm": "chico"}
+{"expresion": "chip", "puede_ser": ["rubro:procesador", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "chip"}
+{"expresion": "chromebook", "puede_ser": ["rubro:notebook", "fuera"], "nota": "puede no estar", "fuente": "agente:rubros_a", "nrm": "chromebook"}
+{"expresion": "cien", "puede_ser": ["cantidad:100", "plata:unidad:100"], "nota": "", "fuente": "agente:general", "nrm": "cien"}
+{"expresion": "claro", "puede_ser": ["color:blanco", "color:gris", "color:plata"], "nota": "no dice cual", "fuente": "agente:atributos", "nrm": "claro"}
+{"expresion": "como pago", "puede_ser": ["tema:formas_pago", "tema:como_comprar"], "nota": "", "fuente": "agente:campos_temas", "nrm": "como pago"}
+{"expresion": "como quieras", "puede_ser": ["intencion:confirmar", "relleno:cortesia"], "nota": "", "fuente": "agente:general", "nrm": "como quieras"}
+{"expresion": "como se conecta", "puede_ser": ["campo:conexion", "tema:soporte_configuracion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "como se conecta"}
+{"expresion": "como se configura", "puede_ser": ["tema:soporte_configuracion", "campo:conexion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "como se configura"}
+{"expresion": "compacto", "puede_ser": ["orden:mas_liviano", "sin_dato"], "nota": "tamaño no peso", "fuente": "agente:atributos", "nrm": "compacto"}
+{"expresion": "compu", "puede_ser": ["rubro:notebook", "fuera"], "nota": "puede ser pc de escritorio, no vendida", "fuente": "agente:rubros_a", "nrm": "compu"}
+{"expresion": "computadora", "puede_ser": ["rubro:notebook", "fuera"], "nota": "escritorio o portatil", "fuente": "agente:rubros_a", "nrm": "computadora"}
+{"expresion": "con bluetooth", "puede_ser": ["atributo:bluetooth", "atributo:inalambrico"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "con bluetooth"}
+{"expresion": "con cable nomas", "puede_ser": ["atributo:con_cable", "atributo:inalambrico"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "con cable nomas"}
+{"expresion": "con luz", "puede_ser": ["atributo:con_luces", "fuera"], "nota": "luces del producto o luz como iluminacion de escritorio", "fuente": "agente:atributos", "nrm": "con luz"}
+{"expresion": "conecta por wifi", "puede_ser": ["campo:conexion", "campo:wifi"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "conecta por wifi"}
+{"expresion": "cooler", "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "cooler"}
+{"expresion": "cooler master", "puede_ser": ["rubro:cooler", "rubro:fuente", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "cooler master"}
+{"expresion": "corsair", "puede_ser": ["rubro:memoria_ram", "rubro:fuente", "rubro:gabinete", "rubro:cooler"], "nota": "", "fuente": "agente:rubros_b", "nrm": "corsair"}
+{"expresion": "cpu", "puede_ser": ["rubro:procesador", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "cpu"}
+{"expresion": "cuando llega mas", "puede_ser": ["tema:reposicion_stock", "tema:plazo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuando llega mas"}
+{"expresion": "cuando lo despachan", "puede_ser": ["tema:plazo_envio", "tema:seguimiento_pedido"], "nota": "", "fuente": "agente:campos_temas|codigo", "nrm": "cuando lo despachan"}
+{"expresion": "cuando me llega", "puede_ser": ["tema:plazo_envio", "tema:seguimiento_pedido"], "nota": "", "fuente": "agente:campos_temas|codigo", "nrm": "cuando me llega"}
+{"expresion": "cuando se acredita", "puede_ser": ["tema:verificacion_pagos", "tema:plazo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuando se acredita"}
+{"expresion": "cuanta memoria tiene", "puede_ser": ["campo:ram", "campo:almacenamiento", "campo:memoria_video"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanta memoria tiene"}
+{"expresion": "cuanto de garantia", "puede_ser": ["campo:garantia_meses", "tema:garantia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto de garantia"}
+{"expresion": "cuanto dura", "puede_ser": ["campo:bateria", "campo:garantia_meses"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto dura"}
+{"expresion": "cuanto espacio tiene", "puede_ser": ["campo:almacenamiento", "campo:dimensiones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto espacio tiene"}
+{"expresion": "cuanto me sale", "puede_ser": ["campo:precio_ars", "tema:costo_envio", "tema:cuotas"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto me sale"}
+{"expresion": "cuanto pesa", "puede_ser": ["campo:peso_gramos", "tema:especificaciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto pesa"}
+{"expresion": "cuanto sale", "puede_ser": ["campo:precio_ars", "tema:costo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto sale"}
+{"expresion": "cuanto sale el envio", "puede_ser": ["tema:costo_envio", "tema:envios"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto sale el envio"}
+{"expresion": "cuanto tarda el envio", "puede_ser": ["tema:plazo_envio", "tema:envios"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuanto tarda el envio"}
+{"expresion": "cuantos dpi", "puede_ser": ["tema:mouse_dpi", "campo:sensor"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuantos dpi"}
+{"expresion": "cuantos gb tiene", "puede_ser": ["campo:almacenamiento", "campo:ram", "campo:memoria_video"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuantos gb tiene"}
+{"expresion": "cuotas sin interes", "puede_ser": ["tema:cuotas", "tema:promociones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "cuotas sin interes"}
+{"expresion": "curvo", "puede_ser": ["atributo:ultrawide", "atributo:panel_va", "fuera"], "nota": "monitor curvo no es concepto propio", "fuente": "agente:atributos", "nrm": "curvo"}
+{"expresion": "dale", "puede_ser": ["intencion:confirmar", "relleno:muletilla", "intencion:comprar"], "nota": "", "fuente": "agente:general", "nrm": "dale"}
+{"expresion": "ddr4", "puede_ser": ["rubro:memoria_ram", "rubro:motherboard", "rubro:procesador"], "nota": "", "fuente": "agente:rubros_b", "nrm": "ddr4"}
+{"expresion": "ddr5", "puede_ser": ["rubro:memoria_ram", "rubro:motherboard"], "nota": "", "fuente": "agente:rubros_b", "nrm": "ddr5"}
+{"expresion": "de colores", "puede_ser": ["atributo:con_luces", "fuera"], "nota": "luces o colores del cuerpo", "fuente": "agente:atributos", "nrm": "de colores"}
+{"expresion": "de donde es", "puede_ser": ["campo:pais_fabricacion", "campo:pais_marca", "tema:origen_procedencia", "tema:ubicacion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "de donde es"}
+{"expresion": "de donde son", "puede_ser": ["tema:origen_procedencia", "tema:ubicacion", "campo:pais_fabricacion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "de donde son"}
+{"expresion": "de los rapidos", "puede_ser": ["orden:mas_hz", "orden:mas_nucleos", "sin_dato"], "nota": "velocidad ambigua", "fuente": "agente:atributos", "nrm": "de los rapidos"}
+{"expresion": "de que esta hecho", "puede_ser": ["campo:material", "tema:material_composicion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "de que esta hecho"}
+{"expresion": "de que marca es", "puede_ser": ["campo:marca", "tema:marcas_originales"], "nota": "", "fuente": "agente:campos_temas", "nrm": "de que marca es"}
+{"expresion": "de que pais es", "puede_ser": ["campo:pais_marca", "campo:pais_fabricacion", "tema:origen_procedencia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "de que pais es"}
+{"expresion": "de una", "puede_ser": ["intencion:confirmar", "urgencia:hoy"], "nota": "", "fuente": "agente:general", "nrm": "de una"}
+{"expresion": "después te digo", "puede_ser": ["intencion:esperar", "relleno:despedida"], "nota": "", "fuente": "agente:general", "nrm": "despues te digo"}
+{"expresion": "disco", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "disco"}
+{"expresion": "disco de 1tb", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "disco de 1tb"}
+{"expresion": "disco de 500", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "disco de 500"}
+{"expresion": "disco duro", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "disco duro"}
+{"expresion": "disco para la pc", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "disco para la pc"}
+{"expresion": "disco para la play", "puede_ser": ["rubro:almacenamiento_externo", "no_vende:play 5"], "nota": "", "fuente": "agente:rubros_b", "nrm": "disco para la play"}
+{"expresion": "disco rigido", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "disco rigido"}
+{"expresion": "display", "puede_ser": ["rubro:monitor", "fuera"], "nota": "display de celu o repuesto", "fuente": "agente:rubros_a", "nrm": "display"}
+{"expresion": "donde esta mi compra", "puede_ser": ["tema:seguimiento_pedido", "tema:plazo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "donde esta mi compra"}
+{"expresion": "donde estan", "puede_ser": ["tema:ubicacion", "tema:retiro_local"], "nota": "", "fuente": "agente:campos_temas", "nrm": "donde estan"}
+{"expresion": "donde estan ubicados", "puede_ser": ["tema:retiro_local", "tema:ubicacion"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "donde estan ubicados"}
+{"expresion": "donde se fabrica", "puede_ser": ["campo:pais_fabricacion", "tema:fabricacion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "donde se fabrica"}
+{"expresion": "economico", "puede_ser": ["orden:mas_barato", "fuera"], "nota": "precio o consumo de energia", "fuente": "agente:atributos", "nrm": "economico"}
+{"expresion": "el coso para hablar", "puede_ser": ["rubro:microfono", "rubro:auriculares"], "nota": "vago", "fuente": "agente:rubros_a", "nrm": "el coso para hablar"}
+{"expresion": "el coso para la flechita", "puede_ser": ["rubro:mouse", "rubro:teclado"], "nota": "vago", "fuente": "agente:rubros_a", "nrm": "el coso para la flechita"}
+{"expresion": "el cpu", "puede_ser": ["rubro:procesador", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b|codigo", "nrm": "el cpu"}
+{"expresion": "el de mas memoria", "puede_ser": ["orden:mas_capacidad", "orden:mas_ram"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "el de mas memoria"}
+{"expresion": "el micro", "puede_ser": ["rubro:procesador", "no_vende:microondas"], "nota": "", "fuente": "agente:rubros_b", "nrm": "el micro"}
+{"expresion": "el otro", "puede_ser": ["referencia:anterior", "intencion:comparar"], "nota": "", "fuente": "agente:general", "nrm": "el otro"}
+{"expresion": "el precio tiene iva", "puede_ser": ["tema:precios_iva", "tema:factura", "campo:precio_ars"], "nota": "", "fuente": "agente:campos_temas", "nrm": "el precio tiene iva"}
+{"expresion": "el sonido para la pc", "puede_ser": ["rubro:auriculares", "rubro:parlante"], "nota": "no aclara si es personal o de escritorio", "fuente": "agente:rubros_a", "nrm": "el sonido para la pc"}
+{"expresion": "el top", "puede_ser": ["orden:mas_caro", "sin_dato"], "nota": "mejor de gama o mas caro", "fuente": "agente:atributos", "nrm": "el top"}
+{"expresion": "el wifi", "puede_ser": ["rubro:router", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "el wifi"}
+{"expresion": "en que zona estan", "puede_ser": ["tema:retiro_local", "tema:ubicacion"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "en que zona estan"}
+{"expresion": "equipo de musica", "puede_ser": ["rubro:parlante", "fuera"], "nota": "minicomponente que no se vende", "fuente": "agente:rubros_a", "nrm": "equipo de musica"}
+{"expresion": "es chino", "puede_ser": ["campo:pais_fabricacion", "campo:pais_marca", "tema:marcas_originales"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es chino"}
+{"expresion": "es de marca", "puede_ser": ["campo:marca", "tema:marcas_originales"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es de marca"}
+{"expresion": "es importado", "puede_ser": ["campo:pais_fabricacion", "tema:origen_procedencia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es importado"}
+{"expresion": "es industria argentina", "puede_ser": ["tema:fabricacion", "tema:origen_procedencia"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "es industria argentina"}
+{"expresion": "es mecanico", "puede_ser": ["campo:switch_teclado", "tema:teclado_mecanico_membrana"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es mecanico"}
+{"expresion": "es nacional", "puede_ser": ["campo:pais_fabricacion", "tema:origen_procedencia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es nacional"}
+{"expresion": "es nuevo", "puede_ser": ["tema:usados", "tema:marcas_originales"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es nuevo"}
+{"expresion": "es original", "puede_ser": ["tema:marcas_originales", "campo:marca"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es original"}
+{"expresion": "es potente", "puede_ser": ["campo:potencia", "campo:procesador", "tema:especificaciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es potente"}
+{"expresion": "es rapido", "puede_ser": ["campo:procesador", "campo:ram", "tema:especificaciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es rapido"}
+{"expresion": "es seguro comprar", "puede_ser": ["tema:confianza_seguridad", "tema:formas_pago"], "nota": "", "fuente": "agente:campos_temas", "nrm": "es seguro comprar"}
+{"expresion": "escaner", "puede_ser": ["rubro:impresora", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "escaner"}
+{"expresion": "ese", "puede_ser": ["referencia:anterior", "intencion:confirmar"], "nota": "", "fuente": "agente:general", "nrm": "ese"}
+{"expresion": "estuche para disco", "puede_ser": ["fuera", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "estuche para disco"}
+{"expresion": "fuente", "puede_ser": ["rubro:cargador", "fuera"], "nota": "fuente de pc u otra", "fuente": "agente:rubros_a", "nrm": "fuente"}
+{"expresion": "fuente", "puede_ser": ["rubro:fuente", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "fuente"}
+{"expresion": "fuente para el router", "puede_ser": ["fuera", "rubro:router"], "nota": "", "fuente": "agente:rubros_b", "nrm": "fuente para el router"}
+{"expresion": "fuente para monitor", "puede_ser": ["fuera", "rubro:fuente"], "nota": "", "fuente": "agente:rubros_b", "nrm": "fuente para monitor"}
+{"expresion": "gamer", "puede_ser": ["preferencia:uso_gamer", "fuera"], "nota": "uso o solo estilo o nombre de linea", "fuente": "agente:atributos", "nrm": "gamer"}
+{"expresion": "genial", "puede_ser": ["intencion:confirmar", "relleno:agradecimiento"], "nota": "", "fuente": "agente:general", "nrm": "genial"}
+{"expresion": "gopro", "puede_ser": ["rubro:webcam", "fuera"], "nota": "camara de accion", "fuente": "agente:rubros_a", "nrm": "gopro"}
+{"expresion": "graba en 4k", "puede_ser": ["campo:camara", "campo:resolucion"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "graba en 4k"}
+{"expresion": "gracias", "puede_ser": ["relleno:agradecimiento", "intencion:rechazar", "relleno:despedida"], "nota": "", "fuente": "agente:general", "nrm": "gracias"}
+{"expresion": "grande", "puede_ser": ["orden:mas_pulgadas", "orden:mas_capacidad", "fuera"], "nota": "tamaño, pantalla o capacidad", "fuente": "agente:atributos", "nrm": "grande"}
+{"expresion": "hablo con alguien", "puede_ser": ["tema:contacto_humano", "tema:formas_contacto"], "nota": "", "fuente": "agente:campos_temas", "nrm": "hablo con alguien"}
+{"expresion": "hacen cuotas con transferencia", "puede_ser": ["tema:cuotas", "tema:descuento_transferencia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "hacen cuotas con transferencia"}
+{"expresion": "hacen envios a cordoba", "puede_ser": ["tema:envios", "tema:plazo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "hacen envios a cordoba"}
+{"expresion": "hacen envios al exterior", "puede_ser": ["tema:envio_exterior", "tema:envios"], "nota": "", "fuente": "agente:campos_temas", "nrm": "hacen envios al exterior"}
+{"expresion": "hacen factura a", "puede_ser": ["tema:factura", "tema:datos_fiscales"], "nota": "", "fuente": "agente:campos_temas", "nrm": "hacen factura a"}
+{"expresion": "hacen factura con cuit", "puede_ser": ["tema:datos_fiscales", "tema:factura"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "hacen factura con cuit"}
+{"expresion": "hasta", "puede_ser": ["plata:tope", "relleno:despedida"], "nota": "", "fuente": "agente:general", "nrm": "hasta"}
+{"expresion": "hay cuotas sin interes", "puede_ser": ["tema:cuotas", "tema:promociones"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "hay cuotas sin interes"}
+{"expresion": "hay promo", "puede_ser": ["tema:promociones", "tema:cuotas", "tema:descuento_transferencia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "hay promo"}
+{"expresion": "hay stock", "puede_ser": ["tema:stock_disponibilidad", "tema:reposicion_stock"], "nota": "", "fuente": "agente:campos_temas", "nrm": "hay stock"}
+{"expresion": "hd", "puede_ser": ["atributo:full_hd", "fuera"], "nota": "hd a secas no es full hd", "fuente": "agente:atributos", "nrm": "hd"}
+{"expresion": "hdd", "puede_ser": ["rubro:almacenamiento_externo", "rubro:ssd"], "nota": "", "fuente": "agente:rubros_b", "nrm": "hdd"}
+{"expresion": "headset", "puede_ser": ["rubro:auriculares", "rubro:microfono"], "nota": "puede buscar el mic del headset", "fuente": "agente:rubros_a", "nrm": "headset"}
+{"expresion": "impresora 3d", "puede_ser": ["fuera", "rubro:impresora"], "nota": "", "fuente": "agente:rubros_b", "nrm": "impresora 3d"}
+{"expresion": "intel", "puede_ser": ["rubro:procesador", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "intel"}
+{"expresion": "internet", "puede_ser": ["rubro:router", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "internet"}
+{"expresion": "ipad", "puede_ser": ["rubro:tablet", "fuera"], "nota": "marca Apple, puede no vender", "fuente": "agente:rubros_a", "nrm": "ipad"}
+{"expresion": "jbl", "puede_ser": ["rubro:parlante", "rubro:auriculares"], "nota": "marca de ambos rubros", "fuente": "agente:rubros_a", "nrm": "jbl"}
+{"expresion": "joya", "puede_ser": ["intencion:confirmar", "relleno:cortesia"], "nota": "", "fuente": "agente:general", "nrm": "joya"}
+{"expresion": "karaoke", "puede_ser": ["rubro:microfono", "rubro:parlante", "fuera"], "nota": "equipo de karaoke", "fuente": "agente:rubros_a", "nrm": "karaoke"}
+{"expresion": "kindle", "puede_ser": ["rubro:tablet", "fuera"], "nota": "ereader que no se vende", "fuente": "agente:rubros_a", "nrm": "kindle"}
+{"expresion": "kingston", "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "kingston"}
+{"expresion": "kit gamer", "puede_ser": ["rubro:teclado", "rubro:mouse", "rubro:auriculares"], "nota": "combo de perifericos", "fuente": "agente:rubros_a", "nrm": "kit gamer"}
+{"expresion": "la caja", "puede_ser": ["rubro:gabinete", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "la caja"}
+{"expresion": "la compu", "puede_ser": ["rubro:notebook", "fuera"], "nota": "pc de escritorio o armada", "fuente": "agente:rubros_a", "nrm": "la compu"}
+{"expresion": "la garantia cubre golpes", "puede_ser": ["campo:garantia_detalle", "tema:garantia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "la garantia cubre golpes"}
+{"expresion": "la placa", "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": "", "fuente": "agente:rubros_b", "nrm": "la placa"}
+{"expresion": "la tele", "puede_ser": ["rubro:monitor", "fuera"], "nota": "televisor que no se vende", "fuente": "agente:rubros_a", "nrm": "la tele"}
+{"expresion": "la torre", "puede_ser": ["rubro:gabinete", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "la torre"}
+{"expresion": "laburo", "puede_ser": ["relleno:contexto_personal", "urgencia:pronto"], "nota": "", "fuente": "agente:general", "nrm": "laburo"}
+{"expresion": "led", "puede_ser": ["atributo:con_luces", "atributo:panel_ips", "fuera"], "nota": "luces o pantalla led", "fuente": "agente:atributos", "nrm": "led"}
+{"expresion": "listo", "puede_ser": ["intencion:confirmar", "intencion:comprar"], "nota": "", "fuente": "agente:general", "nrm": "listo"}
+{"expresion": "liviano", "puede_ser": ["orden:mas_liviano", "fuera"], "nota": "liviano de precio o de peso", "fuente": "agente:atributos", "nrm": "liviano"}
+{"expresion": "llega rapido", "puede_ser": ["tema:plazo_envio", "tema:envio_urgente"], "nota": "", "fuente": "agente:campos_temas", "nrm": "llega rapido"}
+{"expresion": "llego roto", "puede_ser": ["tema:defectuoso", "tema:embalaje_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "llego roto"}
+{"expresion": "lo mejor", "puede_ser": ["orden:mas_caro", "sin_dato"], "nota": "mejor sin criterio", "fuente": "agente:atributos", "nrm": "lo mejor"}
+{"expresion": "lo mismo", "puede_ser": ["referencia:el_mismo", "referencia:anterior"], "nota": "", "fuente": "agente:general", "nrm": "lo mismo"}
+{"expresion": "lo necesito pronto", "puede_ser": ["tema:envio_urgente", "tema:plazo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "lo necesito pronto"}
+{"expresion": "lo que tengas", "puede_ser": ["cantidad:varios", "intencion:recomendar"], "nota": "", "fuente": "agente:general", "nrm": "lo que tengas"}
+{"expresion": "m2", "puede_ser": ["rubro:ssd", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "m2"}
+{"expresion": "macbook", "puede_ser": ["rubro:notebook", "fuera"], "nota": "marca Apple, puede no vender", "fuente": "agente:rubros_a", "nrm": "macbook"}
+{"expresion": "mandan a mendoza cuanto sale", "puede_ser": ["tema:envios", "tema:costo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "mandan a mendoza cuanto sale"}
+{"expresion": "manos libres", "puede_ser": ["rubro:auriculares", "fuera"], "nota": "kit manos libres de auto", "fuente": "agente:rubros_a", "nrm": "manos libres"}
+{"expresion": "mas gb", "puede_ser": ["orden:mas_ram", "orden:mas_capacidad"], "nota": "ram o almacenamiento", "fuente": "agente:atributos", "nrm": "mas gb"}
+{"expresion": "más tarde", "puede_ser": ["urgencia:pronto", "intencion:esperar"], "nota": "", "fuente": "agente:general", "nrm": "mas tarde"}
+{"expresion": "me arrepenti", "puede_ser": ["tema:devoluciones", "tema:cancelacion_pedido"], "nota": "", "fuente": "agente:campos_temas", "nrm": "me arrepenti"}
+{"expresion": "me devuelven la plata", "puede_ser": ["tema:reembolso", "tema:devoluciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "me devuelven la plata"}
+{"expresion": "me llega mañana", "puede_ser": ["tema:envio_urgente", "tema:plazo_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "me llega manana"}
+{"expresion": "me lo guardas", "puede_ser": ["tema:reservas", "tema:stock_disponibilidad"], "nota": "", "fuente": "agente:campos_temas", "nrm": "me lo guardas"}
+{"expresion": "me recomendas uno", "puede_ser": ["tema:asesoramiento", "tema:especificaciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "me recomendas uno"}
+{"expresion": "medio caro", "puede_ser": ["precio:caro", "relleno:muletilla"], "nota": "", "fuente": "agente:general", "nrm": "medio caro"}
+{"expresion": "mejor no", "puede_ser": ["intencion:rechazar", "intencion:cancelar"], "nota": "", "fuente": "agente:general", "nrm": "mejor no"}
+{"expresion": "mejorar la pc", "puede_ser": ["rubro:ssd", "rubro:memoria_ram", "rubro:placa_de_video", "rubro:procesador"], "nota": "", "fuente": "agente:rubros_b", "nrm": "mejorar la pc"}
+{"expresion": "memoria", "puede_ser": ["orden:mas_ram", "orden:mas_capacidad"], "nota": "ram o almacenamiento", "fuente": "agente:atributos", "nrm": "memoria"}
+{"expresion": "memoria", "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "memoria"}
+{"expresion": "memoria de 16gb", "puede_ser": ["rubro:memoria_ram", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "memoria de 16gb"}
+{"expresion": "memoria de 1tb", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "memoria de 1tb"}
+{"expresion": "memoria de 256", "puede_ser": ["rubro:ssd", "rubro:memoria_ram", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "memoria de 256"}
+{"expresion": "memoria para el celu", "puede_ser": ["no_vende:celular", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "memoria para el celu"}
+{"expresion": "memoria rapida", "puede_ser": ["rubro:memoria_ram", "rubro:ssd"], "nota": "", "fuente": "agente:rubros_b", "nrm": "memoria rapida"}
+{"expresion": "menos", "puede_ser": ["plata:tope", "negacion:no", "precio:barato"], "nota": "", "fuente": "agente:general", "nrm": "menos"}
+{"expresion": "mic", "puede_ser": ["rubro:microfono", "rubro:auriculares"], "nota": "mic del headset", "fuente": "agente:rubros_a", "nrm": "mic"}
+{"expresion": "micro", "puede_ser": ["rubro:microfono", "fuera"], "nota": "micro puede ser colectivo, microondas o cable micro usb", "fuente": "agente:rubros_a", "nrm": "micro"}
+{"expresion": "micro", "puede_ser": ["rubro:procesador", "no_vende:microondas"], "nota": "", "fuente": "agente:rubros_b", "nrm": "micro"}
+{"expresion": "micro", "puede_ser": ["rubro:microfono", "rubro:procesador"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "micro"}
+{"expresion": "microfono de solapa", "puede_ser": ["rubro:microfono", "fuera"], "nota": "lavalier, puede no estar", "fuente": "agente:rubros_a", "nrm": "microfono de solapa"}
+{"expresion": "microfono inalambrico", "puede_ser": ["rubro:microfono", "fuera"], "nota": "karaoke o sistema profesional", "fuente": "agente:rubros_a", "nrm": "microfono inalambrico"}
+{"expresion": "mil", "puede_ser": ["cantidad:1000", "plata:unidad:1000"], "nota": "", "fuente": "agente:general", "nrm": "mil"}
+{"expresion": "mirá", "puede_ser": ["relleno:muletilla", "intencion:info_producto"], "nota": "", "fuente": "agente:general", "nrm": "mira"}
+{"expresion": "modem", "puede_ser": ["rubro:router", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "modem"}
+{"expresion": "mouse de la note", "puede_ser": ["rubro:mouse", "rubro:notebook"], "nota": "puede referirse al touchpad", "fuente": "agente:rubros_a", "nrm": "mouse de la note"}
+{"expresion": "mouse pad", "puede_ser": ["rubro:mouse", "fuera"], "nota": "alfombrilla, no es el mouse", "fuente": "agente:rubros_a", "nrm": "mouse pad"}
+{"expresion": "mucha memoria", "puede_ser": ["orden:mas_ram", "orden:mas_capacidad"], "nota": "ram o almacenamiento", "fuente": "agente:atributos", "nrm": "mucha memoria"}
+{"expresion": "nacional", "puede_ser": ["fuera", "sin_dato"], "nota": "lo opuesto de origen china no equivale", "fuente": "agente:atributos", "nrm": "nacional"}
+{"expresion": "nada", "puede_ser": ["negacion:no", "relleno:muletilla", "intencion:rechazar"], "nota": "", "fuente": "agente:general", "nrm": "nada"}
+{"expresion": "necesito factura con cuit", "puede_ser": ["tema:datos_fiscales", "tema:factura"], "nota": "", "fuente": "agente:campos_temas", "nrm": "necesito factura con cuit"}
+{"expresion": "negro y blanco", "puede_ser": ["color:negro", "color:blanco", "fuera"], "nota": "bicolor que no esta en la lista", "fuente": "agente:atributos", "nrm": "negro y blanco"}
+{"expresion": "no anda", "puede_ser": ["tema:defectuoso", "tema:soporte_configuracion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "no anda"}
+{"expresion": "no me reconoce", "puede_ser": ["tema:soporte_configuracion", "tema:compatibilidad", "tema:defectuoso"], "nota": "", "fuente": "agente:campos_temas", "nrm": "no me reconoce"}
+{"expresion": "no sé", "puede_ser": ["intencion:esperar", "intencion:recomendar", "relleno:muletilla"], "nota": "", "fuente": "agente:general", "nrm": "no se"}
+{"expresion": "note", "puede_ser": ["rubro:notebook", "fuera"], "nota": "nota o celular Note", "fuente": "agente:rubros_a", "nrm": "note"}
+{"expresion": "numpad", "puede_ser": ["rubro:teclado", "fuera"], "nota": "accesorio numerico", "fuente": "agente:rubros_a", "nrm": "numpad"}
+{"expresion": "nvme", "puede_ser": ["rubro:ssd", "rubro:motherboard"], "nota": "", "fuente": "agente:rubros_b", "nrm": "nvme"}
+{"expresion": "ok", "puede_ser": ["intencion:confirmar", "relleno:cortesia"], "nota": "", "fuente": "agente:general", "nrm": "ok"}
+{"expresion": "oscuro", "puede_ser": ["color:negro", "color:gris", "color:azul"], "nota": "no dice cual", "fuente": "agente:atributos", "nrm": "oscuro"}
+{"expresion": "otro", "puede_ser": ["referencia:el_mismo", "intencion:rechazar"], "nota": "", "fuente": "agente:general", "nrm": "otro"}
+{"expresion": "pad", "puede_ser": ["rubro:mouse", "rubro:tablet", "fuera"], "nota": "pad de mouse o tablet", "fuente": "agente:rubros_a", "nrm": "pad"}
+{"expresion": "pantalla", "puede_ser": ["rubro:monitor", "rubro:tablet", "rubro:notebook", "fuera"], "nota": "pantalla de celu o repuesto", "fuente": "agente:rubros_a", "nrm": "pantalla"}
+{"expresion": "pantalla de la note", "puede_ser": ["rubro:notebook", "fuera", "rubro:monitor"], "nota": "repuesto de pantalla", "fuente": "agente:rubros_a", "nrm": "pantalla de la note"}
+{"expresion": "pantalla portatil", "puede_ser": ["rubro:monitor", "rubro:tablet"], "nota": "monitor portatil o tablet", "fuente": "agente:rubros_a", "nrm": "pantalla portatil"}
+{"expresion": "pantalla tactil", "puede_ser": ["rubro:tablet", "rubro:monitor"], "nota": "puede ser tablet", "fuente": "agente:rubros_a", "nrm": "pantalla tactil"}
+{"expresion": "para apple", "puede_ser": ["plataforma:ios", "plataforma:macos"], "nota": "iphone o mac", "fuente": "agente:atributos|codigo", "nrm": "para apple"}
+{"expresion": "para el celu", "puede_ser": ["plataforma:android", "plataforma:ios"], "nota": "no dice sistema", "fuente": "agente:atributos", "nrm": "para el celu"}
+{"expresion": "para el wifi", "puede_ser": ["rubro:router", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "para el wifi"}
+{"expresion": "para guardar fotos", "puede_ser": ["rubro:almacenamiento_externo", "rubro:ssd"], "nota": "", "fuente": "agente:rubros_b", "nrm": "para guardar fotos"}
+{"expresion": "para jugar", "puede_ser": ["rubro:placa_de_video", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "para jugar"}
+{"expresion": "para la compu", "puede_ser": ["plataforma:pc_escritorio", "plataforma:notebook", "plataforma:windows"], "nota": "no dice si de escritorio o portatil", "fuente": "agente:atributos", "nrm": "para la compu"}
+{"expresion": "para la consola", "puede_ser": ["plataforma:ps5", "plataforma:ps4", "plataforma:xbox", "plataforma:nintendo_switch"], "nota": "no dice cual consola", "fuente": "agente:atributos", "nrm": "para la consola"}
+{"expresion": "para la notebook", "puede_ser": ["plataforma:notebook", "plataforma:pc_escritorio"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "para la notebook"}
+{"expresion": "para la pc", "puede_ser": ["plataforma:pc_escritorio", "plataforma:windows"], "nota": "pc escritorio o sistema", "fuente": "agente:atributos", "nrm": "para la pc"}
+{"expresion": "para la play", "puede_ser": ["plataforma:ps5", "plataforma:ps4"], "nota": "no dice cual generacion", "fuente": "agente:atributos", "nrm": "para la play"}
+{"expresion": "para la tele", "puede_ser": ["plataforma:smart_tv", "fuera"], "nota": "smart tv o tele comun", "fuente": "agente:atributos", "nrm": "para la tele"}
+{"expresion": "para que no se caliente", "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "para que no se caliente"}
+{"expresion": "para que no se trabe", "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:procesador"], "nota": "", "fuente": "agente:rubros_b", "nrm": "para que no se trabe"}
+{"expresion": "para regalo", "puede_ser": ["tema:envoltorio_regalo", "tema:embalaje_envio"], "nota": "", "fuente": "agente:campos_temas", "nrm": "para regalo"}
+{"expresion": "para trabajar y jugar", "puede_ser": ["preferencia:uso_oficina", "preferencia:uso_gamer"], "nota": "dos usos", "fuente": "agente:atributos", "nrm": "para trabajar y jugar"}
+{"expresion": "para windows", "puede_ser": ["plataforma:pc_escritorio", "plataforma:windows"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "para windows"}
+{"expresion": "para zoom", "puede_ser": ["preferencia:uso_streaming", "preferencia:uso_oficina"], "nota": "videollamadas de trabajo o streaming", "fuente": "agente:atributos", "nrm": "para zoom"}
+{"expresion": "parlantes para la cabeza", "puede_ser": ["rubro:auriculares", "rubro:parlante"], "nota": "descripcion vaga", "fuente": "agente:rubros_a", "nrm": "parlantes para la cabeza"}
+{"expresion": "pasame las specs", "puede_ser": ["tema:especificaciones", "campo:descripcion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "pasame las specs"}
+{"expresion": "pasame un numero", "puede_ser": ["tema:formas_contacto", "tema:contacto_humano"], "nota": "", "fuente": "agente:campos_temas", "nrm": "pasame un numero"}
+{"expresion": "pasta termica", "puede_ser": ["fuera", "rubro:cooler"], "nota": "", "fuente": "agente:rubros_b", "nrm": "pasta termica"}
+{"expresion": "pc", "puede_ser": ["rubro:notebook", "fuera"], "nota": "pc de escritorio", "fuente": "agente:rubros_a", "nrm": "pc"}
+{"expresion": "perfecto", "puede_ser": ["intencion:confirmar", "relleno:agradecimiento"], "nota": "", "fuente": "agente:general", "nrm": "perfecto"}
+{"expresion": "pesado", "puede_ser": ["orden:mas_pesado", "fuera"], "nota": "pesado por lento o de peso", "fuente": "agente:atributos", "nrm": "pesado"}
+{"expresion": "piola", "puede_ser": ["calidad:buena", "precio:barato"], "nota": "", "fuente": "agente:general", "nrm": "piola"}
+{"expresion": "placa", "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": "", "fuente": "agente:rubros_b", "nrm": "placa"}
+{"expresion": "placa de 8gb", "puede_ser": ["rubro:placa_de_video", "rubro:memoria_ram"], "nota": "", "fuente": "agente:rubros_b", "nrm": "placa de 8gb"}
+{"expresion": "placa de red", "puede_ser": ["fuera", "rubro:router"], "nota": "", "fuente": "agente:rubros_b", "nrm": "placa de red"}
+{"expresion": "placa de wifi", "puede_ser": ["fuera", "rubro:router"], "nota": "", "fuente": "agente:rubros_b", "nrm": "placa de wifi"}
+{"expresion": "placa nueva", "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": "", "fuente": "agente:rubros_b", "nrm": "placa nueva"}
+{"expresion": "plata", "puede_ser": ["color:gris", "color:plata"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "plata"}
+{"expresion": "plateado", "puede_ser": ["color:gris", "color:plata"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "plateado"}
+{"expresion": "play", "puede_ser": ["plataforma:ps5", "plataforma:ps4", "fuera"], "nota": "consola o reproducir", "fuente": "agente:atributos", "nrm": "play"}
+{"expresion": "posta", "puede_ser": ["calidad:original", "relleno:muletilla", "intencion:confirmar"], "nota": "", "fuente": "agente:general", "nrm": "posta"}
+{"expresion": "potente", "puede_ser": ["orden:mas_potente_w", "orden:mas_ram", "orden:mas_nucleos", "preferencia:uso_gamer", "sin_dato"], "nota": "potente de que: watts, ram o rendimiento", "fuente": "agente:atributos", "nrm": "potente"}
+{"expresion": "power bank", "puede_ser": ["rubro:cargador", "fuera"], "nota": "bateria externa, puede no estar", "fuente": "agente:rubros_a", "nrm": "power bank"}
+{"expresion": "puedo devolverlo", "puede_ser": ["tema:devoluciones", "tema:cambios", "tema:reembolso"], "nota": "", "fuente": "agente:campos_temas", "nrm": "puedo devolverlo"}
+{"expresion": "puedo pagar con transferencia", "puede_ser": ["tema:formas_pago", "tema:descuento_transferencia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "puedo pagar con transferencia"}
+{"expresion": "puedo pasar a buscarlo", "puede_ser": ["tema:retiro_local", "tema:ubicacion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "puedo pasar a buscarlo"}
+{"expresion": "que caracteristicas tiene", "puede_ser": ["tema:especificaciones", "campo:caracteristicas_extra", "campo:descripcion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que caracteristicas tiene"}
+{"expresion": "que garantia tiene", "puede_ser": ["campo:garantia_meses", "campo:garantia_detalle", "tema:garantia"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que garantia tiene"}
+{"expresion": "que incluye", "puede_ser": ["campo:contenido_caja", "tema:contenido_caja", "campo:garantia_detalle"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que incluye"}
+{"expresion": "que medidas tiene", "puede_ser": ["campo:dimensiones", "tema:especificaciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que medidas tiene"}
+{"expresion": "que no haga ruido", "puede_ser": ["atributo:silencioso", "fuera"], "nota": "puede ser ventilador o fuente", "fuente": "agente:atributos", "nrm": "que no haga ruido"}
+{"expresion": "que no tenga luces", "puede_ser": ["atributo:con_luces", "atributo:sin_luces"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "que no tenga luces"}
+{"expresion": "que pasa si falla", "puede_ser": ["tema:garantia_como_usar", "tema:defectuoso", "campo:garantia_detalle"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que pasa si falla"}
+{"expresion": "que sea barato", "puede_ser": ["orden:mas_barato", "sin_dato"], "nota": "orden o tope de precio", "fuente": "agente:atributos", "nrm": "que sea barato"}
+{"expresion": "que sea c", "puede_ser": ["atributo:usb_c", "fuera"], "nota": "tipo c o letra", "fuente": "agente:atributos", "nrm": "que sea c"}
+{"expresion": "que sensor tiene", "puede_ser": ["campo:sensor", "tema:mouse_dpi"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que sensor tiene"}
+{"expresion": "que switch me conviene", "puede_ser": ["tema:teclado_mecanico_membrana", "campo:switch_teclado"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que switch me conviene"}
+{"expresion": "que tal es", "puede_ser": ["campo:descripcion", "tema:asesoramiento"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que tal es"}
+{"expresion": "que tamaño tiene", "puede_ser": ["campo:dimensiones", "campo:resolucion", "campo:almacenamiento"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que tamano tiene"}
+{"expresion": "que tenga luces", "puede_ser": ["atributo:con_luces", "atributo:sin_luces"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "que tenga luces"}
+{"expresion": "que trae", "puede_ser": ["campo:contenido_caja", "tema:contenido_caja", "campo:caracteristicas_extra"], "nota": "", "fuente": "agente:campos_temas", "nrm": "que trae"}
+{"expresion": "quiero cambiarlo", "puede_ser": ["tema:cambios", "tema:devoluciones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "quiero cambiarlo"}
+{"expresion": "rapido", "puede_ser": ["orden:mas_hz", "orden:mas_nucleos", "sin_dato"], "nota": "velocidad ambigua", "fuente": "agente:atributos", "nrm": "rapido"}
+{"expresion": "raton", "puede_ser": ["rubro:mouse", "fuera"], "nota": "animal o mouse", "fuente": "agente:rubros_a", "nrm": "raton"}
+{"expresion": "re", "puede_ser": ["relleno:muletilla", "calidad:buena"], "nota": "", "fuente": "agente:general", "nrm": "re"}
+{"expresion": "refrigeracion", "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "refrigeracion"}
+{"expresion": "refrigeracion para la pc", "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "refrigeracion para la pc"}
+{"expresion": "ryzen 5 con mother", "puede_ser": ["rubro:procesador", "rubro:motherboard"], "nota": "", "fuente": "agente:rubros_b", "nrm": "ryzen 5 con mother"}
+{"expresion": "samsung", "puede_ser": ["rubro:ssd", "no_vende:celular", "no_vende:televisor", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "samsung"}
+{"expresion": "scanner", "puede_ser": ["rubro:impresora", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "scanner"}
+{"expresion": "se conecta a internet", "puede_ser": ["campo:conexion", "campo:wifi"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "se conecta a internet"}
+{"expresion": "se conecta al celu", "puede_ser": ["campo:conexion", "campo:bluetooth", "tema:compatibilidad"], "nota": "", "fuente": "agente:campos_temas", "nrm": "se conecta al celu"}
+{"expresion": "si se rompe que hago", "puede_ser": ["tema:garantia_como_usar", "tema:defectuoso", "campo:garantia_detalle"], "nota": "", "fuente": "agente:campos_temas", "nrm": "si se rompe que hago"}
+{"expresion": "si se rompe que hago", "puede_ser": ["tema:garantia", "tema:garantia_como_usar"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "si se rompe que hago"}
+{"expresion": "si viene fallado que hago", "puede_ser": ["tema:defectuoso", "tema:garantia_como_usar"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "si viene fallado que hago"}
+{"expresion": "silencioso", "puede_ser": ["atributo:silencioso", "fuera"], "nota": "teclado silencioso o cooler/fuente que no haga ruido", "fuente": "agente:atributos", "nrm": "silencioso"}
+{"expresion": "silla", "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "silla comun de comedor u otra", "fuente": "agente:rubros_a", "nrm": "silla"}
+{"expresion": "silla de oficina", "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "puede buscar silla comun de oficina", "fuente": "agente:rubros_a", "nrm": "silla de oficina"}
+{"expresion": "silla de ruedas", "puede_ser": ["fuera", "rubro:silla_gamer"], "nota": "silla ortopedica", "fuente": "agente:rubros_a", "nrm": "silla de ruedas"}
+{"expresion": "silla ergonomica", "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "puede ser silla de oficina sin diseño gamer", "fuente": "agente:rubros_a", "nrm": "silla ergonomica"}
+{"expresion": "sillon", "puede_ser": ["rubro:silla_gamer", "fuera"], "nota": "sillon de living", "fuente": "agente:rubros_a", "nrm": "sillon"}
+{"expresion": "silver", "puede_ser": ["color:gris", "color:plata"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "silver"}
+{"expresion": "sin", "puede_ser": ["negacion:no", "pago:efectivo"], "nota": "", "fuente": "agente:general", "nrm": "sin"}
+{"expresion": "sin cable", "puede_ser": ["atributo:inalambrico", "atributo:bluetooth", "fuera"], "nota": "inalambrico o a bateria o cable corto", "fuente": "agente:atributos", "nrm": "sin cable"}
+{"expresion": "sin problema", "puede_ser": ["relleno:cortesia", "intencion:confirmar"], "nota": "", "fuente": "agente:general", "nrm": "sin problema"}
+{"expresion": "sirve para mi pc", "puede_ser": ["tema:compatibilidad", "campo:conexion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "sirve para mi pc"}
+{"expresion": "socket 1700", "puede_ser": ["rubro:motherboard", "rubro:procesador"], "nota": "", "fuente": "agente:rubros_b", "nrm": "socket 1700"}
+{"expresion": "sonido para la pc", "puede_ser": ["rubro:parlante", "rubro:auriculares"], "nota": "no aclara", "fuente": "agente:rubros_a", "nrm": "sonido para la pc"}
+{"expresion": "switch", "puede_ser": ["plataforma:nintendo_switch", "atributo:mecanico"], "nota": "consola o tipo de tecla", "fuente": "agente:atributos", "nrm": "switch"}
+{"expresion": "switch azul", "puede_ser": ["atributo:mecanico", "plataforma:nintendo_switch", "color:azul"], "nota": "switch de teclado o consola azul", "fuente": "agente:atributos", "nrm": "switch azul"}
+{"expresion": "switch rojo", "puede_ser": ["atributo:mecanico", "color:rojo", "plataforma:nintendo_switch"], "nota": "tecla roja, consola o color", "fuente": "agente:atributos", "nrm": "switch rojo"}
+{"expresion": "tab", "puede_ser": ["rubro:tablet", "fuera"], "nota": "abreviatura de tab o tecla tab", "fuente": "agente:rubros_a", "nrm": "tab"}
+{"expresion": "tableta grafica", "puede_ser": ["rubro:tablet", "fuera"], "nota": "tableta digitalizadora de dibujo", "fuente": "agente:rubros_a", "nrm": "tableta grafica"}
+{"expresion": "teclado de piano", "puede_ser": ["rubro:teclado", "fuera"], "nota": "instrumento musical", "fuente": "agente:rubros_a", "nrm": "teclado de piano"}
+{"expresion": "teclado y mouse", "puede_ser": ["rubro:teclado", "rubro:mouse"], "nota": "combo, pide dos rubros", "fuente": "agente:rubros_a", "nrm": "teclado y mouse"}
+{"expresion": "teclas", "puede_ser": ["rubro:teclado", "fuera"], "nota": "puede ser repuesto o llaves", "fuente": "agente:rubros_a", "nrm": "teclas"}
+{"expresion": "tele", "puede_ser": ["no_vende:televisor", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "tele"}
+{"expresion": "tiene descuento", "puede_ser": ["tema:descuento_transferencia", "tema:promociones"], "nota": "", "fuente": "agente:campos_temas", "nrm": "tiene descuento"}
+{"expresion": "tiene garantia", "puede_ser": ["tema:garantia", "campo:garantia_meses"], "nota": "", "fuente": "agente:campos_temas", "nrm": "tiene garantia"}
+{"expresion": "tiene garantia", "puede_ser": ["tema:garantia", "tema:garantia_como_usar"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "tiene garantia"}
+{"expresion": "tiene luces", "puede_ser": ["campo:retroiluminacion", "campo:caracteristicas_extra"], "nota": "", "fuente": "agente:campos_temas", "nrm": "tiene luces"}
+{"expresion": "tiene memoria", "puede_ser": ["campo:ram", "campo:almacenamiento", "campo:lector_tarjetas"], "nota": "", "fuente": "agente:campos_temas", "nrm": "tiene memoria"}
+{"expresion": "tiene service", "puede_ser": ["campo:garantia_detalle", "tema:garantia_como_usar"], "nota": "", "fuente": "agente:campos_temas", "nrm": "tiene service"}
+{"expresion": "tiene wifi", "puede_ser": ["campo:wifi", "campo:conexion"], "nota": "", "fuente": "agente:campos_temas", "nrm": "tiene wifi"}
+{"expresion": "tienen local a la calle", "puede_ser": ["tema:retiro_local", "tema:ubicacion"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "tienen local a la calle"}
+{"expresion": "tienen moto", "puede_ser": ["tema:envio_urgente", "tema:envios"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "tienen moto"}
+{"expresion": "tienen pagina", "puede_ser": ["tema:redes", "tema:formas_contacto"], "nota": "", "fuente": "agente:campos_temas", "nrm": "tienen pagina"}
+{"expresion": "tinta", "puede_ser": ["fuera", "rubro:impresora"], "nota": "", "fuente": "agente:rubros_b", "nrm": "tinta"}
+{"expresion": "toner", "puede_ser": ["fuera", "rubro:impresora"], "nota": "", "fuente": "agente:rubros_b", "nrm": "toner"}
+{"expresion": "trae el cable", "puede_ser": ["campo:contenido_caja", "tema:contenido_caja"], "nota": "", "fuente": "agente:campos_temas", "nrm": "trae el cable"}
+{"expresion": "trae manual", "puede_ser": ["tema:contenido_caja", "tema:soporte_configuracion"], "nota": "choque en la tabla", "fuente": "codigo", "nrm": "trae manual"}
+{"expresion": "tranqui", "puede_ser": ["relleno:cortesia", "intencion:esperar"], "nota": "", "fuente": "agente:general", "nrm": "tranqui"}
+{"expresion": "transformador", "puede_ser": ["fuera", "rubro:fuente"], "nota": "", "fuente": "agente:rubros_b", "nrm": "transformador"}
+{"expresion": "un cpu", "puede_ser": ["rubro:procesador", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "un cpu"}
+{"expresion": "un disco", "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "un disco"}
+{"expresion": "un micro", "puede_ser": ["rubro:procesador", "no_vende:microondas"], "nota": "", "fuente": "agente:rubros_b", "nrm": "un micro"}
+{"expresion": "un palo", "puede_ser": ["plata:unidad:1000000", "cantidad:1"], "nota": "", "fuente": "agente:general", "nrm": "un palo"}
+{"expresion": "un par", "puede_ser": ["cantidad:2", "cantidad:varios"], "nota": "", "fuente": "agente:general", "nrm": "un par"}
+{"expresion": "un toque", "puede_ser": ["relleno:muletilla", "cantidad:varios"], "nota": "", "fuente": "agente:general", "nrm": "un toque"}
+{"expresion": "un ventilador", "puede_ser": ["rubro:cooler", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "un ventilador"}
+{"expresion": "una fuente de 12v", "puede_ser": ["fuera", "rubro:fuente"], "nota": "", "fuente": "agente:rubros_b", "nrm": "una fuente de 12v"}
+{"expresion": "una memoria", "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:almacenamiento_externo"], "nota": "", "fuente": "agente:rubros_b", "nrm": "una memoria"}
+{"expresion": "una placa para jugar", "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": "", "fuente": "agente:rubros_b", "nrm": "una placa para jugar"}
+{"expresion": "veloz", "puede_ser": ["orden:mas_hz", "orden:mas_nucleos", "sin_dato"], "nota": "velocidad ambigua", "fuente": "agente:atributos", "nrm": "veloz"}
+{"expresion": "ventilador", "puede_ser": ["rubro:cooler", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "ventilador"}
+{"expresion": "ventilador de gabinete", "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": "", "fuente": "agente:rubros_b", "nrm": "ventilador de gabinete"}
+{"expresion": "viene con cargador", "puede_ser": ["campo:contenido_caja", "tema:contenido_caja"], "nota": "", "fuente": "agente:campos_temas", "nrm": "viene con cargador"}
+{"expresion": "viene en caja", "puede_ser": ["tema:embalaje_envio", "campo:contenido_caja", "tema:contenido_caja"], "nota": "", "fuente": "agente:campos_temas", "nrm": "viene en caja"}
+{"expresion": "wd", "puede_ser": ["rubro:almacenamiento_externo", "rubro:ssd"], "nota": "", "fuente": "agente:rubros_b", "nrm": "wd"}
+{"expresion": "wifi", "puede_ser": ["rubro:router", "fuera"], "nota": "", "fuente": "agente:rubros_b", "nrm": "wifi"}
+{"expresion": "ya fue", "puede_ser": ["intencion:rechazar", "intencion:confirmar", "intencion:cancelar"], "nota": "", "fuente": "agente:general", "nrm": "ya fue"}
+{"expresion": "ya pague", "puede_ser": ["tema:verificacion_pagos", "tema:seguimiento_pedido"], "nota": "", "fuente": "agente:campos_temas", "nrm": "ya pague"}

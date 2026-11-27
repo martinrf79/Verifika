@@ -1,0 +1,942 @@
+{"expresion": "disco externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "discos externos", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "el externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "un externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco externo usb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco portatil", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco duro externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "hdd externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "hd externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "el hd externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco rigido externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco rigido portatil", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco para backup", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco de respaldo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco para guardar fotos", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco para guardar todo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco para resguardar archivos", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco de 1 tera", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco de 2 teras", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco de 4 teras", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "externo de 1tb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "externo de 2tb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "externo de 4tb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco usb 3.0", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco que se enchufa por usb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco que va por usb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco de backup", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco que llevo a todos lados", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pendrive grande", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pendrive de 1tb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pendrive de 2tb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pen drive", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pendrives", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pen de 128gb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pen de 256gb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "el penedrive", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pendrive 64gb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "pendrive usb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "memoria usb", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "memoria externa", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "memoria portatil", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "portable", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco portable", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco extraible", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco para la play", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disco externo p la tele", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "almacenamiento externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "almacenamiento portatil", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "unidad externa", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disquito externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "discos portatiles", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "el discorigido externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "disko externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "diso externo", "concepto": "rubro:almacenamiento_externo", "nota": ""}
+{"expresion": "cooler", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "coolers", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "el cooler", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "un cooler", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler para el micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler del micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler de cpu", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler cpu", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler para procesador", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler p el procesador", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "disipador", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "el disipador", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "disipador de cpu", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "disipador para el micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "disipador de aire", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "disipador por aire", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "refrigeracion liquida", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "watercooling", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "water cooler", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler liquido", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler water", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "watercooler", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "liquida 240", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "liquida 360", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "el aio", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "aio 240", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "un aio", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler aio", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "ventilador del micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "ventilador para el micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "ventilador de cpu", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "ventilador cpu", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "el ventilador del procesador", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "el ventilador", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "ventiladores", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "fan", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "fans", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "coolers rgb", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler argb", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler torre", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler de torre", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler stock", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler de caja", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler para ryzen", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler para intel", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "ventilador para refrigerar el micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "enfriador", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "enfriador del micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "cooler pa el micro", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "kuler", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "coler", "concepto": "rubro:cooler", "nota": ""}
+{"expresion": "fuente", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuentes", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "la fuente", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "una fuente", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de pc", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente para pc", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de la pc", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de poder", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de alimentacion", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente atx", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente 600w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 500w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 650w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente 750w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 850w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente 1000w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 550 watts", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente 80 plus", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente 80 plus bronze", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente bronze", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente gold", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente certificada", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente modular", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente semi modular", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente full modular", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente real", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente reales", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente gamer", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente psu", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "psu", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "la psu", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "una psu", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "power supply", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de energia", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de poder real", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de pc 600 watts", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 600", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 750", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 650", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente 500", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente 450w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 700w", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de 550", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente generica", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente para la placa de video", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente para la rtx", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente que aguante una rtx", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "la fuente de la compu", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente d poder", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "futente", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuent", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "fuente de pod", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "transformador de la pc", "concepto": "rubro:fuente", "nota": ""}
+{"expresion": "gabinete", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinetes", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "el gabinete", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "un gabinete", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete gamer", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete de pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete atx", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete mid tower", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete micro atx", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete mini itx", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete con vidrio", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete vidrio templado", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete con ventanita", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete rgb", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete blanco", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete negro", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete con coolers", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete con fans", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete con fuente", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete con fuente incluida", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete sin fuente", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete chico", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete grande", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete full tower", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete mesh", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete con buen flujo de aire", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete ventilado", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "case", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "case gamer", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "el case", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "un case", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "caja de la pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "la caja de la compu", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "la caja pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "la torre", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "torre de pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "torre gamer", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "carcasa", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "la carcasa de la pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "carcaza", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "el cpu", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "un cpu gamer", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "el gabi", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabi", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinet", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gavinete", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete p pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "gabinete pa la pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "el mueble de la pc", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "chasis", "concepto": "rubro:gabinete", "nota": ""}
+{"expresion": "impresora", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresoras", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "la impresora", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "una impresora", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora wifi", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora multifuncion", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "multifuncion", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "la multifuncion", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora multifuncional", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora laser", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "laser", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora a laser", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora de tinta", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora a tinta", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora chorro de tinta", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora inkjet", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora a color", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora color", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora blanco y negro", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora b y n", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora monocromatica", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora con escaner", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora y scanner", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora con fotocopiadora", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora con sistema continuo", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora de tinta continua", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora con tanque", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora termica", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora de etiquetas", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora para facturas", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora para tickets", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora de tickets", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "ticketera", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora para la oficina", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora para casa", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora para la escuela", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora para fotos", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora fotografica", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "fotocopiadora", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "la maquina de imprimir", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "maquina para imprimir", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "inpresora", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresor", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "inpresoras", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "printer", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "impresora matricial", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "una maquina para imprimir facturas", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "algo para imprimir y escanear", "concepto": "rubro:impresora", "nota": ""}
+{"expresion": "ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "la ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "una ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "rams", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memorias ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria ram ddr4", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria ram ddr5", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ddr4", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ddr5", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ddr3", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram ddr4", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram ddr5", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram ddr3", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria ddr4", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria ddr5", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram 8gb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram de 16", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram 16gb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram 32gb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram de 8 gb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram de 16gb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram 3200", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram 3600", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram 6000", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria de 8gb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria de 16", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria de 16gb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memorias de 32", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "kit de ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "kit de memoria", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "kit 2x8", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "kit 2x16", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "dual channel", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "modulo de memoria", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "modulos de ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "stick de ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "sticks de ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "palito de ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "palitos de memoria", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram para notebook", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram sodimm", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "sodimm", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria para notebook", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria dimm", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "dimm", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria rgb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram rgb", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram gamer", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ram para gamer", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ramas", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "rm", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria rram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria de la pc", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria para la pc", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "memoria para que no se trabe", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "ampliar memoria", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "mas memoria ram", "concepto": "rubro:memoria_ram", "nota": ""}
+{"expresion": "mother", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "el mother", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la mother", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "un mother", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mothers", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "motherboard", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother board", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "motherboards", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "placa madre", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la placa madre", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "placa base", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la placa base", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "placa principal", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la placa principal", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mainboard", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "main board", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mobo", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la mobo", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "placa mama", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "tarjeta madre", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "tarjeta madre pc", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother para ryzen", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother para intel", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother para i5", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother atx", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother micro atx", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother mini itx", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother matx", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother con wifi", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother ddr4", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother ddr5", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother gamer", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother pa ryzen", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "moter", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "moherboard", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mothr", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la placa donde va el micro", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la placa donde se conecta todo", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la placa de la pc", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "placa del micro", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "placa de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placas de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la placa de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "una placa de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa d video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa grafica", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de graficos", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa grafica gamer", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "tarjeta de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "tarjeta grafica", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la tarjeta grafica", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "gpu", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la gpu", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "una gpu", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "gpus", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "grafica", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la grafica", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "una grafica", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "graficas", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la grafica dedicada", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "grafica dedicada", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "video dedicado", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "plaquita de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la plaqueta de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la placa para jugar", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa para gaming", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa gamer", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa amd", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "rtx", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "una rtx", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de 8gb", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de 12gb", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de 6gb", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de 4gb", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de video 8gb", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de video 12gb", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "video card", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "vga", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "una vga", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la vga", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de video p jugar", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de vidio", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "plaka de video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la placa de video gamer", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa para editar video", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa para render", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "procesador", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesadores", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el procesador", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "un procesador", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el micro", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "un micro", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micros", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "microprocesador", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el microprocesador", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "cpu", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el cpu", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "un cpu", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el chip", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el chip de la pc", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador intel", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador amd", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador ryzen", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador intel core", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador i3", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador i5", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador i7", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador i9", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro i3", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro i5", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro i7", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro i9", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "un i5", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "un i7", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "un i3", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "ryzen", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "un ryzen", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "ryzen 5", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "ryzen 7", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "ryzen 3", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro ryzen", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro amd", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "micro intel", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador con video integrado", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador con graficos", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador gamer", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador de 6 nucleos", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesador de 8 nucleos", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesadro", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "procesadr", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "prosesador", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el cerebro de la pc", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "el cerebro de la compu", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "core i5", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "core i7", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "pentium", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "celeron", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "athlon", "concepto": "rubro:procesador", "nota": ""}
+{"expresion": "router", "concepto": "rubro:router", "nota": ""}
+{"expresion": "routers", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el router", "concepto": "rubro:router", "nota": ""}
+{"expresion": "un router", "concepto": "rubro:router", "nota": ""}
+{"expresion": "rauter", "concepto": "rubro:router", "nota": ""}
+{"expresion": "ruter", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router wi fi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router inalambrico", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router de fibra", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router para fibra", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router doble banda", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router dual band", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router gamer", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router mesh", "concepto": "rubro:router", "nota": ""}
+{"expresion": "mesh", "concepto": "rubro:router", "nota": ""}
+{"expresion": "sistema mesh", "concepto": "rubro:router", "nota": ""}
+{"expresion": "wifi mesh", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router wifi 6", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router gigabit", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router de 4 antenas", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router con antenas", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router potente", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router largo alcance", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router para casa", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router para departamento", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router para oficina", "concepto": "rubro:router", "nota": ""}
+{"expresion": "modem router", "concepto": "rubro:router", "nota": ""}
+{"expresion": "modem", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el modem", "concepto": "rubro:router", "nota": ""}
+{"expresion": "un modem", "concepto": "rubro:router", "nota": ""}
+{"expresion": "modem wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "un wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "aparato de wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el aparatito del wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "la cajita del wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el coso del wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "antena de wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "repetidor", "concepto": "rubro:router", "nota": ""}
+{"expresion": "repetidor de wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "extensor de wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "extensor wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "amplificador de wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "algo para mejorar el wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "algo p que llegue el wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "ssd", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "un ssd", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "el ssd", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssds", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco ssd", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "un disco ssd", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco solido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco de estado solido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "unidad de estado solido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco m2", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco m.2", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd m2", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd m.2", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "m2", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "un m2", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "m.2", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "nvme", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd nvme", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco nvme", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd sata", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd sata 2.5", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 2.5", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco sata solido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 240gb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 256gb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 480gb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 500gb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 512gb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 1tb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd de 1 tera", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 2tb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd de 2 teras", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd de 120", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd 128gb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd de 240", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd de 480", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd de 960", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd gen4", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd pcie", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco pcie", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco rapido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "el disco rapido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco para que prenda rapido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco para que levante rapido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco para que abra rapido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "el solido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "un solido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco solido 1tb", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "disco de estado solido 480", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "essde", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "sd solido", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "esese de", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd pa la pc", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd para notebook", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "ssd para la compu", "concepto": "rubro:ssd", "nota": ""}
+{"expresion": "un celu", "concepto": "no_vende:celular", "nota": ""}
+{"expresion": "celu", "concepto": "no_vende:celular", "nota": ""}
+{"expresion": "celular nuevo", "concepto": "no_vende:celular", "nota": ""}
+{"expresion": "celular samsung", "concepto": "no_vende:celular", "nota": ""}
+{"expresion": "celular motorola", "concepto": "no_vende:celular", "nota": ""}
+{"expresion": "celular xiaomi", "concepto": "no_vende:celular", "nota": ""}
+{"expresion": "celu barato", "concepto": "no_vende:celular", "nota": ""}
+{"expresion": "celulares", "concepto": "no_vende:celulares", "nota": ""}
+{"expresion": "los celulares", "concepto": "no_vende:celulares", "nota": ""}
+{"expresion": "celulares liberados", "concepto": "no_vende:celulares", "nota": ""}
+{"expresion": "celus", "concepto": "no_vende:celulares", "nota": ""}
+{"expresion": "celulares gama media", "concepto": "no_vende:celulares", "nota": ""}
+{"expresion": "celulares baratos", "concepto": "no_vende:celulares", "nota": ""}
+{"expresion": "smartphone", "concepto": "no_vende:smartphone", "nota": ""}
+{"expresion": "un smartphone", "concepto": "no_vende:smartphone", "nota": ""}
+{"expresion": "smartphone android", "concepto": "no_vende:smartphone", "nota": ""}
+{"expresion": "telefono inteligente", "concepto": "no_vende:smartphone", "nota": ""}
+{"expresion": "telefono movil", "concepto": "no_vende:smartphone", "nota": ""}
+{"expresion": "telefono nuevo", "concepto": "no_vende:smartphone", "nota": ""}
+{"expresion": "smartphones", "concepto": "no_vende:smartphones", "nota": ""}
+{"expresion": "los smartphones", "concepto": "no_vende:smartphones", "nota": ""}
+{"expresion": "smartphones android", "concepto": "no_vende:smartphones", "nota": ""}
+{"expresion": "telefonos inteligentes", "concepto": "no_vende:smartphones", "nota": ""}
+{"expresion": "telefonos moviles", "concepto": "no_vende:smartphones", "nota": ""}
+{"expresion": "iphone", "concepto": "no_vende:iphone", "nota": ""}
+{"expresion": "un iphone", "concepto": "no_vende:iphone", "nota": ""}
+{"expresion": "iphone 15", "concepto": "no_vende:iphone", "nota": ""}
+{"expresion": "iphone 14", "concepto": "no_vende:iphone", "nota": ""}
+{"expresion": "el iphon", "concepto": "no_vende:iphone", "nota": ""}
+{"expresion": "un aifon", "concepto": "no_vende:iphone", "nota": ""}
+{"expresion": "iphone usado", "concepto": "no_vende:iphone", "nota": ""}
+{"expresion": "iphones", "concepto": "no_vende:iphones", "nota": ""}
+{"expresion": "los iphones", "concepto": "no_vende:iphones", "nota": ""}
+{"expresion": "aifones", "concepto": "no_vende:iphones", "nota": ""}
+{"expresion": "iphones nuevos", "concepto": "no_vende:iphones", "nota": ""}
+{"expresion": "iphones reacondicionados", "concepto": "no_vende:iphones", "nota": ""}
+{"expresion": "televisor", "concepto": "no_vende:televisor", "nota": ""}
+{"expresion": "un televisor", "concepto": "no_vende:televisor", "nota": ""}
+{"expresion": "la tele", "concepto": "no_vende:televisor", "nota": ""}
+{"expresion": "una tele", "concepto": "no_vende:televisor", "nota": ""}
+{"expresion": "tele 50 pulgadas", "concepto": "no_vende:televisor", "nota": ""}
+{"expresion": "tv led", "concepto": "no_vende:televisor", "nota": ""}
+{"expresion": "tv de 43", "concepto": "no_vende:televisor", "nota": ""}
+{"expresion": "televisores", "concepto": "no_vende:televisores", "nota": ""}
+{"expresion": "las teles", "concepto": "no_vende:televisores", "nota": ""}
+{"expresion": "teles led", "concepto": "no_vende:televisores", "nota": ""}
+{"expresion": "televisores 4k", "concepto": "no_vende:televisores", "nota": ""}
+{"expresion": "teles baratas", "concepto": "no_vende:televisores", "nota": ""}
+{"expresion": "smart tv", "concepto": "no_vende:smart tv", "nota": ""}
+{"expresion": "un smart tv", "concepto": "no_vende:smart tv", "nota": ""}
+{"expresion": "smarttv", "concepto": "no_vende:smart tv", "nota": ""}
+{"expresion": "tele smart", "concepto": "no_vende:smart tv", "nota": ""}
+{"expresion": "smart tv 55", "concepto": "no_vende:smart tv", "nota": ""}
+{"expresion": "tele con android tv", "concepto": "no_vende:smart tv", "nota": ""}
+{"expresion": "smartwatch", "concepto": "no_vende:smartwatch", "nota": ""}
+{"expresion": "un smartwatch", "concepto": "no_vende:smartwatch", "nota": ""}
+{"expresion": "reloj inteligente", "concepto": "no_vende:smartwatch", "nota": ""}
+{"expresion": "reloj smart", "concepto": "no_vende:smartwatch", "nota": ""}
+{"expresion": "smart watch", "concepto": "no_vende:smartwatch", "nota": ""}
+{"expresion": "apple watch", "concepto": "no_vende:smartwatch", "nota": ""}
+{"expresion": "reloj con bluetooth", "concepto": "no_vende:smartwatch", "nota": ""}
+{"expresion": "smartwatches", "concepto": "no_vende:smartwatches", "nota": ""}
+{"expresion": "relojes inteligentes", "concepto": "no_vende:smartwatches", "nota": ""}
+{"expresion": "relojes smart", "concepto": "no_vende:smartwatches", "nota": ""}
+{"expresion": "los smartwatch", "concepto": "no_vende:smartwatches", "nota": ""}
+{"expresion": "smart watches", "concepto": "no_vende:smartwatches", "nota": ""}
+{"expresion": "una consola", "concepto": "no_vende:consola", "nota": ""}
+{"expresion": "consola de juegos", "concepto": "no_vende:consola", "nota": ""}
+{"expresion": "consola nueva", "concepto": "no_vende:consola", "nota": ""}
+{"expresion": "consola para jugar", "concepto": "no_vende:consola", "nota": ""}
+{"expresion": "consola de videojuegos", "concepto": "no_vende:consola", "nota": ""}
+{"expresion": "consola retro", "concepto": "no_vende:consola", "nota": ""}
+{"expresion": "consolas", "concepto": "no_vende:consolas", "nota": ""}
+{"expresion": "las consolas", "concepto": "no_vende:consolas", "nota": ""}
+{"expresion": "consolas de videojuegos", "concepto": "no_vende:consolas", "nota": ""}
+{"expresion": "consolas nuevas", "concepto": "no_vende:consolas", "nota": ""}
+{"expresion": "consolas usadas", "concepto": "no_vende:consolas", "nota": ""}
+{"expresion": "playstation", "concepto": "no_vende:playstation", "nota": ""}
+{"expresion": "un playstation", "concepto": "no_vende:playstation", "nota": ""}
+{"expresion": "la playstation", "concepto": "no_vende:playstation", "nota": ""}
+{"expresion": "playstation 5", "concepto": "no_vende:playstation", "nota": ""}
+{"expresion": "playstation 4", "concepto": "no_vende:playstation", "nota": ""}
+{"expresion": "plei", "concepto": "no_vende:playstation", "nota": ""}
+{"expresion": "play station", "concepto": "no_vende:play station", "nota": ""}
+{"expresion": "la play station", "concepto": "no_vende:play station", "nota": ""}
+{"expresion": "una play station", "concepto": "no_vende:play station", "nota": ""}
+{"expresion": "playstation 3", "concepto": "no_vende:play station", "nota": ""}
+{"expresion": "plei estescion", "concepto": "no_vende:play station", "nota": ""}
+{"expresion": "play 5", "concepto": "no_vende:play 5", "nota": ""}
+{"expresion": "la play 5", "concepto": "no_vende:play 5", "nota": ""}
+{"expresion": "una play 5", "concepto": "no_vende:play 5", "nota": ""}
+{"expresion": "play cinco", "concepto": "no_vende:play 5", "nota": ""}
+{"expresion": "play5", "concepto": "no_vende:play 5", "nota": ""}
+{"expresion": "la play5", "concepto": "no_vende:play 5", "nota": ""}
+{"expresion": "play 4", "concepto": "no_vende:play 4", "nota": ""}
+{"expresion": "la play 4", "concepto": "no_vende:play 4", "nota": ""}
+{"expresion": "una play 4", "concepto": "no_vende:play 4", "nota": ""}
+{"expresion": "play cuatro", "concepto": "no_vende:play 4", "nota": ""}
+{"expresion": "play4", "concepto": "no_vende:play 4", "nota": ""}
+{"expresion": "la play4", "concepto": "no_vende:play 4", "nota": ""}
+{"expresion": "ps5", "concepto": "no_vende:ps5", "nota": ""}
+{"expresion": "un ps5", "concepto": "no_vende:ps5", "nota": ""}
+{"expresion": "el ps5", "concepto": "no_vende:ps5", "nota": ""}
+{"expresion": "ps 5", "concepto": "no_vende:ps5", "nota": ""}
+{"expresion": "pees 5", "concepto": "no_vende:ps5", "nota": ""}
+{"expresion": "ps5 slim", "concepto": "no_vende:ps5", "nota": ""}
+{"expresion": "ps4", "concepto": "no_vende:ps4", "nota": ""}
+{"expresion": "un ps4", "concepto": "no_vende:ps4", "nota": ""}
+{"expresion": "el ps4", "concepto": "no_vende:ps4", "nota": ""}
+{"expresion": "ps 4", "concepto": "no_vende:ps4", "nota": ""}
+{"expresion": "ps4 slim", "concepto": "no_vende:ps4", "nota": ""}
+{"expresion": "ps4 pro", "concepto": "no_vende:ps4", "nota": ""}
+{"expresion": "xbox", "concepto": "no_vende:xbox", "nota": ""}
+{"expresion": "una xbox", "concepto": "no_vende:xbox", "nota": ""}
+{"expresion": "la xbox", "concepto": "no_vende:xbox", "nota": ""}
+{"expresion": "xbox series x", "concepto": "no_vende:xbox", "nota": ""}
+{"expresion": "xbox series s", "concepto": "no_vende:xbox", "nota": ""}
+{"expresion": "xbox one", "concepto": "no_vende:xbox", "nota": ""}
+{"expresion": "xbox 360", "concepto": "no_vende:xbox", "nota": ""}
+{"expresion": "nintendo", "concepto": "no_vende:nintendo", "nota": ""}
+{"expresion": "una nintendo", "concepto": "no_vende:nintendo", "nota": ""}
+{"expresion": "la nintendo", "concepto": "no_vende:nintendo", "nota": ""}
+{"expresion": "nintendo ds", "concepto": "no_vende:nintendo", "nota": ""}
+{"expresion": "nintendo 3ds", "concepto": "no_vende:nintendo", "nota": ""}
+{"expresion": "nintendo wii", "concepto": "no_vende:nintendo", "nota": ""}
+{"expresion": "nintendo switch", "concepto": "no_vende:nintendo switch", "nota": ""}
+{"expresion": "una switch", "concepto": "no_vende:nintendo switch", "nota": ""}
+{"expresion": "la switch", "concepto": "no_vende:nintendo switch", "nota": ""}
+{"expresion": "switch oled", "concepto": "no_vende:nintendo switch", "nota": ""}
+{"expresion": "switch lite", "concepto": "no_vende:nintendo switch", "nota": ""}
+{"expresion": "nintendo suich", "concepto": "no_vende:nintendo switch", "nota": ""}
+{"expresion": "drone", "concepto": "no_vende:drone", "nota": ""}
+{"expresion": "un drone", "concepto": "no_vende:drone", "nota": ""}
+{"expresion": "dron", "concepto": "no_vende:drone", "nota": ""}
+{"expresion": "un dron", "concepto": "no_vende:drone", "nota": ""}
+{"expresion": "drone con camara", "concepto": "no_vende:drone", "nota": ""}
+{"expresion": "drone dji", "concepto": "no_vende:drone", "nota": ""}
+{"expresion": "drones", "concepto": "no_vende:drones", "nota": ""}
+{"expresion": "los drones", "concepto": "no_vende:drones", "nota": ""}
+{"expresion": "drones dji", "concepto": "no_vende:drones", "nota": ""}
+{"expresion": "drones con camara", "concepto": "no_vende:drones", "nota": ""}
+{"expresion": "drones baratos", "concepto": "no_vende:drones", "nota": ""}
+{"expresion": "heladera", "concepto": "no_vende:heladera", "nota": ""}
+{"expresion": "una heladera", "concepto": "no_vende:heladera", "nota": ""}
+{"expresion": "la heladera", "concepto": "no_vende:heladera", "nota": ""}
+{"expresion": "heladera no frost", "concepto": "no_vende:heladera", "nota": ""}
+{"expresion": "heladera con freezer", "concepto": "no_vende:heladera", "nota": ""}
+{"expresion": "heladera inverter", "concepto": "no_vende:heladera", "nota": ""}
+{"expresion": "heladeras", "concepto": "no_vende:heladeras", "nota": ""}
+{"expresion": "las heladeras", "concepto": "no_vende:heladeras", "nota": ""}
+{"expresion": "heladeras no frost", "concepto": "no_vende:heladeras", "nota": ""}
+{"expresion": "heladeras baratas", "concepto": "no_vende:heladeras", "nota": ""}
+{"expresion": "heladeras samsung", "concepto": "no_vende:heladeras", "nota": ""}
+{"expresion": "lavarropas", "concepto": "no_vende:lavarropas", "nota": ""}
+{"expresion": "un lavarropas", "concepto": "no_vende:lavarropas", "nota": ""}
+{"expresion": "lavarropa", "concepto": "no_vende:lavarropas", "nota": ""}
+{"expresion": "lavaropas", "concepto": "no_vende:lavarropas", "nota": ""}
+{"expresion": "lavarropas automatico", "concepto": "no_vende:lavarropas", "nota": ""}
+{"expresion": "lavarropas carga frontal", "concepto": "no_vende:lavarropas", "nota": ""}
+{"expresion": "microondas", "concepto": "no_vende:microondas", "nota": ""}
+{"expresion": "un microondas", "concepto": "no_vende:microondas", "nota": ""}
+{"expresion": "el microondas", "concepto": "no_vende:microondas", "nota": ""}
+{"expresion": "micro ondas", "concepto": "no_vende:microondas", "nota": ""}
+{"expresion": "horno microondas", "concepto": "no_vende:microondas", "nota": ""}
+{"expresion": "microondas con grill", "concepto": "no_vende:microondas", "nota": ""}
+{"expresion": "aire acondicionado", "concepto": "no_vende:aire acondicionado", "nota": ""}
+{"expresion": "un aire acondicionado", "concepto": "no_vende:aire acondicionado", "nota": ""}
+{"expresion": "aire split", "concepto": "no_vende:aire acondicionado", "nota": ""}
+{"expresion": "un aire", "concepto": "no_vende:aire acondicionado", "nota": ""}
+{"expresion": "aire frio calor", "concepto": "no_vende:aire acondicionado", "nota": ""}
+{"expresion": "aire inverter", "concepto": "no_vende:aire acondicionado", "nota": ""}
+{"expresion": "split frio calor", "concepto": "no_vende:aire acondicionado", "nota": ""}
+{"expresion": "escritorio", "concepto": "no_vende:escritorio", "nota": ""}
+{"expresion": "un escritorio", "concepto": "no_vende:escritorio", "nota": ""}
+{"expresion": "escritorio gamer", "concepto": "no_vende:escritorio", "nota": ""}
+{"expresion": "escritorio para pc", "concepto": "no_vende:escritorio", "nota": ""}
+{"expresion": "mesa de pc", "concepto": "no_vende:escritorio", "nota": ""}
+{"expresion": "mesa gamer", "concepto": "no_vende:escritorio", "nota": ""}
+{"expresion": "escritorio en l", "concepto": "no_vende:escritorio", "nota": ""}
+{"expresion": "escritorios", "concepto": "no_vende:escritorios", "nota": ""}
+{"expresion": "los escritorios", "concepto": "no_vende:escritorios", "nota": ""}
+{"expresion": "escritorios gamer", "concepto": "no_vende:escritorios", "nota": ""}
+{"expresion": "mesas para compu", "concepto": "no_vende:escritorios", "nota": ""}
+{"expresion": "escritorios de oficina", "concepto": "no_vende:escritorios", "nota": ""}
+{"expresion": "camara de fotos", "concepto": "no_vende:camara de fotos", "nota": ""}
+{"expresion": "una camara de fotos", "concepto": "no_vende:camara de fotos", "nota": ""}
+{"expresion": "camara fotografica", "concepto": "no_vende:camara de fotos", "nota": ""}
+{"expresion": "camara reflex", "concepto": "no_vende:camara de fotos", "nota": ""}
+{"expresion": "camara digital", "concepto": "no_vende:camara de fotos", "nota": ""}
+{"expresion": "camara mirrorless", "concepto": "no_vende:camara de fotos", "nota": ""}
+{"expresion": "canon reflex", "concepto": "no_vende:camara de fotos", "nota": ""}
+{"expresion": "camaras de fotos", "concepto": "no_vende:camaras de fotos", "nota": ""}
+{"expresion": "camaras fotograficas", "concepto": "no_vende:camaras de fotos", "nota": ""}
+{"expresion": "camaras reflex", "concepto": "no_vende:camaras de fotos", "nota": ""}
+{"expresion": "camaras digitales", "concepto": "no_vende:camaras de fotos", "nota": ""}
+{"expresion": "camaras mirrorless", "concepto": "no_vende:camaras de fotos", "nota": ""}
+{"expresion": "lavavajillas", "concepto": "no_vende:lavavajillas", "nota": "clave nueva"}
+{"expresion": "lavaplatos", "concepto": "no_vende:lavavajillas", "nota": "clave nueva"}
+{"expresion": "un lavavajillas", "concepto": "no_vende:lavavajillas", "nota": "clave nueva"}
+{"expresion": "lavavajilla", "concepto": "no_vende:lavavajillas", "nota": "clave nueva"}
+{"expresion": "lavaplatos automatico", "concepto": "no_vende:lavavajillas", "nota": "clave nueva"}
+{"expresion": "una cocina", "concepto": "no_vende:cocina", "nota": "clave nueva"}
+{"expresion": "cocina a gas", "concepto": "no_vende:cocina", "nota": "clave nueva"}
+{"expresion": "cocina electrica", "concepto": "no_vende:cocina", "nota": "clave nueva"}
+{"expresion": "anafe", "concepto": "no_vende:cocina", "nota": "clave nueva"}
+{"expresion": "cocina con horno", "concepto": "no_vende:cocina", "nota": "clave nueva"}
+{"expresion": "freidora de aire", "concepto": "no_vende:freidora de aire", "nota": "clave nueva"}
+{"expresion": "airfryer", "concepto": "no_vende:freidora de aire", "nota": "clave nueva"}
+{"expresion": "air fryer", "concepto": "no_vende:freidora de aire", "nota": "clave nueva"}
+{"expresion": "freidora sin aceite", "concepto": "no_vende:freidora de aire", "nota": "clave nueva"}
+{"expresion": "una freidora", "concepto": "no_vende:freidora de aire", "nota": "clave nueva"}
+{"expresion": "licuadora", "concepto": "no_vende:licuadora", "nota": "clave nueva"}
+{"expresion": "una licuadora", "concepto": "no_vende:licuadora", "nota": "clave nueva"}
+{"expresion": "licuadora de mano", "concepto": "no_vende:licuadora", "nota": "clave nueva"}
+{"expresion": "mixer", "concepto": "no_vende:licuadora", "nota": "clave nueva"}
+{"expresion": "procesadora de alimentos", "concepto": "no_vende:licuadora", "nota": "clave nueva"}
+{"expresion": "cafetera", "concepto": "no_vende:cafetera", "nota": "clave nueva"}
+{"expresion": "una cafetera", "concepto": "no_vende:cafetera", "nota": "clave nueva"}
+{"expresion": "cafetera nespresso", "concepto": "no_vende:cafetera", "nota": "clave nueva"}
+{"expresion": "cafetera express", "concepto": "no_vende:cafetera", "nota": "clave nueva"}
+{"expresion": "cafetera de filtro", "concepto": "no_vende:cafetera", "nota": "clave nueva"}
+{"expresion": "aspiradora", "concepto": "no_vende:aspiradora", "nota": "clave nueva"}
+{"expresion": "una aspiradora", "concepto": "no_vende:aspiradora", "nota": "clave nueva"}
+{"expresion": "robot aspiradora", "concepto": "no_vende:aspiradora", "nota": "clave nueva"}
+{"expresion": "aspiradora robot", "concepto": "no_vende:aspiradora", "nota": "clave nueva"}
+{"expresion": "aspiradora sin cable", "concepto": "no_vende:aspiradora", "nota": "clave nueva"}
+{"expresion": "plancha", "concepto": "no_vende:plancha", "nota": "clave nueva"}
+{"expresion": "una plancha", "concepto": "no_vende:plancha", "nota": "clave nueva"}
+{"expresion": "plancha a vapor", "concepto": "no_vende:plancha", "nota": "clave nueva"}
+{"expresion": "planchita de pelo", "concepto": "no_vende:plancha", "nota": "clave nueva"}
+{"expresion": "plancha de ropa", "concepto": "no_vende:plancha", "nota": "clave nueva"}
+{"expresion": "termotanque", "concepto": "no_vende:termotanque", "nota": "clave nueva"}
+{"expresion": "un termotanque", "concepto": "no_vende:termotanque", "nota": "clave nueva"}
+{"expresion": "calefon", "concepto": "no_vende:termotanque", "nota": "clave nueva"}
+{"expresion": "termotanque electrico", "concepto": "no_vende:termotanque", "nota": "clave nueva"}
+{"expresion": "calefon a gas", "concepto": "no_vende:termotanque", "nota": "clave nueva"}
+{"expresion": "calefactor", "concepto": "no_vende:calefactor", "nota": "clave nueva"}
+{"expresion": "un calefactor", "concepto": "no_vende:calefactor", "nota": "clave nueva"}
+{"expresion": "estufa", "concepto": "no_vende:calefactor", "nota": "clave nueva"}
+{"expresion": "estufa electrica", "concepto": "no_vende:calefactor", "nota": "clave nueva"}
+{"expresion": "caloventor", "concepto": "no_vende:calefactor", "nota": "clave nueva"}
+{"expresion": "monopatin electrico", "concepto": "no_vende:monopatin electrico", "nota": "clave nueva"}
+{"expresion": "monopatin", "concepto": "no_vende:monopatin electrico", "nota": "clave nueva"}
+{"expresion": "un monopatin", "concepto": "no_vende:monopatin electrico", "nota": "clave nueva"}
+{"expresion": "bici electrica", "concepto": "no_vende:monopatin electrico", "nota": "clave nueva"}
+{"expresion": "bicicleta electrica", "concepto": "no_vende:monopatin electrico", "nota": "clave nueva"}
+{"expresion": "gopro", "concepto": "no_vende:gopro", "nota": "clave nueva"}
+{"expresion": "una gopro", "concepto": "no_vende:gopro", "nota": "clave nueva"}
+{"expresion": "camara gopro", "concepto": "no_vende:gopro", "nota": "clave nueva"}
+{"expresion": "camara deportiva", "concepto": "no_vende:gopro", "nota": "clave nueva"}
+{"expresion": "camara de accion", "concepto": "no_vende:gopro", "nota": "clave nueva"}
+{"expresion": "kindle", "concepto": "no_vende:ebook", "nota": "clave nueva"}
+{"expresion": "un kindle", "concepto": "no_vende:ebook", "nota": "clave nueva"}
+{"expresion": "ebook", "concepto": "no_vende:ebook", "nota": "clave nueva"}
+{"expresion": "lector de libros electronicos", "concepto": "no_vende:ebook", "nota": "clave nueva"}
+{"expresion": "e reader", "concepto": "no_vende:ebook", "nota": "clave nueva"}
+{"expresion": "placa", "trampa": true, "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": ""}
+{"expresion": "la placa", "trampa": true, "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": ""}
+{"expresion": "placa de 8gb", "trampa": true, "puede_ser": ["rubro:placa_de_video", "rubro:memoria_ram"], "nota": ""}
+{"expresion": "placa nueva", "trampa": true, "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": ""}
+{"expresion": "placa de red", "trampa": true, "puede_ser": ["fuera", "rubro:router"], "nota": ""}
+{"expresion": "placa de sonido", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "una placa para jugar", "trampa": true, "puede_ser": ["rubro:placa_de_video", "rubro:motherboard"], "nota": ""}
+{"expresion": "memoria", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "una memoria", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "memoria de 1tb", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "memoria de 16gb", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "memoria de 256", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:memoria_ram", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "memoria usb", "trampa": true, "puede_ser": ["rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "memoria sd", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "memoria para el celu", "trampa": true, "puede_ser": ["no_vende:celular", "fuera"], "nota": ""}
+{"expresion": "memoria rapida", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:ssd"], "nota": ""}
+{"expresion": "fuente", "trampa": true, "puede_ser": ["rubro:fuente", "fuera"], "nota": ""}
+{"expresion": "una fuente de 12v", "trampa": true, "puede_ser": ["fuera", "rubro:fuente"], "nota": ""}
+{"expresion": "fuente para la notebook", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "fuente de notebook", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "cargador de pc", "trampa": true, "puede_ser": ["fuera", "rubro:fuente"], "nota": ""}
+{"expresion": "fuente para el router", "trampa": true, "puede_ser": ["fuera", "rubro:router"], "nota": ""}
+{"expresion": "fuente para monitor", "trampa": true, "puede_ser": ["fuera", "rubro:fuente"], "nota": ""}
+{"expresion": "fuente de 12 voltios", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "transformador", "trampa": true, "puede_ser": ["fuera", "rubro:fuente"], "nota": ""}
+{"expresion": "disco", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "un disco", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "disco de 1tb", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "disco de 500", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "disco rigido", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "disco duro", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "hdd", "trampa": true, "puede_ser": ["rubro:almacenamiento_externo", "rubro:ssd"], "nota": ""}
+{"expresion": "disco para la pc", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "disco para la play", "trampa": true, "puede_ser": ["rubro:almacenamiento_externo", "no_vende:play 5"], "nota": ""}
+{"expresion": "pendrive", "trampa": true, "puede_ser": ["rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "el cpu", "trampa": true, "puede_ser": ["rubro:procesador", "rubro:gabinete"], "nota": ""}
+{"expresion": "un cpu", "trampa": true, "puede_ser": ["rubro:procesador", "rubro:gabinete"], "nota": ""}
+{"expresion": "cpu", "trampa": true, "puede_ser": ["rubro:procesador", "rubro:gabinete"], "nota": ""}
+{"expresion": "pc armada", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "la torre", "trampa": true, "puede_ser": ["rubro:gabinete", "fuera"], "nota": ""}
+{"expresion": "el micro", "trampa": true, "puede_ser": ["rubro:procesador", "no_vende:microondas"], "nota": ""}
+{"expresion": "un micro", "trampa": true, "puede_ser": ["rubro:procesador", "no_vende:microondas"], "nota": ""}
+{"expresion": "micro", "trampa": true, "puede_ser": ["rubro:procesador", "no_vende:microondas"], "nota": ""}
+{"expresion": "chip", "trampa": true, "puede_ser": ["rubro:procesador", "fuera"], "nota": ""}
+{"expresion": "el cerebro", "trampa": true, "puede_ser": ["rubro:procesador"], "nota": ""}
+{"expresion": "ventilador", "trampa": true, "puede_ser": ["rubro:cooler", "fuera"], "nota": ""}
+{"expresion": "un ventilador", "trampa": true, "puede_ser": ["rubro:cooler", "fuera"], "nota": ""}
+{"expresion": "ventilador de gabinete", "trampa": true, "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": ""}
+{"expresion": "fan para la pc", "trampa": true, "puede_ser": ["rubro:cooler"], "nota": ""}
+{"expresion": "cooler", "trampa": true, "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": ""}
+{"expresion": "refrigeracion", "trampa": true, "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": ""}
+{"expresion": "refrigeracion para la pc", "trampa": true, "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": ""}
+{"expresion": "pasta termica", "trampa": true, "puede_ser": ["fuera", "rubro:cooler"], "nota": ""}
+{"expresion": "caja", "trampa": true, "puede_ser": ["rubro:gabinete", "fuera"], "nota": ""}
+{"expresion": "la caja", "trampa": true, "puede_ser": ["rubro:gabinete", "fuera"], "nota": ""}
+{"expresion": "caja de la pc", "trampa": true, "puede_ser": ["rubro:gabinete"], "nota": ""}
+{"expresion": "carcasa", "trampa": true, "puede_ser": ["rubro:gabinete", "fuera"], "nota": ""}
+{"expresion": "case", "trampa": true, "puede_ser": ["rubro:gabinete", "fuera"], "nota": ""}
+{"expresion": "estuche para disco", "trampa": true, "puede_ser": ["fuera", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "caddy para disco", "trampa": true, "puede_ser": ["fuera", "rubro:ssd"], "nota": ""}
+{"expresion": "modem", "trampa": true, "puede_ser": ["rubro:router", "fuera"], "nota": ""}
+{"expresion": "wifi", "trampa": true, "puede_ser": ["rubro:router", "fuera"], "nota": ""}
+{"expresion": "el wifi", "trampa": true, "puede_ser": ["rubro:router", "fuera"], "nota": ""}
+{"expresion": "antena", "trampa": true, "puede_ser": ["rubro:router", "fuera"], "nota": ""}
+{"expresion": "placa de wifi", "trampa": true, "puede_ser": ["fuera", "rubro:router"], "nota": ""}
+{"expresion": "adaptador wifi usb", "trampa": true, "puede_ser": ["fuera", "rubro:router"], "nota": ""}
+{"expresion": "internet", "trampa": true, "puede_ser": ["rubro:router", "fuera"], "nota": ""}
+{"expresion": "algo para internet", "trampa": true, "puede_ser": ["rubro:router", "fuera"], "nota": ""}
+{"expresion": "tinta", "trampa": true, "puede_ser": ["fuera", "rubro:impresora"], "nota": ""}
+{"expresion": "toner", "trampa": true, "puede_ser": ["fuera", "rubro:impresora"], "nota": ""}
+{"expresion": "cartuchos", "trampa": true, "puede_ser": ["fuera", "rubro:impresora"], "nota": ""}
+{"expresion": "escaner", "trampa": true, "puede_ser": ["rubro:impresora", "fuera"], "nota": ""}
+{"expresion": "scanner", "trampa": true, "puede_ser": ["rubro:impresora", "fuera"], "nota": ""}
+{"expresion": "multifuncion", "trampa": true, "puede_ser": ["rubro:impresora"], "nota": ""}
+{"expresion": "impresora 3d", "trampa": true, "puede_ser": ["fuera", "rubro:impresora"], "nota": ""}
+{"expresion": "m2", "trampa": true, "puede_ser": ["rubro:ssd", "fuera"], "nota": ""}
+{"expresion": "nvme", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:motherboard"], "nota": ""}
+{"expresion": "ddr4", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:motherboard", "rubro:procesador"], "nota": ""}
+{"expresion": "ddr5", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:motherboard"], "nota": ""}
+{"expresion": "am4", "trampa": true, "puede_ser": ["rubro:motherboard", "rubro:procesador"], "nota": ""}
+{"expresion": "am5", "trampa": true, "puede_ser": ["rubro:motherboard", "rubro:procesador"], "nota": ""}
+{"expresion": "socket 1700", "trampa": true, "puede_ser": ["rubro:motherboard", "rubro:procesador"], "nota": ""}
+{"expresion": "b550", "trampa": true, "puede_ser": ["rubro:motherboard"], "nota": ""}
+{"expresion": "ryzen 5 con mother", "trampa": true, "puede_ser": ["rubro:procesador", "rubro:motherboard"], "nota": ""}
+{"expresion": "rtx", "trampa": true, "puede_ser": ["rubro:placa_de_video"], "nota": ""}
+{"expresion": "amd", "trampa": true, "puede_ser": ["rubro:procesador", "rubro:placa_de_video"], "nota": ""}
+{"expresion": "nvidia", "trampa": true, "puede_ser": ["rubro:placa_de_video"], "nota": ""}
+{"expresion": "intel", "trampa": true, "puede_ser": ["rubro:procesador", "fuera"], "nota": ""}
+{"expresion": "kingston", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "samsung", "trampa": true, "puede_ser": ["rubro:ssd", "no_vende:celular", "no_vende:televisor", "rubro:almacenamiento_externo"], "nota": ""}
+{"expresion": "wd", "trampa": true, "puede_ser": ["rubro:almacenamiento_externo", "rubro:ssd"], "nota": ""}
+{"expresion": "corsair", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:fuente", "rubro:gabinete", "rubro:cooler"], "nota": ""}
+{"expresion": "cooler master", "trampa": true, "puede_ser": ["rubro:cooler", "rubro:fuente", "rubro:gabinete"], "nota": ""}
+{"expresion": "una pc", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "compu", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "la play", "trampa": true, "puede_ser": ["no_vende:playstation"], "nota": ""}
+{"expresion": "tele", "trampa": true, "puede_ser": ["no_vende:televisor", "fuera"], "nota": ""}
+{"expresion": "pantalla", "trampa": true, "puede_ser": ["fuera"], "nota": ""}
+{"expresion": "para guardar fotos", "trampa": true, "puede_ser": ["rubro:almacenamiento_externo", "rubro:ssd"], "nota": ""}
+{"expresion": "para que no se trabe", "trampa": true, "puede_ser": ["rubro:memoria_ram", "rubro:ssd", "rubro:procesador"], "nota": ""}
+{"expresion": "para que no se caliente", "trampa": true, "puede_ser": ["rubro:cooler", "rubro:gabinete"], "nota": ""}
+{"expresion": "para jugar", "trampa": true, "puede_ser": ["rubro:placa_de_video", "fuera"], "nota": ""}
+{"expresion": "para imprimir", "trampa": true, "puede_ser": ["rubro:impresora"], "nota": ""}
+{"expresion": "para el wifi", "trampa": true, "puede_ser": ["rubro:router", "fuera"], "nota": ""}
+{"expresion": "mejorar la pc", "trampa": true, "puede_ser": ["rubro:ssd", "rubro:memoria_ram", "rubro:placa_de_video", "rubro:procesador"], "nota": ""}
+{"expresion": "mother nueva", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother usada", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother barata", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "una mother", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mothers gamer", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "la placa del procesador", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother para armar pc", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother chica", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother con ranura m2", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "mother con wifi y bluetooth", "concepto": "rubro:motherboard", "nota": ""}
+{"expresion": "placa de video nueva", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "placa de video usada", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la placa de jugar", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "una placa de 8 gigas", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "la grafica de la pc", "concepto": "rubro:placa_de_video", "nota": ""}
+{"expresion": "router nuevo", "concepto": "rubro:router", "nota": ""}
+{"expresion": "un router wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router barato", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router para internet", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el router de casa", "concepto": "rubro:router", "nota": ""}
+{"expresion": "routr", "concepto": "rubro:router", "nota": ""}
+{"expresion": "un ruter wifi", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el aparato de internet", "concepto": "rubro:router", "nota": ""}
+{"expresion": "el wifi de casa", "concepto": "rubro:router", "nota": ""}
+{"expresion": "router con puertos", "concepto": "rubro:router", "nota": ""}

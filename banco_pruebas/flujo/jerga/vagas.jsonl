@@ -1,0 +1,57 @@
+{"expresion": "bien graves", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "bien graves"}
+{"expresion": "buen sonido", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "buen sonido"}
+{"expresion": "calidad", "concepto_cercano": null, "nota": "calidad general", "fuente": "agente:atributos", "nrm": "calidad"}
+{"expresion": "cheto", "concepto_cercano": "orden:mas_caro", "nota": "alta gama, caro es lo cercano", "fuente": "agente:atributos", "nrm": "cheto"}
+{"expresion": "chiquitito", "concepto_cercano": "orden:mas_liviano", "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "chiquitito"}
+{"expresion": "chiquito", "concepto_cercano": "orden:mas_liviano", "nota": "tamaño chico, peso es lo mas cercano", "fuente": "agente:atributos", "nrm": "chiquito"}
+{"expresion": "comodo", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "comodo"}
+{"expresion": "confiable", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "confiable"}
+{"expresion": "copado", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "copado"}
+{"expresion": "de calidad", "concepto_cercano": null, "nota": "calidad general", "fuente": "agente:atributos", "nrm": "de calidad"}
+{"expresion": "de marca", "concepto_cercano": null, "nota": "marca, no hay concepto de marca", "fuente": "agente:atributos", "nrm": "de marca"}
+{"expresion": "de primera", "concepto_cercano": "orden:mas_caro", "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "de primera"}
+{"expresion": "durabilidad", "concepto_cercano": null, "nota": "durabilidad, la ficha no la trae", "fuente": "agente:atributos", "nrm": "durabilidad"}
+{"expresion": "elegante", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "elegante"}
+{"expresion": "ergonomico", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "ergonomico"}
+{"expresion": "fuerte", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "fuerte"}
+{"expresion": "garantizado", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "garantizado"}
+{"expresion": "lindito", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "lindito"}
+{"expresion": "lindo", "concepto_cercano": null, "nota": "estetica", "fuente": "agente:atributos", "nrm": "lindo"}
+{"expresion": "lindo diseño", "concepto_cercano": null, "nota": "estetica", "fuente": "agente:atributos", "nrm": "lindo diseno"}
+{"expresion": "lo mas nuevo", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "lo mas nuevo"}
+{"expresion": "lo ultimo que salio", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "lo ultimo que salio"}
+{"expresion": "marca conocida", "concepto_cercano": null, "nota": "prestigio de marca, no hay concepto", "fuente": "agente:atributos", "nrm": "marca conocida"}
+{"expresion": "minimalista", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "minimalista"}
+{"expresion": "moderno", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "moderno"}
+{"expresion": "original no trucho", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "original no trucho"}
+{"expresion": "plug and play", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "plug and play"}
+{"expresion": "premium", "concepto_cercano": "orden:mas_caro", "nota": "alta gama", "fuente": "agente:atributos", "nrm": "premium"}
+{"expresion": "pulenta", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "pulenta"}
+{"expresion": "que ande bien", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que ande bien"}
+{"expresion": "que dure", "concepto_cercano": null, "nota": "durabilidad", "fuente": "agente:atributos", "nrm": "que dure"}
+{"expresion": "que dure la bateria", "concepto_cercano": "atributo:con_bateria", "nota": "autonomia, la ficha solo dice si tiene bateria", "fuente": "agente:atributos", "nrm": "que dure la bateria"}
+{"expresion": "que funcione joya", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que funcione joya"}
+{"expresion": "que no canse", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que no canse"}
+{"expresion": "que no falle", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que no falle"}
+{"expresion": "que no ocupe lugar", "concepto_cercano": "orden:mas_liviano", "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que no ocupe lugar"}
+{"expresion": "que no se cuelgue", "concepto_cercano": "orden:mas_ram", "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que no se cuelgue"}
+{"expresion": "que no se rompa", "concepto_cercano": null, "nota": "durabilidad", "fuente": "agente:atributos", "nrm": "que no se rompa"}
+{"expresion": "que no se trabe", "concepto_cercano": "orden:mas_ram", "nota": "fluidez, ram es lo mas cercano", "fuente": "agente:atributos", "nrm": "que no se trabe"}
+{"expresion": "que no sea generico", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que no sea generico"}
+{"expresion": "que no sea trucho", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que no sea trucho"}
+{"expresion": "que rinda", "concepto_cercano": "orden:mas_nucleos", "nota": "rendimiento general", "fuente": "agente:atributos", "nrm": "que rinda"}
+{"expresion": "que se conecte facil", "concepto_cercano": "atributo:bluetooth", "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que se conecte facil"}
+{"expresion": "que se escuche claro", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que se escuche claro"}
+{"expresion": "que se la banque", "concepto_cercano": null, "nota": "durabilidad, la ficha no la trae", "fuente": "agente:atributos", "nrm": "que se la banque"}
+{"expresion": "que se vea bien", "concepto_cercano": "atributo:full_hd", "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que se vea bien"}
+{"expresion": "que se vea nitido", "concepto_cercano": "atributo:full_hd", "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que se vea nitido"}
+{"expresion": "que sea facil de usar", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que sea facil de usar"}
+{"expresion": "que sea marca", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que sea marca"}
+{"expresion": "que sea piola", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que sea piola"}
+{"expresion": "que sea sano", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que sea sano"}
+{"expresion": "que suene bien", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que suene bien"}
+{"expresion": "que tenga buena camara", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "que tenga buena camara"}
+{"expresion": "resistente", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "resistente"}
+{"expresion": "robusto", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "robusto"}
+{"expresion": "ultimo modelo", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "ultimo modelo"}
+{"expresion": "zarpado", "concepto_cercano": null, "nota": "pedido vago, la ficha no lo trae", "fuente": "agente:atributos", "nrm": "zarpado"}
