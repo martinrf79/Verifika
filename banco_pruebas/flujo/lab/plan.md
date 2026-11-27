@@ -323,3 +323,32 @@ Por clase, en el examen:
 - Dato 2, 6: stock y precio dichos en otra fila, el campo dpi.
 - Sin consumidor, 153: la cantidad, 45; comprar, 64; destino, pago y tope, 34; comparar, compatibilidad y
   caracteristicas, 10. Esta cadena del banco no los lee.
+
+### Correccion de la medicion, 27-nov, antes de creer el Resultado 7
+
+Revisando los casos de la ficha aparecieron dos errores del guion, no de la cadena: la marca y el modelo que Luna dejo
+sin marcar los toma la condicion y filtra con ellos, y lo que la tienda no vende puede ir como nombre a existe, que es
+quien dice no hay. Con eso, el codigo de hoy pierde 62 de 472 en el examen, no 91, y 9 de 109 en las reales, no 18.
+
+## Resultado 8, la ficha sin borrado, 27-nov
+
+Guion: `primeros/ficha.py`, encima de `condicion.pedidos` sin cambiarla. Se mide con `perdidas.py --ficha`.
+
+| conjunto | tramos sin ningun uso | llegan | dichos sin dato | el codigo los pierde |
+| --- | --- | --- | --- | --- |
+| examen, hoy | sin medir | 407 de 472 | 3 | 62 |
+| examen, con la ficha | 0 de 974 | 424 | 10 | 38 |
+| reales, hoy | sin medir | 100 de 109 | 0 | 9 |
+| reales, con la ficha | 0 de 238 | 103 | 0 | 6 |
+
+Lo que la ficha devuelve: la fila que ningun pedido tomaba, "y cual la mas cara", "el tercero tiene wifi 6"; el modelo
+sin marcar al nombre de existe; lo que queda, dicho sin dato o no reconocido.
+
+Lo que sigue perdido no es del recipiente: es de quien lo tiene que usar.
+- Lo que la tienda no vende y existe no caza, 11: "impresora 3d", "playstation 5", "cable de 5 metros", "en oferta",
+  "origen estados unidos". Toca a existe y a `no_vendidas.json`.
+- Condiciones vagas o de uso, 10: "para escribir mucho", "la mayor ram posible", "para que juegue". Toca a la condicion.
+- Rubro sin marcar, 8: "compu", "memoria", "aparato cuadrado con teclas". Toca a Luna, paso 2.
+- Dato 2 en otra fila, 6. Toca a Luna, paso 2, el papel de pregunta.
+- Visto en el control a mano: el destino sin marcar, "a Cordoba", entra como nombre de un pedido sin producto. Es papel de
+  destino, paso 2.

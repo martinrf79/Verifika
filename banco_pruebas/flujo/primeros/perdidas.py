@@ -15,9 +15,11 @@ import collections, os, re, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 VER = "--ver" in sys.argv
+FICHA = "--ficha" in sys.argv
 sys.path[:0] = [AQUI]
 sys.dont_write_bytecode = True
 import condicion as K  # noqa: E402
+import ficha as FI  # noqa: E402
 
 C, nrm = K.C, K.nrm
 VACIAS = set("de del la el los las un una uno unos unas que y o a en con para por me mi se lo le al es sea su".split())
@@ -45,19 +47,27 @@ def texto_pedido(f):
 
 
 def usado(c, peds):
+    """True si llega a la funcion que le toca; "dicho" si queda dicho sin dato o no reconocido; falso si no."""
     t, p = c["tipo"], c["palabras"]
+    dicho = any(esta(p, s) for f in peds for s in list(f["sin_dato"]) + list(f.get("no_reconocido", [])))
     if t == "rubro":
         r = nrm(str(c["valor"]).split(":", 1)[-1]).replace("_", " ")
         return any(f["rubro"] and (nrm(f["rubro"]) == r or nrm(f["rubro"]).rstrip("s") == r.rstrip("s")) for f in peds)
     if t in ("marca", "modelo"):
-        return any(esta(p, f.get("nombre") or "") for f in peds)
+        # Llega si va al nombre de existe, o si la condicion lo ato como marca o modelo para filtrar.
+        return any(esta(p, f.get("nombre") or "") for f in peds) or any(
+            d["tipo"] in ("marca", "modelo") and (esta(p, d.get("texto") or "") or esta(d.get("texto") or "x y z", p))
+            for f in peds for d in f["atadas"])
     if t in CONDICION:
-        return any(esta(p, d.get("texto") or "") or esta(d.get("texto") or "x y z", p) for f in peds for d in f["atadas"]) \
-            or any(esta(p, s) for f in peds for s in f["sin_dato"])
+        if any(esta(p, d.get("texto") or "") or esta(d.get("texto") or "x y z", p) for f in peds for d in f["atadas"]):
+            return True
+        return "dicho" if dicho else False
     if t == "fuera":
         if c["valor"] == "ignorar":
             return True
-        return any(esta(p, s) for f in peds for s in f["sin_dato"])
+        # Lo que la tienda no vende llega si queda dicho, o si va en el nombre a existe y existe dice que no hay.
+        return dicho or any(f.get("nombre") and esta(p, f["nombre"]) and FI.EX.existe(f["nombre"])[0] == "no_hay"
+                            for f in peds)
     return None
 
 
@@ -72,7 +82,12 @@ def main():
     for e in ex:
         textos = (luna.get(e["id"], {}).get("salida") or {}).get("textos") or []
         lt = " | ".join(re.sub(r"\[[^\]]*\]", " ", t) for t in textos)
-        peds = K.pedidos(textos)
+        if FICHA:
+            peds, tramos = FI.armar(textos)
+            n[("tramos", "sin uso")] += sum(1 for tr in tramos if not tr["usos"])
+            n[("tramos", "total")] += len(tramos)
+        else:
+            peds = K.pedidos(textos)
         tp = " || ".join(texto_pedido(f) for f in peds)
         for ip, p in enumerate(e["pedidos"]):
             for c in p["cas"]:
@@ -85,7 +100,7 @@ def main():
                     etapa = "pedido"
                 else:
                     u = usado(c, peds)
-                    etapa = "llega" if u else "uso"
+                    etapa = "dicho" if u == "dicho" else ("llega" if u else "uso")
                 grupo = "condicion" if tipo in CONDICION else tipo
                 n[(grupo, etapa)] += 1
                 if etapa in ("pedido", "uso"):
@@ -109,15 +124,18 @@ def main():
                 if tipo in ("destino", "pago", "tope"):
                     etapa = "luna" if not esta(tramo, lt) else "sin consumidor"
                     n[("global " + tipo, etapa)] += 1
-    etapas = ["llega", "uso", "pedido", "luna", "sin consumidor"]
-    grupos = sorted({g for g, _ in n})
+    etapas = ["llega", "dicho", "uso", "pedido", "luna", "sin consumidor"]
+    if FICHA:
+        print(f"ficha: {n[('tramos', 'total')]} tramos, sin ningun uso {n[('tramos', 'sin uso')]}\n")
+    grupos = sorted({g for g, _ in n if g != "tramos"})
     print(f"{'':22}" + "".join(f"{x:>16}" for x in etapas))
     for g in grupos:
         print(f"{g:22}" + "".join(f"{n[(g, x)]:>16}" for x in etapas))
     tot = {x: sum(n[(g, x)] for g in grupos) for x in etapas}
     print(f"{'total':22}" + "".join(f"{tot[x]:>16}" for x in etapas))
-    luna_ok = tot["llega"] + tot["uso"] + tot["pedido"]
-    print(f"\ncon lo que Luna si tenia, {luna_ok}: el codigo lo pierde en el pedido {tot['pedido']}, sin usar {tot['uso']}")
+    luna_ok = tot["llega"] + tot["dicho"] + tot["uso"] + tot["pedido"]
+    print(f"\ncon lo que Luna si tenia, {luna_ok}: llega {tot['llega']}, dicho sin dato {tot['dicho']}, "
+          f"el codigo lo pierde en el pedido {tot['pedido']}, sin usar {tot['uso']}")
     if VER:
         for k, v in sorted(casos.items()):
             print(f"\n== {k[0]} · {k[1]} · {len(v)}")
