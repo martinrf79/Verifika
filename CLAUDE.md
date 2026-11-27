@@ -43,8 +43,9 @@ de la FICHA 83 quedó archivado: se vuelve a él con git revert.
 ### Lo medido
 
 - **La vara sin modelo:** `tests/test_flujo_nuevo.py`, las 26 charlas pasan por el webhook vivo con las piezas grabadas
-  del banco, `banco_pruebas/flujo/segunda.py`: 58 de 75 turnos el 17-nov. El agente archivado daba 72 a 73 con el
-  modelo; lo que falta, por causa, en `PENDIENTE.md`. Vale acertar o repreguntar, lo que importa es no errar.
+  del banco, `banco_pruebas/flujo/segunda.py`: 58 de 75 turnos el 17-nov. Lo que falta, por causa, en
+  `PENDIENTE.md`. El 72 de 75 del agente archivado de la FICHA 83 no vale como referencia: era sobre las 26 charlas
+  escritas por nosotros, y con charlas reales dio 80 de 113 turnos el 3-nov, FICHA 91; Martín, 27-nov, no se vuelve a él. Vale acertar o repreguntar, lo que importa es no errar.
 - **Con el modelo**, `segunda.py --correr <etiqueta>`: un centavo por corrida.
 - **Las alucinaciones:** `banco_pruebas/alucinaciones.py` inyecta cada clase en las respuestas grabadas, compatibilidad
   incluida: el verificador caza el 99,3%, con 0 falsas alarmas. Lo que sigue marcado después de corregir no sale.

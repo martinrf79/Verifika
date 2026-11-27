@@ -74,7 +74,9 @@ el cobro, el cierre con el lead y la calculadora del agente se reusan como está
 ## 5. El camino completo contra el agente
 
 - **El banco:** las 26 charlas de `tests/test_agente.py`, donde el agente da 75 de 75 turnos sin modelo, y las corridas
-  con el modelo, donde da 72 de 75. Variación entre corridas, unos 7 turnos: tres corridas por lado.
+  con el modelo, donde da 72 de 75. Variación entre corridas, unos 7 turnos: tres corridas por lado. **Corregido el
+  27-nov, Martín:** ese número es sobre charlas escritas por nosotros y no se sostiene; con charlas reales el agente dio
+  80 de 113 turnos el 3-nov, FICHA 91. No se usa como referencia.
 - **Cómo:** el flujo entero por el webhook, turno por turno, con la memoria; la llamada 0 y la segunda llamada grabadas
   la primera vez, para repetirlas sin modelo como `agente_replay.py`. Un test nuevo con su piso, como `test_agente.py`.
 - **El corte, escrito antes de correr y con el ok de Martín:** turnos bien igual o mejor que el agente en las tres

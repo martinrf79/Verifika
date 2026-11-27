@@ -4,6 +4,10 @@
 `banco_pruebas/momento0.py`, `razonar.py`, `sinteticas_separar.py` y `sinteticas_verifika.py`. Cada número tiene su
 commit, que lo cuenta solo.
 
+> **Aviso del 27-nov, Martín: los números de esta ficha no son una referencia válida.** El 74 y el 72 de 75 son sobre
+> las 26 charlas escritas por nosotros. Con charlas reales el agente dio 80 de 113 turnos el 3-nov, FICHA 91, y en
+> producción y con preguntas nuevas no se sostuvo. No se propone volver a este agente por esos números.
+
 ## La idea, de Martín
 
 Primero separar bien, y solo separar. El modelo no tiene que inventar nada: tiene que leer lo que pidió el cliente y
