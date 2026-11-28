@@ -11,7 +11,7 @@ Sin modelo y sin gasto: lee lo que Luna separo, grabado. No cambia la cadena.
 
     python3 primeros/perdidas.py [--examen|--reales] [--ver]
 """
-import collections, os, re, sys
+import collections, difflib, os, re, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 VER = "--ver" in sys.argv
@@ -30,14 +30,26 @@ def palabras(t):
     return [w for w in re.findall(r"[a-z0-9]+", nrm(t)) if w not in VACIAS]
 
 
+def corregida(w, ts):
+    """La palabra del cliente esta en lo de Luna con el tipeo corregido: "mause" es "mouse", "moderbor" es
+    "motherboard". Luna corrige la ortografia, y eso no es perder el dato. Solo contra palabras de lo que Luna
+    escribio para este mismo mensaje, con parecido de letras de 0,6 o mas, o la misma raiz de cuatro letras."""
+    if len(w) < 3:
+        return False
+    return any(difflib.SequenceMatcher(None, w, x).ratio() >= 0.6 or (len(w) >= 4 and x.startswith(w[:4]))
+               for x in ts)
+
+
 def esta(p, texto):
-    """Las palabras de contenido de `p` estan en `texto`: todas, o dos de cada tres si son tres o mas."""
+    """Las palabras de contenido de `p` estan en `texto`: todas, o dos de cada tres si son tres o mas. Una palabra
+    con el tipeo corregido por Luna cuenta como que esta."""
     ws = palabras(p)
     if not ws:
         return True
     t = " ".join(palabras(texto))
     junto = t.replace(" ", "")
-    hay = sum(1 for w in ws if re.search(r"\b" + re.escape(w), t) or w in junto)
+    ts = t.split()
+    hay = sum(1 for w in ws if re.search(r"\b" + re.escape(w), t) or w in junto or corregida(w, ts))
     return hay == len(ws) or (len(ws) >= 3 and hay * 3 >= len(ws) * 2)
 
 
