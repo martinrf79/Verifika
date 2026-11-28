@@ -36,8 +36,9 @@ Con la entrada de las etiquetas, `primeros/perdidas.py`:
 | la cadena del banco, sin ficha | 62 se pierden | 9 |
 | con la ficha, `primeros/ficha.py` | 0 se pierden en el camino; 37 quedan sin resolver | 0; 6 sin resolver |
 
-Control: cada palabra que escribio Luna esta en algun tramo; quedan afuera 4 "y" de 2.809. Luna pierde 28 datos del
-examen y 5 de las reales: eso es traduccion, aparte.
+Control: cada palabra que escribio Luna esta en algun tramo; quedan afuera 4 "y" de 2.809. Corregido el 28-nov: se
+decia que Luna pierde 28 datos del examen y 5 de las reales. No los pierde: corrige el tipeo, "mause" a "mouse", y el
+guion buscaba la palabra literal. Con el tipeo contado, quedan 3 y 1, y los cuatro son normalizaciones. FICHA 112.
 
 Los 37 sin resolver del examen, por responsable:
 - existe, 4: lo que la tienda no vende, celulares, Play 5, cable de 5 metros, dicho adentro de una pregunta de stock, o

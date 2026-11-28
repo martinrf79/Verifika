@@ -98,10 +98,48 @@ def tabla_md(res):
     print(f"| total | {n} | " + " | ".join(str(tot[c]) for c in cols) + " |")
 
 
+
+def medir_vectores(nombres=("reales", "examen"), k=5, ver=False):
+    """Etapa 1 paso 2: sobre los tramos que el codigo NO da por claros y piden un concepto de la tienda, si el
+    concepto de la etiqueta esta entre los k candidatos de los embeddings. Mide solo la busqueda, con el tramo
+    perfecto. Con contexto: el nombre del rubro etiquetado en el mismo pedido, como si lo diera otra fila."""
+    import vectores as V
+    base, ix = N.base(), V.Indice()
+    nombre = {k_: v["nombre"] for k_, v in T.ENCARGO["conceptos"].items()}
+    for n in nombres:
+        r = {m: Counter() for m in ("sin contexto", "con contexto")}
+        total = 0
+        for m in json.load(open(os.path.join(PRIMEROS, n + ".json"))):
+            for p in m["pedidos"]:
+                rub = [c["valor"] for c in p["cas"] if c["tipo"] == "rubro" and isinstance(c["valor"], str)]
+                for c in p["cas"]:
+                    if c["tipo"] not in CONCEPTO and not (c["tipo"] == "fuera" and c["valor"] == "no_vende"):
+                        continue
+                    if base.resolver(c["palabras"])["veredicto"] == "claro":
+                        continue
+                    total += 1
+                    buenos = c["valor"] if isinstance(c["valor"], list) else [c["valor"]]
+                    ctx = nombre.get(rub[0], "") if rub and c["tipo"] != "rubro" else ""
+                    for modo in r:
+                        cs = [x["concepto"] for x in ix.candidatos(c["palabras"], k, contexto=ctx if modo == "con contexto" else "")]
+                        bien = (lambda x: x.startswith("no_vende:")) if c["tipo"] == "fuera" else (lambda x: x in buenos)
+                        ok = any(bien(x) for x in cs)
+                        r[modo]["esta" if ok else "no_esta"] += 1
+                        r[modo]["primero"] += bool(cs and bien(cs[0]))
+                        if ver and not ok and modo == "con contexto":
+                            print(f"   {m['id']} {c['palabras']!r} {c['valor']} ctx={ctx!r} -> {cs}")
+        print(f"\n## {n}: {total} tramos que el codigo no da por claros")
+        for modo, v in r.items():
+            print(f"  {modo:13} el bueno entre los {k}: {v['esta']}, primero: {v['primero']}, no esta: {v['no_esta']}")
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     ver = a[a.index("--ver") + 1] if "--ver" in a else None
     nombres = ["reales"] if "--reales" in a else ["examen"] if "--examen" in a else ["reales", "examen"]
+    if "--vectores" in a:
+        medir_vectores(nombres, ver=bool(ver))
+        sys.exit()
     if "--semillas" in a:
         t, g, tr, v, _ = T.armar(solo_semillas=True)
         for x in t + g + tr + v:
@@ -115,3 +153,4 @@ if __name__ == "__main__":
         res, aparte = medir(n, base, ver)
         tabla_md(res)
         print("aparte, del codigo:", dict(aparte))
+

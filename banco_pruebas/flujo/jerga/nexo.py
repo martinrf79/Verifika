@@ -191,6 +191,10 @@ class Base:
             else:
                 dudosos += orden
         ver = "ambiguo" if dudosos else "claro"
+        if ver == "claro" and any(x["via"].startswith("tipeo") for x in elegidos):
+            # medido el 28-nov: lo que solo se encontro por parecido de letras, dado por claro, acerto 0 de 3 en el
+            # examen. Nunca es claro: va con los candidatos a Luna.
+            ver, dudosos = "parcial", elegidos
         if ver == "claro" and cobertura < 0.5:
             # una descripcion larga donde la tabla entendio una palabra suelta: va al respaldo con los candidatos
             ver, dudosos = "parcial", elegidos
