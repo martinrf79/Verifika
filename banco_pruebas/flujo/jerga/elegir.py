@@ -64,11 +64,15 @@ def significado(cid):
     return cid
 
 
-def pedir(motor, mensaje, fila, candidatos):
+def pedir(motor, mensaje, fila, candidatos, con_expresion=False):
     from openai import OpenAI
     prov, modelo, esfuerzo = MOTORES[motor]
     ids = [c["concepto"] for c in candidatos]
-    lista = "\n".join(f"- {c}: {significado(c)}" for c in ids)
+    if con_expresion:
+        # Con la expresion de la base que trajo a cada candidato: el modelo ve por que vino, no solo el nombre.
+        lista = "\n".join(f"- {c['concepto']}: {significado(c['concepto'])}, por \"{c['expresion']}\"" for c in candidatos)
+    else:
+        lista = "\n".join(f"- {c}: {significado(c)}" for c in ids)
     usuario = f"MENSAJE DEL CLIENTE: {mensaje}\nFILA: {fila}\nCANDIDATOS:\n{lista}"
     esquema = {"type": "object", "properties": {"elegido": {"type": "string", "enum": ids + list(SIN)}},
                "required": ["elegido"], "additionalProperties": False}
