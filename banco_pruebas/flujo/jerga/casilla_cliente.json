@@ -1,0 +1,297 @@
+{
+ "_que_es": "Casilla del lado del cliente, criterio de Martin del 28-nov: lo que quiso decir el cliente, sin mirar si la tienda puede responderlo. Solo para los tramos que el examen marca como que no piden nada de la tienda. tecnico: un dato tecnico que resuelve el codigo de numeros y compatibilidad, aparte. vago: pide algo que no tiene concepto en la lista. ninguno: no pide nada. La escribio Claude el 28-nov leyendo cada tramo con su mensaje; no cambia el examen congelado.",
+ "casillas": {
+  "P273|0|2": [
+   "vago",
+   "ninguno"
+  ],
+  "P367|0|2": [
+   "atributo:con_luces",
+   "campo:retroiluminacion"
+  ],
+  "S003|0|3": [
+   "vago"
+  ],
+  "S006|0|3": "tecnico",
+  "S006|0|4": [
+   "vago"
+  ],
+  "S010|0|2": [
+   "vago"
+  ],
+  "S010|0|3": [
+   "campo:material",
+   "vago"
+  ],
+  "S011|0|2": "tecnico",
+  "S013|0|1": "tecnico",
+  "S013|0|2": [
+   "vago"
+  ],
+  "S014|0|2": [
+   "vago"
+  ],
+  "S016|0|2": "tecnico",
+  "S016|0|3": "tecnico",
+  "S017|0|3": "tecnico",
+  "S019|0|1": [
+   "vago"
+  ],
+  "S019|0|2": [
+   "ninguno"
+  ],
+  "S025|1|2": "tecnico",
+  "S031|0|1": [
+   "vago",
+   "orden:mas_barato"
+  ],
+  "S032|0|1": [
+   "vago"
+  ],
+  "S033|0|1": [
+   "vago"
+  ],
+  "S034|0|1": [
+   "vago"
+  ],
+  "S035|0|1": [
+   "plataforma:android",
+   "atributo:bluetooth",
+   "vago",
+   "ninguno"
+  ],
+  "S037|0|1": [
+   "vago",
+   "ninguno"
+  ],
+  "S037|0|2": [
+   "orden:mas_barato",
+   "vago"
+  ],
+  "S038|0|1": [
+   "vago",
+   "ninguno"
+  ],
+  "S039|0|1": [
+   "vago"
+  ],
+  "S040|0|1": [
+   "preferencia:uso_streaming",
+   "vago",
+   "ninguno"
+  ],
+  "S043|0|2": [
+   "preferencia:uso_oficina",
+   "vago",
+   "ninguno"
+  ],
+  "S045|0|1": [
+   "vago"
+  ],
+  "S045|0|2": [
+   "vago"
+  ],
+  "S050|0|2": [
+   "preferencia:uso_oficina",
+   "vago",
+   "ninguno"
+  ],
+  "S066|0|2": "tecnico",
+  "S079|0|1": "tecnico",
+  "S085|1|2": "tecnico",
+  "S091|0|1": [
+   "preferencia:uso_oficina",
+   "vago"
+  ],
+  "S094|0|1": [
+   "preferencia:uso_oficina",
+   "vago"
+  ],
+  "S095|0|1": [
+   "vago"
+  ],
+  "S096|0|1": [
+   "vago"
+  ],
+  "S097|0|2": [
+   "vago"
+  ],
+  "S099|0|1": [
+   "vago"
+  ],
+  "S100|0|1": [
+   "preferencia:uso_streaming",
+   "preferencia:uso_oficina",
+   "vago"
+  ],
+  "S106|0|1": [
+   "preferencia:uso_streaming"
+  ],
+  "S107|0|1": "tecnico",
+  "S108|0|1": [
+   "vago",
+   "atributo:wifi"
+  ],
+  "S109|0|1": [
+   "atributo:con_luces",
+   "vago"
+  ],
+  "S128|0|1": "tecnico",
+  "S147|1|2": "tecnico",
+  "S151|0|2": [
+   "vago"
+  ],
+  "S153|0|3": "tecnico",
+  "S154|0|2": [
+   "preferencia:uso_streaming"
+  ],
+  "S156|0|3": [
+   "vago"
+  ],
+  "S157|0|3": [
+   "vago"
+  ],
+  "S158|0|1": [
+   "campo:conexion",
+   "atributo:con_cable",
+   "vago"
+  ],
+  "S158|0|2": [
+   "preferencia:uso_streaming",
+   "preferencia:uso_oficina"
+  ],
+  "S159|0|3": [
+   "vago"
+  ],
+  "S160|0|2": [
+   "preferencia:uso_oficina",
+   "vago",
+   "ninguno"
+  ],
+  "S162|0|1": [
+   "preferencia:uso_oficina",
+   "vago"
+  ],
+  "S163|0|2": "tecnico",
+  "S165|0|4": [
+   "vago",
+   "orden:mas_barato"
+  ],
+  "S166|0|2": [
+   "preferencia:uso_oficina",
+   "vago",
+   "ninguno"
+  ],
+  "S167|0|4": "tecnico",
+  "S169|0|3": [
+   "preferencia:uso_oficina",
+   "ninguno"
+  ],
+  "S170|0|1": [
+   "vago"
+  ],
+  "S174|1|1": [
+   "ninguno"
+  ],
+  "S183|0|3": [
+   "preferencia:uso_streaming",
+   "preferencia:uso_oficina",
+   "vago"
+  ],
+  "S185|0|3": [
+   "preferencia:uso_oficina",
+   "vago",
+   "ninguno",
+   "rubro:almacenamiento_externo"
+  ],
+  "S187|0|3": "tecnico",
+  "S188|0|2": [
+   "preferencia:uso_oficina",
+   "vago",
+   "ninguno"
+  ],
+  "S189|0|3": [
+   "vago",
+   "campo:dimensiones"
+  ],
+  "S190|0|2": [
+   "campo:potencia",
+   "orden:mas_potente_w",
+   "vago"
+  ],
+  "S191|0|2": [
+   "preferencia:uso_streaming",
+   "preferencia:uso_oficina",
+   "vago"
+  ],
+  "S195|0|2": [
+   "preferencia:uso_streaming",
+   "vago"
+  ],
+  "S199|0|2": [
+   "vago",
+   "preferencia:uso_oficina"
+  ],
+  "S200|0|2": "tecnico",
+  "S213|0|2": "tecnico",
+  "S216|0|3": "tecnico",
+  "S240|0|1": [
+   "tema:marcas_originales",
+   "tema:contenido_caja"
+  ],
+  "S245|0|3": [
+   "tema:usados"
+  ],
+  "S246|0|1": [
+   "tema:usados"
+  ],
+  "S248|0|2": [
+   "tema:usados"
+  ],
+  "S250|0|3": [
+   "tema:usados",
+   "tema:contenido_caja"
+  ],
+  "S251|0|2": [
+   "tema:usados"
+  ],
+  "S253|0|2": [
+   "tema:usados"
+  ],
+  "S258|0|3": [
+   "tema:usados"
+  ],
+  "S275|0|1": [
+   "vago"
+  ],
+  "S280|0|1": [
+   "vago",
+   "ninguno"
+  ],
+  "S281|0|1": [
+   "vago"
+  ],
+  "S286|0|1": [
+   "vago"
+  ],
+  "S287|0|1": [
+   "vago"
+  ],
+  "S287|0|2": [
+   "vago"
+  ],
+  "S288|0|1": [
+   "preferencia:uso_streaming",
+   "vago"
+  ],
+  "S289|0|2": [
+   "vago",
+   "campo:dimensiones",
+   "orden:mas_liviano"
+  ],
+  "S290|0|2": [
+   "vago",
+   "ninguno"
+  ]
+ }
+}
