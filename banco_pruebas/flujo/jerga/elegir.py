@@ -64,7 +64,11 @@ def pedir(mensaje, fila, candidatos):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:generateContent"
     t0 = time.time()
     for intento in range(8):
-        r = httpx.post(url, params={"key": os.environ["GEMINI_API_KEY"]}, json=body, timeout=120)
+        try:
+            r = httpx.post(url, params={"key": os.environ["GEMINI_API_KEY"]}, json=body, timeout=120)
+        except httpx.TransportError:  # la gratis a veces no contesta: se reintenta igual que un 429
+            time.sleep(4 * (intento + 1))
+            continue
         if r.status_code == 200:
             break
         time.sleep(4 * (intento + 1))  # 429 o alta demanda de la gratis: se reintenta
